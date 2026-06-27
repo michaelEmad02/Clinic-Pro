@@ -76,32 +76,32 @@
 ---
 
 ## Phase 3 — Dashboards UI
-
+ 
 ### Part 3.1 — Owner Dashboard
-- [ ] `features/dashboard/presentation/ui/owner_dashboard_screen.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/dashboard_summary_row.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/clinics_horizontal_scroll.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/alerts_section.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/revenue_bar_chart.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/quick_actions_row.dart`
-- [ ] `features/dashboard/presentation/manager/owner_dashboard_cubit.dart`
-- [ ] `features/dashboard/presentation/manager/owner_dashboard_state.dart`
-
+- [x] `features/dashboard/presentation/ui/owner_dashboard_screen.dart`
+- [x] `features/dashboard/presentation/ui/widgets/dashboard_summary_row.dart`
+- [x] `features/dashboard/presentation/ui/widgets/clinics_horizontal_scroll.dart`
+- [x] `features/dashboard/presentation/ui/widgets/alerts_section.dart`
+- [x] `features/dashboard/presentation/ui/widgets/revenue_bar_chart.dart`
+- [x] `features/dashboard/presentation/ui/widgets/quick_actions_row.dart`
+- [x] `features/dashboard/presentation/manager/owner_dashboard_cubit.dart`
+- [x] `features/dashboard/presentation/manager/owner_dashboard_state.dart`
+ 
 ### Part 3.2 — Doctor Dashboard
-- [ ] `features/dashboard/presentation/ui/doctor_dashboard_screen.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/current_patient_card.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/waiting_queue_list.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/doctor_stats_row.dart`
-- [ ] `features/dashboard/presentation/manager/doctor_dashboard_cubit.dart`
-- [ ] `features/dashboard/presentation/manager/doctor_dashboard_state.dart`
-
+- [x] `features/dashboard/presentation/ui/doctor_dashboard_screen.dart`
+- [x] `features/dashboard/presentation/ui/widgets/current_patient_card.dart`
+- [x] `features/dashboard/presentation/ui/widgets/waiting_queue_list.dart`
+- [x] `features/dashboard/presentation/ui/widgets/doctor_stats_row.dart`
+- [x] `features/dashboard/presentation/manager/doctor_dashboard_cubit.dart`
+- [x] `features/dashboard/presentation/manager/doctor_dashboard_state.dart`
+ 
 ### Part 3.3 — Secretary Dashboard
-- [ ] `features/dashboard/presentation/ui/secretary_dashboard_screen.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/live_queue_section.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/today_appointments_list.dart`
-- [ ] `features/dashboard/presentation/ui/widgets/daily_summary_row.dart`
-- [ ] `features/dashboard/presentation/manager/secretary_dashboard_cubit.dart`
-- [ ] `features/dashboard/presentation/manager/secretary_dashboard_state.dart`
+- [x] `features/dashboard/presentation/ui/secretary_dashboard_screen.dart`
+- [x] `features/dashboard/presentation/ui/widgets/live_queue_section.dart`
+- [x] `features/dashboard/presentation/ui/widgets/today_appointments_list.dart`
+- [x] `features/dashboard/presentation/ui/widgets/daily_summary_row.dart`
+- [x] `features/dashboard/presentation/manager/secretary_dashboard_cubit.dart`
+- [x] `features/dashboard/presentation/manager/secretary_dashboard_state.dart`
 
 ---
 

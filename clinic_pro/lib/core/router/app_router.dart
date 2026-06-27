@@ -9,6 +9,9 @@ import '../../features/auth/presentation/ui/accept_invitation_screen.dart';
 import '../../features/onboarding/presentation/ui/plan_screen.dart';
 import '../../features/onboarding/presentation/ui/create_clinic_screen.dart';
 import '../../features/onboarding/presentation/ui/invite_staff_screen.dart';
+import '../../features/dashboard/presentation/ui/owner_dashboard_screen.dart';
+import '../../features/dashboard/presentation/ui/doctor_dashboard_screen.dart';
+import '../../features/dashboard/presentation/ui/secretary_dashboard_screen.dart';
 
 // دالة مساعدة لإنشاء شاشات مؤقتة (Placeholders)
 Widget _buildPlaceholder(String title) {
@@ -54,15 +57,15 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteConstants.ownerDashboard,
-      builder: (context, state) => _buildPlaceholder('لوحة تحكم المالك'),
+      builder: (context, state) => const OwnerDashboardScreen(),
     ),
     GoRoute(
       path: RouteConstants.doctorDashboard,
-      builder: (context, state) => _buildPlaceholder('لوحة تحكم الطبيب'),
+      builder: (context, state) => const DoctorDashboardScreen(),
     ),
     GoRoute(
       path: RouteConstants.secretaryDashboard,
-      builder: (context, state) => _buildPlaceholder('لوحة تحكم السكرتارية'),
+      builder: (context, state) => const SecretaryDashboardScreen(),
     ),
   ],
 );

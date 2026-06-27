@@ -16,21 +16,69 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthUnauthenticated());
   }
 
+  /// تسجيل دخول بأي بيانات (Mock) — يدخل دائماً كمالك عيادة
   Future<void> login(String email, String password) async {
     emit(AuthLoading());
-    try {
-      final users = await _cloudService.select(table: 'users');
-      
-      // محاكاة تسجيل الدخول: الحصول على مالك العيادة كمثال للـ Mock
-      final user = users.firstWhere(
-        (u) => u['role'] == 'owner',
-        orElse: () => users.first,
-      );
-      
-      emit(AuthAuthenticated(user: user));
-    } catch (e) {
-      emit(const AuthError(message: 'فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.'));
-    }
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    // بيانات وهمية للمالك — أي ايميل وباسوورد مقبولين
+    emit(AuthAuthenticated(user: {
+      'id': 'u-owner-1',
+      'name': 'د. محمد عبد الرحمن',
+      'email': email.isNotEmpty ? email : 'owner@clinicpro.com',
+      'role': 'owner',
+      'phone': '+201011111111',
+    }));
+  }
+
+  /// تسجيل دخول بدور محدد (للاختبار)
+  Future<void> loginAsRole(String role) async {
+    emit(AuthLoading());
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    final Map<String, Map<String, dynamic>> mockUsers = {
+      'owner': {
+        'id': 'u-owner-1',
+        'name': 'د. محمد عبد الرحمن',
+        'email': 'owner@clinicpro.com',
+        'role': 'owner',
+      },
+      'doctor': {
+        'id': 'u-doc-1',
+        'name': 'د. ياسر مصطفى',
+        'email': 'yasser@clinicpro.com',
+        'role': 'doctor',
+      },
+      'secretary': {
+        'id': 'u-sec-1',
+        'name': 'أ. سارة أحمد',
+        'email': 'sara@clinicpro.com',
+        'role': 'secretary',
+      },
+    };
+
+    final user = mockUsers[role] ?? mockUsers['owner']!;
+    emit(AuthAuthenticated(user: user));
+  }
+
+  /// إنشاء حساب جديد (Mock) — يسجل ويعيد بيانات مالك جديد
+  Future<void> register({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+  }) async {
+    emit(AuthLoading());
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    // في مرحلة الـ Mock يتم إنشاء الحساب بنجاح دائماً
+    emit(AuthAuthenticated(user: {
+      'id': 'u-new-owner',
+      'name': name.isNotEmpty ? name : 'مالك جديد',
+      'email': email.isNotEmpty ? email : 'new@clinicpro.com',
+      'role': 'owner',
+      'phone': phone,
+    }));
   }
 
   Future<void> logout() async {
@@ -39,3 +87,4 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthUnauthenticated());
   }
 }
+
