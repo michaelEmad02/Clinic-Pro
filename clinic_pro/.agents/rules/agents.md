@@ -1,0 +1,152 @@
+---
+trigger: always_on
+---
+
+# AGENTS.md — ClinicPro Project Context
+
+## What is this project?
+**ClinicPro** — a multi-tenant SaaS Flutter app for managing medical clinics. for more info read file : docs/product.md
+Roles: Owner / Doctor / Secretary.
+Backend: Supabase (Auth + DB + Realtime + Storage).
+
+---
+
+## Critical Rules (read before anything)
+
+- **Plan first, implement second.** Present a plan and wait for approval before writing any code.
+- **UI First approach.** All screens are built with mock data before Supabase integration.
+- **Never use `setState`** except for animations or forced lifecycle edge cases.
+- **Never put all screen code in one file.** Split into subwidgets in separate files.
+- **Never hardcode colors or text styles.** Always use `AppColors` and `AppTextStyles`.
+- **Never call Supabase from UI or Cubit.** Flow: UI → UseCase → Repository → DataSource → ICloudService.
+- **Mock data goes in `MockCloudService`**, not in widgets or screens.
+- **Widget file > 200 lines → split it.**
+- **Comment every non-obvious block in Arabic** (English technical terms allowed).
+- **After each Phase, stop and wait for approval** before moving to the next.
+
+---
+
+## Architecture — Clean Architecture + Supabase
+
+```
+Presentation (Cubit/Bloc + UI + SubWidgets)
+     ↓
+Domain (Entities + UseCases + Repo Interfaces)
+     ↓
+Data (Models + DataSources + Repo Implementations)
+     ↓
+ICloudService → SupabaseService (real) | MockCloudService (UI phase)
+```
+
+**State management:** Cubit (simple) / Bloc (complex events)
+**DI:** getIt + injectable
+**Routing:** GoRouter
+**Principles:** SOLID, single responsibility, dependency inversion , dependancy injection
+
+---
+
+## Tech Stack
+
+| | |
+|---|---|
+| Framework | Flutter (Dart) |
+| Backend | Supabase |
+| State | Bloc / Cubit |
+| DI | getIt + injectable |
+| Router | GoRouter |
+| Icons | flutter_tabler_icons |
+| Fonts | Cairo (Arabic) + Inter (numbers) |
+| Themes | Light + Dark (system-aware) |
+
+---
+
+## Folder Structure
+
+```
+lib/
+├── core/
+│   ├── themes/        app_colors.dart, app_text_styles.dart, app_theme.dart
+│   ├── constants/     app_constants.dart, supabase_constants.dart, route_constants.dart
+│   ├── di/            injection_container.dart
+│   ├── router/        app_router.dart
+│   ├── services/      i_cloud_service.dart, supabase_service.dart, mock_cloud_service.dart
+│   ├── error/         failures.dart, exceptions.dart
+│   └── widgets/       app_list_item, app_bottom_sheet, status_badge, empty_state,
+│                      shimmer_list, dose_chip_selector, summary_card, realtime_indicator
+└── features/
+    └── [feature]/
+        ├── data/       data_sources/, models/, repositories/
+        ├── domain/     entities/, repositories/, usecases/
+        └── presentation/
+            ├── manager/   cubit/bloc + state
+            └── ui/        screen.dart + widgets/
+```
+
+---
+
+## Current Phase
+
+> **Check `docs/tasks.md` for the current task and phase.**
+> Mark tasks `[✓]` as they are completed.
+
+**Queue system (important):**
+- No separate queue table — queue is derived from `appointments`
+- Queue = appointments WHERE `arrived_at IS NOT NULL` AND `date = today`
+- Sorting logic lives in `core/utils/queue_sorter.dart` (pure Dart)
+- `is_urgent = true` → always first | pattern from `doctor_queue_rules`
+- Realtime on `appointments` table triggers queue re-sort in Flutter
+
+
+**Development order:**
+Phase 1 Core → Phase 2 Auth → Phase 3 Onboarding → Phase 4 Dashboards →
+Phase 5 Appointments → Phase 6 Patients → Phase 7 Prescription →
+Phase 8 Financial → Phase 9 Staff & Clinics → Phase 10 Settings →
+Phase 11 Supabase Integration → Phase 12 Testing
+
+---
+
+## Key Design Tokens
+
+```dart
+// Colors
+primary:      Color(0xFF1A6B8A)
+primaryDark:  Color(0xFF00526D)
+primaryLight: Color(0xFFEAF4F8)
+accent:       Color(0xFF2ECC9A)
+warning:      Color(0xFFF5A623)
+danger:       Color(0xFFE84C4C)
+background:   Color(0xFFF7F9FC)
+surface:      Color(0xFFFFFFFF)
+border:       Color(0xFFE2E8F0)
+textPrimary:  Color(0xFF1A202C)
+
+// Radius
+card: 16 | button: 12 | chip: 20 | input: 10 | sheet: 24
+
+// Fonts
+Arabic text → Cairo | Numbers/amounts → Inter Bold
+```
+
+---
+
+## Stitch Design File
+
+**Use Stitch MCP to design the app
+** The name of the project in Stitch is "ClinicPro"
+
+
+---
+
+## Reference Files
+
+| File | Read when... |
+|------|-------------|
+| `docs/rules.md` | Always — before writing any code |
+| `docs/plan_frontend.md` | Building any UI screen or widget |
+| `docs/database_schema.md` | Working with data models or DB structure |
+| `docs/api_reference.md` | Writing DataSource or Service layer |
+| `docs/architecture.md` | Creating new files or modules |
+| `docs/plan_business_logic.md` | Implementing UseCases or business rules |
+| `docs/implementation_plan.md` | Starting a new Phase or Part |
+| `docs/tasks.md` | Checking what to do next / marking done |
+| `docs/product.md` | Unclear about scope or feature inclusion |
