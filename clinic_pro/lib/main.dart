@@ -3,6 +3,10 @@ import 'core/di/injection_container.dart';
 import 'core/router/app_router.dart';
 import 'core/themes/app_theme.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'features/auth/presentation/manager/auth_cubit.dart';
+import 'features/onboarding/presentation/manager/onboarding_cubit.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -17,13 +21,20 @@ class ClinicPro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'ClinicPro',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      routerConfig: appRouter,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<AuthCubit>()),
+        BlocProvider(create: (_) => sl<OnboardingCubit>()),
+      ],
+      child: MaterialApp.router(
+        title: 'ClinicPro',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
+        routerConfig: appRouter,
+      ),
     );
   }
 }
+

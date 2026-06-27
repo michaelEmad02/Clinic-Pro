@@ -55,23 +55,23 @@
 ## Phase 2 — Auth & Onboarding UI
 
 ### Part 2.1 — Auth Screens
-- [ ] `features/auth/presentation/ui/splash_screen.dart` + widgets/
-- [ ] `features/auth/presentation/ui/login_screen.dart` + widgets/
-- [ ] `features/auth/presentation/ui/create_account_screen.dart` + widgets/
-- [ ] `features/auth/presentation/ui/accept_invitation_screen.dart` + widgets/
+- [x] `features/auth/presentation/ui/splash_screen.dart` + widgets/
+- [x] `features/auth/presentation/ui/login_screen.dart` + widgets/
+- [x] `features/auth/presentation/ui/create_account_screen.dart` + widgets/
+- [x] `features/auth/presentation/ui/accept_invitation_screen.dart` + widgets/
 
 ### Part 2.2 — Auth Cubit
-- [ ] `features/auth/presentation/manager/auth_cubit.dart`
-- [ ] `features/auth/presentation/manager/auth_state.dart`
+- [x] `features/auth/presentation/manager/auth_cubit.dart`
+- [x] `features/auth/presentation/manager/auth_state.dart`
 
 ### Part 2.3 — Onboarding Screens
-- [ ] `features/onboarding/presentation/ui/plan_screen.dart` + widgets/
-- [ ] `features/onboarding/presentation/ui/create_clinic_screen.dart` + widgets/
-- [ ] `features/onboarding/presentation/ui/invite_staff_screen.dart` + widgets/
+- [x] `features/onboarding/presentation/ui/plan_screen.dart` + widgets/
+- [x] `features/onboarding/presentation/ui/create_clinic_screen.dart` + widgets/
+- [x] `features/onboarding/presentation/ui/invite_staff_screen.dart` + widgets/
 
 ### Part 2.4 — Onboarding Cubit
-- [ ] `features/onboarding/presentation/manager/onboarding_cubit.dart`
-- [ ] `features/onboarding/presentation/manager/onboarding_state.dart`
+- [x] `features/onboarding/presentation/manager/onboarding_cubit.dart`
+- [x] `features/onboarding/presentation/manager/onboarding_state.dart`
 
 ---
 
