@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../manager/doctor_dashboard_cubit.dart';
 import '../manager/doctor_dashboard_state.dart';
 import 'widgets/current_patient_card.dart';
@@ -29,7 +30,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           index: _currentIndex,
           children: [
             _buildMainDashboardTab(),
-            _buildPlaceholderTab('المواعيد والجدول', Icons.calendar_today_outlined),
+            const AppointmentsScreen(),
             _buildPlaceholderTab('قائمة المرضى والسجلات', Icons.people_alt_outlined),
             _buildPlaceholderTab('الإعدادات الشخصية', Icons.settings_outlined),
           ],

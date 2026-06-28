@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/di/injection_container.dart';
 import 'core/router/app_router.dart';
 import 'core/themes/app_theme.dart';
@@ -9,10 +10,10 @@ import 'features/onboarding/presentation/manager/onboarding_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // تهيئة حقن الاعتماديات (Dependency Injection)
   configureDependencies();
-  
+
   runApp(const ClinicPro());
 }
 
@@ -29,6 +30,14 @@ class ClinicPro extends StatelessWidget {
       child: MaterialApp.router(
         title: 'ClinicPro',
         debugShowCheckedModeBanner: false,
+        // تفعيل اللغة العربية واتجاه RTL على مستوى التطبيق
+        locale: const Locale('ar'),
+        supportedLocales: const [Locale('ar')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.system,
@@ -37,4 +46,3 @@ class ClinicPro extends StatelessWidget {
     );
   }
 }
-

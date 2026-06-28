@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../manager/secretary_dashboard_cubit.dart';
 import '../manager/secretary_dashboard_state.dart';
 import 'widgets/live_queue_section.dart';
@@ -29,7 +30,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
           index: _currentIndex,
           children: [
             _buildMainDashboardTab(),
-            _buildPlaceholderTab('المواعيد والحجوزات', Icons.calendar_today_outlined),
+            const AppointmentsScreen(),
             _buildPlaceholderTab('الفواتير والحسابات', Icons.receipt_long_outlined),
             _buildPlaceholderTab('الإعدادات', Icons.settings_outlined),
           ],

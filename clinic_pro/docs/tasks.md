@@ -8,47 +8,47 @@
 ## Phase 1 — Project Setup & Core
 
 ### Part 1.1 — Flutter Project Init
-- [ ] Create Flutter project `clinic_pro`
-- [ ] Add all dependencies to `pubspec.yaml`
-- [ ] Configure fonts (Cairo, Inter) in pubspec
-- [ ] Setup folder structure (core/, features/)
-- [ ] Configure `analysis_options.yaml`
+- [x] Create Flutter project `clinic_pro`
+- [x] Add all dependencies to `pubspec.yaml`
+- [x] Configure fonts (Cairo, Inter) in pubspec
+- [x] Setup folder structure (core/, features/)
+- [x] Configure `analysis_options.yaml`
 
 ### Part 1.2 — Core Theme
-- [ ] `core/themes/app_colors.dart` — Light + Dark palettes
-- [ ] `core/themes/app_text_styles.dart` — Cairo + Inter styles
-- [ ] `core/themes/app_theme.dart` — ThemeData light + dark
+- [x] `core/themes/app_colors.dart` — Light + Dark palettes
+- [x] `core/themes/app_text_styles.dart` — Cairo + Inter styles
+- [x] `core/themes/app_theme.dart` — ThemeData light + dark
 
 ### Part 1.3 — Core Constants & Utils
-- [ ] `core/constants/app_constants.dart` — spacing, radius
-- [ ] `core/constants/supabase_constants.dart` — table names + enums
-- [ ] `core/constants/route_constants.dart` — all route paths
-- [ ] `core/utils/queue_sorter.dart` — pure Dart queue sorting logic (no dependencies)
+- [x] `core/constants/app_constants.dart` — spacing, radius
+- [x] `core/constants/supabase_constants.dart` — table names + enums
+- [x] `core/constants/route_constants.dart` — all route paths
+- [x] `core/utils/queue_sorter.dart` — pure Dart queue sorting logic (no dependencies)
 
 ### Part 1.4 — Dependency Injection
-- [ ] `core/di/injection_container.dart` — getIt + injectable init
-- [ ] Register `MockCloudService` as `ICloudService`
-- [ ] Run `build_runner` — verify `injection_container.config.dart` generated
+- [x] `core/di/injection_container.dart` — getIt + injectable init
+- [x] Register `MockCloudService` as `ICloudService`
+- [x] Run `build_runner` — verify `injection_container.config.dart` generated
 
 ### Part 1.5 — Router
-- [ ] `core/router/app_router.dart` — all 26 routes defined
-- [ ] Role-based redirect logic
-- [ ] Deep link handler for `/join/:token`
+- [x] `core/router/app_router.dart` — all 26 routes defined
+- [x] Role-based redirect logic
+- [x] Deep link handler for `/join/:token`
 
 ### Part 1.6 — Shared Widgets
-- [ ] `core/widgets/app_list_item.dart`
-- [ ] `core/widgets/app_bottom_sheet.dart`
-- [ ] `core/widgets/status_badge.dart`
-- [ ] `core/widgets/empty_state.dart`
-- [ ] `core/widgets/shimmer_list.dart`
-- [ ] `core/widgets/dose_chip_selector.dart`
-- [ ] `core/widgets/summary_card.dart`
-- [ ] `core/widgets/realtime_indicator.dart`
+- [x] `core/widgets/app_list_item.dart`
+- [x] `core/widgets/app_bottom_sheet.dart`
+- [x] `core/widgets/status_badge.dart`
+- [x] `core/widgets/empty_state.dart`
+- [x] `core/widgets/shimmer_list.dart`
+- [x] `core/widgets/dose_chip_selector.dart`
+- [x] `core/widgets/summary_card.dart`
+- [x] `core/widgets/realtime_indicator.dart`
 
 ### Part 1.7 — Mock Service & Data
-- [ ] `core/services/i_cloud_service.dart`
-- [ ] `core/services/mock_cloud_service.dart`
-- [ ] `core/mocks/mock_data.dart` — all static datasets
+- [x] `core/services/i_cloud_service.dart`
+- [x] `core/services/mock_cloud_service.dart`
+- [x] `core/mocks/mock_data.dart` — all static datasets
 
 ---
 
@@ -108,30 +108,30 @@
 ## Phase 4 — Appointments UI
 
 ### Part 4.1 — Appointments Screen
-- [ ] `features/appointments/presentation/ui/appointments_screen.dart`
-- [ ] `features/appointments/presentation/ui/widgets/appointments_tab_bar.dart`
-- [ ] `features/appointments/presentation/ui/widgets/appointments_list.dart`
-- [ ] `features/appointments/presentation/ui/widgets/appointment_list_item.dart`
-- [ ] `features/appointments/presentation/ui/widgets/appointment_action_sheet.dart`
-- [ ] `features/appointments/presentation/ui/widgets/add_appointment_sheet.dart`
-- [ ] `features/appointments/presentation/manager/appointments_bloc.dart`
-- [ ] `features/appointments/presentation/manager/appointments_event.dart`
-- [ ] `features/appointments/presentation/manager/appointments_state.dart`
+- [x] `features/appointments/presentation/ui/appointments_screen.dart`
+- [x] `features/appointments/presentation/ui/widgets/appointments_tab_bar.dart`
+- [x] `features/appointments/presentation/ui/widgets/appointments_list.dart`
+- [x] `features/appointments/presentation/ui/widgets/appointment_list_item.dart`
+- [x] `features/appointments/presentation/ui/widgets/appointment_action_sheet.dart`
+- [x] `features/appointments/presentation/ui/widgets/add_appointment_sheet.dart`
+- [x] `features/appointments/presentation/manager/appointments_bloc.dart`
+- [x] `features/appointments/presentation/manager/appointments_event.dart`
+- [x] `features/appointments/presentation/manager/appointments_state.dart`
 
 ### Part 4.2 — Appointment Details Screen
-- [ ] `features/appointments/presentation/ui/appointment_details_screen.dart`
-- [ ] `features/appointments/presentation/ui/widgets/appointment_header_card.dart`
-- [ ] `features/appointments/presentation/ui/widgets/appointment_status_timeline.dart`
-- [ ] `features/appointments/presentation/ui/widgets/linked_prescription_card.dart`
-- [ ] `features/appointments/presentation/ui/widgets/linked_invoice_card.dart`
+- [x] `features/appointments/presentation/ui/appointment_details_screen.dart`
+- [x] `features/appointments/presentation/ui/widgets/appointment_header_card.dart`
+- [x] `features/appointments/presentation/ui/widgets/appointment_status_timeline.dart`
+- [x] `features/appointments/presentation/ui/widgets/linked_prescription_card.dart`
+- [x] `features/appointments/presentation/ui/widgets/linked_invoice_card.dart`
 
 ### Part 4.3 — Waiting Queue Screen
-- [ ] `features/appointments/presentation/ui/waiting_queue_screen.dart`
-- [ ] `features/appointments/presentation/ui/widgets/queue_list.dart`
-- [ ] `features/appointments/presentation/ui/widgets/queue_item.dart`
-- [ ] `features/appointments/presentation/ui/widgets/call_next_button.dart`
-- [ ] `features/appointments/presentation/manager/waiting_queue_cubit.dart`
-- [ ] `features/appointments/presentation/manager/waiting_queue_state.dart`
+- [x] `features/appointments/presentation/ui/waiting_queue_screen.dart`
+- [x] `features/appointments/presentation/ui/widgets/queue_list.dart`
+- [x] `features/appointments/presentation/ui/widgets/queue_item.dart`
+- [x] `features/appointments/presentation/ui/widgets/call_next_button.dart`
+- [x] `features/appointments/presentation/manager/waiting_queue_cubit.dart`
+- [x] `features/appointments/presentation/manager/waiting_queue_state.dart`
 
 ---
 

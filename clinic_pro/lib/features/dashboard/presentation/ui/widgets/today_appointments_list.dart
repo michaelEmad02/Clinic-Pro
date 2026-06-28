@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_list_item.dart';
@@ -45,7 +47,7 @@ class _TodayAppointmentsListState extends State<TodayAppointmentsList> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () => context.push(RouteConstants.appointments),
                 child: Text(
                   'عرض الجدول الكامل',
                   style: AppTextStyles.bodyMedium(context).copyWith(

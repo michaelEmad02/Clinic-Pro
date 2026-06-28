@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/route_constants.dart';
 
@@ -12,14 +11,9 @@ import '../../features/onboarding/presentation/ui/invite_staff_screen.dart';
 import '../../features/dashboard/presentation/ui/owner_dashboard_screen.dart';
 import '../../features/dashboard/presentation/ui/doctor_dashboard_screen.dart';
 import '../../features/dashboard/presentation/ui/secretary_dashboard_screen.dart';
-
-// دالة مساعدة لإنشاء شاشات مؤقتة (Placeholders)
-Widget _buildPlaceholder(String title) {
-  return Scaffold(
-    appBar: AppBar(title: Text(title)),
-    body: Center(child: Text('شاشة $title قيد التطوير')),
-  );
-}
+import '../../features/appointments/presentation/ui/appointments_screen.dart';
+import '../../features/appointments/presentation/ui/appointment_details_screen.dart';
+import '../../features/appointments/presentation/ui/waiting_queue_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: RouteConstants.splash,
@@ -66,6 +60,21 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteConstants.secretaryDashboard,
       builder: (context, state) => const SecretaryDashboardScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.appointments,
+      builder: (context, state) => const AppointmentsScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.appointmentDetails,
+      builder: (context, state) {
+        final id = state.pathParameters['id'] ?? '';
+        return AppointmentDetailsScreen(id: id);
+      },
+    ),
+    GoRoute(
+      path: RouteConstants.waitingQueue,
+      builder: (context, state) => const WaitingQueueScreen(),
     ),
   ],
 );
