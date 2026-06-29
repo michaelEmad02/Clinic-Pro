@@ -45,6 +45,13 @@ class QuickActionsRow extends StatelessWidget {
               const SizedBox(width: 12),
               _buildActionButton(
                 context: context,
+                label: 'إدارة الطاقم',
+                icon: Icons.people_outlined,
+                onTap: () => context.push(RouteConstants.staff),
+              ),
+              const SizedBox(width: 12),
+              _buildActionButton(
+                context: context,
                 label: 'التقارير المالية',
                 icon: Icons.analytics_outlined,
                 onTap: () {

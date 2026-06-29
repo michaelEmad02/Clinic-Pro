@@ -40,6 +40,15 @@ class AppColors {
   static const Color warningText = Color(0xFF92400E);
   static const Color dangerBg = Color(0xFFFEE2E2);
   static const Color dangerText = Color(0xFF991B1B);
+  static const Color dangerLight = Color(0xFFFEE2E2); // خلفية خفيفة للخطر
+  static const Color surfaceAlt = Color(0xFFF1F5F9); // سطح بديل للرقاقات
+  static const Color surfaceVariant = Color(0xFFE0E3E6);
+  static const Color surfaceBright = Color(0xFFF7F9FC);
+  static const Color surfaceContainer = Color(0xFFECEEF1); // DESIGN.md surface-container
+  static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
+  static const Color primaryFixedDim = Color(0xFF8BCFF2);
+  static const Color surfaceTint = Color(0xFF106685); // DESIGN.md surface-tint
+  static const Color warningLight = Color(0xFFFEF3C7); // خلفية خفيفة للتحذير
 
   // ────────────────────────────────────────────────────────
   // ألوان باليت الوضع الداكن (Dark Palette)

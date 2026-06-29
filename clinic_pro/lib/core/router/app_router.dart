@@ -14,6 +14,16 @@ import '../../features/dashboard/presentation/ui/secretary_dashboard_screen.dart
 import '../../features/appointments/presentation/ui/appointments_screen.dart';
 import '../../features/appointments/presentation/ui/appointment_details_screen.dart';
 import '../../features/appointments/presentation/ui/waiting_queue_screen.dart';
+import '../../features/patients/presentation/ui/patients_screen.dart';
+import '../../features/patients/presentation/ui/patient_details_screen.dart';
+import '../../features/prescription/presentation/ui/drugs_screen.dart';
+import '../../features/prescription/presentation/ui/prescription_screen.dart';
+import '../../features/prescription/presentation/ui/templates_screen.dart';
+import '../../features/settings/presentation/ui/settings_screen.dart';
+import '../../features/settings/presentation/ui/subscription_screen.dart';
+import '../../features/staff/presentation/ui/staff_screen.dart';
+import '../../features/clinics/presentation/ui/clinics_screen.dart';
+import '../../features/clinics/presentation/ui/clinic_details_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: RouteConstants.splash,
@@ -75,6 +85,65 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteConstants.waitingQueue,
       builder: (context, state) => const WaitingQueueScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.patients,
+      builder: (context, state) => const PatientsScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.patientDetails,
+      builder: (context, state) {
+        final id = state.pathParameters['id'] ?? '';
+        return PatientDetailsScreen(id: id);
+      },
+    ),
+    GoRoute(
+      path: RouteConstants.prescriptionNew,
+      builder: (context, state) {
+        final appointmentId = state.pathParameters['appointment_id'] ?? '';
+        return PrescriptionScreen(appointmentId: appointmentId);
+      },
+    ),
+    GoRoute(
+      path: RouteConstants.prescriptionEdit,
+      builder: (context, state) {
+        final appointmentId = state.pathParameters['appointment_id'] ?? '';
+        return PrescriptionScreen(
+          appointmentId: appointmentId,
+          isEditing: true,
+        );
+      },
+    ),
+    GoRoute(
+      path: RouteConstants.prescriptionTemplates,
+      builder: (context, state) => const TemplatesScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.drugs,
+      builder: (context, state) => const DrugsScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.staff,
+      builder: (context, state) => const StaffScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.clinics,
+      builder: (context, state) => const ClinicsScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.clinicDetails,
+      builder: (context, state) {
+        final id = state.pathParameters['id'] ?? '';
+        return ClinicDetailsScreen(id: id);
+      },
+    ),
+    GoRoute(
+      path: RouteConstants.settings,
+      builder: (context, state) => const SettingsScreen(showBottomNav: true),
+    ),
+    GoRoute(
+      path: RouteConstants.settingsSubscription,
+      builder: (context, state) => const SubscriptionScreen(),
     ),
   ],
 );

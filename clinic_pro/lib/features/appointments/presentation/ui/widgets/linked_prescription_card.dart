@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -75,9 +76,13 @@ class LinkedPrescriptionCard extends StatelessWidget {
               ),
               if (hasPrescription)
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    if (appointmentId != null) {
+                      context.push('/prescription/edit/$appointmentId');
+                    }
+                  },
                   child: Text(
-                    'عرض الكل',
+                    'تعديل',
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: AppColors.primaryContainer,
                       fontWeight: FontWeight.w600,
@@ -122,7 +127,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('سيتم تفعيل الطباعة في مرحلة الوصفات')),
+                  const SnackBar(content: Text('سيتم تفعيل الطباعة لاحقاً')),
                 );
               },
               icon: const Icon(Icons.print_outlined, size: 18),
@@ -139,11 +144,35 @@ class LinkedPrescriptionCard extends StatelessWidget {
               ),
             ),
           ] else
-            Text(
-              'لم تُصدر روشتة بعد',
-              style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'لم تُصدر روشتة بعد',
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    if (appointmentId != null) {
+                      context.push('/prescription/$appointmentId');
+                    }
+                  },
+                  icon: const Icon(Icons.add_box_outlined, size: 18),
+                  label: const Text('إصدار روشتة جديدة'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusButton),
+                    ),
+                  ),
+                ),
+              ],
             ),
         ],
       ),

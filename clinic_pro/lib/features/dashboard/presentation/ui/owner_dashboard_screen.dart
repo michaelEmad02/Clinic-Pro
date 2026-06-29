@@ -1,7 +1,10 @@
+import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../clinics/presentation/ui/clinics_screen.dart';
+import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/owner_dashboard_cubit.dart';
 import '../manager/owner_dashboard_state.dart';
 import 'widgets/dashboard_summary_row.dart';
@@ -31,9 +34,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
           index: _currentIndex,
           children: [
             _buildMainDashboardTab(),
-            _buildPlaceholderTab('العيادات', Icons.business_outlined),
+            const ClinicsScreen(),
             _buildPlaceholderTab('التقارير المالية', Icons.analytics_outlined),
-            _buildPlaceholderTab('الإعدادات', Icons.settings_outlined),
+            const SettingsScreen(role: StaffRoles.owner, showBottomNav: false),
           ],
         ),
         bottomNavigationBar: _buildBottomNav(),

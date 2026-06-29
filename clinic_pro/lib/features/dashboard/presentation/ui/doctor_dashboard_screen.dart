@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../appointments/presentation/ui/appointments_screen.dart';
+import '../../../patients/presentation/ui/patients_screen.dart';
+import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/doctor_dashboard_cubit.dart';
 import '../manager/doctor_dashboard_state.dart';
 import 'widgets/current_patient_card.dart';
@@ -31,8 +34,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           children: [
             _buildMainDashboardTab(),
             const AppointmentsScreen(),
-            _buildPlaceholderTab('قائمة المرضى والسجلات', Icons.people_alt_outlined),
-            _buildPlaceholderTab('الإعدادات الشخصية', Icons.settings_outlined),
+            const PatientsScreen(),
+            const SettingsScreen(showBottomNav: false),
           ],
         ),
         bottomNavigationBar: _buildBottomNav(),
@@ -131,7 +134,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                 CurrentPatientCard(
                   patient: state.currentPatient,
                   onStartExamination: () {
-                    // Start examination flow, go to prescription
+                    if (state.currentPatient != null) {
+                      context.push('/prescription/${state.currentPatient!.id}');
+                    }
                   },
                 ),
                 const SizedBox(height: 24),
@@ -147,31 +152,6 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         }
         return const SizedBox.shrink();
       },
-    );
-  }
-
-  Widget _buildPlaceholderTab(String title, IconData icon) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 64, color: AppColors.textHint),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: AppTextStyles.headlineMedium(context).copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'هذه الشاشة قيد التطوير والمحاكاة',
-            style: AppTextStyles.bodyMedium(context).copyWith(
-              color: AppColors.textHint,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

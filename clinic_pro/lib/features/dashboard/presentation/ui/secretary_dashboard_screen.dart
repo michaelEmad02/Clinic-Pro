@@ -1,8 +1,10 @@
+import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../appointments/presentation/ui/appointments_screen.dart';
+import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/secretary_dashboard_cubit.dart';
 import '../manager/secretary_dashboard_state.dart';
 import 'widgets/live_queue_section.dart';
@@ -32,7 +34,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
             _buildMainDashboardTab(),
             const AppointmentsScreen(),
             _buildPlaceholderTab('الفواتير والحسابات', Icons.receipt_long_outlined),
-            _buildPlaceholderTab('الإعدادات', Icons.settings_outlined),
+            const SettingsScreen(role: StaffRoles.secretary, showBottomNav: false),
           ],
         ),
         bottomNavigationBar: _buildBottomNav(),

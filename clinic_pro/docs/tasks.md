@@ -138,24 +138,24 @@
 ## Phase 5 — Patients UI
 
 ### Part 5.1 — Patients Screen
-- [ ] `features/patients/presentation/ui/patients_screen.dart`
-- [ ] `features/patients/presentation/ui/widgets/patients_search_bar.dart`
-- [ ] `features/patients/presentation/ui/widgets/patients_filter_chips.dart`
-- [ ] `features/patients/presentation/ui/widgets/patients_list.dart`
-- [ ] `features/patients/presentation/ui/widgets/patient_list_item.dart`
-- [ ] `features/patients/presentation/ui/widgets/patient_action_sheet.dart`
-- [ ] `features/patients/presentation/ui/widgets/add_edit_patient_sheet.dart`
-- [ ] `features/patients/presentation/manager/patients_cubit.dart`
-- [ ] `features/patients/presentation/manager/patients_state.dart`
+- [x] `features/patients/presentation/ui/patients_screen.dart`
+- [x] `features/patients/presentation/ui/widgets/patients_search_bar.dart`
+- [x] `features/patients/presentation/ui/widgets/patients_filter_chips.dart`
+- [x] `features/patients/presentation/ui/widgets/patients_list.dart`
+- [x] `features/patients/presentation/ui/widgets/patient_list_item.dart`
+- [x] `features/patients/presentation/ui/widgets/patient_action_sheet.dart`
+- [x] `features/patients/presentation/ui/widgets/add_edit_patient_sheet.dart`
+- [x] `features/patients/presentation/manager/patients_cubit.dart`
+- [x] `features/patients/presentation/manager/patients_state.dart`
 
 ### Part 5.2 — Patient Details Screen
-- [ ] `features/patients/presentation/ui/patient_details_screen.dart`
-- [ ] `features/patients/presentation/ui/widgets/patient_sliver_app_bar.dart`
-- [ ] `features/patients/presentation/ui/widgets/patient_allergy_banner.dart`
-- [ ] `features/patients/presentation/ui/widgets/patient_info_tab.dart`
-- [ ] `features/patients/presentation/ui/widgets/patient_visits_tab.dart`
-- [ ] `features/patients/presentation/ui/widgets/patient_prescriptions_tab.dart`
-- [ ] `features/patients/presentation/ui/widgets/visit_timeline_item.dart`
+- [x] `features/patients/presentation/ui/patient_details_screen.dart`
+- [x] `features/patients/presentation/ui/widgets/patient_sliver_app_bar.dart`
+- [x] `features/patients/presentation/ui/widgets/patient_allergy_banner.dart`
+- [x] `features/patients/presentation/ui/widgets/patient_info_tab.dart`
+- [x] `features/patients/presentation/ui/widgets/patient_visits_tab.dart`
+- [x] `features/patients/presentation/ui/widgets/patient_prescriptions_tab.dart`
+- [x] `features/patients/presentation/ui/widgets/visit_timeline_item.dart`
 
 ---
 
@@ -173,6 +173,17 @@
 - [ ] `features/prescription/presentation/manager/prescription_bloc.dart`
 - [ ] `features/prescription/presentation/manager/prescription_event.dart`
 - [ ] `features/prescription/presentation/manager/prescription_state.dart`
+- [x] `features/prescription/presentation/ui/prescription_screen.dart`
+- [x] `features/prescription/presentation/ui/widgets/prescription_header_card.dart`
+- [x] `features/prescription/presentation/ui/widgets/diagnosis_chips_section.dart`
+- [x] `features/prescription/presentation/ui/widgets/drugs_list_section.dart`
+- [x] `features/prescription/presentation/ui/widgets/drug_dose_card.dart`
+- [x] `features/prescription/presentation/ui/widgets/prescription_notes_field.dart`
+- [x] `features/prescription/presentation/ui/widgets/prescription_bottom_actions_bar.dart`
+- [x] `features/prescription/presentation/ui/widgets/add_drug_search_sheet.dart`
+- [x] `features/prescription/presentation/manager/prescription_bloc.dart`
+- [x] `features/prescription/presentation/manager/prescription_event.dart`
+- [x] `features/prescription/presentation/manager/prescription_state.dart`
 
 ### Part 6.2 — Templates Screen
 - [ ] `features/prescription/presentation/ui/templates_screen.dart`
@@ -183,6 +194,14 @@
 - [ ] `features/prescription/presentation/ui/widgets/add_edit_template_sheet.dart`
 - [ ] `features/prescription/presentation/manager/templates_cubit.dart`
 - [ ] `features/prescription/presentation/manager/templates_state.dart`
+- [x] `features/prescription/presentation/ui/templates_screen.dart`
+- [x] `features/prescription/presentation/ui/widgets/templates_list.dart`
+- [x] `features/prescription/presentation/ui/widgets/template_list_item.dart`
+- [x] `features/prescription/presentation/ui/widgets/template_action_sheet.dart`
+- [x] `features/prescription/presentation/ui/widgets/template_preview_dialog.dart`
+- [x] `features/prescription/presentation/ui/widgets/add_edit_template_sheet.dart`
+- [x] `features/prescription/presentation/manager/templates_cubit.dart`
+- [x] `features/prescription/presentation/manager/templates_state.dart`
 
 ### Part 6.3 — Drugs Screen
 - [ ] `features/prescription/presentation/ui/drugs_screen.dart`
@@ -194,6 +213,15 @@
 - [ ] `features/prescription/presentation/ui/widgets/add_edit_drug_sheet.dart`
 - [ ] `features/prescription/presentation/manager/drugs_cubit.dart`
 - [ ] `features/prescription/presentation/manager/drugs_state.dart`
+- [x] `features/prescription/presentation/ui/drugs_screen.dart`
+- [x] `features/prescription/presentation/ui/widgets/drugs_search_bar.dart`
+- [x] `features/prescription/presentation/ui/widgets/drugs_category_chips.dart`
+- [x] `features/prescription/presentation/ui/widgets/drugs_list.dart`
+- [x] `features/prescription/presentation/ui/widgets/drug_list_item.dart`
+- [x] `features/prescription/presentation/ui/widgets/drug_action_sheet.dart`
+- [x] `features/prescription/presentation/ui/widgets/add_edit_drug_sheet.dart`
+- [x] `features/prescription/presentation/manager/drugs_cubit.dart`
+- [x] `features/prescription/presentation/manager/drugs_state.dart`
 
 ---
 
@@ -237,55 +265,55 @@
 ## Phase 8 — Staff & Clinics UI
 
 ### Part 8.1 — Staff Screen
-- [ ] `features/staff/presentation/ui/staff_screen.dart`
-- [ ] `features/staff/presentation/ui/widgets/staff_filter_chips.dart`
-- [ ] `features/staff/presentation/ui/widgets/staff_list.dart`
-- [ ] `features/staff/presentation/ui/widgets/staff_list_item.dart`
-- [ ] `features/staff/presentation/ui/widgets/staff_action_sheet.dart`
-- [ ] `features/staff/presentation/ui/widgets/pending_invitations_section.dart`
-- [ ] `features/staff/presentation/ui/widgets/invite_staff_sheet.dart`
-- [ ] `features/staff/presentation/manager/staff_cubit.dart`
-- [ ] `features/staff/presentation/manager/staff_state.dart`
+- [x] `features/staff/presentation/ui/staff_screen.dart`
+- [x] `features/staff/presentation/ui/widgets/staff_filter_chips.dart`
+- [x] `features/staff/presentation/ui/widgets/staff_list.dart`
+- [x] `features/staff/presentation/ui/widgets/staff_list_item.dart`
+- [x] `features/staff/presentation/ui/widgets/staff_action_sheet.dart`
+- [x] `features/staff/presentation/ui/widgets/pending_invitations_section.dart`
+- [x] `features/staff/presentation/ui/widgets/invite_staff_sheet.dart`
+- [x] `features/staff/presentation/manager/staff_cubit.dart`
+- [x] `features/staff/presentation/manager/staff_state.dart`
 
 ### Part 8.2 — Clinics Screen
-- [ ] `features/clinics/presentation/ui/clinics_screen.dart`
-- [ ] `features/clinics/presentation/ui/widgets/clinics_list.dart`
-- [ ] `features/clinics/presentation/ui/widgets/clinic_card.dart`
-- [ ] `features/clinics/presentation/ui/widgets/clinic_action_sheet.dart`
-- [ ] `features/clinics/presentation/ui/widgets/add_edit_clinic_sheet.dart`
-- [ ] `features/clinics/presentation/manager/clinics_cubit.dart`
-- [ ] `features/clinics/presentation/manager/clinics_state.dart`
+- [x] `features/clinics/presentation/ui/clinics_screen.dart`
+- [x] `features/clinics/presentation/ui/widgets/clinics_list.dart`
+- [x] `features/clinics/presentation/ui/widgets/clinic_card.dart`
+- [x] `features/clinics/presentation/ui/widgets/clinic_action_sheet.dart`
+- [x] `features/clinics/presentation/ui/widgets/add_edit_clinic_sheet.dart`
+- [x] `features/clinics/presentation/manager/clinics_cubit.dart`
+- [x] `features/clinics/presentation/manager/clinics_state.dart`
 
 ### Part 8.3 — Clinic Details Screen
-- [ ] `features/clinics/presentation/ui/clinic_details_screen.dart`
-- [ ] `features/clinics/presentation/ui/widgets/clinic_details_header.dart`
-- [ ] `features/clinics/presentation/ui/widgets/clinic_summary_cards.dart`
-- [ ] `features/clinics/presentation/ui/widgets/clinic_working_hours_section.dart`
-- [ ] `features/clinics/presentation/ui/widgets/clinic_visit_types_section.dart`
-- [ ] `features/clinics/presentation/ui/widgets/clinic_staff_section.dart`
+- [x] `features/clinics/presentation/ui/clinic_details_screen.dart`
+- [x] `features/clinics/presentation/ui/widgets/clinic_details_header.dart`
+- [x] `features/clinics/presentation/ui/widgets/clinic_summary_cards.dart`
+- [x] `features/clinics/presentation/ui/widgets/clinic_working_hours_section.dart`
+- [x] `features/clinics/presentation/ui/widgets/clinic_visit_types_section.dart`
+- [x] `features/clinics/presentation/ui/widgets/clinic_staff_section.dart`
 
 ---
 
 ## Phase 9 — Settings UI
 
 ### Part 9.1 — Settings Screen
-- [ ] `features/settings/presentation/ui/settings_screen.dart`
-- [ ] `features/settings/presentation/ui/widgets/settings_account_section.dart`
-- [ ] `features/settings/presentation/ui/widgets/settings_clinic_section.dart`
-- [ ] `features/settings/presentation/ui/widgets/settings_owner_section.dart`
-- [ ] `features/settings/presentation/ui/widgets/settings_logout_section.dart`
-- [ ] `features/settings/presentation/ui/widgets/edit_profile_sheet.dart`
-- [ ] `features/settings/presentation/ui/widgets/clinic_picker_sheet.dart`
-- [ ] `features/settings/presentation/manager/settings_cubit.dart`
-- [ ] `features/settings/presentation/manager/settings_state.dart`
+- [x] `features/settings/presentation/ui/settings_screen.dart`
+- [x] `features/settings/presentation/ui/widgets/settings_account_section.dart`
+- [x] `features/settings/presentation/ui/widgets/settings_clinic_section.dart`
+- [x] `features/settings/presentation/ui/widgets/settings_owner_section.dart`
+- [x] `features/settings/presentation/ui/widgets/settings_logout_section.dart`
+- [x] `features/settings/presentation/ui/widgets/edit_profile_sheet.dart`
+- [x] `features/settings/presentation/ui/widgets/clinic_picker_sheet.dart`
+- [x] `features/settings/presentation/manager/settings_cubit.dart`
+- [x] `features/settings/presentation/manager/settings_state.dart`
 
 ### Part 9.2 — Subscription Screen
-- [ ] `features/settings/presentation/ui/subscription_screen.dart`
-- [ ] `features/settings/presentation/ui/widgets/current_plan_card.dart`
-- [ ] `features/settings/presentation/ui/widgets/trial_countdown_card.dart`
-- [ ] `features/settings/presentation/ui/widgets/usage_progress_section.dart`
-- [ ] `features/settings/presentation/ui/widgets/upgrade_cta_button.dart`
-- [ ] `features/settings/presentation/ui/widgets/billing_history_list.dart`
+- [x] `features/settings/presentation/ui/subscription_screen.dart`
+- [x] `features/settings/presentation/ui/widgets/current_plan_card.dart`
+- [x] `features/settings/presentation/ui/widgets/trial_countdown_card.dart`
+- [x] `features/settings/presentation/ui/widgets/usage_progress_section.dart`
+- [x] `features/settings/presentation/ui/widgets/upgrade_cta_button.dart`
+- [x] `features/settings/presentation/ui/widgets/billing_history_list.dart`
 
 ---
 

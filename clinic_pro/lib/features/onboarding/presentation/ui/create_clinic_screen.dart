@@ -3,16 +3,36 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../clinics/presentation/manager/clinics_state.dart';
 import 'widgets/progress_indicator_bar.dart';
 import 'widgets/clinic_form.dart';
 
 class CreateClinicScreen extends StatelessWidget {
-  const CreateClinicScreen({super.key});
+  final ClinicItem? clinic;
+  final bool isOnboarding;
+
+  const CreateClinicScreen({
+    super.key,
+    this.clinic,
+    this.isOnboarding = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: isOnboarding
+          ? null
+          : AppBar(
+              toolbarHeight: 56,
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -40,29 +60,53 @@ class CreateClinicScreen extends StatelessWidget {
                     Column(
                       children: [
                         Text(
-                          'بيانات العيادة',
+                          isOnboarding
+                              ? 'بيانات العيادة'
+                              : (clinic != null
+                                  ? 'تعديل بيانات العيادة'
+                                  : 'إضافة عيادة جديدة'),
                           style: AppTextStyles.headlineLarge(context).copyWith(
                             color: AppColors.primary,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const ProgressIndicatorBar(
-                          step: 2,
-                          totalSteps: 3,
-                          title: '',
-                        ),
+                        if (isOnboarding) ...[
+                          const SizedBox(height: 8),
+                          const ProgressIndicatorBar(
+                            step: 2,
+                            totalSteps: 3,
+                            title: '',
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Form
                     ClinicForm(
-                      onSubmit: () {
-                        // After creating clinic, typically go to owner dashboard
-                        context.go(RouteConstants.ownerDashboard);
+                      clinic: clinic,
+                      isOnboarding: isOnboarding,
+                      onSubmit: ({
+                        required String name,
+                        required String phone,
+                        required String address,
+                        String? logoUrl,
+                      }) {
+                        if (isOnboarding) {
+                          context.go(RouteConstants.ownerDashboard);
+                        } else {
+                          Navigator.pop(context, {
+                            'name': name,
+                            'phone': phone,
+                            'address': address,
+                          });
+                        }
                       },
                       onBack: () {
-                        context.go(RouteConstants.onboardingPlan);
+                        if (isOnboarding) {
+                          context.go(RouteConstants.onboardingPlan);
+                        } else {
+                          Navigator.pop(context);
+                        }
                       },
                     ),
                   ],

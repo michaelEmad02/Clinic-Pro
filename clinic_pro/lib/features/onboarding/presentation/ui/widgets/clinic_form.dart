@@ -1,15 +1,27 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../clinics/presentation/manager/clinics_state.dart';
 
 class ClinicForm extends StatefulWidget {
-  final VoidCallback onSubmit;
+  final void Function({
+    required String name,
+    required String phone,
+    required String address,
+    String? logoUrl,
+  }) onSubmit;
   final VoidCallback onBack;
+  final ClinicItem? clinic;
+  final bool isOnboarding;
 
   const ClinicForm({
     super.key,
     required this.onSubmit,
     required this.onBack,
+    this.clinic,
+    this.isOnboarding = true,
   });
 
   @override
@@ -23,6 +35,20 @@ class _ClinicFormState extends State<ClinicForm> {
   String? _selectedSpecialty;
   bool _isDoctor = true;
 
+  /// الصورة المختارة من المعرض
+  File? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.clinic != null) {
+      _nameController.text = widget.clinic!.name;
+      _addressController.text = widget.clinic!.address;
+      _phoneController.text = widget.clinic!.phone;
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -32,8 +58,31 @@ class _ClinicFormState extends State<ClinicForm> {
   }
 
   void _submit() {
-    // Note: Add validation later if needed. For Mock UI, just submit.
-    widget.onSubmit();
+    widget.onSubmit(
+      name: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      address: _addressController.text.trim(),
+    );
+  }
+
+  /// فتح المعرض لاختيار صورة شعار العيادة
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      // التعامل مع خطأ اختيار الصورة
+      debugPrint('خطأ في اختيار الصورة: $e');
+    }
   }
 
   @override
@@ -46,9 +95,7 @@ class _ClinicFormState extends State<ClinicForm> {
           child: Column(
             children: [
               InkWell(
-                onTap: () {
-                  // Pick image
-                },
+                onTap: _pickImage,
                 borderRadius: BorderRadius.circular(48),
                 child: Container(
                   width: 96,
@@ -57,17 +104,29 @@ class _ClinicFormState extends State<ClinicForm> {
                     color: AppColors.surfaceContainerLow,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.outline,
-                      style: BorderStyle.solid, // Flutter doesn't have dashed border easily built-in without a package, using solid for now
+                      color: _selectedImage != null
+                          ? AppColors.primary
+                          : AppColors.outline,
                     ),
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.photo_camera,
-                      size: 32,
-                      color: AppColors.outline,
-                    ),
-                  ),
+                  child: _selectedImage != null
+                      // عرض الصورة المختارة داخل دائرة
+                      ? ClipOval(
+                          child: Image.file(
+                            _selectedImage!,
+                            width: 96,
+                            height: 96,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      // عرض أيقونة الكاميرا كحالة افتراضية
+                      : const Center(
+                          child: Icon(
+                            Icons.photo_camera,
+                            size: 32,
+                            color: AppColors.outline,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -177,59 +236,60 @@ class _ClinicFormState extends State<ClinicForm> {
         const Divider(color: AppColors.border),
         const SizedBox(height: 16),
         
-        // Toggle Card
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.primaryLight,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'هل أنت طبيب في هذه العيادة؟',
-                      style: AppTextStyles.headlineSmall(context).copyWith(
-                        color: AppColors.primary,
+        // Toggle Card (only for onboarding)
+        if (widget.isOnboarding) ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'هل أنت طبيب في هذه العيادة؟',
+                        style: AppTextStyles.headlineSmall(context).copyWith(
+                          color: AppColors.primary,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'سيتم إضافتك كطبيب تلقائياً',
-                      style: AppTextStyles.caption(context).copyWith(
-                        color: AppColors.textSecondary,
+                      Text(
+                        'سيتم إضافتك كطبيب تلقائياً',
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Switch(
-                value: _isDoctor,
-                onChanged: (val) {
-                  setState(() {
-                    _isDoctor = val;
-                  });
-                },
-                activeColor: AppColors.surface,
-                activeTrackColor: AppColors.primary,
-                inactiveThumbColor: AppColors.surface,
-                inactiveTrackColor: AppColors.surfaceContainerHigh,
-              ),
-            ],
+                Switch(
+                  value: _isDoctor,
+                  onChanged: (val) {
+                    setState(() {
+                      _isDoctor = val;
+                    });
+                  },
+                  activeColor: AppColors.surface,
+                  activeTrackColor: AppColors.primary,
+                  inactiveThumbColor: AppColors.surface,
+                  inactiveTrackColor: AppColors.surfaceContainerHigh,
+                ),
+              ],
+            ),
           ),
-        ),
-        
-        const SizedBox(height: 24),
+          const SizedBox(height: 24),
+        ],
         
         // Action Buttons
         ElevatedButton(
           onPressed: _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1A6B8A), // AppColors.primaryContainer
+            backgroundColor: const Color(0xFF1A6B8A),
             foregroundColor: AppColors.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
@@ -241,13 +301,13 @@ class _ClinicFormState extends State<ClinicForm> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'إنشاء العيادة والمتابعة',
+                widget.clinic != null ? 'حفظ التعديلات' : 'إنشاء العيادة والمتابعة',
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   color: AppColors.onPrimary,
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.arrow_back), // Arrow points left
+              const Icon(Icons.arrow_back),
             ],
           ),
         ),
@@ -262,7 +322,7 @@ class _ClinicFormState extends State<ClinicForm> {
             ),
           ),
           child: Text(
-            'العودة للسابق',
+            widget.isOnboarding ? 'العودة للسابق' : 'إلغاء',
             style: AppTextStyles.bodyMedium(context),
           ),
         ),

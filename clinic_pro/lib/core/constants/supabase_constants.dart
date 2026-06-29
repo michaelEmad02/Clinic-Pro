@@ -3,6 +3,8 @@
 // يشمل أسماء الجداول وقيم الحالات المختلفة (Statuses)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/staff_roles.dart';
+
 class SupabaseTables {
   static const String owners = 'owners';
   static const String clinics = 'clinics';
@@ -24,8 +26,10 @@ class SupabaseTables {
 
 class AppointmentStatus {
   static const String scheduled = 'scheduled'; // حجز مجدول
-  static const String confirmed = 'confirmed'; // تأكيد الحضور (دخل قائمة الانتظار)
-  static const String inProgress = 'in_progress'; // الكشف جارٍ حالياً عند الطبيب
+  static const String confirmed =
+      'confirmed'; // تأكيد الحضور (دخل قائمة الانتظار)
+  static const String inProgress =
+      'in_progress'; // الكشف جارٍ حالياً عند الطبيب
   static const String done = 'done'; // تم الانتهاء من الكشف وحفظ الروشتة
   static const String cancelled = 'cancelled'; // حجز ملغى
 }
@@ -38,9 +42,9 @@ class QueueSlotType {
 }
 
 class StaffRole {
-  static const String owner = 'owner'; // مالك العيادة
-  static const String doctor = 'doctor'; // طبيب
-  static const String secretary = 'secretary'; // سكرتارية
+  static String owner = StaffRoles.owner.name; // مالك العيادة
+  static String doctor = StaffRoles.doctor.name; // طبيب
+  static String secretary = StaffRoles.secretary.name; // سكرتارية
 }
 
 class SubscriptionType {

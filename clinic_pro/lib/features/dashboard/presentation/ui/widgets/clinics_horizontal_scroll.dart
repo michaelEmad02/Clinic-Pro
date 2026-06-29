@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/owner_dashboard_state.dart';
@@ -29,9 +31,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () {
-                  // Navigate to clinics page
-                },
+                onPressed: () => context.push(RouteConstants.clinics),
                 child: Text(
                   'عرض الكل',
                   style: AppTextStyles.bodyMedium(context).copyWith(
@@ -52,7 +52,9 @@ class ClinicsHorizontalScroll extends StatelessWidget {
             itemCount: clinics.length,
             itemBuilder: (context, index) {
               final clinic = clinics[index];
-              return Container(
+              return GestureDetector(
+                onTap: () => context.push('${RouteConstants.clinics}/${clinic.id}'),
+                child: Container(
                 width: 240,
                 margin: const EdgeInsets.only(left: 12),
                 padding: const EdgeInsets.all(16),
@@ -152,6 +154,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
               );
             },
           ),
