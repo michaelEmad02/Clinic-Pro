@@ -119,35 +119,37 @@ class _ClinicsBody extends StatelessWidget {
     );
   }
 
-  void _deleteClinic(BuildContext context, ClinicItem clinic) {
-    showDialog(
+  Future<void> _deleteClinic(BuildContext context, ClinicItem clinic) async {
+    final cubit = context.read<ClinicsCubit>();
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('تأكيد الحذف'),
         content: Text('هل أنت متأكد من حذف "${clinic.name}"؟'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('إلغاء'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<ClinicsCubit>().deleteClinic(clinic.id);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('تم حذف "${clinic.name}"')),
-              );
-            },
+            onPressed: () => Navigator.pop(ctx, true),
             child: const Text('حذف', style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
     );
+    if (confirmed != true) return;
+    await cubit.deleteClinic(clinic.id);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('تم حذف "${clinic.name}"')),
+    );
   }
 
-  void _toggleClinicActive(BuildContext context, ClinicItem clinic) {
+  Future<void> _toggleClinicActive(BuildContext context, ClinicItem clinic) async {
     final cubit = context.read<ClinicsCubit>();
-    cubit.toggleActive(clinic.id);
+    await cubit.toggleActive(clinic.id);
+    if (!context.mounted) return;
     final action = clinic.isActive ? 'تعطيل' : 'تفعيل';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('تم $action "${clinic.name}"')),

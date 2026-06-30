@@ -141,8 +141,9 @@ class _StaffBody extends StatelessWidget {
       context: context,
       staff: staff,
       onEditRole: () => _pickRole(context, staff),
-      onToggleSuspend: () {
-        context.read<StaffCubit>().toggleSuspend(staff.id);
+      onToggleSuspend: () async {
+        await context.read<StaffCubit>().toggleSuspend(staff.id);
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -153,24 +154,24 @@ class _StaffBody extends StatelessWidget {
     );
   }
 
-  void _pickRole(BuildContext context, StaffItem staff) {
-    showDialog(
+  Future<void> _pickRole(BuildContext context, StaffItem staff) async {
+    final selectedRole = await showDialog<String>(
       context: context,
       builder: (ctx) => SimpleDialog(
         title: const Text('تغيير الدور'),
         children: ['doctor', 'nurse', 'secretary', 'accountant'].map((role) {
           return SimpleDialogOption(
-            onPressed: () {
-              context.read<StaffCubit>().updateStaffRole(staff.id, role);
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('تم تغيير الدور إلى ${staff.roleLabel}')),
-              );
-            },
+            onPressed: () => Navigator.pop(ctx, role),
             child: Text(_roleDisplayName(role)),
           );
         }).toList(),
       ),
+    );
+    if (selectedRole == null) return;
+    await context.read<StaffCubit>().updateStaffRole(staff.id, selectedRole);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('تم تغيير الدور إلى ${staff.roleLabel}')),
     );
   }
 

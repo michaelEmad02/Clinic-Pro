@@ -8,6 +8,7 @@ enum StaffFilter { all, doctors, nursing, admin }
 
 class StaffItem extends Equatable {
   final String id;
+  final String clinicId;
   final String name;
   final String email;
   final String phone;
@@ -21,6 +22,7 @@ class StaffItem extends Equatable {
 
   const StaffItem({
     required this.id,
+    this.clinicId = '',
     required this.name,
     required this.email,
     required this.phone,
@@ -65,6 +67,7 @@ class StaffItem extends Equatable {
   }) {
     return StaffItem(
       id: id,
+      clinicId: clinicId,
       name: name,
       email: email,
       phone: phone,
@@ -84,19 +87,25 @@ class StaffItem extends Equatable {
 
 class StaffInvitationItem extends Equatable {
   final String id;
+  final String clinicId;
+  final String ownerId;
   final String email;
   final String? name;
   final String role;
   final String status;
   final String createdAt;
+  final String? expiresAt;
 
   const StaffInvitationItem({
     required this.id,
+    this.clinicId = '',
+    this.ownerId = '',
     required this.email,
     this.name,
     required this.role,
     required this.status,
     required this.createdAt,
+    this.expiresAt,
   });
 
   String get roleLabel {
@@ -115,7 +124,7 @@ class StaffInvitationItem extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, email, status];
+  List<Object?> get props => [id, clinicId, email, status];
 }
 
 abstract class StaffState extends Equatable {

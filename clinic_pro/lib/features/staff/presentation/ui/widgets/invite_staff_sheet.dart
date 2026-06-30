@@ -45,7 +45,7 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_nameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,12 +54,13 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
       return;
     }
 
-    context.read<StaffCubit>().inviteStaff(
+    await context.read<StaffCubit>().inviteStaff(
           email: _emailController.text.trim(),
           name: _nameController.text.trim(),
           role: _role,
         );
 
+    if (!context.mounted) return;
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

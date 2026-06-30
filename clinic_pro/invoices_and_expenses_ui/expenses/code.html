@@ -1,0 +1,226 @@
+<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>المصروفات - ClinicPro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "success-text": "#065F46",
+                      "primary": "#00526d",
+                      "tertiary-fixed-dim": "#ffb955",
+                      "primary-container": "#1a6b8a",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#8bcff2",
+                      "error": "#ba1a1a",
+                      "surface-tint": "#106685",
+                      "on-tertiary-container": "#ffdbaf",
+                      "on-primary": "#ffffff",
+                      "warning-bg": "#FEF3C7",
+                      "secondary": "#006c4e",
+                      "on-background": "#191c1e",
+                      "inverse-surface": "#2d3133",
+                      "on-primary-container": "#bce7ff",
+                      "surface-bright": "#f7f9fc",
+                      "tertiary-container": "#8a5900",
+                      "on-tertiary-fixed-variant": "#633f00",
+                      "on-error": "#ffffff",
+                      "on-surface-variant": "#40484d",
+                      "tertiary": "#6a4300",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#c0e8ff",
+                      "border": "#E2E8F0",
+                      "surface-container-highest": "#e0e3e6",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-light": "#EAF4F8",
+                      "surface-variant": "#e0e3e6",
+                      "surface": "#FFFFFF",
+                      "success-bg": "#D1FAE5",
+                      "secondary-fixed": "#6afbc6",
+                      "on-secondary-container": "#007152",
+                      "outline": "#70787e",
+                      "on-surface": "#191c1e",
+                      "danger-bg": "#FEE2E2",
+                      "text-hint": "#A0AEC0",
+                      "on-secondary-fixed-variant": "#00513a",
+                      "primary-fixed-dim": "#8bcff2",
+                      "surface-dim": "#d8dadd",
+                      "secondary-fixed-dim": "#48deab",
+                      "on-primary-fixed": "#001e2b",
+                      "secondary-container": "#67f8c3",
+                      "danger-text": "#991B1B",
+                      "surface-container-high": "#e6e8eb",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed-variant": "#004d66",
+                      "inverse-on-surface": "#eff1f4",
+                      "background": "#f7f9fc",
+                      "on-secondary-fixed": "#002115",
+                      "text-primary": "#1A202C",
+                      "surface-container-low": "#f2f4f7",
+                      "text-secondary": "#64748B",
+                      "tertiary-fixed": "#ffddb4",
+                      "on-tertiary-fixed": "#291800",
+                      "surface-container": "#eceef1",
+                      "danger": "#E84C4C",
+                      "warning-text": "#92400E",
+                      "on-error-container": "#93000a",
+                      "outline-variant": "#bfc8ce"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "screen-edge-h": "16px",
+                      "base": "4px",
+                      "sm": "8px",
+                      "xs": "4px",
+                      "screen-edge-v": "20px",
+                      "list-item-height": "72px",
+                      "lg": "24px",
+                      "md": "16px",
+                      "xl": "32px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Cairo"],
+                      "data-numeric": ["Inter"],
+                      "label-chip": ["Cairo"],
+                      "body-lg": ["Cairo"],
+                      "caption": ["Cairo"],
+                      "headline-sm": ["Cairo"],
+                      "headline-md": ["Cairo"],
+                      "body-md": ["Cairo"]
+              },
+              "fontSize": {
+                      "headline-lg": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                      "data-numeric": ["13px", { "lineHeight": "1", "fontWeight": "700" }],
+                      "label-chip": ["11px", { "lineHeight": "1", "fontWeight": "500" }],
+                      "body-lg": ["15px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                      "caption": ["12px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                      "headline-sm": ["16px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                      "headline-md": ["22px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                      "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen relative pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface flex justify-between items-center w-full px-screen-edge-h h-16 fixed top-0 z-40 transition-colors duration-200">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="person">person</span>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">المصروفات</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-text-secondary dark:text-outline hover:bg-surface-container-low dark:hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="pt-20 px-screen-edge-h flex flex-col gap-lg max-w-3xl mx-auto">
+<!-- Summary Card -->
+<section class="bg-primary text-on-primary rounded-xl p-lg shadow-[0_4px_24px_rgba(26,107,138,0.2)] flex flex-col gap-sm relative overflow-hidden">
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+<div class="absolute -bottom-10 -left-10 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
+<h2 class="font-body-md text-on-primary/80 z-10">إجمالي المصروفات (هذا الشهر)</h2>
+<div class="flex items-baseline gap-xs z-10">
+<span class="font-data-numeric text-[32px] leading-none tracking-tight">22,200</span>
+<span class="font-body-md text-on-primary/80">ر.س</span>
+</div>
+</section>
+<!-- Filters -->
+<section>
+<div class="flex overflow-x-auto gap-sm pb-2 hide-scrollbar">
+<button class="shrink-0 bg-primary-light text-primary font-label-chip text-label-chip px-4 py-2 rounded-full border border-primary/20 transition-colors">الكل</button>
+<button class="shrink-0 bg-surface text-text-secondary font-label-chip text-label-chip px-4 py-2 rounded-full border border-border hover:bg-surface-container-low transition-colors">إيجار</button>
+<button class="shrink-0 bg-surface text-text-secondary font-label-chip text-label-chip px-4 py-2 rounded-full border border-border hover:bg-surface-container-low transition-colors">رواتب</button>
+<button class="shrink-0 bg-surface text-text-secondary font-label-chip text-label-chip px-4 py-2 rounded-full border border-border hover:bg-surface-container-low transition-colors">مستلزمات طبية</button>
+<button class="shrink-0 bg-surface text-text-secondary font-label-chip text-label-chip px-4 py-2 rounded-full border border-border hover:bg-surface-container-low transition-colors">صيانة</button>
+</div>
+</section>
+<!-- Expenses List -->
+<section class="flex flex-col gap-md">
+<!-- Item 1 -->
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="home_work">home_work</span>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">إيجار العيادة - مارس</h3>
+<p class="font-caption text-caption text-text-hint">15 مارس 2024</p>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0">
+<span class="font-data-numeric text-data-numeric text-error font-bold">- 5,000</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="groups">groups</span>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">رواتب طاقم التمريض</h3>
+<p class="font-caption text-caption text-text-hint">01 مارس 2024</p>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0">
+<span class="font-data-numeric text-data-numeric text-error font-bold">- 12,500</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="medical_services">medical_services</span>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">شراء أدوية ومستلزمات</h3>
+<p class="font-caption text-caption text-text-hint">10 مارس 2024</p>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0">
+<span class="font-data-numeric text-data-numeric text-error font-bold">- 3,200</span>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="build">build</span>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">صيانة جهاز الأشعة</h3>
+<p class="font-caption text-caption text-text-hint">05 مارس 2024</p>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0">
+<span class="font-data-numeric text-data-numeric text-error font-bold">- 1,500</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (FAB) -->
+<button class="fixed bottom-lg left-lg w-[56px] h-[56px] bg-primary text-on-primary rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(26,107,138,0.35)] hover:scale-105 active:scale-95 transition-transform z-50">
+<span class="material-symbols-outlined text-[24px]" data-icon="add">add</span>
+</button>
+</body></html>

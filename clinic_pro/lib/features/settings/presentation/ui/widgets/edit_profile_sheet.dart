@@ -193,11 +193,12 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           context.read<SettingsCubit>().updateProfile(
             name: _nameController.text.trim(),
             phone: _phoneController.text.trim(),
           );
+          if (!context.mounted) return;
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('تم حفظ التغييرات', textAlign: TextAlign.right), behavior: SnackBarBehavior.floating),

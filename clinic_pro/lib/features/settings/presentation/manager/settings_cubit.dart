@@ -74,17 +74,8 @@ class SettingsCubit extends Cubit<SettingsState> {
     }
   }
 
-  /// تحديث الملف الشخصي
+  /// تحديث الملف الشخصي (محلي — لا يمسح MockData)
   void updateProfile({required String name, required String phone}) {
-    final userIndex = MockData.users.indexWhere((u) => u['id'] == state.userId);
-    if (userIndex == -1) return;
-
-    MockData.users[userIndex] = {
-      ...MockData.users[userIndex],
-      'name': name,
-      'phone': phone,
-    };
-
     emit(state.copyWith(userName: name, userPhone: phone));
   }
 

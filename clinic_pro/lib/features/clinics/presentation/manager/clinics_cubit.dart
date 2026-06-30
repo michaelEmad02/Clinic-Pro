@@ -33,6 +33,7 @@ class ClinicsCubit extends Cubit<ClinicsState> {
 
     final newClinic = ClinicItem(
       id: 'c-new-${DateTime.now().millisecondsSinceEpoch}',
+      ownerId: 'u-owner-1',
       name: name,
       phone: phone,
       address: address,
@@ -121,6 +122,7 @@ class ClinicsCubit extends Cubit<ClinicsState> {
 
       return ClinicItem(
         id: clinicId,
+        ownerId: raw['owner_id'] as String? ?? '',
         name: raw['name'] as String,
         phone: raw['phone'] as String? ?? '',
         address: raw['address'] as String? ?? '',
@@ -153,6 +155,7 @@ class ClinicsCubit extends Cubit<ClinicsState> {
 
     return ClinicItem(
       id: clinicId,
+      ownerId: raw['owner_id'] as String? ?? '',
       name: raw['name'] as String,
       phone: raw['phone'] as String? ?? '',
       address: raw['address'] as String? ?? '',

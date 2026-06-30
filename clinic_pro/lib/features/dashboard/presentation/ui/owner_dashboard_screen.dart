@@ -12,6 +12,8 @@ import 'widgets/clinics_horizontal_scroll.dart';
 import 'widgets/alerts_section.dart';
 import 'widgets/revenue_bar_chart.dart';
 import 'widgets/quick_actions_row.dart';
+import '../../../reports/presentation/ui/reports_screen.dart';
+import '../../../expenses/presentation/ui/expenses_screen.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({super.key});
@@ -35,7 +37,8 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
           children: [
             _buildMainDashboardTab(),
             const ClinicsScreen(),
-            _buildPlaceholderTab('التقارير المالية', Icons.analytics_outlined),
+            const ExpensesScreen(),
+            const ReportsScreen(),
             const SettingsScreen(role: StaffRoles.owner, showBottomNav: false),
           ],
         ),
@@ -149,35 +152,11 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  Widget _buildPlaceholderTab(String title, IconData icon) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 64, color: AppColors.textHint),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: AppTextStyles.headlineMedium(context).copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'هذه الشاشة قيد التطوير والمحاكاة',
-            style: AppTextStyles.bodyMedium(context).copyWith(
-              color: AppColors.textHint,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBottomNav() {
     final tabs = [
       {'label': 'الرئيسية', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
       {'label': 'العيادات', 'icon': Icons.business_outlined, 'activeIcon': Icons.business},
+      {'label': 'المصاريف', 'icon': Icons.money_off_outlined, 'activeIcon': Icons.money_off},
       {'label': 'التقارير', 'icon': Icons.analytics_outlined, 'activeIcon': Icons.analytics},
       {'label': 'الإعدادات', 'icon': Icons.settings_outlined, 'activeIcon': Icons.settings},
     ];

@@ -43,13 +43,17 @@ class StaffCubit extends Cubit<StaffState> {
     final loaded = state as StaffLoaded;
     await Future.delayed(const Duration(milliseconds: 400));
 
+    final now = DateTime.now();
     final newInvitation = StaffInvitationItem(
-      id: 'inv-new-${DateTime.now().millisecondsSinceEpoch}',
+      id: 'inv-new-${now.millisecondsSinceEpoch}',
+      clinicId: 'c-1',
+      ownerId: 'u-owner-1',
       email: email,
       name: name,
       role: role,
       status: 'pending',
-      createdAt: DateTime.now().toIso8601String(),
+      createdAt: now.toIso8601String(),
+      expiresAt: now.add(const Duration(days: 7)).toIso8601String(),
     );
 
     emit(loaded.copyWith(
@@ -129,6 +133,7 @@ class StaffCubit extends Cubit<StaffState> {
 
       return StaffItem(
         id: userId,
+        clinicId: staffEntry['clinic_id'] as String? ?? '',
         name: userData['name'] as String? ?? '',
         email: userData['email'] as String? ?? '',
         phone: userData['phone'] as String? ?? '',
@@ -148,11 +153,14 @@ class StaffCubit extends Cubit<StaffState> {
     return MockData.invitations.map((inv) {
       return StaffInvitationItem(
         id: inv['id'] as String,
+        clinicId: inv['clinic_id'] as String? ?? '',
+        ownerId: inv['owner_id'] as String? ?? '',
         email: inv['email'] as String,
         name: inv['name'] as String?,
         role: inv['role'] as String,
         status: inv['status'] as String,
         createdAt: inv['created_at'] as String,
+        expiresAt: inv['expires_at'] as String?,
       );
     }).toList();
   }

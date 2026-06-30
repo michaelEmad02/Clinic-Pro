@@ -24,6 +24,9 @@ import '../../features/settings/presentation/ui/subscription_screen.dart';
 import '../../features/staff/presentation/ui/staff_screen.dart';
 import '../../features/clinics/presentation/ui/clinics_screen.dart';
 import '../../features/clinics/presentation/ui/clinic_details_screen.dart';
+import '../../features/invoices/presentation/ui/invoices_screen.dart';
+import '../../features/expenses/presentation/ui/expenses_screen.dart';
+import '../../features/reports/presentation/ui/reports_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: RouteConstants.splash,
@@ -144,6 +147,18 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteConstants.settingsSubscription,
       builder: (context, state) => const SubscriptionScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.invoices,
+      builder: (context, state) => const InvoicesScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.expenses,
+      builder: (context, state) => const ExpensesScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.reports,
+      builder: (context, state) => const ReportsScreen(),
     ),
   ],
 );

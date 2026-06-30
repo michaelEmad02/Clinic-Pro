@@ -1,0 +1,235 @@
+<!DOCTYPE html><html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ClinicPro - تسجيل مصروف جديد</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "success-text": "#065F46",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#FFFFFF",
+                        "secondary-container": "#67f8c3",
+                        "warning-text": "#92400E",
+                        "tertiary": "#6a4300",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d8dadd",
+                        "primary-light": "#EAF4F8",
+                        "tertiary-fixed-dim": "#ffb955",
+                        "on-secondary-fixed": "#002115",
+                        "inverse-surface": "#2d3133",
+                        "on-background": "#191c1e",
+                        "text-primary": "#1A202C",
+                        "on-tertiary-fixed": "#291800",
+                        "on-secondary-fixed-variant": "#00513a",
+                        "primary-fixed-dim": "#8bcff2",
+                        "secondary-fixed-dim": "#48deab",
+                        "on-tertiary-container": "#ffdbaf",
+                        "text-hint": "#A0AEC0",
+                        "on-primary-fixed": "#001e2b",
+                        "primary": "#00526d",
+                        "outline": "#70787e",
+                        "surface-container-low": "#f2f4f7",
+                        "on-secondary-container": "#007152",
+                        "text-secondary": "#64748B",
+                        "surface-container-high": "#e6e8eb",
+                        "surface-variant": "#e0e3e6",
+                        "on-primary-fixed-variant": "#004d66",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "border": "#E2E8F0",
+                        "on-surface": "#191c1e",
+                        "secondary": "#006c4e",
+                        "on-tertiary-fixed-variant": "#633f00",
+                        "tertiary-fixed": "#ffddb4",
+                        "success-bg": "#D1FAE5",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#8bcff2",
+                        "surface-container": "#eceef1",
+                        "secondary-fixed": "#6afbc6",
+                        "primary-container": "#1a6b8a",
+                        "primary-fixed": "#c0e8ff",
+                        "danger": "#E84C4C",
+                        "danger-bg": "#FEE2E2",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#8a5900",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#bfc8ce",
+                        "on-primary-container": "#bce7ff",
+                        "danger-text": "#991B1B",
+                        "surface-tint": "#106685",
+                        "inverse-on-surface": "#eff1f4",
+                        "background": "#f7f9fc",
+                        "surface-container-lowest": "#ffffff",
+                        "warning-bg": "#FEF3C7",
+                        "surface-bright": "#f7f9fc",
+                        "on-surface-variant": "#40484d",
+                        "surface-container-highest": "#e0e3e6"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "screen-edge-v": "20px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "screen-edge-h": "16px",
+                        "list-item-height": "72px"
+                    },
+                    fontFamily: {
+                        "label-chip": ["Cairo"],
+                        "data-numeric": ["Inter"],
+                        "headline-md": ["Cairo"],
+                        "body-md": ["Cairo"],
+                        "headline-lg": ["Cairo"],
+                        "caption": ["Cairo"],
+                        "headline-sm": ["Cairo"],
+                        "body-lg": ["Cairo"]
+                    },
+                    fontSize: {
+                        "label-chip": ["11px", { lineHeight: "1", fontWeight: "500" }],
+                        "data-numeric": ["13px", { lineHeight: "1", fontWeight: "700" }],
+                        "headline-md": ["22px", { lineHeight: "1.3", fontWeight: "600" }],
+                        "body-md": ["14px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "headline-lg": ["28px", { lineHeight: "1.2", fontWeight: "700" }],
+                        "caption": ["12px", { lineHeight: "1.4", fontWeight: "400" }],
+                        "headline-sm": ["16px", { lineHeight: "1.4", fontWeight: "600" }],
+                        "body-lg": ["15px", { lineHeight: "1.5", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .bottom-sheet-shadow {
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #e0e3e6;
+            border-radius: 20px;
+        }
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen font-body-md text-text-primary overflow-hidden flex flex-col justify-end items-center relative">
+<!-- Scrim / Dimmer -->
+<div class="fixed inset-0 bg-on-background/40 z-40 transition-opacity duration-300" id="scrim"></div>
+<!-- Bottom Sheet Container -->
+<div class="bg-surface w-full max-w-[480px] rounded-t-[24px] bottom-sheet-shadow z-50 relative flex flex-col transform transition-transform duration-300 ease-out translate-y-0" id="bottomSheet" style="max-height: 90vh;">
+<!-- Drag Handle Area -->
+<div class="w-full pt-4 pb-2 flex justify-center cursor-grab active:cursor-grabbing shrink-0" id="dragHandle">
+<div class="w-[32px] h-[4px] bg-surface-variant rounded-full"></div>
+</div>
+<!-- Header -->
+<div class="flex items-center justify-between px-5 pb-4 border-b border-surface-variant shrink-0">
+<h3 class="font-headline-md text-headline-md text-text-primary m-0">تسجيل مصروف جديد</h3>
+<button aria-label="إغلاق" class="p-2 -mr-2 rounded-full hover:bg-surface-container-low transition-colors text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</div>
+<!-- Content Area (Scrollable) -->
+<div class="px-5 py-5 overflow-y-auto flex-1 overscroll-contain space-y-5">
+<!-- Field 1: Expense Title -->
+<div class="space-y-2">
+<label class="block font-body-md text-body-md text-text-primary" for="expense_title">عنوان المصروف</label>
+<div class="relative">
+<input class="w-full bg-surface border border-border rounded-[10px] px-4 py-3 h-12 font-body-md text-body-md text-text-primary placeholder:text-text-hint focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="expense_title" placeholder="أدخل عنوان المصروف..." type="text">
+</div>
+</div>
+<!-- Field 2: Expense Type -->
+<div class="space-y-2">
+<label class="block font-body-md text-body-md text-text-primary" for="expense_type">نوع المصروف</label>
+<div class="relative">
+<select class="w-full bg-surface border border-border rounded-[10px] px-4 py-3 h-12 font-body-md text-body-md text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none cursor-pointer" id="expense_type">
+<option class="text-text-hint" disabled="" selected="" value="">اختر نوع المصروف...</option>
+<option value="rent">إيجار</option>
+<option value="salaries">رواتب</option>
+<option value="supplies">مستلزمات</option>
+<option value="electricity">كهرباء</option>
+<option value="maintenance">صيانة</option>
+<option value="other">أخرى</option>
+</select>
+<div class="absolute inset-y-0 left-0 flex items-center pr-4 pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined ml-3" style="font-size: 20px;">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Field 3: Amount -->
+<div class="space-y-2">
+<label class="block font-body-md text-body-md text-text-primary" for="expense_amount">المبلغ</label>
+<div class="relative flex items-center bg-surface border border-border rounded-[10px] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-colors overflow-hidden">
+<div class="bg-surface-container-low px-4 py-3 h-12 flex items-center justify-center border-l border-border text-text-secondary font-label-chip text-label-chip">
+                        SAR
+                    </div>
+<input class="w-full bg-transparent border-none px-4 py-3 h-12 font-data-numeric text-[16px] font-bold text-text-primary placeholder:text-text-hint focus:ring-0" id="expense_amount" inputmode="decimal" min="0" placeholder="0.00" step="0.01" type="number">
+</div>
+</div>
+<!-- Field 4: Date -->
+<div class="space-y-2">
+<label class="block font-body-md text-body-md text-text-primary" for="expense_date">التاريخ</label>
+<div class="relative">
+<input class="w-full bg-surface border border-border rounded-[10px] px-4 py-3 h-12 font-data-numeric text-data-numeric font-normal text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none" id="expense_date" style="text-align: right;" type="date">
+<!-- Optional: Custom icon if the native one is undesirable, but keeping it simple for date inputs is often safer across browsers. Let's add a visual cue. -->
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined" style="font-size: 20px;">calendar_today</span>
+</div>
+</div>
+</div>
+<!-- Field 5: Notes -->
+<div class="space-y-2">
+<label class="block font-body-md text-body-md text-text-primary" for="expense_notes">ملاحظات (اختياري)</label>
+<textarea class="w-full bg-surface border border-border rounded-[10px] px-4 py-3 font-body-md text-body-md text-text-primary placeholder:text-text-hint focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none" id="expense_notes" placeholder="أضف تفاصيل إضافية هنا..." rows="3"></textarea>
+</div>
+</div>
+<!-- Footer Area (Sticky Button) -->
+<div class="px-5 py-5 border-t border-surface-variant bg-surface rounded-b-none shrink-0 mt-auto">
+<button class="w-full bg-primary-container hover:bg-[#155a75] active:scale-[0.98] transition-all duration-150 text-on-primary font-headline-sm text-headline-sm py-4 rounded-[12px] flex items-center justify-center shadow-[0_4px_12px_rgba(26,107,138,0.2)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+<span class="material-symbols-outlined ml-2" style="font-size: 20px; font-variation-settings: 'FILL' 1;">save</span>
+                حفظ المصروف
+            </button>
+</div>
+</div>
+<!-- Simple script to handle date initialization to today -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('expense_date');
+            if(dateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+        });
+    </script>
+</body></html>

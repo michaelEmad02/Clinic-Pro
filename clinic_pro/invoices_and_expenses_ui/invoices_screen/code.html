@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ClinicPro - الفواتير</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "text-secondary": "#64748B",
+                        "on-tertiary-container": "#ffdbaf",
+                        "surface-variant": "#e0e3e6",
+                        "on-tertiary": "#ffffff",
+                        "success-text": "#065F46",
+                        "danger-bg": "#FEE2E2",
+                        "outline": "#70787e",
+                        "on-tertiary-fixed-variant": "#633f00",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#007152",
+                        "on-surface-variant": "#40484d",
+                        "tertiary-fixed": "#ffddb4",
+                        "on-primary-fixed": "#001e2b",
+                        "secondary": "#006c4e",
+                        "warning-bg": "#FEF3C7",
+                        "on-tertiary-fixed": "#291800",
+                        "surface-tint": "#106685",
+                        "on-primary-container": "#bce7ff",
+                        "secondary-fixed-dim": "#48deab",
+                        "primary": "#00526d",
+                        "surface-container-high": "#e6e8eb",
+                        "on-secondary-fixed-variant": "#00513a",
+                        "surface-dim": "#d8dadd",
+                        "primary-fixed-dim": "#8bcff2",
+                        "inverse-on-surface": "#eff1f4",
+                        "warning-text": "#92400E",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "surface": "#FFFFFF",
+                        "background": "#f7f9fc",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#67f8c3",
+                        "on-background": "#191c1e",
+                        "tertiary-fixed-dim": "#ffb955",
+                        "on-secondary-fixed": "#002115",
+                        "primary-light": "#EAF4F8",
+                        "danger-text": "#991B1B",
+                        "error-container": "#ffdad6",
+                        "border": "#E2E8F0",
+                        "tertiary": "#6a4300",
+                        "surface-container-low": "#f2f4f7",
+                        "surface-bright": "#f7f9fc",
+                        "on-error": "#ffffff",
+                        "surface-container": "#eceef1",
+                        "success-bg": "#D1FAE5",
+                        "primary-fixed": "#c0e8ff",
+                        "tertiary-container": "#8a5900",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#6afbc6",
+                        "on-surface": "#191c1e",
+                        "on-primary-fixed-variant": "#004d66",
+                        "inverse-primary": "#8bcff2",
+                        "surface-container-highest": "#e0e3e6",
+                        "danger": "#E84C4C",
+                        "primary-container": "#1a6b8a",
+                        "text-primary": "#1A202C",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#bfc8ce",
+                        "text-hint": "#A0AEC0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "list-item-height": "72px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "screen-edge-v": "20px",
+                        "xs": "4px",
+                        "screen-edge-h": "16px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "data-numeric": ["Inter"],
+                        "body-lg": ["Cairo"],
+                        "headline-sm": ["Cairo"],
+                        "headline-md": ["Cairo"],
+                        "body-md": ["Cairo"],
+                        "caption": ["Cairo"],
+                        "label-chip": ["Cairo"],
+                        "headline-lg": ["Cairo"]
+                    },
+                    "fontSize": {
+                        "data-numeric": ["13px", {"lineHeight": "1", "fontWeight": "700"}],
+                        "body-lg": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-sm": ["16px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "headline-md": ["22px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "label-chip": ["11px", {"lineHeight": "1", "fontWeight": "500"}],
+                        "headline-lg": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Cairo', sans-serif; }
+        .data-numeric { font-family: 'Inter', sans-serif; }
+        
+        /* Subtle scrollbar for chips */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col md:flex-row pb-[80px] md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface flex justify-between items-center w-full px-screen-edge-h h-16 flat no shadows md:hidden fixed top-0 left-0 z-50">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center overflow-hidden">
+<img class="object-cover w-full h-full" data-alt="A professional headshot of a middle-eastern male doctor in a modern clinical setting. Light mode aesthetic, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuM4r65ICL5Jhd_RHgsfdHm85T3BqR9gZ6R_FAnUCr7ML1a4FSxiaWxXGrMPzO-pi0LFK4dE5V-D-ujBrIhZhwpNuuJGL2izYcapjGzgvbdYb88VHi9dCe8qclJR8cROt5VpLbdPv9OQ_0hg4mRN2TU8OOE3e-UBS4wMiyB5ypVzDP16tc_qBoKLJxsObGUFydJhxA8jMTdkt5qQzKVZOpUu65p7hSep0lVKVTrH0Cney04eI4DPi3kZDl58Uo0mndpOhDZytifoN4"/>
+</div>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">ClinicPro</span>
+</div>
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-variant p-sm rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- NavigationDrawer (Tablet/Desktop) -->
+<aside class="hidden md:flex flex-col h-full w-80 rounded-l-none bg-surface dark:bg-inverse-surface shadow-md fixed inset-y-0 right-0 z-[60] p-md">
+<div class="flex flex-col items-end mb-lg">
+<div class="flex items-center gap-sm mb-sm w-full justify-start flex-row-reverse">
+<div class="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center overflow-hidden shrink-0">
+<img class="object-cover w-full h-full" data-alt="A professional headshot of a middle-eastern male doctor in a modern clinical setting. Light mode aesthetic, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIORnFYe34w6wKZqTVBGrlgEcFgrSkut7bJYeua0kQS4I6rOBqocM6G9LpUt8vshEhYe2w0E0AnaSRf3XXXLgf_OgQqA2AHoSTPy1s6LB9apgTAQGs5gO0iV90gFJO3xtrU4YjSOVSXowRrpNyf994hI8MN1bXd1_fEB8WP_J2qZlbgSbtDwWAXjotkSwLQlSmsJC-9TthF3-3B3qbSZx1kMPHS6gBUpQjdP3P_4RWK_shgYcuKxqZg7xBd2TnXrRzqTs4MxhnoZEd"/>
+</div>
+<div class="text-right">
+<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">د. أحمد العلي</h2>
+<p class="font-body-md text-body-md text-text-secondary">المدير الطبي</p>
+</div>
+</div>
+<span class="font-caption text-caption text-primary bg-primary-light px-2 py-1 rounded-full">ClinicPro Premium</span>
+</div>
+<nav class="flex-1 space-y-sm">
+<a class="flex items-center gap-md px-md py-sm rounded-xl text-on-surface-variant dark:text-outline hover:bg-surface-container-low hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-300 ease-in-out font-body-lg text-body-lg" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>لوحة التحكم</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-xl text-on-surface-variant dark:text-outline hover:bg-surface-container-low hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-300 ease-in-out font-body-lg text-body-lg" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span>جدول المواعيد</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-xl text-on-surface-variant dark:text-outline hover:bg-surface-container-low hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-300 ease-in-out font-body-lg text-body-lg" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span>السجلات الطبية</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-xl font-bold font-headline-sm text-headline-sm transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="payments" data-weight="fill" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span>الفواتير</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-xl text-on-surface-variant dark:text-outline hover:bg-surface-container-low hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-300 ease-in-out font-body-lg text-body-lg" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span>التقارير</span>
+</a>
+</nav>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 w-full max-w-5xl mx-auto mt-16 md:mt-0 md:mr-80 p-screen-edge-h md:p-lg space-y-lg relative">
+<!-- Header -->
+<header class="flex justify-between items-center mb-md">
+<h1 class="font-headline-lg text-headline-lg text-text-primary">الفواتير</h1>
+</header>
+<!-- Summary Bar (Bento style) -->
+<div class="grid grid-cols-2 md:grid-cols-3 gap-sm md:gap-md">
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-border">
+<p class="font-caption text-caption text-text-secondary mb-xs">إيرادات اليوم</p>
+<div class="flex items-baseline gap-xs text-primary">
+<span class="font-data-numeric text-headline-md font-bold">4,200</span>
+<span class="font-caption text-caption">EGP</span>
+</div>
+</div>
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-border">
+<p class="font-caption text-caption text-text-secondary mb-xs">قيد الانتظار</p>
+<div class="flex items-baseline gap-xs text-warning-text">
+<span class="font-data-numeric text-headline-md font-bold">3</span>
+<span class="font-caption text-caption">فواتير</span>
+</div>
+</div>
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-border col-span-2 md:col-span-1 bg-gradient-to-br from-primary-light to-surface">
+<p class="font-caption text-caption text-text-secondary mb-xs">الشهر الحالي</p>
+<div class="flex items-baseline gap-xs text-primary">
+<span class="font-data-numeric text-headline-md font-bold">42,000</span>
+<span class="font-caption text-caption">EGP</span>
+</div>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex items-center gap-sm overflow-x-auto hide-scrollbar py-2">
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-primary-light text-primary font-label-chip text-label-chip border border-primary transition-colors">الكل</button>
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-surface text-text-secondary font-label-chip text-label-chip border border-border hover:bg-surface-container-low transition-colors">مدفوع</button>
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-surface text-text-secondary font-label-chip text-label-chip border border-border hover:bg-surface-container-low transition-colors">قيد الانتظار</button>
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-surface text-text-secondary font-label-chip text-label-chip border border-border hover:bg-surface-container-low transition-colors">متأخر</button>
+</div>
+<!-- Invoice List -->
+<div class="space-y-sm pb-24 md:pb-0">
+<!-- Item 1: Paid -->
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center justify-between group hover:border-primary border border-transparent transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-success-bg text-success-text flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">سارة محمود</h3>
+<p class="font-caption text-caption text-text-secondary">15 مايو 2024 • استشارة</p>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="text-left flex flex-col items-end">
+<span class="font-data-numeric text-body-md font-bold text-text-primary">850 EGP</span>
+<span class="font-caption text-caption bg-success-bg text-success-text px-2 py-0.5 rounded-[20px]">مدفوع</span>
+</div>
+<button class="text-outline hover:text-primary transition-colors p-sm">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Item 2: Pending -->
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center justify-between border border-warning-bg group hover:border-primary transition-colors relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-warning-text rounded-r-full"></div>
+<div class="flex items-center gap-md pl-sm">
+<div class="w-10 h-10 rounded-full bg-warning-bg text-warning-text flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">كريم عبد الله</h3>
+<p class="font-caption text-caption text-text-secondary">15 مايو 2024 • تحاليل</p>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="text-left flex flex-col items-end">
+<span class="font-data-numeric text-body-md font-bold text-text-primary">1,200 EGP</span>
+<span class="font-caption text-caption bg-warning-bg text-warning-text px-2 py-0.5 rounded-[20px]">قيد الانتظار</span>
+</div>
+<button class="text-outline hover:text-primary transition-colors p-sm">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Item 3: Overdue -->
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center justify-between border border-danger-bg group hover:border-primary transition-colors relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-danger-text rounded-r-full"></div>
+<div class="flex items-center gap-md pl-sm">
+<div class="w-10 h-10 rounded-full bg-danger-bg text-danger-text flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="error">error</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">منى جمال</h3>
+<p class="font-caption text-caption text-text-secondary">10 مايو 2024 • إجراء جراحي بسيط</p>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="text-left flex flex-col items-end">
+<span class="font-data-numeric text-body-md font-bold text-danger-text">3,500 EGP</span>
+<span class="font-caption text-caption bg-danger-bg text-danger-text px-2 py-0.5 rounded-[20px]">متأخر</span>
+</div>
+<button class="text-outline hover:text-primary transition-colors p-sm">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Item 4: Paid -->
+<div class="bg-surface rounded-xl p-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center justify-between group hover:border-primary border border-transparent transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-success-bg text-success-text flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">طارق النوري</h3>
+<p class="font-caption text-caption text-text-secondary">14 مايو 2024 • مراجعة</p>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="text-left flex flex-col items-end">
+<span class="font-data-numeric text-body-md font-bold text-text-primary">400 EGP</span>
+<span class="font-caption text-caption bg-success-bg text-success-text px-2 py-0.5 rounded-[20px]">مدفوع</span>
+</div>
+<button class="text-outline hover:text-primary transition-colors p-sm">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-20 md:bottom-lg left-screen-edge-h md:left-lg w-[56px] h-[56px] rounded-2xl bg-primary text-on-primary flex items-center justify-center shadow-[0_4px_16px_rgba(26,107,138,0.25)] hover:bg-surface-tint transition-colors z-[40]">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-2 bg-surface dark:bg-inverse-surface shadow-[0_-4px_24px_rgba(0,0,0,0.12)] md:hidden">
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-outline px-4 py-2 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors duration-200 w-1/4" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-chip text-label-chip mt-1">الرئيسية</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-outline px-4 py-2 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors duration-200 w-1/4" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-chip text-label-chip mt-1">المواعيد</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-outline px-4 py-2 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors duration-200 w-1/4" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-chip text-label-chip mt-1">المرضى</span>
+</a>
+<!-- Active Tab Intent mapping: Invoices relates to Settings or a specialized tab, but since it's a top level destination not fully mapped, we leave them all inactive as per semantic mismatch, wait, no, "Settings" is not invoices. Let's make none active, or if we must, it's not listed. -->
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-outline px-4 py-2 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors duration-200 w-1/4" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-chip text-label-chip mt-1">الإعدادات</span>
+</a>
+</nav>
+</body></html>

@@ -10,6 +10,8 @@ import '../manager/secretary_dashboard_state.dart';
 import 'widgets/live_queue_section.dart';
 import 'widgets/today_appointments_list.dart';
 import 'widgets/daily_summary_row.dart';
+import '../../../invoices/presentation/ui/invoices_screen.dart';
+import '../../../expenses/presentation/ui/expenses_screen.dart';
 
 class SecretaryDashboardScreen extends StatefulWidget {
   const SecretaryDashboardScreen({super.key});
@@ -33,7 +35,8 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
           children: [
             _buildMainDashboardTab(),
             const AppointmentsScreen(),
-            _buildPlaceholderTab('الفواتير والحسابات', Icons.receipt_long_outlined),
+            const InvoicesScreen(),
+            const ExpensesScreen(),
             const SettingsScreen(role: StaffRoles.secretary, showBottomNav: false),
           ],
         ),
@@ -152,36 +155,12 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
     );
   }
 
-  Widget _buildPlaceholderTab(String title, IconData icon) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 64, color: AppColors.textHint),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: AppTextStyles.headlineMedium(context).copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'هذه الشاشة قيد التطوير والمحاكاة',
-            style: AppTextStyles.bodyMedium(context).copyWith(
-              color: AppColors.textHint,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBottomNav() {
     final tabs = [
       {'label': 'الرئيسية', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
       {'label': 'المواعيد', 'icon': Icons.calendar_today_outlined, 'activeIcon': Icons.calendar_today},
       {'label': 'الفواتير', 'icon': Icons.receipt_long_outlined, 'activeIcon': Icons.receipt_long},
+      {'label': 'المصاريف', 'icon': Icons.money_off_outlined, 'activeIcon': Icons.money_off},
       {'label': 'الإعدادات', 'icon': Icons.settings_outlined, 'activeIcon': Icons.settings},
     ];
 

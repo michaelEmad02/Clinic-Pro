@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 
 class ClinicItem extends Equatable {
   final String id;
+  final String ownerId;
   final String name;
   final String phone;
   final String address;
@@ -23,6 +24,7 @@ class ClinicItem extends Equatable {
 
   const ClinicItem({
     required this.id,
+    this.ownerId = '',
     required this.name,
     required this.phone,
     required this.address,
@@ -54,6 +56,7 @@ class ClinicItem extends Equatable {
   }) {
     return ClinicItem(
       id: id,
+      ownerId: ownerId,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       address: address ?? this.address,
@@ -72,7 +75,7 @@ class ClinicItem extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, isActive];
+  List<Object?> get props => [id, ownerId, name, isActive];
 }
 
 abstract class ClinicsState extends Equatable {
