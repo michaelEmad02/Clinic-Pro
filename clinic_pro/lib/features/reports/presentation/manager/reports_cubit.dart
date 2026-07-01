@@ -3,23 +3,28 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/mocks/mock_data.dart';
+import 'package:injectable/injectable.dart';
+import 'reports_repository.dart';
 import 'reports_state.dart';
 
+@injectable
 class ReportsCubit extends Cubit<ReportsState> {
-  ReportsCubit() : super(ReportsInitial());
+  final ReportsRepository _repository;
+
+  ReportsCubit(this._repository) : super(ReportsInitial());
 
   List<Map<String, dynamic>> _allInvoices = [];
   List<Map<String, dynamic>> _allExpenses = [];
+  DateTime? _customStart;
+  DateTime? _customEnd;
 
   Future<void> loadReports() async {
     emit(ReportsLoading());
-    await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      _allInvoices = MockData.invoices;
-      _allExpenses = MockData.expenses;
-      _emitForRange(ReportsDateRange.thisMonth);
+      _allInvoices = await _repository.loadInvoices();
+      _allExpenses = await _repository.loadExpenses();
+      await _emitForRange(ReportsDateRange.thisMonth);
     } catch (_) {
       emit(const ReportsError('تعذّر تحميل التقارير'));
     }
@@ -31,11 +36,19 @@ class ReportsCubit extends Cubit<ReportsState> {
     }
   }
 
-  void _emitForRange(ReportsDateRange range) {
+  void changeCustomRange(DateTime start, DateTime end) {
+    if (state is ReportsLoaded) {
+      _customStart = start;
+      _customEnd = end;
+      _emitForRange(ReportsDateRange.custom);
+    }
+  }
+
+  Future<void> _emitForRange(ReportsDateRange range) async {
     final summary = _calculateSummary(range);
     final weeklyData = _mapWeeklyData(range);
-    final topServices = _mapTopServices();
-    final doctorPerformance = _mapDoctorPerformance();
+    final topServices = await _repository.loadTopServices();
+    final doctorPerformance = await _repository.loadDoctorPerformance();
 
     emit(ReportsLoaded(
       summary: summary,
@@ -56,21 +69,31 @@ class ReportsCubit extends Cubit<ReportsState> {
       case ReportsDateRange.threeMonths:
         return now.subtract(const Duration(days: 90));
       case ReportsDateRange.custom:
-        return DateTime(2000);
+        return _customStart ?? DateTime(2000);
+    }
+  }
+
+  DateTime _rangeEnd(ReportsDateRange range) {
+    switch (range) {
+      case ReportsDateRange.custom:
+        return _customEnd ?? DateTime.now();
+      default:
+        return DateTime.now();
     }
   }
 
   ReportSummary _calculateSummary(ReportsDateRange range) {
     final start = _rangeStart(range);
+    final end = _rangeEnd(range);
 
     final filteredInvoices = _allInvoices.where((inv) {
       final date = DateTime.tryParse(inv['created_at'] as String);
-      return date != null && !date.isBefore(start);
+      return date != null && !date.isBefore(start) && !date.isAfter(end);
     }).toList();
 
     final filteredExpenses = _allExpenses.where((exp) {
       final date = DateTime.tryParse(exp['date'] as String);
-      return date != null && !date.isBefore(start);
+      return date != null && !date.isBefore(start) && !date.isAfter(end);
     }).toList();
 
     final totalRevenue = filteredInvoices.fold<double>(
@@ -79,27 +102,35 @@ class ReportsCubit extends Cubit<ReportsState> {
     final totalExpenses = filteredExpenses.fold<double>(
         0, (sum, exp) => sum + (exp['amount'] as num).toDouble());
 
+    final revenueChange = totalRevenue > 5000 ? '+12%' : '+8%';
+    final expensesChange = totalExpenses > 2000 ? '-5%' : '-3%';
+
     return ReportSummary(
       revenue: totalRevenue,
       expenses: totalExpenses,
       netProfit: totalRevenue - totalExpenses,
-      totalPatients: MockData.patients.length,
-      revenueChange: totalRevenue > 5000 ? '+12%' : '+8%',
-      expensesChange: totalExpenses > 2000 ? '-5%' : '-3%',
+      totalPatients: _allInvoices
+          .map((inv) => inv['patient_id'] as String?)
+          .whereType<String>()
+          .toSet()
+          .length,
+      revenueChange: revenueChange,
+      expensesChange: expensesChange,
     );
   }
 
   List<WeeklyData> _mapWeeklyData(ReportsDateRange range) {
     final start = _rangeStart(range);
+    final end = _rangeEnd(range);
 
     final filteredInvoices = _allInvoices.where((inv) {
       final date = DateTime.tryParse(inv['created_at'] as String);
-      return date != null && !date.isBefore(start);
+      return date != null && !date.isBefore(start) && !date.isAfter(end);
     }).toList();
 
     final filteredExpenses = _allExpenses.where((exp) {
       final date = DateTime.tryParse(exp['date'] as String);
-      return date != null && !date.isBefore(start);
+      return date != null && !date.isBefore(start) && !date.isAfter(end);
     }).toList();
 
     final Map<String, double> weekRevenue = {};
@@ -139,29 +170,5 @@ class ReportsCubit extends Cubit<ReportsState> {
       'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
     ];
     return '${monday.day} ${months[monday.month - 1]}';
-  }
-
-  List<TopServiceItem> _mapTopServices() {
-    return MockData.topServices.map((s) {
-      return TopServiceItem(
-        name: s['name'] as String,
-        revenue: (s['revenue'] as num).toDouble(),
-        icon: s['icon'] as String,
-      );
-    }).toList();
-  }
-
-  List<DoctorPerformanceItem> _mapDoctorPerformance() {
-    return MockData.doctorPerformance.map((d) {
-      return DoctorPerformanceItem(
-        doctorId: d['doctor_id'] as String,
-        doctorName: d['doctor_name'] as String,
-        patientCount: d['patient_count'] as int,
-        revenue: (d['revenue'] as num).toDouble(),
-        rating: d['rating'] as int,
-        trend: d['trend'] as String,
-        avatarUrl: d['avatar_url'] as String?,
-      );
-    }).toList();
   }
 }

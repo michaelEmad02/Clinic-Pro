@@ -216,7 +216,7 @@ class ClinicCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Divider(height: 1, color: AppColors.border),
+                const Divider(height: 1, color: AppColors.border),
                 const SizedBox(height: 12),
                 // إحصائيات 3 أعمدة
                 Row(

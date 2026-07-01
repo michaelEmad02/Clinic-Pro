@@ -4,6 +4,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/themes/app_colors.dart';
+import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/widgets/shimmer_list.dart';
 import '../manager/reports_cubit.dart';
 import '../manager/reports_state.dart';
 import 'widgets/doctor_performance_list.dart';
@@ -12,9 +16,6 @@ import 'widgets/reports_date_range_chips.dart';
 import 'widgets/reports_summary_grid.dart';
 import 'widgets/revenue_vs_expenses_chart.dart';
 import 'widgets/top_services_list.dart';
-import '../../../../core/themes/app_colors.dart';
-import '../../../../core/themes/app_text_styles.dart';
-import '../../../../core/widgets/shimmer_list.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
@@ -22,7 +23,7 @@ class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ReportsCubit()..loadReports(),
+      create: (_) => sl<ReportsCubit>()..loadReports(),
       child: const _ReportsBody(),
     );
   }
@@ -111,8 +112,14 @@ class _ReportsBody extends StatelessWidget {
                 children: [
                   ReportsDateRangeChips(
                     activeRange: state.activeRange,
-                    onChanged: (r) =>
-                        context.read<ReportsCubit>().changeRange(r),
+                    onChanged: (r) {
+                      final cubit = context.read<ReportsCubit>();
+                      if (r == ReportsDateRange.custom) {
+                        _pickCustomRange(context, cubit);
+                      } else {
+                        cubit.changeRange(r);
+                      }
+                    },
                   ),
                   const SizedBox(height: 12),
                   ReportsSummaryGrid(summary: state.summary),
@@ -146,5 +153,22 @@ class _ReportsBody extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _pickCustomRange(
+      BuildContext context, ReportsCubit cubit) async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      locale: const Locale('ar'),
+      builder: (ctx, child) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      cubit.changeCustomRange(picked.start, picked.end);
+    }
   }
 }

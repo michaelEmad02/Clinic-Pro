@@ -28,7 +28,7 @@
 
 ---
 
-### `expense_categories`
+### `expense_categories` (only for developers)
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|

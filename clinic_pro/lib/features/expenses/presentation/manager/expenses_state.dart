@@ -1,8 +1,18 @@
 // ────────────────────────────────────────────────────────
-// حالات شاشة المصروفات — نموذج ExpenseItem وفلاتر التصنيف
+// حالات شاشة المصروفات — نماذج ExpenseItem و ExpenseCategory
 // ────────────────────────────────────────────────────────
 
 import 'package:equatable/equatable.dart';
+
+class ExpenseCategory extends Equatable {
+  final String id;
+  final String name;
+
+  const ExpenseCategory({required this.id, required this.name});
+
+  @override
+  List<Object?> get props => [id, name];
+}
 
 class ExpenseItem extends Equatable {
   final String id;
@@ -73,10 +83,12 @@ class ExpensesLoading extends ExpensesState {}
 
 class ExpensesLoaded extends ExpensesState {
   final List<ExpenseItem> allExpenses;
+  final List<ExpenseCategory> categories;
   final String? activeCategoryId;
 
   const ExpensesLoaded({
     required this.allExpenses,
+    required this.categories,
     this.activeCategoryId,
   });
 
@@ -99,16 +111,18 @@ class ExpensesLoaded extends ExpensesState {
 
   ExpensesLoaded copyWith({
     List<ExpenseItem>? allExpenses,
+    List<ExpenseCategory>? categories,
     String? activeCategoryId,
   }) {
     return ExpensesLoaded(
       allExpenses: allExpenses ?? this.allExpenses,
+      categories: categories ?? this.categories,
       activeCategoryId: activeCategoryId ?? this.activeCategoryId,
     );
   }
 
   @override
-  List<Object?> get props => [allExpenses, activeCategoryId];
+  List<Object?> get props => [allExpenses, categories, activeCategoryId];
 }
 
 class ExpensesError extends ExpensesState {

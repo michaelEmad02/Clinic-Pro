@@ -4,9 +4,10 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
+import '../../manager/expenses_state.dart';
 
 class ExpensesCategoryChips extends StatelessWidget {
-  final List<Map<String, dynamic>> categories;
+  final List<ExpenseCategory> categories;
   final String? activeCategoryId;
   final ValueChanged<String?> onChanged;
 
@@ -56,16 +57,14 @@ class ExpensesCategoryChips extends StatelessWidget {
             ),
           ),
           ...categories.map((cat) {
-            final catId = cat['id'] as String;
-            final label = cat['label'] as String;
-            final isSelected = activeCategoryId == catId;
+            final isSelected = activeCategoryId == cat.id;
 
             return Padding(
               padding: const EdgeInsetsDirectional.only(start: 8),
               child: ChoiceChip(
-                label: Text(label),
+                label: Text(cat.name),
                 selected: isSelected,
-                onSelected: (_) => onChanged(isSelected ? null : catId),
+                onSelected: (_) => onChanged(isSelected ? null : cat.id),
                 selectedColor: AppColors.primaryLight,
                 backgroundColor: AppColors.surface,
                 labelStyle: TextStyle(

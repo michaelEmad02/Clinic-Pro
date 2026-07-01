@@ -11,13 +11,16 @@ class AddEditExpenseSheet {
   static Future<void> show(
     BuildContext context, {
     ExpenseItem? expense,
-    required List<Map<String, dynamic>> categories,
+    required List<ExpenseCategory> categories,
   }) {
     return AppBottomSheet.show(
       context: context,
-      child: _AddEditExpenseForm(
-        expense: expense,
-        categories: categories,
+      child: BlocProvider.value(
+        value: context.read<ExpensesCubit>(),
+        child: _AddEditExpenseForm(
+          expense: expense,
+          categories: categories,
+        ),
       ),
     );
   }
@@ -25,7 +28,7 @@ class AddEditExpenseSheet {
 
 class _AddEditExpenseForm extends StatefulWidget {
   final ExpenseItem? expense;
-  final List<Map<String, dynamic>> categories;
+  final List<ExpenseCategory> categories;
 
   const _AddEditExpenseForm({
     this.expense,
@@ -48,16 +51,13 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
   @override
   void initState() {
     super.initState();
-    _titleController =
-        TextEditingController(text: widget.expense?.title ?? '');
-    _amountController = TextEditingController(
-        text: widget.expense?.amount.toString() ?? '');
-    _notesController =
-        TextEditingController(text: widget.expense?.notes ?? '');
-    _categoryId = widget.expense?.categoryId ??
-        widget.categories.first['id'] as String;
-    _categoryLabel = widget.expense?.categoryLabel ??
-        widget.categories.first['label'] as String;
+    _titleController = TextEditingController(text: widget.expense?.title ?? '');
+    _amountController =
+        TextEditingController(text: widget.expense?.amount.toString() ?? '');
+    _notesController = TextEditingController(text: widget.expense?.notes ?? '');
+    _categoryId = widget.expense?.categoryId ?? widget.categories.first.id;
+    _categoryLabel =
+        widget.expense?.categoryLabel ?? widget.categories.first.name;
   }
 
   @override
@@ -140,8 +140,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                 width: 40,
                 height: 40,
                 child: IconButton(
-                  icon: const Icon(Icons.close,
-                      color: AppColors.textSecondary),
+                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -177,17 +176,17 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                             color: AppColors.textSecondary, size: 20),
                         items: widget.categories.map((cat) {
                           return DropdownMenuItem(
-                            value: cat['id'] as String,
-                            child: Text(cat['label'] as String),
+                            value: cat.id,
+                            child: Text(cat.name),
                           );
                         }).toList(),
                         onChanged: (v) {
                           if (v == null) return;
-                          final cat = widget.categories
-                              .firstWhere((c) => c['id'] == v);
+                          final cat =
+                              widget.categories.firstWhere((c) => c.id == v);
                           setState(() {
                             _categoryId = v;
-                            _categoryLabel = cat['label'] as String;
+                            _categoryLabel = cat.name;
                           });
                         },
                       ),
@@ -232,18 +231,15 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                       filled: true,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppColors.primary),
+                        borderSide: const BorderSide(color: AppColors.primary),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -331,8 +327,8 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: AppTextStyles.bodyMedium(context)
-          .copyWith(color: AppColors.textHint),
+      hintStyle:
+          AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
       fillColor: AppColors.surface,
       filled: true,
       border: OutlineInputBorder(
@@ -357,8 +353,18 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
   String _formattedDate() {
     final now = DateTime.now();
     final months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر'
     ];
     return '${now.day} ${months[now.month - 1]} ${now.year}';
   }

@@ -4,15 +4,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/themes/app_colors.dart';
+import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/widgets/shimmer_list.dart';
 import '../manager/expenses_cubit.dart';
 import '../manager/expenses_state.dart';
 import 'widgets/add_edit_expense_sheet.dart';
 import 'widgets/expenses_category_chips.dart';
 import 'widgets/expenses_list.dart';
 import 'widgets/expenses_total_card.dart';
-import '../../../../core/themes/app_colors.dart';
-import '../../../../core/themes/app_text_styles.dart';
-import '../../../../core/widgets/shimmer_list.dart';
 
 class ExpensesScreen extends StatelessWidget {
   const ExpensesScreen({super.key});
@@ -20,7 +21,7 @@ class ExpensesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ExpensesCubit()..loadExpenses(),
+      create: (_) => sl<ExpensesCubit>()..loadExpenses(),
       child: const _ExpensesBody(),
     );
   }
@@ -86,8 +87,7 @@ class _ExpensesBody extends StatelessWidget {
                   ExpensesTotalCard(state: state),
                   const SizedBox(height: 12),
                   ExpensesCategoryChips(
-                    categories:
-                        context.read<ExpensesCubit>().categories,
+                    categories: state.categories,
                     activeCategoryId: state.activeCategoryId,
                     onChanged: (catId) =>
                         context.read<ExpensesCubit>().changeCategory(catId),
@@ -99,8 +99,7 @@ class _ExpensesBody extends StatelessWidget {
                       AddEditExpenseSheet.show(
                         context,
                         expense: exp,
-                        categories:
-                            context.read<ExpensesCubit>().categories,
+                        categories: state.categories,
                       );
                     },
                     onDelete: (exp) {
@@ -116,10 +115,13 @@ class _ExpensesBody extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          AddEditExpenseSheet.show(
-            context,
-            categories: context.read<ExpensesCubit>().categories,
-          );
+          final state = context.read<ExpensesCubit>().state;
+          if (state is ExpensesLoaded) {
+            AddEditExpenseSheet.show(
+              context,
+              categories: state.categories,
+            );
+          }
         },
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,

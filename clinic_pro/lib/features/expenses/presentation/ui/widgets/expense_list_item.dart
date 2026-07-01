@@ -97,6 +97,8 @@ class ExpenseListItem extends StatelessWidget {
         return Icons.groups;
       case 'ec-5':
         return Icons.build;
+      case 'ec-6':
+        return Icons.more_horiz;
       default:
         return Icons.more_horiz;
     }

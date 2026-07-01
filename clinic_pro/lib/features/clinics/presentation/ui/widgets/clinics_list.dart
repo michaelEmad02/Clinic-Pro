@@ -45,7 +45,7 @@ class ClinicsList extends StatelessWidget {
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 1.15,
+              childAspectRatio: 1.7,
             ),
             itemCount: clinics.length,
             itemBuilder: (context, index) {

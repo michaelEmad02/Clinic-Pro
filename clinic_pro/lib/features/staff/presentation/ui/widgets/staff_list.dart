@@ -43,7 +43,7 @@ class StaffList extends StatelessWidget {
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.95,
+              childAspectRatio: 2,
             ),
             itemCount: staffList.length,
             itemBuilder: (context, index) {

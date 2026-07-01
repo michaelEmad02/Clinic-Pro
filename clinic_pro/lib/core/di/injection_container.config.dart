@@ -8,10 +8,14 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:clinic_pro/features/expenses/presentation/manager/expenses_cubit.dart';
+import 'package:clinic_pro/features/expenses/presentation/manager/expenses_repository.dart';
 import 'package:clinic_pro/features/patients/presentation/manager/patients_cubit.dart';
 import 'package:clinic_pro/features/patients/presentation/manager/patients_repository.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/drugs_cubit.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/templates_cubit.dart';
+import 'package:clinic_pro/features/reports/presentation/manager/reports_cubit.dart';
+import 'package:clinic_pro/features/reports/presentation/manager/reports_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 
@@ -40,6 +44,10 @@ extension GetItInjectableX on GetIt {
     gh.factory<PrescriptionBloc>(() => PrescriptionBloc(gh<ICloudService>()));
     gh.factory<PatientsRepository>(() => PatientsRepository(gh<ICloudService>()));
     gh.factory<PatientsCubit>(() => PatientsCubit(gh<PatientsRepository>()));
+    gh.factory<ExpensesRepository>(() => ExpensesRepository(gh<ICloudService>()));
+    gh.factory<ExpensesCubit>(() => ExpensesCubit(gh<ExpensesRepository>()));
+    gh.factory<ReportsRepository>(() => ReportsRepository(gh<ICloudService>()));
+    gh.factory<ReportsCubit>(() => ReportsCubit(gh<ReportsRepository>()));
     return this;
   }
 }
