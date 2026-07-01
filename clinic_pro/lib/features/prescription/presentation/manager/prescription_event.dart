@@ -55,15 +55,13 @@ class RemoveDrugFromPrescriptionEvent extends PrescriptionEvent {
 
 class UpdateDrugDoseEvent extends PrescriptionEvent {
   final String drugId;
-  final String? doseOption;
-  final String? doseFrequency;
-  final String? doseDuration;
+  final int? doseFrequency;
+  final int? doseDuration;
   final String? doseTiming;
   final bool? isPrn;
 
   const UpdateDrugDoseEvent({
     required this.drugId,
-    this.doseOption,
     this.doseFrequency,
     this.doseDuration,
     this.doseTiming,
@@ -73,12 +71,20 @@ class UpdateDrugDoseEvent extends PrescriptionEvent {
   @override
   List<Object?> get props => [
         drugId,
-        doseOption,
         doseFrequency,
         doseDuration,
         doseTiming,
         isPrn,
       ];
+}
+
+class ApplyTemplateEvent extends PrescriptionEvent {
+  final String templateId;
+
+  const ApplyTemplateEvent(this.templateId);
+
+  @override
+  List<Object?> get props => [templateId];
 }
 
 class UpdatePrescriptionFieldsEvent extends PrescriptionEvent {

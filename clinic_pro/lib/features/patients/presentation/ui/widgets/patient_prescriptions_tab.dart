@@ -3,7 +3,9 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/empty_state.dart';
@@ -68,7 +70,14 @@ class PatientPrescriptionsTab extends StatelessWidget {
               Row(
                 children: [
                   OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      context.push(
+                        RouteConstants.prescriptionEdit.replaceAll(
+                          ':appointment_id',
+                          'appt-1', // استخدام معرف موعد وهمي لتشغيل المحاكاة
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.visibility_outlined, size: 16),
                     label: const Text('عرض'),
                     style: OutlinedButton.styleFrom(

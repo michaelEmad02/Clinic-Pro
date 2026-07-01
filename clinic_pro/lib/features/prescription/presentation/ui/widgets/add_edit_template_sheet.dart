@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/mocks/mock_data.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/di/injection_container.dart';
+import '../../../../../core/constants/prescription_enums.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-
-// ────────────────────────────────────────────────────────
-// شاشة إنشاء/تعديل قالب روشتة جديد
-// ────────────────────────────────────────────────────────
+import '../../manager/drugs_cubit.dart';
+import '../../manager/drugs_state.dart';
+import 'template_drug_search_field.dart';
+import 'template_drug_edit_card.dart';
 
 class AddEditTemplateSheet extends StatefulWidget {
-  final Function(String title, String category, List<Map<String, dynamic>> drugs) onSave;
+  final Map<String, dynamic>? template;
+  final Function(String name, List<Map<String, dynamic>> drugs) onSave;
 
-  const AddEditTemplateSheet({super.key, required this.onSave});
+  const AddEditTemplateSheet({super.key, required this.onSave, this.template});
 
   @override
   State<AddEditTemplateSheet> createState() => _AddEditTemplateSheetState();
@@ -18,128 +21,271 @@ class AddEditTemplateSheet extends StatefulWidget {
 
 class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _categoryController = TextEditingController(text: 'حالات حادة');
+  final _nameController = TextEditingController();
+  final _categoryController = TextEditingController();
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
 
-  final List<Map<String, dynamic>> _allDrugs = MockData.drugs;
-  final List<String> _selectedDrugIds = [];
+  final List<Map<String, dynamic>> _addedDrugs = [];
+  String _searchQuery = '';
+  bool _showDropdown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.addListener(() {
+      setState(() {
+        _showDropdown = _searchFocusNode.hasFocus;
+      });
+    });
+
+    if (widget.template != null) {
+      _nameController.text = widget.template!['name'] ?? '';
+
+      final items = widget.template!['items'] as List<Map<String, dynamic>>? ?? [];
+      for (final item in items) {
+        _addedDrugs.add({
+          'drug_id': item['drug_id'],
+          'trade_name': item['trade_name'] ?? 'دواء غير معروف',
+          'generic_name': item['generic_name'] ?? '',
+          'frequency': item['frequency'],
+          'duration': item['duration'],
+          'timing': item['timing'] ?? 'after_meal',
+          'is_prn': item['is_prn'] ?? false,
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
-    _titleController.dispose();
+    _nameController.dispose();
     _categoryController.dispose();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'إنشاء قالب روشتة جديد',
-              style: AppTextStyles.headlineMedium(context).copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'اسم القالب (مثال: قالب التهاب اللوزتين للأطفال)',
-                border: OutlineInputBorder(),
-              ),
-              validator: (v) => (v == null || v.isEmpty) ? 'الرجاء إدخال اسم القالب' : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _categoryController,
-              decoration: const InputDecoration(
-                labelText: 'تصنيف القالب (مثال: حالات حادة، أمراض مزمنة)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'اختر الأدوية المشمولة في هذا القالب:',
-              style: AppTextStyles.bodyMedium(context).copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _allDrugs.length,
-                itemBuilder: (context, index) {
-                  final drug = _allDrugs[index];
-                  final drugId = drug['id'] as String;
-                  final isChecked = _selectedDrugIds.contains(drugId);
+    return BlocProvider(
+      create: (context) => sl<DrugsCubit>()..loadDrugs(),
+      child: BlocBuilder<DrugsCubit, DrugsState>(
+        builder: (context, drugsState) {
+          final allDrugs = drugsState is DrugsLoaded ? drugsState.drugs : <Map<String, dynamic>>[];
 
-                  return CheckboxListTile(
-                    title: Text(
-                      drug['trade_name'] ?? '',
-                      style: AppTextStyles.bodyMedium(context),
+          final filteredDrugs = <Map<String, dynamic>>[];
+          final query = _searchQuery.trim().toLowerCase();
+
+          for (final drug in allDrugs) {
+            final trade = (drug['trade_name'] as String? ?? '').toLowerCase();
+            final generic = (drug['generic_name'] as String? ?? '').toLowerCase();
+            final id = drug['id'] as String;
+
+            final alreadyAdded = _addedDrugs.any((d) => d['drug_id'] == id);
+
+            if (!alreadyAdded) {
+              if (query.isEmpty || trade.contains(query) || generic.contains(query)) {
+                filteredDrugs.add(drug);
+              }
+            }
+          }
+
+          return Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    subtitle: Text(
-                      drug['generic_name'] ?? '',
-                      style: AppTextStyles.caption(context),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.template != null ? 'تعديل قالب وصفة' : 'إضافة قالب وصفة',
+                        style: AppTextStyles.headlineMedium(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'اسم القالب',
+                    style: AppTextStyles.headlineSmall(context).copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
                     ),
-                    value: isChecked,
-                    onChanged: (checked) {
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _nameController,
+                    style: AppTextStyles.bodyMedium(context),
+                    decoration: InputDecoration(
+                      hintText: 'مثال: التهاب اللوزتين (أطفال)',
+                      hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
+                      filled: true,
+                      fillColor: AppColors.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.primary),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    validator: (v) => (v == null || v.isEmpty) ? 'الرجاء إدخال اسم القالب' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'تصنيف القالب',
+                    style: AppTextStyles.headlineSmall(context).copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _categoryController,
+                    style: AppTextStyles.bodyMedium(context),
+                    decoration: InputDecoration(
+                      hintText: 'مثال: حالات حادة، أمراض مزمنة',
+                      hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
+                      filled: true,
+                      fillColor: AppColors.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.primary),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TemplateDrugSearchField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    onSearchChanged: (val) {
                       setState(() {
-                        if (checked == true) {
-                          _selectedDrugIds.add(drugId);
-                        } else {
-                          _selectedDrugIds.remove(drugId);
-                        }
+                        _searchQuery = val;
                       });
                     },
-                  );
-                },
+                    filteredDrugs: filteredDrugs,
+                    showDropdown: _showDropdown,
+                    onDrugSelected: (drug) {
+                      setState(() {
+                        _addedDrugs.add({
+                          'drug_id': drug['id'],
+                          'trade_name': drug['trade_name'],
+                          'form': drug['form'] ?? 'أقراص',
+                          'generic_name': drug['generic_name'] ?? '',
+                          'frequency': DrugFrequency.thrice.dbValue,
+                          'duration': DrugDuration.threeDays.dbValue,
+                          'timing': DrugTiming.afterMeal.dbValue,
+                          'is_prn': false,
+                        });
+                        _searchQuery = '';
+                        _searchController.clear();
+                        _searchFocusNode.unfocus();
+                        _showDropdown = false;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  if (_addedDrugs.isNotEmpty) ...[
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _addedDrugs.length,
+                      itemBuilder: (context, index) {
+                        return TemplateDrugEditCard(
+                          drug: _addedDrugs[index],
+                          index: index,
+                          onChanged: () => setState(() {}),
+                          onDelete: () {
+                            setState(() {
+                              _addedDrugs.removeAt(index);
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        if (_addedDrugs.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('الرجاء إضافة دواء واحد على الأقل للقالب'),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: AppColors.danger,
+                            ),
+                          );
+                          return;
+                        }
+                        widget.onSave(
+                          _nameController.text,
+                          _addedDrugs,
+                        );
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: const Text(
+                      'حفظ القالب',
+                      style: TextStyle(fontFamily: 'Cairo', fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  final selectedDrugs = _selectedDrugIds.map((id) {
-                    return {'drug_id': id};
-                  }).toList();
-                  widget.onSave(
-                    _titleController.text,
-                    _categoryController.text,
-                    selectedDrugs,
-                  );
-                  Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'حفظ القالب',
-                style: TextStyle(fontFamily: 'Cairo', fontSize: 16),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

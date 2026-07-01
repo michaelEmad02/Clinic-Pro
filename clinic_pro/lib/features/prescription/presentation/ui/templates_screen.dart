@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/di/injection_container.dart';
 import '../manager/templates_cubit.dart';
 import '../manager/templates_state.dart';
 import 'widgets/add_edit_template_sheet.dart';
@@ -22,7 +23,7 @@ class TemplatesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => TemplatesCubit()..loadTemplates(),
+      create: (context) => sl<TemplatesCubit>()..loadTemplates(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -127,8 +128,8 @@ class TemplatesScreen extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: AddEditTemplateSheet(
-            onSave: (title, category, drugs) {
-              templatesCubit.addTemplate(title, category, drugs);
+            onSave: (name, drugs) {
+              templatesCubit.addTemplate(name, drugs);
             },
           ),
         ),
@@ -151,6 +152,32 @@ class TemplatesScreen extends StatelessWidget {
       onDelete: () {
         templatesCubit.deleteTemplate(template['id']);
       },
+      onEdit: () {
+        _showEditTemplateSheet(context, template);
+      },
+    );
+  }
+
+  // عرض ورقة تعديل قالب الروشتة وتطبيق الحفظ
+  void _showEditTemplateSheet(BuildContext context, Map<String, dynamic> template) {
+    final templatesCubit = context.read<TemplatesCubit>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: AddEditTemplateSheet(
+            template: template,
+            onSave: (name, drugs) {
+              templatesCubit.editTemplate(template['id'], name, drugs);
+            },
+          ),
+        ),
+      ),
     );
   }
 }

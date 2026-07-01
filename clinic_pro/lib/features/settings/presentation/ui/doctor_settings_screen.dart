@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/route_constants.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../manager/queue_pattern_cubit.dart';
@@ -28,10 +30,13 @@ class DoctorSettingsScreen extends StatelessWidget {
         textDirection: TextDirection.rtl,
         child: Scaffold(
           appBar: AppBar(
-            title: Text('الإعدادات', style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary)),
+            title: Text('الإعدادات',
+                style: AppTextStyles.headlineMedium(context)
+                    .copyWith(color: AppColors.primary)),
             actions: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: AppColors.textSecondary),
+                icon: const Icon(Icons.notifications_outlined,
+                    color: AppColors.textSecondary),
                 onPressed: () {},
               ),
             ],
@@ -42,10 +47,13 @@ class DoctorSettingsScreen extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
               if (state.error != null) {
-                return Center(child: Text('خطأ: ${state.error}', style: AppTextStyles.bodyLarge(context)));
+                return Center(
+                    child: Text('خطأ: ${state.error}',
+                        style: AppTextStyles.bodyLarge(context)));
               }
               return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.screenEdgeH),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -74,7 +82,8 @@ class DoctorSettingsScreen extends StatelessWidget {
               );
             },
           ),
-          bottomNavigationBar: showBottomNav ? buildBottomNavBar(context) : null,
+          bottomNavigationBar:
+              showBottomNav ? buildBottomNavBar(context) : null,
         ),
       ),
     );
@@ -86,7 +95,9 @@ class DoctorSettingsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('النمط الحالي:', style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
+          Text('النمط الحالي:',
+              style: AppTextStyles.bodyMedium(context)
+                  .copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: AppConstants.spaceSm),
           const _QueuePatternChips(),
           const SizedBox(height: AppConstants.spaceMd),
@@ -94,8 +105,11 @@ class DoctorSettingsScreen extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
               onPressed: () => EditQueuePatternSheet.show(context),
-              label: Text('تعديل', style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary)),
-              icon: const Icon(Icons.chevron_left, color: AppColors.primary, size: 18),
+              label: Text('تعديل',
+                  style: AppTextStyles.bodyLarge(context)
+                      .copyWith(color: AppColors.primary)),
+              icon: const Icon(Icons.chevron_left,
+                  color: AppColors.primary, size: 18),
             ),
           ),
         ],
@@ -108,16 +122,32 @@ class DoctorSettingsScreen extends StatelessWidget {
       title: 'أخرى',
       child: Column(
         children: [
-          buildToggleItem(context,
-            icon: Icons.dark_mode,
-            label: 'المظهر الداكن',
-            trailing: const DarkModeSwitch(),
+          buildNavItem(
+            context,
+            icon: Icons.description_outlined,
+            label: 'قوالب الروشتات',
+            onTap: () => context.push(RouteConstants.prescriptionTemplates),
           ),
           const Divider(height: 1, thickness: 0.5, color: AppColors.border),
-          buildNavItem(context,
+          buildNavItem(
+            context,
+            icon: Icons.description_outlined,
+            label: 'ادارة الادوية',
+            onTap: () => context.push(RouteConstants.drugs),
+          ),
+          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          buildNavItem(
+            context,
             icon: Icons.notifications_active_outlined,
             label: 'التنبيهات',
             onTap: () {},
+          ),
+          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          buildToggleItem(
+            context,
+            icon: Icons.dark_mode,
+            label: 'المظهر الداكن',
+            trailing: const DarkModeSwitch(),
           ),
         ],
       ),
@@ -147,11 +177,17 @@ class _QueuePatternChips extends StatelessWidget {
               const SizedBox(height: AppConstants.spaceSm),
               Row(
                 children: [
-                  Icon(Icons.sync, size: 16, color: AppColors.textSecondary),
+                  const Icon(Icons.sync,
+                      size: 16, color: AppColors.textSecondary),
                   const SizedBox(width: AppConstants.spaceXs),
-                  Text('يتكرر كل ', style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
-                  Text('${state.cycleLength}', style: AppTextStyles.dataNumeric(context)),
-                  Text(' مرضى', style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
+                  Text('يتكرر كل ',
+                      style: AppTextStyles.bodyMedium(context)
+                          .copyWith(color: AppColors.textSecondary)),
+                  Text('${state.cycleLength}',
+                      style: AppTextStyles.dataNumeric(context)),
+                  Text(' مرضى',
+                      style: AppTextStyles.bodyMedium(context)
+                          .copyWith(color: AppColors.textSecondary)),
                 ],
               ),
             ],
@@ -163,10 +199,14 @@ class _QueuePatternChips extends StatelessWidget {
 
   static String _mapSlotTypeToLabel(String slotType) {
     switch (slotType) {
-      case 'urgent': return 'مستعجل';
-      case 'revisit': return 'مراجعة';
-      case 'consult': return 'استشارة';
-      default: return 'عادي';
+      case 'urgent':
+        return 'مستعجل';
+      case 'revisit':
+        return 'مراجعة';
+      case 'consult':
+        return 'استشارة';
+      default:
+        return 'عادي';
     }
   }
 }

@@ -1,25 +1,32 @@
 // ────────────────────────────────────────────────────────
 // Cubit إدارة الأدوية — تحميل الأدوية وتعديلها وإضافتها
+// يتعامل مع ICloudService لجلب وإدارة البيانات
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/mocks/mock_data.dart';
+import 'package:injectable/injectable.dart';
+import '../../../../core/services/i_cloud_service.dart';
 import 'drugs_state.dart';
 
+@injectable
 class DrugsCubit extends Cubit<DrugsState> {
-  DrugsCubit() : super(DrugsInitial());
+  final ICloudService _cloudService;
 
+  DrugsCubit(this._cloudService) : super(DrugsInitial());
+
+  /// تحميل جميع الأدوية من الخدمة السحابية
   Future<void> loadDrugs() async {
     emit(DrugsLoading());
-    await Future.delayed(const Duration(milliseconds: 400));
 
     try {
-      emit(DrugsLoaded(drugs: List.from(MockData.drugs)));
+      final drugs = await _cloudService.select(table: 'drugs');
+      emit(DrugsLoaded(drugs: drugs));
     } catch (_) {
       emit(const DrugsError('تعذّر تحميل الأدوية'));
     }
   }
 
+  /// تصفية الأدوية بالبحث النصي (محلي على الـ state)
   void search(String query) {
     if (state is DrugsLoaded) {
       final loaded = state as DrugsLoaded;
@@ -27,6 +34,7 @@ class DrugsCubit extends Cubit<DrugsState> {
     }
   }
 
+  /// تصفية الأدوية حسب الفئة (محلي على الـ state)
   void selectCategory(String? category) {
     if (state is DrugsLoaded) {
       final loaded = state as DrugsLoaded;
@@ -34,83 +42,88 @@ class DrugsCubit extends Cubit<DrugsState> {
     }
   }
 
+  /// إضافة دواء جديد عبر الخدمة السحابية
   Future<void> addDrug({
     required String tradeName,
     required String genericName,
     required String category,
-    required String form,
-    required int stockCount,
   }) async {
     if (state is! DrugsLoaded) return;
     final loaded = state as DrugsLoaded;
-    await Future.delayed(const Duration(milliseconds: 300));
 
-    final newDrug = {
-      'id': 'd-new-${DateTime.now().millisecondsSinceEpoch}',
-      'trade_name': tradeName,
-      'generic_name': genericName,
-      'category': category,
-      'form': form,
-      'stock_count': stockCount,
-      'stock_status': stockCount > 20 ? 'متوفر' : 'مخزون منخفض',
-    };
+    try {
+      final newDrug = await _cloudService.insert(
+        table: 'drugs',
+        data: {
+          'trade_name': tradeName,
+          'generic_name': genericName,
+          'category': category,
+        },
+      );
 
-    MockData.drugs.add(newDrug);
-    emit(loaded.copyWith(drugs: [...loaded.drugs, newDrug]));
+      emit(loaded.copyWith(drugs: [...loaded.drugs, newDrug]));
+    } catch (_) {
+      emit(const DrugsError('تعذّر إضافة الدواء'));
+    }
   }
 
+  /// تعديل بيانات دواء موجود عبر الخدمة السحابية
   Future<void> updateDrug({
     required String id,
     required String tradeName,
     required String genericName,
     required String category,
-    required String form,
-    required int stockCount,
   }) async {
     if (state is! DrugsLoaded) return;
     final loaded = state as DrugsLoaded;
-    await Future.delayed(const Duration(milliseconds: 300));
 
-    final list = loaded.drugs.map((d) {
-      if (d['id'] == id) {
-        return {
-          'id': id,
+    try {
+      await _cloudService.update(
+        table: 'drugs',
+        data: {
           'trade_name': tradeName,
           'generic_name': genericName,
           'category': category,
-          'form': form,
-          'stock_count': stockCount,
-          'stock_status': stockCount > 20 ? 'متوفر' : 'مخزون منخفض',
-        };
-      }
-      return d;
-    }).toList();
+        },
+        matchColumn: 'id',
+        matchValue: id,
+      );
 
-    // تحديث قاعدة البيانات للمحاكاة
-    for (int i = 0; i < MockData.drugs.length; i++) {
-      if (MockData.drugs[i]['id'] == id) {
-        MockData.drugs[i] = {
-          'id': id,
-          'trade_name': tradeName,
-          'generic_name': genericName,
-          'category': category,
-          'form': form,
-          'stock_count': stockCount,
-          'stock_status': stockCount > 20 ? 'متوفر' : 'مخزون منخفض',
-        };
-      }
+      // تحديث القائمة المحلية بعد نجاح التحديث
+      final updatedList = loaded.drugs.map((d) {
+        if (d['id'] == id) {
+          return {
+            ...d,
+            'trade_name': tradeName,
+            'generic_name': genericName,
+            'category': category,
+          };
+        }
+        return d;
+      }).toList();
+
+      emit(loaded.copyWith(drugs: updatedList));
+    } catch (_) {
+      emit(const DrugsError('تعذّر تعديل الدواء'));
     }
-
-    emit(loaded.copyWith(drugs: list));
   }
 
+  /// حذف دواء من الخدمة السحابية
   Future<void> deleteDrug(String id) async {
     if (state is! DrugsLoaded) return;
     final loaded = state as DrugsLoaded;
-    await Future.delayed(const Duration(milliseconds: 200));
 
-    MockData.drugs.removeWhere((d) => d['id'] == id);
-    final updatedList = loaded.drugs.where((d) => d['id'] != id).toList();
-    emit(loaded.copyWith(drugs: updatedList));
+    try {
+      await _cloudService.delete(
+        table: 'drugs',
+        matchColumn: 'id',
+        matchValue: id,
+      );
+
+      final updatedList = loaded.drugs.where((d) => d['id'] != id).toList();
+      emit(loaded.copyWith(drugs: updatedList));
+    } catch (_) {
+      emit(const DrugsError('تعذّر حذف الدواء'));
+    }
   }
 }

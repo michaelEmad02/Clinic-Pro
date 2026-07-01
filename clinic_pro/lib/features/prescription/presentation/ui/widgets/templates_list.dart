@@ -24,7 +24,7 @@ class TemplatesList extends StatelessWidget {
       final matchesCategory = selectedCategory == null || t['category'] == selectedCategory;
       
       final q = searchQuery?.toLowerCase() ?? '';
-      final matchesSearch = q.isEmpty || (t['title'] as String).toLowerCase().contains(q);
+      final matchesSearch = q.isEmpty || (t['name'] as String? ?? '').toLowerCase().contains(q);
 
       return matchesCategory && matchesSearch;
     }).toList();
@@ -40,9 +40,19 @@ class TemplatesList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
+    final double width = MediaQuery.of(context).size.width;
+    final int crossAxisCount = width > 900 ? 3 : (width > 600 ? 2 : 1);
+
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: crossAxisCount == 1 ? 2.1 : 1.5,
+      ),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final template = filtered[index];

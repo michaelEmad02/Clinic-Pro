@@ -9,11 +9,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/di/injection_container.dart';
 import '../manager/prescription_bloc.dart';
 import '../manager/prescription_event.dart';
 import '../manager/prescription_state.dart';
 import 'widgets/prescription_header_card.dart';
-import 'widgets/diagnosis_chips_section.dart';
+import 'widgets/templates_selector_section.dart';
 import 'widgets/drugs_list_section.dart';
 import 'widgets/prescription_notes_field.dart';
 import 'widgets/prescription_bottom_actions_bar.dart';
@@ -32,7 +33,7 @@ class PrescriptionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => PrescriptionBloc()
+      create: (context) => sl<PrescriptionBloc>()
         ..add(LoadPrescriptionDataEvent(appointmentId)),
       child: const _PrescriptionView(),
     );
@@ -224,30 +225,17 @@ class _PrescriptionView extends StatelessWidget {
           ),
 
           const SizedBox(height: 8),
-          // ٢. قسم التشخيص الطبي (اختيار رقاقات + إضافة مخصص)
-          DiagnosisChipsSection(
-            selectedDiagnosis: state.selectedDiagnosis,
-            onToggleDiagnosis: (diagnosis) {
-              context.read<PrescriptionBloc>().add(
-                ToggleDiagnosisEvent(diagnosis),
-              );
-            },
-            onAddCustomDiagnosis: (diagnosis) {
-              context.read<PrescriptionBloc>().add(
-                AddCustomDiagnosisEvent(diagnosis),
-              );
-            },
-          ),
+          // ٢. قسم قوالب الروشتات
+          const TemplatesSelectorSection(),
 
           const SizedBox(height: 8),
           // ٣. قائمة الأدوية المختارة + زر إضافة
           DrugsListSection(
             selectedDrugs: state.selectedDrugs,
-            onUpdateDrug: (drugId, {doseOption, doseFrequency, doseDuration, doseTiming, isPrn}) {
+            onUpdateDrug: (drugId, {doseFrequency, doseDuration, doseTiming, isPrn}) {
               context.read<PrescriptionBloc>().add(
                 UpdateDrugDoseEvent(
                   drugId: drugId,
-                  doseOption: doseOption,
                   doseFrequency: doseFrequency,
                   doseDuration: doseDuration,
                   doseTiming: doseTiming,

@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/di/injection_container.dart';
 import '../manager/drugs_cubit.dart';
 import '../manager/drugs_state.dart';
 import 'widgets/add_edit_drug_sheet.dart';
@@ -21,7 +22,7 @@ class DrugsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => DrugsCubit()..loadDrugs(),
+      create: (context) => sl<DrugsCubit>()..loadDrugs(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -82,7 +83,8 @@ class DrugsScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     DrugsCategoryChips(
                       selectedCategory: state.selectedCategory,
-                      onCategorySelected: (cat) => context.read<DrugsCubit>().selectCategory(cat),
+                      onCategorySelected: (cat) =>
+                          context.read<DrugsCubit>().selectCategory(cat),
                     ),
                     const SizedBox(height: 12),
                     DrugsList(
@@ -123,21 +125,18 @@ class DrugsScreen extends StatelessWidget {
       ),
       builder: (_) => SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: AddEditDrugSheet(
             onSave: ({
               required String tradeName,
               required String genericName,
               required String category,
-              required String form,
-              required int stockCount,
             }) {
               drugsCubit.addDrug(
                 tradeName: tradeName,
                 genericName: genericName,
                 category: category,
-                form: form,
-                stockCount: stockCount,
               );
             },
           ),
@@ -160,23 +159,20 @@ class DrugsScreen extends StatelessWidget {
           ),
           builder: (_) => SingleChildScrollView(
             child: Container(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
               child: AddEditDrugSheet(
                 drug: drug,
                 onSave: ({
                   required String tradeName,
                   required String genericName,
                   required String category,
-                  required String form,
-                  required int stockCount,
                 }) {
                   drugsCubit.updateDrug(
                     id: drug['id'],
                     tradeName: tradeName,
                     genericName: genericName,
                     category: category,
-                    form: form,
-                    stockCount: stockCount,
                   );
                 },
               ),

@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/constants/prescription_enums.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -11,9 +12,8 @@ import '../../manager/prescription_state.dart';
 class DrugDoseCard extends StatelessWidget {
   final SelectedDrugModel drug;
   final Function({
-    String? doseOption,
-    String? doseFrequency,
-    String? doseDuration,
+    int? doseFrequency,
+    int? doseDuration,
     String? doseTiming,
     bool? isPrn,
   }) onUpdate;
@@ -26,15 +26,11 @@ class DrugDoseCard extends StatelessWidget {
     required this.onRemove,
   });
 
-  static const List<String> _doseOptions = ['١ قرص', '٢ قرص', '٥ مل', '١٠ مل'];
-  static const List<String> _frequencies = ['كل ١٢ ساعة', '٣ مرات يومياً', 'عند اللزوم', 'مرة واحدة'];
-  static const List<String> _durations = ['٣ أيام', '٧ أيام', 'أسبوعين', 'مستمر'];
-  static const List<String> _timings = ['قبل الأكل', 'بعد الأكل مباشرة', 'مع الأكل', 'أي وقت'];
+
 
   @override
   Widget build(BuildContext context) {
-    // إذا كان عند اللزوم (PRN) فيتم إخفاء خيار المدة
-    final isPrn = drug.doseFrequency == 'عند اللزوم' || drug.isPrn;
+    final isPrn = drug.isPrn;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -100,95 +96,62 @@ class DrugDoseCard extends StatelessWidget {
           ),
           const Divider(height: 1, color: AppColors.border),
 
-          // خيارات الجرعة والتكرار والمدة
+          // خيارات التكرار والمدة والتوقيت
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildRowTitle(context, 'الجرعة'),
-                const SizedBox(height: 6),
-                DoseChipSelector(
-                  options: _doseOptions,
-                  selectedOption: drug.doseOption,
-                  onSelected: (val) => onUpdate(doseOption: val),
+                // زر التبديل PRN
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildRowTitle(context, 'عند اللزوم (PRN)'),
+                    Switch(
+                      value: isPrn,
+                      activeColor: AppColors.primary,
+                      onChanged: (val) {
+                        onUpdate(isPrn: val, doseFrequency: val ? null : 2, doseDuration: val ? null : 7);
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-
-                _buildRowTitle(context, 'التكرار'),
-                const SizedBox(height: 6),
-                DoseChipSelector(
-                  options: _frequencies,
-                  selectedOption: drug.doseFrequency,
-                  onSelected: (val) {
-                    final prn = val == 'عند اللزوم';
-                    onUpdate(
-                      doseFrequency: val,
-                      isPrn: prn,
-                      doseDuration: prn ? 'مستمر' : null,
-                    );
-                  },
-                ),
-
+                
                 if (!isPrn) ...[
+                  const SizedBox(height: 6),
+                  _buildRowTitle(context, 'التكرار'),
+                  const SizedBox(height: 6),
+                  DoseChipSelector(
+                    options: DrugFrequency.values.map((e) => e.label).toList(),
+                    selectedOption: DrugFrequency.fromDbValue(drug.doseFrequency)?.label,
+                    onSelected: (val) {
+                      final freq = DrugFrequency.values.firstWhere((e) => e.label == val);
+                      onUpdate(doseFrequency: freq.dbValue);
+                    },
+                  ),
+
                   const SizedBox(height: 12),
                   _buildRowTitle(context, 'المدة'),
                   const SizedBox(height: 6),
                   DoseChipSelector(
-                    options: _durations,
-                    selectedOption: drug.doseDuration,
-                    onSelected: (val) => onUpdate(doseDuration: val),
+                    options: DrugDuration.values.map((e) => e.label).toList(),
+                    selectedOption: DrugDuration.fromDbValue(drug.doseDuration)?.label,
+                    onSelected: (val) {
+                      final dur = DrugDuration.values.firstWhere((e) => e.label == val);
+                      onUpdate(doseDuration: dur.dbValue);
+                    },
                   ),
                 ],
-              ],
-            ),
-          ),
 
-          // شريط التوقيت بالأسفل
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceAlt,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.restaurant_menu, size: 16, color: AppColors.primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      drug.doseTiming,
-                      style: AppTextStyles.bodyMedium(context).copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                PopupMenuButton<String>(
-                  child: Row(
-                    children: [
-                      Text(
-                        'تغيير التوقيت',
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const Icon(Icons.arrow_drop_down, size: 16, color: AppColors.primary),
-                    ],
-                  ),
-                  onSelected: (val) => onUpdate(doseTiming: val),
-                  itemBuilder: (context) {
-                    return _timings.map((t) {
-                      return PopupMenuItem(
-                        value: t,
-                        child: Text(t),
-                      );
-                    }).toList();
+                const SizedBox(height: 12),
+                _buildRowTitle(context, 'التوقيت'),
+                const SizedBox(height: 6),
+                DoseChipSelector(
+                  options: DrugTiming.values.map((e) => e.label).toList(),
+                  selectedOption: DrugTiming.fromDbValue(drug.doseTiming)?.label,
+                  onSelected: (val) {
+                    final timing = DrugTiming.values.firstWhere((e) => e.label == val);
+                    onUpdate(doseTiming: timing.dbValue);
                   },
                 ),
               ],

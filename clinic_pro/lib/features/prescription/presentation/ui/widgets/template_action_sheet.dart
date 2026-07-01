@@ -12,6 +12,7 @@ class TemplateActionSheet {
     required BuildContext context,
     required Map<String, dynamic> template,
     required VoidCallback onDelete,
+    required VoidCallback onEdit,
   }) {
     return AppBottomSheet.show(
       context: context,
@@ -30,7 +31,24 @@ class TemplateActionSheet {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: AppColors.danger),
+              leading:
+                  const Icon(Icons.edit_document, color: AppColors.primary),
+              title: Text(
+                'تعديل القالب',
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                onEdit();
+              },
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading:
+                  const Icon(Icons.delete_outline, color: AppColors.danger),
               title: Text(
                 'حذف القالب',
                 style: AppTextStyles.bodyMedium(context).copyWith(

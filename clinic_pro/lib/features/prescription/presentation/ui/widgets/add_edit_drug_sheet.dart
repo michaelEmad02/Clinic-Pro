@@ -4,6 +4,8 @@ import '../../../../../core/themes/app_text_styles.dart';
 
 // ────────────────────────────────────────────────────────
 // شاشة إضافة/تعديل دواء في قاعدة البيانات
+// الحقول تتطابق مع جدول drugs في الـ schema:
+// trade_name, generic_name, category
 // ────────────────────────────────────────────────────────
 
 class AddEditDrugSheet extends StatefulWidget {
@@ -12,8 +14,6 @@ class AddEditDrugSheet extends StatefulWidget {
     required String tradeName,
     required String genericName,
     required String category,
-    required String form,
-    required int stockCount,
   }) onSave;
 
   const AddEditDrugSheet({
@@ -31,17 +31,13 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
   late TextEditingController _tradeNameController;
   late TextEditingController _genericNameController;
   late TextEditingController _categoryController;
-  late TextEditingController _formController;
-  late TextEditingController _stockController;
 
   @override
   void initState() {
     super.initState();
     _tradeNameController = TextEditingController(text: widget.drug?['trade_name'] ?? '');
     _genericNameController = TextEditingController(text: widget.drug?['generic_name'] ?? '');
-    _categoryController = TextEditingController(text: widget.drug?['category'] ?? 'مضاد حيوي');
-    _formController = TextEditingController(text: widget.drug?['form'] ?? 'أقراص');
-    _stockController = TextEditingController(text: widget.drug?['stock_count']?.toString() ?? '100');
+    _categoryController = TextEditingController(text: widget.drug?['category'] ?? '');
   }
 
   @override
@@ -49,8 +45,6 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
     _tradeNameController.dispose();
     _genericNameController.dispose();
     _categoryController.dispose();
-    _formController.dispose();
-    _stockController.dispose();
     super.dispose();
   }
 
@@ -73,6 +67,8 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
               ),
             ),
             const SizedBox(height: 16),
+
+            // الاسم التجاري
             TextFormField(
               controller: _tradeNameController,
               decoration: const InputDecoration(
@@ -82,15 +78,18 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
               validator: (v) => (v == null || v.isEmpty) ? 'الرجاء إدخال الاسم التجاري' : null,
             ),
             const SizedBox(height: 12),
+
+            // الاسم العلمي
             TextFormField(
               controller: _genericNameController,
               decoration: const InputDecoration(
                 labelText: 'الاسم العلمي / المادة الفعالة',
                 border: OutlineInputBorder(),
               ),
-              validator: (v) => (v == null || v.isEmpty) ? 'الرجاء إدخال الاسم العلمي' : null,
             ),
             const SizedBox(height: 12),
+
+            // التصنيف
             TextFormField(
               controller: _categoryController,
               decoration: const InputDecoration(
@@ -98,25 +97,9 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _formController,
-              decoration: const InputDecoration(
-                labelText: 'الشكل الدوائي (مثال: أقراص، شراب، بخاخ)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _stockController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'الكمية المتوفرة بالمخزن',
-                border: OutlineInputBorder(),
-              ),
-              validator: (v) => int.tryParse(v ?? '') == null ? 'الرجاء إدخال رقم صحيح' : null,
-            ),
             const SizedBox(height: 24),
+
+            // زر الحفظ
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
@@ -124,8 +107,6 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
                     tradeName: _tradeNameController.text,
                     genericName: _genericNameController.text,
                     category: _categoryController.text,
-                    form: _formController.text,
-                    stockCount: int.parse(_stockController.text),
                   );
                   Navigator.pop(context);
                 }

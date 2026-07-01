@@ -251,6 +251,7 @@ class MockData {
   static const patients     = [ {...}, {...} ];
 }
 ```
+// Treat it as real data—meaning you must fully simulate the data usage—because the design is indifferent to the data's source. This is an advantage of clean arch , solid principles . for example : in patients list screen , if user click on add patient , and save , should add the new user to the list , update the list , and update the total number of patients . and if user search for a patient , should return the search results . and so on . so the mock data should implement the same interface of the real data source , so we can switch between mock and real data source without affecting the UI or business logic .
 
 ### 4.5 Responsive Rules
 ```dart

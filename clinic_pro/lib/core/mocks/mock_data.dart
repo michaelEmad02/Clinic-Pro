@@ -866,56 +866,58 @@ class MockData {
     {'id': 'diag-4', 'title': 'سكر غير منضبط'},
   ];
 
-  // قوالب الروشتات للأطباء
+  // قوالب الروشتات للأطباء — الحقول تتطابق مع جدول prescription_templates
   static final List<Map<String, dynamic>> prescriptionTemplates = [
     {
       'id': 'pt-1',
       'doctor_id': 'u-doc-1',
-      'title': 'قالب النزلة الشعبية للأطفال',
-      'use_count': 142,
-      'category': 'حالات حادة',
+      'name': 'قالب النزلة الشعبية للأطفال',
+      'user_count': 142,
     },
     {
       'id': 'pt-2',
       'doctor_id': 'u-doc-1',
-      'title': 'متابعة الضغط الأساسية',
-      'use_count': 87,
-      'category': 'أمراض مزمنة',
+      'name': 'متابعة الضغط الأساسية',
+      'user_count': 87,
     }
   ];
 
-  // مكونات قوالب الروشتات
+  // مكونات قوالب الروشتات — الحقول تتطابق مع جدول prescription_template_items
   static final List<Map<String, dynamic>> prescriptionTemplateItems = [
     {
       'id': 'pti-1',
       'template_id': 'pt-1',
       'drug_id': 'd-1',
-      'dose_frequency': 'كل ٨ ساعات عند اللزوم',
-      'dose_duration': '٥ أيام',
-      'dose_timing': 'بعد الأكل',
+      'frequency': 3,
+      'duration': 5,
+      'timing': 'after_meal',
+      'is_prn': false,
     },
     {
       'id': 'pti-2',
       'template_id': 'pt-1',
       'drug_id': 'd-2',
-      'dose_frequency': 'مرة واحدة يومياً',
-      'dose_duration': '٣ أيام',
-      'dose_timing': 'قبل الأكل بساعة',
+      'frequency': 1,
+      'duration': 3,
+      'timing': 'before_meal',
+      'is_prn': false,
     },
     {
       'id': 'pti-3',
       'template_id': 'pt-2',
       'drug_id': 'd-5',
-      'dose_frequency': 'مرة واحدة يومياً',
-      'dose_duration': '٣٠ يوم',
-      'dose_timing': 'بعد الأكل',
+      'frequency': 1,
+      'duration': 30,
+      'timing': 'after_meal',
+      'is_prn': false,
     }
   ];
 
-  // الروشتات الطبية الصادرة
+  // الروشتات الطبية الصادرة — الحقول تتطابق مع جدول prescriptions
   static final List<Map<String, dynamic>> prescriptions = [
     {
       'id': 'presc-1',
+      'clinic_id': 'c-1',
       'appointment_id': 'appt-1',
       'doctor_id': 'u-doc-1',
       'patient_id': 'p-1',
@@ -925,6 +927,7 @@ class MockData {
     },
     {
       'id': 'presc-2',
+      'clinic_id': 'c-1',
       'appointment_id': 'appt-7',
       'doctor_id': 'u-doc-1',
       'patient_id': 'p-2',
@@ -934,35 +937,33 @@ class MockData {
     }
   ];
 
+  // أدوية الروشتات — الحقول تتطابق مع جدول prescription_items
   static final List<Map<String, dynamic>> prescriptionItems = [
     {
       'id': 'pi-1',
       'prescription_id': 'presc-1',
       'drug_id': 'd-1',
-      'dose_option': '١٠ مل',
-      'dose_frequency': 'عند اللزوم',
-      'dose_duration': '٣ أيام',
-      'dose_timing': 'بعد الأكل',
+      'frequency': null,
+      'duration': null,
+      'timing': 'after_meal',
       'is_prn': true,
     },
     {
       'id': 'pi-2',
       'prescription_id': 'presc-1',
       'drug_id': 'd-2',
-      'dose_option': '٥ مل',
-      'dose_frequency': 'مرة واحدة يومياً',
-      'dose_duration': '٣ أيام',
-      'dose_timing': 'قبل الأكل',
+      'frequency': 1,
+      'duration': 3,
+      'timing': 'before_meal',
       'is_prn': false,
     },
     {
       'id': 'pi-3',
       'prescription_id': 'presc-2',
       'drug_id': 'd-1',
-      'dose_option': '١٠ مل',
-      'dose_frequency': '٣ مرات يومياً',
-      'dose_duration': '٥ أيام',
-      'dose_timing': 'بعد الأكل',
+      'frequency': 3,
+      'duration': 5,
+      'timing': 'after_meal',
       'is_prn': false,
     },
   ];

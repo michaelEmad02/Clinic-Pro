@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
 
+class _Sentinel {
+  const _Sentinel();
+}
+
 abstract class DrugsState extends Equatable {
   const DrugsState();
 
@@ -24,15 +28,17 @@ class DrugsLoaded extends DrugsState {
 
   DrugsLoaded copyWith({
     List<Map<String, dynamic>>? drugs,
-    String? searchQuery,
-    String? selectedCategory,
+    Object? searchQuery = _null,
+    Object? selectedCategory = _null,
   }) {
     return DrugsLoaded(
       drugs: drugs ?? this.drugs,
-      searchQuery: searchQuery ?? this.searchQuery,
-      selectedCategory: selectedCategory ?? this.selectedCategory,
+      searchQuery: identical(searchQuery, _null) ? this.searchQuery : searchQuery as String?,
+      selectedCategory: identical(selectedCategory, _null) ? this.selectedCategory : selectedCategory as String?,
     );
   }
+
+  static const _null = _Sentinel();
 
   @override
   List<Object?> get props => [drugs, searchQuery, selectedCategory];

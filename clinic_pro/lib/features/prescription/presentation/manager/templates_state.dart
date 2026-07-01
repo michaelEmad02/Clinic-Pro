@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
 
+class _Sentinel {
+  const _Sentinel();
+}
+
 abstract class TemplatesState extends Equatable {
   const TemplatesState();
 
@@ -24,15 +28,17 @@ class TemplatesLoaded extends TemplatesState {
 
   TemplatesLoaded copyWith({
     List<Map<String, dynamic>>? templates,
-    String? searchQuery,
-    String? selectedCategory,
+    Object? searchQuery = _null,
+    Object? selectedCategory = _null,
   }) {
     return TemplatesLoaded(
       templates: templates ?? this.templates,
-      searchQuery: searchQuery ?? this.searchQuery,
-      selectedCategory: selectedCategory ?? this.selectedCategory,
+      searchQuery: identical(searchQuery, _null) ? this.searchQuery : searchQuery as String?,
+      selectedCategory: identical(selectedCategory, _null) ? this.selectedCategory : selectedCategory as String?,
     );
   }
+
+  static const _null = _Sentinel();
 
   @override
   List<Object?> get props => [templates, searchQuery, selectedCategory];

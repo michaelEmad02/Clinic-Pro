@@ -312,10 +312,10 @@ else
 ## Design Reference
 
 All screens have been designed in Figma.
-See `figma_screens.md` for:
+See `plan_frontend.md` for:
 - Node IDs for every screen
 - How to call `Figma:get_design_context` during implementation
 - Confirmed colors, typography, and spacing from actual design
-- Key design patterns observed
+- All design tokens and component specs
 
 **Figma File Key:** `mEUvHbVNmTJTecPkxr4Adj`

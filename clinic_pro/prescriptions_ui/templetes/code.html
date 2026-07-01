@@ -1,0 +1,273 @@
+<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>قوالب الروشتات - ClinicPro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&amp;family=Inter:wght@700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "success-text": "#065F46",
+                        "primary": "#00526d",
+                        "tertiary-fixed-dim": "#ffb955",
+                        "primary-container": "#1a6b8a",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#8bcff2",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#106685",
+                        "on-tertiary-container": "#ffdbaf",
+                        "on-primary": "#ffffff",
+                        "warning-bg": "#FEF3C7",
+                        "secondary": "#006c4e",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-container": "#bce7ff",
+                        "surface-bright": "#f7f9fc",
+                        "tertiary-container": "#8a5900",
+                        "on-tertiary-fixed-variant": "#633f00",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#40484d",
+                        "tertiary": "#6a4300",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#c0e8ff",
+                        "border": "#E2E8F0",
+                        "surface-container-highest": "#e0e3e6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-light": "#EAF4F8",
+                        "surface-variant": "#e0e3e6",
+                        "surface": "#FFFFFF",
+                        "success-bg": "#D1FAE5",
+                        "secondary-fixed": "#6afbc6",
+                        "on-secondary-container": "#007152",
+                        "outline": "#70787e",
+                        "on-surface": "#191c1e",
+                        "danger-bg": "#FEE2E2",
+                        "text-hint": "#A0AEC0",
+                        "on-secondary-fixed-variant": "#00513a",
+                        "primary-fixed-dim": "#8bcff2",
+                        "surface-dim": "#d8dadd",
+                        "secondary-fixed-dim": "#48deab",
+                        "on-primary-fixed": "#001e2b",
+                        "secondary-container": "#67f8c3",
+                        "danger-text": "#991B1B",
+                        "surface-container-high": "#e6e8eb",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#004d66",
+                        "inverse-on-surface": "#eff1f4",
+                        "background": "#f7f9fc",
+                        "on-secondary-fixed": "#002115",
+                        "text-primary": "#1A202C",
+                        "surface-container-low": "#f2f4f7",
+                        "text-secondary": "#64748B",
+                        "tertiary-fixed": "#ffddb4",
+                        "on-tertiary-fixed": "#291800",
+                        "surface-container": "#eceef1",
+                        "danger": "#E84C4C",
+                        "warning-text": "#92400E",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#bfc8ce"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "screen-edge-h": "16px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "screen-edge-v": "20px",
+                        "list-item-height": "72px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Cairo"],
+                        "data-numeric": ["Inter"],
+                        "label-chip": ["Cairo"],
+                        "body-lg": ["Cairo"],
+                        "caption": ["Cairo"],
+                        "headline-sm": ["Cairo"],
+                        "headline-md": ["Cairo"],
+                        "body-md": ["Cairo"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "data-numeric": ["15px", { "lineHeight": "1", "fontWeight": "700" }],
+                        "label-chip": ["12px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "body-lg": ["15px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "caption": ["12px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                        "headline-sm": ["16px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-md": ["22px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24 font-body-md text-body-md selection:bg-primary-light selection:text-primary">
+<!-- TopAppBar Shared Component -->
+<header class="bg-surface sticky top-0 z-40 flex justify-between items-center w-full px-screen-edge-h h-16 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-colors duration-200">
+<div class="flex items-center gap-sm">
+<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center hover:bg-surface-container-high transition-colors overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged male doctor with a warm smile, wearing a white clinical coat and a stethoscope around his neck, set against a clean, bright, light-mode studio background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCo5RMY1JDVgxgIhdB7P1Wh8IOc7m1ZM0NN6q--rTJwLgks__oj1HcogInSZflM92v-SLzocZG5RfmuKGCFjb6OUz48L5N8KUNTu9peCNIG0w_Kz34_1NnZXvCdZg4oFmiKdj_YbxoS9N3jEWvSUmLiTmqL8tPaYJmSYFiyilf0_r67xT6_MlnXAGeQtkaF4kmEZnKrKBYEW_csew38rZnElBPHFScx6nYDXAHncysrt17d9OyqGlBPODD4BRf-gv7ixo88aFNA-tMd">
+</button>
+</div>
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tight">
+            ClinicPro
+        </div>
+<div class="flex items-center">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-text-secondary hover:bg-surface-container-low hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-5xl mx-auto pt-lg flex flex-col gap-lg px-screen-edge-h">
+<!-- Page Header -->
+<section class="flex flex-col gap-xs">
+<h1 class="font-headline-lg text-headline-lg text-text-primary">قوالب الروشتات</h1>
+<p class="font-body-md text-body-md text-text-secondary">إدارة وتخصيص قوالب الوصفات الطبية لتسريع سير العمل العيادي.</p>
+</section>
+<!-- Search and Filter Bar -->
+<section class="flex flex-col gap-md">
+<!-- Search Input -->
+<div class="relative w-full max-w-md">
+<div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full bg-surface border border-border text-text-primary font-body-md rounded-xl py-3 pr-11 pl-4 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-text-hint shadow-sm transition-all" placeholder="ابحث عن اسم القالب، التخصص، أو الدواء..." type="text">
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-sm overflow-x-auto hide-scrollbar pb-1">
+<button class="bg-primary-light text-primary border border-primary font-label-chip text-label-chip px-4 py-2 rounded-full whitespace-nowrap transition-colors">
+                    الكل
+                </button>
+<button class="bg-surface border border-border text-text-secondary font-label-chip text-label-chip px-4 py-2 rounded-full whitespace-nowrap hover:bg-surface-container-low transition-colors">
+                    أدوية السكر
+                </button>
+<button class="bg-surface border border-border text-text-secondary font-label-chip text-label-chip px-4 py-2 rounded-full whitespace-nowrap hover:bg-surface-container-low transition-colors">
+                    أدوية الضغط
+                </button>
+<button class="bg-surface border border-border text-text-secondary font-label-chip text-label-chip px-4 py-2 rounded-full whitespace-nowrap hover:bg-surface-container-low transition-colors">
+                    مضادات حيوية
+                </button>
+<button class="bg-surface border border-border text-text-secondary font-label-chip text-label-chip px-4 py-2 rounded-full whitespace-nowrap hover:bg-surface-container-low transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+                    تصفية متقدمة
+                </button>
+</div>
+</section>
+<!-- Templates Grid (Bento Style Layout) -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Template Card 1 -->
+<div class="bg-surface rounded-xl border border-border p-md flex flex-col justify-between gap-md relative overflow-hidden group hover:border-primary-container hover:shadow-[0_4px_20px_rgba(0,82,109,0.06)] transition-all duration-300">
+<div class="absolute right-0 top-0 bottom-0 w-1 bg-primary rounded-r-xl"></div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-xs pr-2">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">بروتوكول السكر النوع الأول</h3>
+<span class="font-caption text-caption text-text-secondary bg-surface-container-low inline-flex px-2 py-1 rounded-md w-max">متابعة دورية</span>
+</div>
+<button class="text-text-hint hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-md pt-2 border-t border-surface-container mt-auto">
+<div class="flex items-center gap-xs bg-primary-light/50 px-3 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[18px]">pill</span>
+<span class="font-data-numeric text-data-numeric text-primary mt-[2px]">4</span>
+<span class="font-caption text-caption text-primary">أدوية</span>
+</div>
+<div class="flex items-center gap-xs text-text-secondary px-3 py-1.5">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span class="font-data-numeric text-data-numeric mt-[2px]">125</span>
+<span class="font-caption text-caption">استخدام</span>
+</div>
+</div>
+</div>
+<!-- Template Card 2 -->
+<div class="bg-surface rounded-xl border border-border p-md flex flex-col justify-between gap-md relative overflow-hidden group hover:border-primary-container hover:shadow-[0_4px_20px_rgba(0,82,109,0.06)] transition-all duration-300">
+<div class="absolute right-0 top-0 bottom-0 w-1 bg-secondary rounded-r-xl opacity-80"></div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-xs pr-2">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">علاج الضغط المرتفع - أساسي</h3>
+<span class="font-caption text-caption text-text-secondary bg-surface-container-low inline-flex px-2 py-1 rounded-md w-max">أمراض مزمنة</span>
+</div>
+<button class="text-text-hint hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-md pt-2 border-t border-surface-container mt-auto">
+<div class="flex items-center gap-xs bg-primary-light/50 px-3 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[18px]">pill</span>
+<span class="font-data-numeric text-data-numeric text-primary mt-[2px]">2</span>
+<span class="font-caption text-caption text-primary">أدوية</span>
+</div>
+<div class="flex items-center gap-xs text-text-secondary px-3 py-1.5">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span class="font-data-numeric text-data-numeric mt-[2px]">85</span>
+<span class="font-caption text-caption">استخدام</span>
+</div>
+</div>
+</div>
+<!-- Template Card 3 -->
+<div class="bg-surface rounded-xl border border-border p-md flex flex-col justify-between gap-md relative overflow-hidden group hover:border-primary-container hover:shadow-[0_4px_20px_rgba(0,82,109,0.06)] transition-all duration-300">
+<div class="absolute right-0 top-0 bottom-0 w-1 bg-tertiary-fixed-dim rounded-r-xl opacity-80"></div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-xs pr-2">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">مضاد حيوي - التهاب اللوزتين</h3>
+<span class="font-caption text-caption text-text-secondary bg-surface-container-low inline-flex px-2 py-1 rounded-md w-max">حالات حادة</span>
+</div>
+<button class="text-text-hint hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-md pt-2 border-t border-surface-container mt-auto">
+<div class="flex items-center gap-xs bg-primary-light/50 px-3 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[18px]">pill</span>
+<span class="font-data-numeric text-data-numeric text-primary mt-[2px]">3</span>
+<span class="font-caption text-caption text-primary">أدوية</span>
+</div>
+<div class="flex items-center gap-xs text-text-secondary px-3 py-1.5">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span class="font-data-numeric text-data-numeric mt-[2px]">204</span>
+<span class="font-caption text-caption">استخدام</span>
+</div>
+</div>
+</div>
+<!-- Add New Prompt Card (Glassmorphism inspired clean box) -->
+<button class="bg-surface-bright border border-dashed border-outline-variant rounded-xl p-md flex flex-col items-center justify-center gap-sm min-h-[140px] hover:border-primary hover:bg-primary-light/30 transition-all group">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-text-secondary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">add</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-text-primary group-hover:text-primary transition-colors">إنشاء قالب جديد</span>
+</button>
+</section>
+</main>
+<!-- Contextual FAB (Floating Action Button) -->
+<button class="fixed bottom-xl left-screen-edge-h w-[56px] h-[56px] bg-primary text-on-primary rounded-xl flex items-center justify-center shadow-[0_4px_16px_rgba(26,107,138,0.35)] hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(26,107,138,0.4)] transition-all duration-300 z-50">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</body></html>

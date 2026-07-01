@@ -10,7 +10,7 @@ import 'drug_dose_card.dart';
 
 class DrugsListSection extends StatelessWidget {
   final List<SelectedDrugModel> selectedDrugs;
-  final Function(String, {String? doseOption, String? doseFrequency, String? doseDuration, String? doseTiming, bool? isPrn}) onUpdateDrug;
+  final Function(String, {int? doseFrequency, int? doseDuration, String? doseTiming, bool? isPrn}) onUpdateDrug;
   final Function(String) onRemoveDrug;
   final VoidCallback onAddDrugTap;
 
@@ -48,10 +48,9 @@ class DrugsListSection extends StatelessWidget {
           ...selectedDrugs.map((drug) {
             return DrugDoseCard(
               drug: drug,
-              onUpdate: ({doseOption, doseFrequency, doseDuration, doseTiming, isPrn}) {
+              onUpdate: ({doseFrequency, doseDuration, doseTiming, isPrn}) {
                 onUpdateDrug(
                   drug.id,
-                  doseOption: doseOption,
                   doseFrequency: doseFrequency,
                   doseDuration: doseDuration,
                   doseTiming: doseTiming,

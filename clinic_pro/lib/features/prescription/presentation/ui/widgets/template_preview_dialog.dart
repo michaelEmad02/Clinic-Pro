@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/mocks/mock_data.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -19,28 +18,11 @@ class TemplatePreviewDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final templateId = template['id'];
-
-    // الحصول على الأدوية الخاصة بالقالب
-    final templateItems = MockData.prescriptionTemplateItems
-        .where((item) => item['template_id'] == templateId)
-        .toList();
-
-    final drugsInTemplate = templateItems.map((item) {
-      final drug = MockData.drugs.firstWhere(
-        (d) => d['id'] == item['drug_id'],
-        orElse: () => {'trade_name': 'دواء غير معروف', 'generic_name': ''},
-      );
-      return {
-        ...item,
-        'trade_name': drug['trade_name'],
-        'generic_name': drug['generic_name'],
-      };
-    }).toList();
+    final drugsInTemplate = template['items'] as List<dynamic>? ?? [];
 
     return AlertDialog(
       title: Text(
-        'معاينة: ${template['title']}',
+        'معاينة: ${template['name'] ?? ''}',
         style: AppTextStyles.headlineSmall(context).copyWith(
           fontWeight: FontWeight.bold,
           color: AppColors.primary,
@@ -67,7 +49,7 @@ class TemplatePreviewDialog extends StatelessWidget {
                       ),
                     ),
                     subtitle: Text(
-                      '${item['dose_frequency']} - ${item['dose_duration']} - ${item['dose_timing']}',
+                      '${item['frequency'] ?? ''} - ${item['duration'] ?? ''} أيام - ${item['timing'] ?? ''}',
                       style: AppTextStyles.caption(context).copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -85,7 +67,7 @@ class TemplatePreviewDialog extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              onApply!(drugsInTemplate);
+              onApply!(drugsInTemplate.cast<Map<String, dynamic>>());
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('تطبيق القالب'),

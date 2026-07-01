@@ -1,14 +1,17 @@
-// ────────────────────────────────────────────────────────
-// Bloc إدارة منطق شاشة الروشتة الطبية (Mock)
-// ────────────────────────────────────────────────────────
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/mocks/mock_data.dart';
+import 'package:injectable/injectable.dart';
+import '../../../../core/services/i_cloud_service.dart';
 import 'prescription_event.dart';
 import 'prescription_state.dart';
+import 'prescription_repository.dart';
 
+@injectable
 class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
-  PrescriptionBloc() : super(const PrescriptionState()) {
+  final PrescriptionRepository _repository;
+
+  PrescriptionBloc(ICloudService cloudService)
+      : _repository = PrescriptionRepository(cloudService),
+        super(const PrescriptionState()) {
     on<LoadPrescriptionDataEvent>(_onLoad);
     on<ToggleDiagnosisEvent>(_onToggleDiagnosis);
     on<AddCustomDiagnosisEvent>(_onAddCustomDiagnosis);
@@ -18,6 +21,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     on<UpdatePrescriptionFieldsEvent>(_onUpdateFields);
     on<SavePrescriptionEvent>(_onSave);
     on<CopyPreviousPrescriptionEvent>(_onCopyPrevious);
+    on<ApplyTemplateEvent>(_onApplyTemplate);
   }
 
   Future<void> _onLoad(
@@ -25,49 +29,30 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     Emitter<PrescriptionState> emit,
   ) async {
     emit(state.copyWith(status: PrescriptionStatus.loading));
-    await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      // محاولة العثور على الموعد والبيانات المرتبطة به
-      final apptRaw = MockData.appointments.firstWhere(
-        (a) => a['id'] == event.appointmentId,
-        orElse: () => MockData.appointments.first,
-      );
+      final result = await _repository.loadData(event.appointmentId);
 
-      final patientId = apptRaw['patient_id'];
-      final patientRaw = MockData.patients.firstWhere(
-        (p) => p['id'] == patientId,
-        orElse: () => MockData.patients.first,
-      );
-
-      final typeMap = apptRaw['appointment_types'] as Map<String, dynamic>? ?? {};
-      final typeName = typeMap['name'] as String? ?? 'كشف عادي';
-
-      final doctorId = apptRaw['doctor_id'] as String? ?? 'u-doc-1';
-      final doctor = MockData.users.firstWhere(
-        (u) => u['id'] == doctorId,
-        orElse: () => {'name': 'د. أحمد يوسف'},
-      );
-
-      // حساب السن بناءً على تاريخ الميلاد أو استخدام قيمة ثابتة للمحاكاة
-      final birthDateStr = patientRaw['birth_date'] as String? ?? '1990-01-01';
+      final birthDateStr = result.patientRaw['birth_date'] as String? ?? '1990-01-01';
       final birthYear = int.tryParse(birthDateStr.substring(0, 4)) ?? 1990;
       final age = DateTime.now().year - birthYear;
 
       emit(state.copyWith(
         status: PrescriptionStatus.loaded,
         appointmentId: event.appointmentId,
-        patientName: patientRaw['name'] as String? ?? 'مريض غير معروف',
+        clinicId: result.appointmentRaw['clinic_id'] as String? ?? '',
+        patientName: result.patientRaw['name'] as String? ?? 'مريض غير معروف',
         patientAge: '$age سنة',
-        patientGender: (patientRaw['gender'] as String? ?? 'male') == 'male' ? 'ذكر' : 'أنثى',
-        bloodType: patientRaw['blood_type'] as String? ?? 'O+',
-        visitType: typeName,
-        doctorName: doctor['name'] as String? ?? 'طبيب معالج',
-        visitDate: '24 Oct, 2023', // تاريخ ثابت للمحاكاة
-        selectedDiagnosis: [],
-        selectedDrugs: [],
-        finalDiagnosis: apptRaw['notes'] as String? ?? '',
-        notes: '',
+        patientGender: (result.patientRaw['gender'] as String? ?? 'male') == 'male' ? 'ذكر' : 'أنثى',
+        bloodType: result.patientRaw['blood_type'] as String? ?? 'O+',
+        visitType: result.typeName,
+        doctorName: result.doctor['name'] as String? ?? 'طبيب معالج',
+        visitDate: result.appointmentRaw['date'] as String? ??
+            DateTime.now().toIso8601String().substring(0, 10),
+        selectedDiagnosis: result.selectedDiagnosis,
+        selectedDrugs: result.selectedDrugs,
+        finalDiagnosis: result.finalDiagnosis,
+        notes: result.notes,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -109,7 +94,6 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     final drugRaw = event.drug;
     final drugId = drugRaw['id'] as String;
 
-    // التحقق من عدم تكرار الدواء
     if (state.selectedDrugs.any((d) => d.id == drugId)) return;
 
     final newDrug = SelectedDrugModel(
@@ -117,11 +101,9 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
       tradeName: drugRaw['trade_name'] as String? ?? '',
       genericName: drugRaw['generic_name'] as String? ?? '',
       category: drugRaw['category'] as String? ?? '',
-      form: drugRaw['form'] as String? ?? 'أقراص',
-      doseOption: '١ قرص',
-      doseFrequency: 'كل ١٢ ساعة',
-      doseDuration: '٧ أيام',
-      doseTiming: 'بعد الأكل',
+      doseFrequency: 2,
+      doseDuration: 7,
+      doseTiming: 'after_meal',
       isPrn: false,
     );
 
@@ -145,7 +127,6 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     final list = state.selectedDrugs.map((d) {
       if (d.id == event.drugId) {
         return d.copyWith(
-          doseOption: event.doseOption,
           doseFrequency: event.doseFrequency,
           doseDuration: event.doseDuration,
           doseTiming: event.doseTiming,
@@ -172,69 +153,103 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     SavePrescriptionEvent event,
     Emitter<PrescriptionState> emit,
   ) async {
-    emit(state.copyWith(status: PrescriptionStatus.loading));
-    await Future.delayed(const Duration(milliseconds: 600));
-
-    // إضافة الروشتة إلى MockData للمحاكاة
-    final newPrescId = 'presc-new-${DateTime.now().millisecondsSinceEpoch}';
-    
-    MockData.prescriptions.add({
-      'id': newPrescId,
-      'appointment_id': state.appointmentId,
-      'doctor_id': 'u-doc-1',
-      'patient_id': 'p-1',
-      'diagnosis': state.selectedDiagnosis.join(' ، ') + 
-                   (state.finalDiagnosis.isNotEmpty ? ' - ${state.finalDiagnosis}' : ''),
-      'notes': state.notes,
-      'created_at': DateTime.now().toIso8601String(),
-    });
-
-    // تحديث حالة الموعد إلى Done
-    for (int i = 0; i < MockData.appointments.length; i++) {
-      if (MockData.appointments[i]['id'] == state.appointmentId) {
-        MockData.appointments[i]['status'] = 'done';
+    if (state.selectedDiagnosis.isEmpty && state.finalDiagnosis.trim().isEmpty) {
+      emit(state.copyWith(
+        status: PrescriptionStatus.error,
+        errorMessage: 'يجب إدخال التشخيص الطبي',
+      ));
+      return;
+    }
+    if (state.selectedDrugs.isEmpty) {
+      emit(state.copyWith(
+        status: PrescriptionStatus.error,
+        errorMessage: 'يجب إضافة دواء واحد على الأقل',
+      ));
+      return;
+    }
+    for (final drug in state.selectedDrugs) {
+      if (!drug.isPrn && (drug.doseFrequency == null || drug.doseDuration == null)) {
+        emit(state.copyWith(
+          status: PrescriptionStatus.error,
+          errorMessage: 'يجب تحديد التكرار والمدة للدواء ${drug.tradeName}',
+        ));
+        return;
+      }
+      if (drug.doseTiming == null) {
+        emit(state.copyWith(
+          status: PrescriptionStatus.error,
+          errorMessage: 'يجب تحديد توقيت الدواء ${drug.tradeName}',
+        ));
+        return;
       }
     }
 
-    emit(state.copyWith(status: PrescriptionStatus.success));
+    emit(state.copyWith(status: PrescriptionStatus.loading));
+
+    try {
+      await _repository.save(state);
+      emit(state.copyWith(status: PrescriptionStatus.success));
+    } catch (_) {
+      emit(state.copyWith(
+        status: PrescriptionStatus.error,
+        errorMessage: 'حدث خطأ أثناء حفظ الروشتة',
+      ));
+    }
   }
 
-  void _onCopyPrevious(
+  Future<void> _onCopyPrevious(
     CopyPreviousPrescriptionEvent event,
     Emitter<PrescriptionState> emit,
-  ) {
-    // محاكاة نسخ آخر روشتة متوفرة في النظام للمريض
-    // سنستخدم بيانات افتراضية لآخر روشتة
-    final list = [
-      SelectedDrugModel(
-        id: 'd-1',
-        tradeName: 'بندول شراب للأطفال',
-        genericName: 'باراسيتامول البشري للأطفال',
-        category: 'خافض حرارة',
-        form: 'شراب',
-        doseOption: '١٠ مل',
-        doseFrequency: 'عند اللزوم',
-        doseDuration: '٣ أيام',
-        doseTiming: 'بعد الأكل',
-        isPrn: true,
-      ),
-      SelectedDrugModel(
-        id: 'd-2',
-        tradeName: 'زيترون شراب مضاد حيوي',
-        genericName: 'أزيثروميسين شراب',
-        category: 'مضاد حيوي',
-        form: 'شراب',
-        doseOption: '٥ مل',
-        doseFrequency: 'مرة واحدة يومياً',
-        doseDuration: '٣ أيام',
-        doseTiming: 'قبل الأكل',
-        isPrn: false,
-      )
-    ];
+  ) async {
+    try {
+      final (copiedDrugs, diags) = await _repository.copyPrevious();
 
-    emit(state.copyWith(
-      selectedDiagnosis: ['نزلة معوية حادة (A09)'],
-      selectedDrugs: list,
-    ));
+      if (copiedDrugs.isEmpty) {
+        emit(state.copyWith(
+          errorMessage: 'لا توجد روشتة سابقة لهذا المريض',
+        ));
+        return;
+      }
+
+      emit(state.copyWith(
+        selectedDiagnosis: diags,
+        selectedDrugs: copiedDrugs,
+      ));
+    } catch (_) {
+      emit(state.copyWith(
+        errorMessage: 'لا توجد روشتة سابقة لهذا المريض',
+      ));
+    }
+  }
+
+  Future<void> _onApplyTemplate(
+    ApplyTemplateEvent event,
+    Emitter<PrescriptionState> emit,
+  ) async {
+    try {
+      final (templateItems, templateName) =
+          await _repository.getTemplateData(event.templateId);
+
+      final updatedDrugs = List<SelectedDrugModel>.from(state.selectedDrugs);
+      for (final item in templateItems) {
+        if (!updatedDrugs.any((d) => d.id == item.id)) {
+          updatedDrugs.add(item);
+        }
+      }
+
+      final updatedDiagnosis = List<String>.from(state.selectedDiagnosis);
+      if (templateName.isNotEmpty && !updatedDiagnosis.contains(templateName)) {
+        updatedDiagnosis.add(templateName);
+      }
+
+      emit(state.copyWith(
+        selectedDrugs: updatedDrugs,
+        selectedDiagnosis: updatedDiagnosis,
+      ));
+    } catch (_) {
+      emit(state.copyWith(
+        errorMessage: 'حدث خطأ أثناء تطبيق القالب',
+      ));
+    }
   }
 }

@@ -1,0 +1,237 @@
+<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ClinicPro - اختيار الدواء</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbar for clean UI but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#633f00",
+                        "success-bg": "#D1FAE5",
+                        "secondary-container": "#67f8c3",
+                        "on-secondary": "#ffffff",
+                        "text-primary": "#1A202C",
+                        "danger-bg": "#FEE2E2",
+                        "outline-variant": "#bfc8ce",
+                        "on-tertiary-fixed": "#291800",
+                        "success-text": "#065F46",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#8bcff2",
+                        "on-secondary-container": "#007152",
+                        "on-background": "#191c1e",
+                        "danger": "#E84C4C",
+                        "on-secondary-fixed": "#002115",
+                        "on-error": "#ffffff",
+                        "danger-text": "#991B1B",
+                        "secondary": "#006c4e",
+                        "tertiary-container": "#8a5900",
+                        "tertiary-fixed": "#ffddb4",
+                        "tertiary-fixed-dim": "#ffb955",
+                        "tertiary": "#6a4300",
+                        "surface-container-low": "#f2f4f7",
+                        "on-surface": "#191c1e",
+                        "warning-text": "#92400E",
+                        "surface-container-high": "#e6e8eb",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eff1f4",
+                        "text-secondary": "#64748B",
+                        "surface-tint": "#106685",
+                        "background": "#f7f9fc",
+                        "on-primary-fixed": "#001e2b",
+                        "primary-container": "#1a6b8a",
+                        "on-primary-container": "#bce7ff",
+                        "on-tertiary-container": "#ffdbaf",
+                        "secondary-fixed-dim": "#48deab",
+                        "surface": "#FFFFFF",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#40484d",
+                        "primary-fixed": "#c0e8ff",
+                        "warning-bg": "#FEF3C7",
+                        "primary": "#00526d",
+                        "text-hint": "#A0AEC0",
+                        "on-secondary-fixed-variant": "#00513a",
+                        "surface-bright": "#f7f9fc",
+                        "primary-light": "#EAF4F8",
+                        "surface-container-highest": "#e0e3e6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#004d66",
+                        "surface-variant": "#e0e3e6",
+                        "secondary-fixed": "#6afbc6",
+                        "surface-container": "#eceef1",
+                        "border": "#E2E8F0",
+                        "surface-dim": "#d8dadd",
+                        "inverse-surface": "#2d3133",
+                        "outline": "#70787e",
+                        "primary-fixed-dim": "#8bcff2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "screen-edge-v": "20px",
+                        "xl": "32px",
+                        "screen-edge-h": "16px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "list-item-height": "72px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "label-chip": ["Cairo"],
+                        "headline-sm": ["Cairo"],
+                        "headline-lg": ["Cairo"],
+                        "body-md": ["Cairo"],
+                        "headline-md": ["Cairo"],
+                        "caption": ["Cairo"],
+                        "data-numeric": ["Inter"],
+                        "body-lg": ["Cairo"]
+                    },
+                    "fontSize": {
+                        "label-chip": ["11px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "headline-sm": ["16px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-lg": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["22px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "caption": ["12px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "data-numeric": ["13px", { "lineHeight": "1", "fontWeight": "700" }],
+                        "body-lg": ["15px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background min-h-screen relative overflow-hidden font-body-md text-text-primary">
+<!-- Screen Content Placeholder (Background) -->
+<div class="absolute inset-0 bg-surface-container-low opacity-50 z-0 flex items-center justify-center p-4 pointer-events-none">
+<img class="object-cover w-full h-full opacity-30 rounded-xl" data-alt="A blurred medical dashboard screen in the background. The interface is modern and clinical, featuring a sophisticated palette of soft white and deep petrol blue. Elements of a patient profile are visible but out of focus, creating a professional and reliable atmosphere suitable for healthcare management software. The lighting is bright and clean." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAto7iElP8AM9XHoBELimQml3zyasIwJRfEdakcod75m2q-OGw6xIdqxmT81G2H2-eHnEx-rMAfYPXrlWJ87Fjz6ICsvty9KZAFPRGIgOJwyJu_9ax-AdvLX2_E7Hy706C7r-Ph0_QS5yqJjibxAsxKgk8Be36QdoMcKnJOXmyeiui-tWNTg8HO9Thtk7Xg6U1OQ3jao_2xdXPrrVDE56VSRwJxrAo7j_nzdXWPlxSr2Z1_JU_S3boEQ3j18OT6V9JEqe_aZ_QUQHp2">
+</div>
+<!-- Backdrop Overlay -->
+<div class="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-40 transition-opacity duration-300"></div>
+<!-- Bottom Sheet Container -->
+<div class="fixed bottom-0 left-0 w-full z-50 flex justify-center pointer-events-none">
+<div class="bg-surface w-full max-w-[480px] rounded-t-[24px] shadow-[0_-4px_24px_rgba(0,0,0,0.12)] pointer-events-auto flex flex-col max-h-[85vh] transition-transform duration-300 translate-y-0">
+<!-- Handle & Header (Sticky top) -->
+<div class="pt-sm pb-md px-screen-edge-h rounded-t-[24px] bg-surface z-10 flex-shrink-0 border-b border-border">
+<!-- Drag Handle -->
+<div class="w-8 h-[4px] bg-outline-variant/50 rounded-full mx-auto mb-lg"></div>
+<!-- Title & Close -->
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md font-bold text-text-primary">إضافة دواء</h2>
+<button class="p-2 -mr-2 rounded-full text-text-secondary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+</div>
+</div>
+<!-- Content Area -->
+<div class="flex-1 overflow-y-auto px-screen-edge-h py-md pb-[32px] flex flex-col gap-lg no-scrollbar">
+<!-- SearchBar -->
+<div class="relative w-full">
+<div class="absolute inset-y-0 right-0 pl-3 flex items-center pr-md pointer-events-none">
+<span class="material-symbols-outlined text-text-hint text-[20px]" data-icon="search">search</span>
+</div>
+<input class="w-full bg-surface-container-low border-transparent rounded-[10px] py-[12px] pr-[44px] pl-md text-body-md text-text-primary focus:outline-none focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-hint transition-colors" placeholder="ابحث عن دواء باسمه العلمي أو التجاري..." type="text">
+</div>
+<!-- Medication List -->
+<div class="flex flex-col gap-2">
+<!-- Item 1 -->
+<div class="flex items-center justify-between p-3 rounded-[16px] hover:bg-surface-container-low transition-colors border border-transparent hover:border-border">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined" data-icon="medication" data-weight="fill" style="font-variation-settings: 'FILL' 1;">medication</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-semibold text-text-primary">Panadol Extra</span>
+<span class="font-body-md text-body-md text-text-secondary">Paracetamol + Caffeine</span>
+</div>
+</div>
+<button class="px-4 py-1.5 rounded-[12px] border border-primary text-primary font-headline-sm text-[14px] hover:bg-primary hover:text-on-primary transition-colors">إضافة</button>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between p-3 rounded-[16px] hover:bg-surface-container-low transition-colors border border-transparent hover:border-border">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined" data-icon="medication" data-weight="fill" style="font-variation-settings: 'FILL' 1;">medication</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-semibold text-text-primary">Augmentin 1g</span>
+<span class="font-body-md text-body-md text-text-secondary">Amoxicillin / Clavulanic Acid</span>
+</div>
+</div>
+<button class="px-4 py-1.5 rounded-[12px] border border-primary text-primary font-headline-sm text-[14px] hover:bg-primary hover:text-on-primary transition-colors">إضافة</button>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between p-3 rounded-[16px] hover:bg-surface-container-low transition-colors border border-transparent hover:border-border">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined" data-icon="pill" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pill</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-semibold text-text-primary">Lipitor 20mg</span>
+<span class="font-body-md text-body-md text-text-secondary">Atorvastatin</span>
+</div>
+</div>
+<button class="px-4 py-1.5 rounded-[12px] border border-primary text-primary font-headline-sm text-[14px] hover:bg-primary hover:text-on-primary transition-colors">إضافة</button>
+</div>
+<!-- Item 4 -->
+<div class="flex items-center justify-between p-3 rounded-[16px] hover:bg-surface-container-low transition-colors border border-transparent hover:border-border">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined" data-icon="pill" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pill</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-semibold text-text-primary">Concor 5mg</span>
+<span class="font-body-md text-body-md text-text-secondary">Bisoprolol Fumarate</span>
+</div>
+</div>
+<button class="px-4 py-1.5 rounded-[12px] border border-primary text-primary font-headline-sm text-[14px] hover:bg-primary hover:text-on-primary transition-colors">إضافة</button>
+</div>
+<!-- Item 5 -->
+<div class="flex items-center justify-between p-3 rounded-[16px] hover:bg-surface-container-low transition-colors border border-transparent hover:border-border">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined" data-icon="vaccines" data-weight="fill" style="font-variation-settings: 'FILL' 1;">vaccines</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-semibold text-text-primary">Lantus Solostar</span>
+<span class="font-body-md text-body-md text-text-secondary">Insulin Glargine</span>
+</div>
+</div>
+<button class="px-4 py-1.5 rounded-[12px] border border-primary text-primary font-headline-sm text-[14px] hover:bg-primary hover:text-on-primary transition-colors">إضافة</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

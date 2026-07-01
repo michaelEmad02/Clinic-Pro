@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/mocks/mock_data.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../manager/templates_cubit.dart';
+import '../../manager/templates_state.dart';
 
 // ────────────────────────────────────────────────────────
 // قسم رقاقات التشخيص: يعرض التشخيصات المختارة والشائعة
+// يستخدم TemplatesCubit لجلب قوالب التشخيصات
 // ────────────────────────────────────────────────────────
 
 class DiagnosisChipsSection extends StatefulWidget {
@@ -34,8 +37,6 @@ class _DiagnosisChipsSectionState extends State<DiagnosisChipsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final templates = MockData.diagnosisTemplates;
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -102,45 +103,54 @@ class _DiagnosisChipsSectionState extends State<DiagnosisChipsSection> {
             ],
           ),
           const SizedBox(height: 16),
-          // رقاقات التشخيصات الشائعة والمختارة
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              // التشخيصات المختارة حالياً
-              ...widget.selectedDiagnosis.map((diag) {
-                return Chip(
-                  label: Text(
-                    diag,
-                    style: AppTextStyles.labelChip(context).copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  backgroundColor: AppColors.primaryLight,
-                  side: const BorderSide(color: AppColors.primary, width: 0.5),
-                  deleteIcon: const Icon(Icons.close, size: 14, color: AppColors.primary),
-                  onDeleted: () => widget.onToggleDiagnosis(diag),
-                );
-              }),
-              // قوالب التشخيصات الشائعة غير المختارة بعد
-              ...templates
-                  .where((t) => !widget.selectedDiagnosis.contains(t['title']))
-                  .map((t) {
-                final String title = t['title'] ?? '';
-                return ActionChip(
-                  label: Text(
-                    title,
-                    style: AppTextStyles.labelChip(context).copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  backgroundColor: AppColors.surfaceAlt,
-                  side: BorderSide.none,
-                  onPressed: () => widget.onToggleDiagnosis(title),
-                );
-              }),
-            ],
+          
+          BlocBuilder<TemplatesCubit, TemplatesState>(
+            builder: (context, state) {
+              final List<Map<String, dynamic>> templates = state is TemplatesLoaded ? state.templates : [];
+              
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  // التشخيصات المختارة حالياً
+                  ...widget.selectedDiagnosis.map((diag) {
+                    return Chip(
+                      label: Text(
+                        diag,
+                        style: AppTextStyles.labelChip(context).copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      backgroundColor: AppColors.primaryLight,
+                      side: const BorderSide(color: AppColors.primary, width: 0.5),
+                      deleteIcon: const Icon(Icons.close, size: 14, color: AppColors.primary),
+                      onDeleted: () => widget.onToggleDiagnosis(diag),
+                    );
+                  }),
+                  // قوالب التشخيصات الشائعة غير المختارة بعد
+                  ...templates
+                      .where((t) {
+                        final String name = t['name'] ?? '';
+                        return name.isNotEmpty && !widget.selectedDiagnosis.contains(name);
+                      })
+                      .map((t) {
+                    final String name = t['name'] ?? '';
+                    return ActionChip(
+                      label: Text(
+                        name,
+                        style: AppTextStyles.labelChip(context).copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      backgroundColor: AppColors.surfaceAlt,
+                      side: BorderSide.none,
+                      onPressed: () => widget.onToggleDiagnosis(name),
+                    );
+                  }),
+                ],
+              );
+            },
           ),
         ],
       ),

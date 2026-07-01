@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إضافة دواء جديد - ClinicPro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&amp;family=Inter:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eceef1",
+                        "secondary-fixed-dim": "#48deab",
+                        "tertiary": "#6a4300",
+                        "on-primary-fixed": "#001e2b",
+                        "warning-bg": "#FEF3C7",
+                        "danger": "#E84C4C",
+                        "on-tertiary-container": "#ffdbaf",
+                        "outline": "#70787e",
+                        "surface-dim": "#d8dadd",
+                        "secondary": "#006c4e",
+                        "inverse-primary": "#8bcff2",
+                        "secondary-container": "#67f8c3",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#191c1e",
+                        "secondary-fixed": "#6afbc6",
+                        "on-secondary-fixed-variant": "#00513a",
+                        "tertiary-fixed": "#ffddb4",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#eff1f4",
+                        "danger-bg": "#FEE2E2",
+                        "on-tertiary-fixed-variant": "#633f00",
+                        "text-hint": "#A0AEC0",
+                        "primary-fixed-dim": "#8bcff2",
+                        "inverse-surface": "#2d3133",
+                        "primary-light": "#EAF4F8",
+                        "on-primary": "#ffffff",
+                        "background": "#f7f9fc",
+                        "surface-variant": "#e0e3e6",
+                        "on-primary-container": "#bce7ff",
+                        "surface-container-low": "#f2f4f7",
+                        "outline-variant": "#bfc8ce",
+                        "primary": "#00526d",
+                        "on-tertiary-fixed": "#291800",
+                        "on-secondary": "#ffffff",
+                        "warning-text": "#92400E",
+                        "surface-container-high": "#e6e8eb",
+                        "on-error": "#ffffff",
+                        "success-bg": "#D1FAE5",
+                        "primary-container": "#1a6b8a",
+                        "on-surface": "#191c1e",
+                        "primary-fixed": "#c0e8ff",
+                        "on-surface-variant": "#40484d",
+                        "surface-tint": "#106685",
+                        "success-text": "#065F46",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#004d66",
+                        "tertiary-container": "#8a5900",
+                        "surface": "#FFFFFF",
+                        "surface-container-highest": "#e0e3e6",
+                        "border": "#E2E8F0",
+                        "text-secondary": "#64748B",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#007152",
+                        "tertiary-fixed-dim": "#ffb955",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#002115",
+                        "danger-text": "#991B1B",
+                        "surface-bright": "#f7f9fc",
+                        "text-primary": "#1A202C"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "sm": "8px",
+                        "screen-edge-v": "20px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "list-item-height": "72px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "screen-edge-h": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Cairo"],
+                        "headline-lg": ["Cairo"],
+                        "label-chip": ["Cairo"],
+                        "headline-sm": ["Cairo"],
+                        "caption": ["Cairo"],
+                        "data-numeric": ["Inter"],
+                        "body-md": ["Cairo"],
+                        "body-lg": ["Cairo"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["22px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "label-chip": ["11px", {"lineHeight": "1", "fontWeight": "500"}],
+                        "headline-sm": ["16px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "data-numeric": ["13px", {"lineHeight": "1", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .input-radius { border-radius: 10px; }
+        .btn-radius { border-radius: 12px; }
+        .sheet-shadow { box-shadow: 0 -4px 24px rgba(0,0,0,0.12); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen font-body-md text-text-primary antialiased relative overflow-hidden">
+<!-- App Canvas Placeholder -->
+<div class="p-md opacity-30">
+<div class="h-64 bg-surface-container-low rounded-xl mb-md"></div>
+<div class="h-32 bg-surface-container-low rounded-xl mb-md"></div>
+<div class="h-32 bg-surface-container-low rounded-xl"></div>
+</div>
+<!-- Overlay Background -->
+<div class="fixed inset-0 bg-black/40 z-40 transition-opacity duration-300" id="sheet-overlay"></div>
+<!-- Bottom Sheet -->
+<div class="fixed bottom-0 left-0 right-0 w-full md:max-w-[480px] md:mx-auto bg-surface rounded-t-[24px] z-50 sheet-shadow flex flex-col transform transition-transform duration-300 translate-y-0" id="bottom-sheet" style="max-height: 90vh;">
+<!-- Drag Handle -->
+<div class="w-full flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
+<div class="w-12 h-1.5 bg-surface-variant rounded-full"></div>
+</div>
+<!-- Header -->
+<div class="flex items-center justify-between px-md pb-md border-b border-border">
+<h2 class="font-headline-md text-headline-md text-on-surface">إضافة دواء جديد</h2>
+<button class="p-2 text-text-secondary hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</div>
+<!-- Content/Form Scrollable Area -->
+<div class="p-md overflow-y-auto flex-1 flex flex-col gap-lg">
+<!-- Trade Name Input -->
+<div class="flex flex-col gap-sm">
+<label class="font-body-md text-body-md text-on-surface font-semibold" for="trade-name">الاسم التجاري</label>
+<input class="input-radius border-border focus:border-primary focus:ring-1 focus:ring-primary w-full p-3 font-body-md text-body-md bg-surface text-on-surface placeholder:text-text-hint transition-colors outline-none shadow-sm" id="trade-name" placeholder="أدخل الاسم التجاري (مثل: بنادول)" type="text"/>
+</div>
+<!-- Generic Name Input -->
+<div class="flex flex-col gap-sm">
+<label class="font-body-md text-body-md text-on-surface font-semibold" for="generic-name">الاسم العام</label>
+<input class="input-radius border-border focus:border-primary focus:ring-1 focus:ring-primary w-full p-3 font-body-md text-body-md bg-surface text-on-surface placeholder:text-text-hint transition-colors outline-none shadow-sm" id="generic-name" placeholder="أدخل الاسم العام (مثل: باراسيتامول)" type="text"/>
+</div>
+<!-- Category Select -->
+<div class="flex flex-col gap-sm">
+<label class="font-body-md text-body-md text-on-surface font-semibold" for="category">الفئة</label>
+<div class="relative">
+<select class="input-radius border-border focus:border-primary focus:ring-1 focus:ring-primary w-full p-3 pr-4 pl-10 font-body-md text-body-md bg-surface text-on-surface appearance-none outline-none shadow-sm cursor-pointer" id="category">
+<option class="text-text-hint" disabled="" selected="" value="">اختر الفئة</option>
+<option value="antibiotic">مضاد حيوي</option>
+<option value="analgesic">مسكن ألم</option>
+<option value="vitamin">فيتامين</option>
+<option value="antacid">مضاد حموضة</option>
+<option value="other">أخرى</option>
+</select>
+<div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Active Ingredient Input (Optional) -->
+<div class="flex flex-col gap-sm mb-4">
+<div class="flex justify-between items-center">
+<label class="font-body-md text-body-md text-on-surface font-semibold" for="active-ingredient">المادة الفعالة</label>
+<span class="font-caption text-caption text-text-hint">اختياري</span>
+</div>
+<input class="input-radius border-border focus:border-primary focus:ring-1 focus:ring-primary w-full p-3 font-body-md text-body-md bg-surface text-on-surface placeholder:text-text-hint transition-colors outline-none shadow-sm" id="active-ingredient" placeholder="أدخل المادة الفعالة" type="text"/>
+</div>
+</div>
+<!-- Sticky Bottom Action Area -->
+<div class="p-md border-t border-border bg-surface rounded-t-[24px]">
+<button class="w-full btn-radius bg-primary-container text-on-primary font-headline-sm text-headline-sm py-3.5 px-6 flex items-center justify-center gap-2 hover:bg-primary transition-colors active:scale-[0.98] shadow-[0_4px_16px_rgba(26,107,138,0.25)]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                حفظ الدواء
+            </button>
+</div>
+</div>
+<!-- Initialization Script -->
+<script>
+        // Simple initialization for aesthetics only
+        document.addEventListener('DOMContentLoaded', () => {
+            const sheet = document.getElementById('bottom-sheet');
+            // Animate in
+            sheet.classList.remove('translate-y-full');
+        });
+    </script>
+</body></html>

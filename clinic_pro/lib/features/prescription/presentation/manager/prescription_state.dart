@@ -8,11 +8,9 @@ class SelectedDrugModel extends Equatable {
   final String tradeName;
   final String genericName;
   final String category;
-  final String form;
-  final String doseOption;
-  final String doseFrequency;
-  final String doseDuration;
-  final String doseTiming;
+  final int? doseFrequency;
+  final int? doseDuration;
+  final String? doseTiming;
   final bool isPrn;
 
   const SelectedDrugModel({
@@ -20,8 +18,6 @@ class SelectedDrugModel extends Equatable {
     required this.tradeName,
     required this.genericName,
     required this.category,
-    required this.form,
-    required this.doseOption,
     required this.doseFrequency,
     required this.doseDuration,
     required this.doseTiming,
@@ -29,9 +25,8 @@ class SelectedDrugModel extends Equatable {
   });
 
   SelectedDrugModel copyWith({
-    String? doseOption,
-    String? doseFrequency,
-    String? doseDuration,
+    int? doseFrequency,
+    int? doseDuration,
     String? doseTiming,
     bool? isPrn,
   }) {
@@ -40,8 +35,6 @@ class SelectedDrugModel extends Equatable {
       tradeName: tradeName,
       genericName: genericName,
       category: category,
-      form: form,
-      doseOption: doseOption ?? this.doseOption,
       doseFrequency: doseFrequency ?? this.doseFrequency,
       doseDuration: doseDuration ?? this.doseDuration,
       doseTiming: doseTiming ?? this.doseTiming,
@@ -55,8 +48,6 @@ class SelectedDrugModel extends Equatable {
         tradeName,
         genericName,
         category,
-        form,
-        doseOption,
         doseFrequency,
         doseDuration,
         doseTiming,
@@ -72,6 +63,7 @@ enum PrescriptionStatus { initial, loading, loaded, success, error }
 class PrescriptionState extends Equatable {
   final PrescriptionStatus status;
   final String appointmentId;
+  final String clinicId;
   final String patientName;
   final String patientAge;
   final String patientGender;
@@ -88,6 +80,7 @@ class PrescriptionState extends Equatable {
   const PrescriptionState({
     this.status = PrescriptionStatus.initial,
     this.appointmentId = '',
+    this.clinicId = '',
     this.patientName = '',
     this.patientAge = '',
     this.patientGender = '',
@@ -105,6 +98,7 @@ class PrescriptionState extends Equatable {
   PrescriptionState copyWith({
     PrescriptionStatus? status,
     String? appointmentId,
+    String? clinicId,
     String? patientName,
     String? patientAge,
     String? patientGender,
@@ -121,6 +115,7 @@ class PrescriptionState extends Equatable {
     return PrescriptionState(
       status: status ?? this.status,
       appointmentId: appointmentId ?? this.appointmentId,
+      clinicId: clinicId ?? this.clinicId,
       patientName: patientName ?? this.patientName,
       patientAge: patientAge ?? this.patientAge,
       patientGender: patientGender ?? this.patientGender,
@@ -140,6 +135,7 @@ class PrescriptionState extends Equatable {
   List<Object?> get props => [
         status,
         appointmentId,
+        clinicId,
         patientName,
         patientAge,
         patientGender,

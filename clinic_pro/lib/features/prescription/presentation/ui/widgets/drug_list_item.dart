@@ -21,10 +21,6 @@ class DrugListItem extends StatelessWidget {
     final String tradeName = drug['trade_name'] ?? '';
     final String genericName = drug['generic_name'] ?? '';
     final String category = drug['category'] ?? '';
-    final String form = drug['form'] ?? '';
-    final int stockCount = drug['stock_count'] ?? 0;
-    final String stockStatus = drug['stock_status'] ?? 'متوفر';
-    final bool isLowStock = stockStatus == 'مخزون منخفض';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -71,13 +67,13 @@ class DrugListItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: isLowStock ? AppColors.warningLight : AppColors.primaryLight,
+                color: AppColors.primaryLight,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 category,
                 style: AppTextStyles.labelChip(context).copyWith(
-                  color: isLowStock ? AppColors.warning : AppColors.primary,
+                  color: AppColors.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -93,34 +89,6 @@ class DrugListItem extends StatelessWidget {
               style: AppTextStyles.bodyMedium(context).copyWith(
                 color: AppColors.textSecondary,
               ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Text(
-                  'الشكل: $form',
-                  style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.textHint,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  width: 4,
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    color: AppColors.border,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'المخزون: $stockCount وحدة',
-                  style: AppTextStyles.caption(context).copyWith(
-                    color: isLowStock ? AppColors.danger : AppColors.accent,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
             ),
           ],
         ),

@@ -20,6 +20,7 @@ Backend: Supabase (Auth + DB + Realtime + Storage).
 - **Never hardcode colors or text styles.** Always use `AppColors` and `AppTextStyles`.
 - **Never call Supabase from UI or Cubit.** Flow: UI → UseCase → Repository → DataSource → ICloudService.
 - **Mock data goes in `MockCloudService`**, not in widgets or screens.
+- **Treat it as real data—meaning you must fully simulate the data usage—because the design is indifferent to the data's source. This is an advantage of clean arch , solid principles . for example : in patients list screen , if user click on add patient , and save , should add the new user to the list , update the list , and update the total number of patients . and if user search for a patient , should return the search results . and so on . so the mock data should implement the same interface of the real data source , so we can switch between mock and real data source without affecting the UI or business logic .
 - **Widget file > 200 lines → split it.**
 - **Comment every non-obvious block in Arabic** (English technical terms allowed).
 - **After each Phase, stop and wait for approval** before moving to the next.
@@ -84,6 +85,58 @@ lib/
 
 ---
 
+## Documentation Map (Reference Files )— Feature-Based (READ ONLY WHAT YOU NEED)
+
+Each feature folder contains 3 focused files. **Only read the feature folder
+relevant to your current task** — do not load all features into context at once.
+
+```
+docs/
+├── rules.md                   ← always read this before writing code
+├── architecture.md            ← read when creating new modules/files
+├── product.md                 ← read when scope is unclear
+├── implementation_plan.md     ← read when starting a new Phase
+├── tasks.md                   ← read to check current task / mark done
+│
+└── features/
+    ├── auth/
+    │   ├── schema.md          ← Owners, users tables
+    │   ├── business_logic.md  ← login flow, session detection
+    │   └── ui.md               ← Splash, Login, Create Account, Accept Invitation
+    │
+    ├── clinics_staff/
+    │   ├── schema.md          ← clinics, clinic_staff, invitations (not yet in DB)
+    │   ├── business_logic.md  ← invitation flow, permissions
+    │   └── ui.md               ← Clinics, Staff, Settings (3 role variants)
+    │
+    ├── patients/
+    │   ├── schema.md          ← patients table
+    │   ├── business_logic.md  ← owner-scoping, validations
+    │   └── ui.md               ← Patients, Patient Details
+    │
+    ├── appointments_queue/
+    │   ├── schema.md          ← appointment_types, appointments, doctor_queue_rules
+    │   ├── business_logic.md  ← status flow, QueueSorter algorithm
+    │   └── ui.md               ← Appointments, Appointment Details, Waiting Queue
+    │
+    ├── prescriptions/
+    │   ├── schema.md          ← drugs, templates, prescriptions, prescription_items
+    │   ├── business_logic.md  ← diagnosis-as-text rule, save flow
+    │   └── ui.md               ← Prescription, Templates, Drugs screens
+    │
+    ├── financial/
+    │   ├── schema.md          ← invoices, expenses, expense_categories
+    │   ├── business_logic.md  ← manual invoice creation, status derivation
+    │   └── ui.md               ← Invoices, Expenses, Reports
+    │
+    └── subscriptions/
+        ├── schema.md          ← plans, plans_features, subscriptions
+        ├── business_logic.md  ← limit enforcement, trial logic
+        └── ui.md               ← Plan Selection, Subscription screen
+```
+
+---
+
 ## Current Phase
 
 > **Check `docs/tasks.md` for the current task and phase.**
@@ -136,17 +189,3 @@ Arabic text → Cairo | Numbers/amounts → Inter Bold
 
 
 ---
-
-## Reference Files
-
-| File | Read when... |
-|------|-------------|
-| `docs/rules.md` | Always — before writing any code |
-| `docs/plan_frontend.md` | Building any UI screen or widget |
-| `docs/database_schema.md` | Working with data models or DB structure |
-| `docs/api_reference.md` | Writing DataSource or Service layer |
-| `docs/architecture.md` | Creating new files or modules |
-| `docs/plan_business_logic.md` | Implementing UseCases or business rules |
-| `docs/implementation_plan.md` | Starting a new Phase or Part |
-| `docs/tasks.md` | Checking what to do next / marking done |
-| `docs/product.md` | Unclear about scope or feature inclusion |
