@@ -1,0 +1,46 @@
+# Implementation Plan - Patients Feature Clean Architecture & Rules Refactoring
+
+This plan aligns the `patients` feature with the project's architecture guidelines and rules by removing direct `MockData` imports from `PatientsCubit`, routing all data flow through a repository using the `ICloudService` interface, and enabling dependency injection for the Cubit.
+
+## Proposed Changes
+
+### Core Services
+
+#### [MODIFY] [mock_cloud_service.dart](file:///c:/flutter Projects/clinics system/Clinic Pro/clinic_pro/lib/core/services/mock_cloud_service.dart)
+- Support selecting from `patient_visits` and `patient_prescription_records` mock tables to map database-independent queries.
+
+### Patients Feature - Data & Domain Layers
+
+#### [NEW] [patients_repository.dart](file:///c:/flutter Projects/clinics system/Clinic Pro/clinic_pro/lib/features/patients/presentation/manager/patients_repository.dart)
+- Implement `PatientsRepository` class using the `ICloudService` dependency.
+- Define methods:
+  - `loadPatients()`: Calls `_cloud.select(table: 'patients')`.
+  - `addPatient(...)`: Calls `_cloud.insert(table: 'patients', data: ...)`.
+  - `updatePatient(...)`: Calls `_cloud.update(table: 'patients', data: ..., matchColumn: 'id', matchValue: ...)`.
+  - `getVisitsForPatient(...)`: Calls `_cloud.select(table: 'patient_visits', eq: {'patient_id': ...})`.
+  - `getPrescriptionsForPatient(...)`: Calls `_cloud.select(table: 'patient_prescription_records', eq: {'patient_id': ...})`.
+  - `findPatientById(...)`: Calls `_cloud.select(table: 'patients', eq: {'id': ...})`.
+
+### Patients Feature - Presentation Layer
+
+#### [MODIFY] [patients_cubit.dart](file:///c:/flutter Projects/clinics system/Clinic Pro/clinic_pro/lib/features/patients/presentation/manager/patients_cubit.dart)
+- Remove `import '../../../../core/mocks/mock_data.dart'`.
+- Decorate `PatientsCubit` with `@injectable`.
+- Inject `PatientsRepository` via constructor.
+- Refactor all methods to use the repository.
+
+#### [MODIFY] [patients_screen.dart](file:///c:/flutter Projects/clinics system/Clinic Pro/clinic_pro/lib/features/patients/presentation/ui/patients_screen.dart)
+- Instantiate `PatientsCubit` using dependency injection container `sl<PatientsCubit>()` instead of calling the constructor directly.
+
+#### [MODIFY] [patient_details_screen.dart](file:///c:/flutter Projects/clinics system/Clinic Pro/clinic_pro/lib/features/patients/presentation/ui/patient_details_screen.dart)
+- Fetch patient details, visits, and prescriptions asynchronously using `PatientsRepository` via `sl<PatientsRepository>()` or `context.read<PatientsCubit>()` rather than static references to `PatientsCubit`.
+
+### Dependency Injection
+
+#### [MODIFY] [injection_container.config.dart](file:///c:/flutter Projects/clinics system/Clinic Pro/clinic_pro/lib/core/di/injection_container.config.dart)
+- Register `PatientsRepository` and `PatientsCubit` in the dependency injection configuration.
+
+## Verification Plan
+
+### Automated Verification
+- Run `flutter analyze` to ensure clean compilation.

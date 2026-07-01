@@ -92,7 +92,6 @@ class PatientListItem extends StatelessWidget {
                     ],
                   ),
                 ),
-                _buildStatusTag(context),
                 IconButton(
                   icon: const Icon(Icons.more_horiz,
                       color: AppColors.textSecondary),
@@ -101,44 +100,6 @@ class PatientListItem extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusTag(BuildContext context) {
-    Color bg;
-    Color text;
-    String label;
-
-    switch (patient.statusTag) {
-      case 'completed':
-        bg = AppColors.successBg;
-        text = AppColors.successText;
-        label = 'مكتمل';
-      case 'chronic':
-        bg = AppColors.warningBg;
-        text = AppColors.warningText;
-        label = 'مزمن';
-      default:
-        bg = AppColors.primaryLight;
-        text = AppColors.primary;
-        label = 'مراجعة';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      margin: const EdgeInsetsDirectional.only(end: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.caption(context).copyWith(
-          color: text,
-          fontWeight: FontWeight.bold,
-          fontSize: 10,
         ),
       ),
     );

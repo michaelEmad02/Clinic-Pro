@@ -3,9 +3,12 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
-import '../manager/patients_cubit.dart';
+import '../../../../core/widgets/shimmer_list.dart';
+import '../manager/patients_repository.dart';
+import '../manager/patients_state.dart';
 import 'widgets/patient_info_tab.dart';
 import 'widgets/patient_prescriptions_tab.dart';
 import 'widgets/patient_sliver_app_bar.dart';
@@ -18,50 +21,66 @@ class PatientDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final patient = PatientsCubit.findPatientById(id);
+    final repo = sl<PatientsRepository>();
 
-    if (patient == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('تفاصيل المريض')),
-        body: const Center(child: Text('المريض غير موجود')),
-      );
-    }
+    return FutureBuilder<PatientItem?>(
+      future: repo.findPatientById(id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('تفاصيل المريض')),
+            body: const Padding(
+              padding: EdgeInsets.all(16),
+              child: ShimmerList(itemCount: 4),
+            ),
+          );
+        }
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            PatientSliverAppBar(patient: patient),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _TabBarDelegate(
-                TabBar(
-                  labelColor: AppColors.primary,
-                  unselectedLabelColor: AppColors.textSecondary,
-                  indicatorColor: AppColors.primary,
-                  labelStyle: AppTextStyles.bodyMedium(context).copyWith(
-                    fontWeight: FontWeight.bold,
+        final patient = snapshot.data;
+        if (patient == null || snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('تفاصيل المريض')),
+            body: const Center(child: Text('المريض غير موجود')),
+          );
+        }
+
+        return DefaultTabController(
+          length: 3,
+          child: Scaffold(
+            backgroundColor: AppColors.background,
+            body: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                PatientSliverAppBar(patient: patient),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _TabBarDelegate(
+                    TabBar(
+                      labelColor: AppColors.primary,
+                      unselectedLabelColor: AppColors.textSecondary,
+                      indicatorColor: AppColors.primary,
+                      labelStyle: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      tabs: const [
+                        Tab(text: 'المعلومات'),
+                        Tab(text: 'الزيارات'),
+                        Tab(text: 'الروشتات'),
+                      ],
+                    ),
                   ),
-                  tabs: const [
-                    Tab(text: 'المعلومات'),
-                    Tab(text: 'الزيارات'),
-                    Tab(text: 'الروشتات'),
-                  ],
                 ),
+              ],
+              body: TabBarView(
+                children: [
+                  PatientInfoTab(patient: patient),
+                  PatientVisitsTab(patientId: id),
+                  PatientPrescriptionsTab(patientId: id),
+                ],
               ),
             ),
-          ],
-          body: TabBarView(
-            children: [
-              PatientInfoTab(patient: patient),
-              PatientVisitsTab(patientId: id),
-              PatientPrescriptionsTab(patientId: id),
-            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

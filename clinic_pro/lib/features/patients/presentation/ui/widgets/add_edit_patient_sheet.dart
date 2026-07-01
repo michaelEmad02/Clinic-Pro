@@ -16,9 +16,13 @@ class AddEditPatientSheet {
     BuildContext context, {
     PatientItem? patient,
   }) {
+    final cubit = context.read<PatientsCubit>();
     return AppBottomSheet.show(
       context: context,
-      child: _AddEditPatientForm(patient: patient),
+      child: BlocProvider.value(
+        value: cubit,
+        child: _AddEditPatientForm(patient: patient),
+      ),
     );
   }
 }

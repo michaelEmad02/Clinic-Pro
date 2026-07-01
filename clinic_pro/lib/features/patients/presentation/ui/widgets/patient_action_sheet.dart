@@ -15,6 +15,7 @@ class PatientActionSheet {
     required VoidCallback onViewDetails,
     required VoidCallback onEdit,
     required VoidCallback onBookAppointment,
+    required VoidCallback onDeletePatient,
   }) {
     return AppBottomSheet.show(
       context: context,
@@ -64,6 +65,15 @@ class PatientActionSheet {
               onTap: () {
                 Navigator.pop(context);
                 onBookAppointment();
+              },
+            ),
+            _ActionTile(
+              icon: Icons.delete,
+              label: 'حذف المريض',
+              color: Colors.red,
+              onTap: () {
+                Navigator.pop(context);
+                onDeletePatient();
               },
             ),
           ],

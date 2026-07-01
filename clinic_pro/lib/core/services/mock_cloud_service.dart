@@ -121,6 +121,8 @@ class MockCloudService implements ICloudService {
       case 'expense_categories': return MockData.expenseCategories;
       case 'invoices': return MockData.invoices;
       case 'subscriptions': return MockData.subscriptions;
+      case 'patient_visits': return MockData.patientVisits;
+      case 'patient_prescription_records': return MockData.patientPrescriptionRecords;
       default: return [];
     }
   }

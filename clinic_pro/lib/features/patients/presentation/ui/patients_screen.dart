@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -23,7 +24,7 @@ class PatientsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => PatientsCubit()..loadPatients(),
+      create: (_) => sl<PatientsCubit>()..loadPatients(),
       child: const _PatientsBody(),
     );
   }
@@ -142,6 +143,33 @@ class _PatientsBody extends StatelessWidget {
           const SnackBar(content: Text('سيتم فتح حجز موعد من شاشة المواعيد')),
         );
       },
+      onDeletePatient: () {
+        _confirmDelete(context, patient);
+      },
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, PatientItem patient) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف المريض'),
+        content: Text('هل أنت متأكد من حذف "${patient.name}"؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('حذف'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      context.read<PatientsCubit>().deletePatient(patient.id);
+    }
   }
 }
