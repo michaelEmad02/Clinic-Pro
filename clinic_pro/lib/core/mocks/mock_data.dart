@@ -796,6 +796,40 @@ class MockData {
       'patients': {'name': 'يوسف خالد منصور', 'phone': '01123456789'},
       'appointment_types': {'name': 'كشف عادي', 'price': 250.0}
     },
+    {
+      'id': 'appt-9',
+      'clinic_id': 'c-1',
+      'patient_id': 'p-1',
+      'doctor_id': 'u-doc-1',
+      'appointment_type_id': 'at-1',
+      'date': DateTime.now().subtract(const Duration(hours: 1)).toIso8601String().substring(0, 10),
+      'time': '12:00:00',
+      'status': 'done',
+      'price': 250.0,
+      'is_urgent': false,
+      'arrived_at': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+      'called_at': DateTime.now().subtract(const Duration(hours: 1, minutes: 30)).toIso8601String(),
+      'notes': 'كشف جديد للاختبار',
+      'patients': {'name': 'يوسف خالد منصور', 'phone': '01123456789'},
+      'appointment_types': {'name': 'كشف عادي', 'price': 250.0}
+    },
+    {
+      'id': 'appt-10',
+      'clinic_id': 'c-1',
+      'patient_id': 'p-3',
+      'doctor_id': 'u-doc-1',
+      'appointment_type_id': 'at-4',
+      'date': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String().substring(0, 10),
+      'time': '10:00:00',
+      'status': 'done',
+      'price': 400.0,
+      'is_urgent': true,
+      'arrived_at': DateTime.now().subtract(const Duration(hours: 3)).toIso8601String(),
+      'called_at': DateTime.now().subtract(const Duration(hours: 2, minutes: 30)).toIso8601String(),
+      'notes': 'متابعة عاجلة',
+      'patients': {'name': 'كريم هشام عادل', 'phone': '01533445566'},
+      'appointment_types': {'name': 'كشف مستعجل طوارئ', 'price': 400.0}
+    },
   ];
 
   // نمط ترتيب الطابور للطبيب

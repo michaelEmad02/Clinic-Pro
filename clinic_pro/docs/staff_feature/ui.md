@@ -41,8 +41,7 @@ Email + name + role → add to pending list → send invitations
 ## Staff Screen
 
 ```
-Filter chips: الكل | دكتور | سكرتير
-  ⚠️ No nurse/accountant filter — not available
+Filter chips: الكل | أطباء | تمريض | إدارة
 List items: avatar + name + role badge + online status + (···)
 (···) actions: تعديل الدور | تعليق الحساب | حذف
 Pending invitations section with count badge

@@ -3,6 +3,8 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -19,7 +21,8 @@ class ClinicActionSheet {
     return AppBottomSheet.show(
       context: context,
       child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 24),
+        padding: const EdgeInsetsDirectional.fromSTEB(
+            AppConstants.spaceMd, 0, AppConstants.spaceMd, AppConstants.spaceLg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,10 +40,10 @@ class ClinicActionSheet {
                 color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.spaceMd),
             _ActionTile(
               icon: Icons.info_outline,
-              label: 'عرض التفاصيل',
+              label: AppStrings.viewDetails,
               color: AppColors.primary,
               onTap: () {
                 Navigator.pop(context);
@@ -49,7 +52,7 @@ class ClinicActionSheet {
             ),
             _ActionTile(
               icon: Icons.edit_document,
-              label: 'تعديل البيانات',
+              label: AppStrings.editData,
               color: AppColors.primaryContainer,
               onTap: () {
                 Navigator.pop(context);
@@ -58,7 +61,7 @@ class ClinicActionSheet {
             ),
             _ActionTile(
               icon: Icons.delete_outline,
-              label: 'حذف العيادة',
+              label: AppStrings.deleteClinic,
               color: AppColors.danger,
               onTap: () {
                 Navigator.pop(context);
@@ -76,20 +79,19 @@ class ClinicActionSheet {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('تأكيد الحذف'),
-        content: const Text(
-            'هل أنت متأكد من حذف هذه العيادة؟ لا يمكن التراجع عن هذا الإجراء.'),
+        title: const Text(AppStrings.confirmDelete),
+        content: const Text(AppStrings.confirmDeleteAction),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء'),
+            child: const Text(AppStrings.cancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               onDelete();
             },
-            child: const Text('حذف'),
+            child: const Text(AppStrings.delete),
           ),
         ],
       ),

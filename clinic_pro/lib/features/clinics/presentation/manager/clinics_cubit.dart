@@ -87,6 +87,39 @@ class ClinicsCubit extends Cubit<ClinicsState> {
     emit(ClinicsLoaded(clinics: list));
   }
 
+  /// إضافة عضو إلى طاقم العيادة
+  Future<void> addStaffMember({
+    required String clinicId,
+    required String userId,
+    required String role,
+  }) async {
+    if (state is! ClinicsLoaded) return;
+    final loaded = state as ClinicsLoaded;
+
+    // إضافة العضو للبيانات الوهمية
+    MockData.clinicStaff.add({
+      'id': 'cs-${DateTime.now().millisecondsSinceEpoch}',
+      'clinic_id': clinicId,
+      'user_id': userId,
+      'role': role,
+      'is_active': true,
+    });
+
+    // إعادة بث الحالة لتحديث الشاشات
+    emit(ClinicsLoaded(clinics: _mapMockData()));
+  }
+
+  /// إزالة عضو من طاقم العيادة
+  Future<void> removeStaffMember(String staffEntryId) async {
+    if (state is! ClinicsLoaded) return;
+
+    // إزالة العضو من البيانات الوهمية
+    MockData.clinicStaff.removeWhere((cs) => cs['id'] == staffEntryId);
+
+    // إعادة بث الحالة لتحديث الشاشات
+    emit(ClinicsLoaded(clinics: _mapMockData()));
+  }
+
   /// تحويل MockData إلى ClinicItem
   List<ClinicItem> _mapMockData() {
     return MockData.clinics.map((raw) {

@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/mocks/mock_data.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -16,26 +17,6 @@ class ClinicWorkingHoursSection extends StatelessWidget {
     super.key,
     required this.clinicId,
   });
-
-  static const _dayNames = [
-    'الأحد',
-    'الإثنين',
-    'الثلاثاء',
-    'الأربعاء',
-    'الخميس',
-    'الجمعة',
-    'السبت',
-  ];
-
-  static const _dayKeys = [
-    'sunday',
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -54,15 +35,9 @@ class ClinicWorkingHoursSection extends StatelessWidget {
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
+        boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,23 +45,24 @@ class ClinicWorkingHoursSection extends StatelessWidget {
           Row(
             children: [
               const Icon(Icons.schedule,
-                  size: 18, color: AppColors.primary),
-              const SizedBox(width: 8),
+                  size: AppConstants.iconSizeLg, color: AppColors.primary),
+              const SizedBox(width: AppConstants.spaceSm),
               Text(
-                'ساعات العمل',
+                AppStrings.workingHours,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Divider(height: 1, color: AppColors.border),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppConstants.spaceXs),
+          const Divider(height: 1, color: AppColors.border),
+          const SizedBox(height: AppConstants.spaceSm),
           ...List.generate(7, (index) {
-            final day = _dayNames[index];
-            final time = hourData[_dayKeys[index]] as String? ?? 'مغلق';
-            final isClosed = time == 'مغلق';
+            final day = AppStrings.dayNames[index];
+            final time = hourData[AppStrings.dayKeys[index]] as String? ??
+                AppStrings.closed;
+            final isClosed = time == AppStrings.closed;
             final isToday = index == todayIndex;
 
             return Padding(
@@ -97,7 +73,7 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                     : EdgeInsets.zero,
                 decoration: BoxDecoration(
                   color: isToday ? AppColors.primaryLight : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                 ),
                 child: Row(
                   children: [
@@ -118,7 +94,8 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                           ),
                           if (isToday)
                             Padding(
-                              padding: const EdgeInsetsDirectional.only(start: 4),
+                              padding:
+                                  const EdgeInsetsDirectional.only(start: 4),
                               child: Container(
                                 width: 6,
                                 height: 6,
@@ -140,7 +117,8 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                               : isToday
                                   ? AppColors.primary
                                   : AppColors.textPrimary,
-                          fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
+                          fontWeight:
+                              isToday ? FontWeight.w600 : FontWeight.normal,
                         ),
                         textDirection: TextDirection.ltr,
                       ),
@@ -151,10 +129,11 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius:
+                              BorderRadius.circular(AppConstants.radiusSm),
                         ),
                         child: Text(
-                          'مغلق',
+                          AppStrings.closed,
                           style: AppTextStyles.labelChip(context).copyWith(
                             color: AppColors.textSecondary,
                             fontWeight: FontWeight.bold,

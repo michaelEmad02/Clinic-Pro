@@ -5,6 +5,8 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/clinics_state.dart';
@@ -23,26 +25,17 @@ class ClinicSummaryCards extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: isWide ? 4 : 2,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
+          crossAxisSpacing: AppConstants.spaceSm,
+          mainAxisSpacing: AppConstants.spaceSm,
           childAspectRatio: 1.3,
           children: [
-            _SummaryCard(
-              icon: Icons.groups,
-              iconBg: AppColors.primaryLight,
-              iconColor: AppColors.primary,
-              value: _formatNumber(clinic.totalPatients),
-              label: 'إجمالي المرضى',
-              change: '+${clinic.patientsChange}% هذا الشهر',
-              changeColor: AppColors.successText,
-            ),
             _SummaryCard(
               icon: Icons.event,
               iconBg: AppColors.warningBg,
               iconColor: AppColors.warningText,
               value: _formatNumber(clinic.todayAppointments),
-              label: 'مواعيد اليوم',
-              change: 'متبقي ${clinic.todayRemaining}',
+              label: AppStrings.todayAppointments,
+              change: AppStrings.remainingAppointments(clinic.todayRemaining),
               changeColor: AppColors.textSecondary,
             ),
             _SummaryCard(
@@ -50,18 +43,31 @@ class ClinicSummaryCards extends StatelessWidget {
               iconBg: AppColors.primaryLight,
               iconColor: AppColors.primary,
               value: '${clinic.doctorsCount}',
-              label: 'الأطباء',
+              label: AppStrings.doctors,
               change: clinic.doctorsCount > 0 && clinic.doctorsOnLeave > 0
-                  ? '${clinic.doctorsOnLeave} في إجازة'
+                  ? AppStrings.onLeave(clinic.doctorsOnLeave)
                   : clinic.doctorsCount > 0
-                      ? 'نشط'
-                      : 'لا يوجد',
+                      ? AppStrings.active
+                      : AppStrings.none,
               changeColor: AppColors.textSecondary,
             ),
-            // بطاقة التقييم — بلون مميز (primary-container)
-            _RatingCard(
-              rating: clinic.rating,
-              totalReviews: clinic.totalReviews,
+            _SummaryCard(
+              icon: Icons.payments_outlined,
+              iconBg: AppColors.successBg,
+              iconColor: AppColors.successText,
+              value: '${_formatNumber(clinic.monthlyRevenue.toInt())} ${AppStrings.egp}',
+              label: AppStrings.monthlyRevenue,
+              change: AppStrings.active,
+              changeColor: AppColors.successText,
+            ),
+            _SummaryCard(
+              icon: Icons.check_circle_outline,
+              iconBg: AppColors.primaryLight,
+              iconColor: AppColors.primary,
+              value: '${clinic.todayAppointments - clinic.todayRemaining}',
+              label: AppStrings.completedAppointments,
+              change: AppStrings.today,
+              changeColor: AppColors.textSecondary,
             ),
           ],
         );
@@ -99,18 +105,12 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(AppConstants.spaceSm + AppConstants.spaceXs),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
+        boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,23 +127,22 @@ class _SummaryCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: AppConstants.spaceXs),
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(AppConstants.spaceXs),
                 decoration: BoxDecoration(
                   color: iconBg,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                 ),
-                child: Icon(icon, size: 16, color: iconColor),
+                child: Icon(icon, size: AppConstants.iconSizeMd, color: iconColor),
               ),
             ],
           ),
           const Spacer(),
           Text(
             value,
-            style: AppTextStyles.dataNumeric(context).copyWith(
+            style: AppTextStyles.headlineMedium(context).copyWith(
               color: AppColors.textPrimary,
-              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -185,21 +184,14 @@ class _RatingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(AppConstants.spaceSm + AppConstants.spaceXs),
       decoration: BoxDecoration(
         color: AppColors.primaryContainer,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+        boxShadow: AppConstants.cardShadow,
       ),
       child: Stack(
         children: [
-          // عنصر زخرفي
           Positioned(
             bottom: -12,
             right: -12,
@@ -219,19 +211,19 @@ class _RatingCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'التقييم العام',
+                    AppStrings.overallRating,
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: AppColors.onPrimaryContainer,
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(AppConstants.spaceXs),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceTint.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                     ),
                     child: const Icon(Icons.star,
-                        size: 16, color: AppColors.onPrimaryContainer),
+                        size: AppConstants.iconSizeMd, color: AppColors.onPrimaryContainer),
                   ),
                 ],
               ),
@@ -242,14 +234,13 @@ class _RatingCard extends StatelessWidget {
                 children: [
                   Text(
                     rating.toStringAsFixed(1),
-                    style: AppTextStyles.dataNumeric(context).copyWith(
+                    style: AppTextStyles.headlineMedium(context).copyWith(
                       color: AppColors.onPrimaryContainer,
-                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    ' / 5.0',
+                    AppStrings.outOfFive,
                     style: AppTextStyles.caption(context).copyWith(
                       color: AppColors.onPrimaryContainer.withOpacity(0.7),
                     ),
@@ -257,7 +248,7 @@ class _RatingCard extends StatelessWidget {
                 ],
               ),
               Text(
-                'من $totalReviews مراجعة',
+                AppStrings.reviewCount(totalReviews),
                 style: AppTextStyles.caption(context).copyWith(
                   color: AppColors.onPrimaryContainer.withOpacity(0.8),
                 ),

@@ -3,6 +3,8 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/utils/responsive_helper.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../manager/clinics_state.dart';
@@ -28,14 +30,14 @@ class ClinicsList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (clinics.isEmpty) {
       return const EmptyState(
-        title: 'لا توجد عيادات',
-        subtitle: 'قم بإضافة أول عيادة لك الآن.',
+        title: AppStrings.noClinics,
+        subtitle: AppStrings.addFirstClinic,
         icon: Icons.local_hospital_outlined,
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppConstants.spaceMd),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final crossAxisCount = ResponsiveHelper.gridColumns(context);
@@ -43,8 +45,10 @@ class ClinicsList extends StatelessWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              crossAxisSpacing:
+                  AppConstants.spaceSm + AppConstants.spaceXs,
+              mainAxisSpacing:
+                  AppConstants.spaceSm + AppConstants.spaceXs,
               childAspectRatio: 1.7,
             ),
             itemCount: clinics.length,

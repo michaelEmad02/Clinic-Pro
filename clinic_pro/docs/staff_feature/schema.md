@@ -48,11 +48,10 @@ Comment: *"يحتوي علي موظفين كل عياده"*
 'doctor', 'secretary'
 ```
 
-> ⚠️ **Only 2 values currently** — `nurse` and `accountant` are NOT in the database enum,
-> even though the `users` table comment mentions them. These roles are confirmed
-> **not yet available** — see `upcoming_features.md` → "Additional Staff Roles".
->
-> Do NOT build UI that allows selecting nurse/accountant until the enum is updated.
+> ⚠️ **Database Enum constraints:** The database currently supports `'doctor', 'secretary'`.
+> However, for UI demonstration and filtering purposes, the `MockData` also supports `'nurse'` and `'accountant'` to showcase the nursing/admin filters in the UI.
+> 
+> When integrating with Supabase, these roles will need to be added to the database enum or handled as permissions.
 
 ---
 

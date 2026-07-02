@@ -103,6 +103,8 @@ class InvoiceItem extends Equatable {
       [id, clinicId, patientName, totalAmount, paidAmount, status, sourceType];
 }
 
+enum InvoicesDateRange { today, thisWeek, thisMonth, threeMonths, custom, all }
+
 abstract class InvoicesState extends Equatable {
   const InvoicesState();
   @override
@@ -116,22 +118,61 @@ class InvoicesLoading extends InvoicesState {}
 class InvoicesLoaded extends InvoicesState {
   final List<InvoiceItem> allInvoices;
   final InvoiceFilter activeFilter;
+  final InvoicesDateRange activeRange;
+  final DateTime? customStart;
+  final DateTime? customEnd;
 
   const InvoicesLoaded({
     required this.allInvoices,
     this.activeFilter = InvoiceFilter.all,
+    this.activeRange = InvoicesDateRange.thisMonth,
+    this.customStart,
+    this.customEnd,
   });
 
   List<InvoiceItem> get filteredInvoices {
+    final now = DateTime.now();
+    DateTime start;
+    DateTime end = DateTime.now();
+
+    switch (activeRange) {
+      case InvoicesDateRange.today:
+        start = DateTime(now.year, now.month, now.day);
+        break;
+      case InvoicesDateRange.thisWeek:
+        start = now.subtract(const Duration(days: 7));
+        break;
+      case InvoicesDateRange.thisMonth:
+        start = DateTime(now.year, now.month, 1);
+        break;
+      case InvoicesDateRange.threeMonths:
+        start = now.subtract(const Duration(days: 90));
+        break;
+      case InvoicesDateRange.custom:
+        start = customStart ?? DateTime(2000);
+        end = customEnd ?? DateTime.now();
+        break;
+      case InvoicesDateRange.all:
+        start = DateTime(2000);
+        break;
+    }
+
+    final dateFiltered = allInvoices.where((inv) {
+      final date = DateTime.tryParse(inv.createdAt);
+      if (date == null) return true;
+      return date.isAfter(start.subtract(const Duration(seconds: 1))) &&
+          date.isBefore(end.add(const Duration(days: 1)));
+    }).toList();
+
     switch (activeFilter) {
       case InvoiceFilter.all:
-        return allInvoices;
+        return dateFiltered;
       case InvoiceFilter.paid:
-        return allInvoices.where((inv) => inv.status == 'paid').toList();
+        return dateFiltered.where((inv) => inv.status == 'paid').toList();
       case InvoiceFilter.pending:
-        return allInvoices.where((inv) => inv.status == 'pending').toList();
+        return dateFiltered.where((inv) => inv.status == 'pending').toList();
       case InvoiceFilter.partial:
-        return allInvoices.where((inv) => inv.status == 'partial').toList();
+        return dateFiltered.where((inv) => inv.status == 'partial').toList();
     }
   }
 
@@ -161,15 +202,27 @@ class InvoicesLoaded extends InvoicesState {
   InvoicesLoaded copyWith({
     List<InvoiceItem>? allInvoices,
     InvoiceFilter? activeFilter,
+    InvoicesDateRange? activeRange,
+    DateTime? customStart,
+    DateTime? customEnd,
   }) {
     return InvoicesLoaded(
       allInvoices: allInvoices ?? this.allInvoices,
       activeFilter: activeFilter ?? this.activeFilter,
+      activeRange: activeRange ?? this.activeRange,
+      customStart: customStart ?? this.customStart,
+      customEnd: customEnd ?? this.customEnd,
     );
   }
 
   @override
-  List<Object?> get props => [allInvoices, activeFilter];
+  List<Object?> get props => [
+        allInvoices,
+        activeFilter,
+        activeRange,
+        customStart,
+        customEnd,
+      ];
 }
 
 class InvoicesError extends InvoicesState {

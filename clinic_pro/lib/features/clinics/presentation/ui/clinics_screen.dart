@@ -5,7 +5,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -65,7 +67,7 @@ class _ClinicsBody extends StatelessWidget {
         builder: (context, state) {
           if (state is ClinicsLoading) {
             return const Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(AppConstants.spaceMd),
               child: ShimmerList(itemCount: 3),
             );
           }
@@ -75,11 +77,11 @@ class _ClinicsBody extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(state.message),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppConstants.spaceMd),
                   ElevatedButton(
                     onPressed: () =>
                         context.read<ClinicsCubit>().loadClinics(),
-                    child: const Text('إعادة المحاولة'),
+                    child: const Text(AppStrings.retry),
                   ),
                 ],
               ),
@@ -109,9 +111,9 @@ class _ClinicsBody extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openClinicForm(context),
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         ),
         child: const Icon(Icons.add),
       ),
@@ -124,16 +126,16 @@ class _ClinicsBody extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('تأكيد الحذف'),
+        title: const Text(AppStrings.confirmDelete),
         content: Text('هل أنت متأكد من حذف "${clinic.name}"؟'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء'),
+            child: const Text(AppStrings.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('حذف', style: TextStyle(color: AppColors.danger)),
+            child: const Text(AppStrings.delete, style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -142,7 +144,7 @@ class _ClinicsBody extends StatelessWidget {
     await cubit.deleteClinic(clinic.id);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('تم حذف "${clinic.name}"')),
+      SnackBar(content: Text('${AppStrings.deletedSuccess}"${clinic.name}"')),
     );
   }
 
@@ -179,7 +181,7 @@ class _ClinicsBody extends StatelessWidget {
         address: result['address']!,
       ));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم تحديث بيانات العيادة')),
+        const SnackBar(content: Text(AppStrings.updatedSuccess)),
       );
     } else {
       cubit.addClinic(
@@ -188,7 +190,7 @@ class _ClinicsBody extends StatelessWidget {
         address: result['address']!,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم إضافة العيادة')),
+        const SnackBar(content: Text(AppStrings.addedSuccess)),
       );
     }
   }

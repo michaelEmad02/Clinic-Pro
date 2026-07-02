@@ -9,6 +9,7 @@ import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
 import '../../manager/invoices_cubit.dart';
 import '../../manager/invoices_state.dart';
+import 'add_invoice_sheet.dart';
 
 class InvoiceActionSheet {
   static Future<void> show({
@@ -60,14 +61,24 @@ class InvoiceActionSheet {
               label: 'الحالة',
               value: invoice.statusLabel,
             ),
-            const SizedBox(height: 16),
+             const SizedBox(height: 16),
+            if (invoice.paidAmount < invoice.totalAmount)
+              _ActionTile(
+                icon: Icons.payment,
+                label: 'تسديد دفعة',
+                color: AppColors.primary,
+                onTap: () {
+                  Navigator.pop(context);
+                  _showPaymentSheet(context, invoice);
+                },
+              ),
             _ActionTile(
-              icon: Icons.payment,
-              label: 'تسديد دفعة',
+              icon: Icons.edit_outlined,
+              label: 'تعديل الفاتورة',
               color: AppColors.primary,
               onTap: () {
                 Navigator.pop(context);
-                _showPaymentSheet(context, invoice);
+                AddInvoiceSheet.show(context, initialAppointmentId: invoice.sourceId, invoice: invoice);
               },
             ),
             _ActionTile(
@@ -76,8 +87,47 @@ class InvoiceActionSheet {
               color: AppColors.textSecondary,
               onTap: () => Navigator.pop(context),
             ),
+            _ActionTile(
+              icon: Icons.delete_outline,
+              label: 'حذف الفاتورة',
+              color: AppColors.danger,
+              onTap: () {
+                Navigator.pop(context);
+                _confirmDelete(context, invoice);
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  static void _confirmDelete(BuildContext context, InvoiceItem invoice) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('تأكيد الحذف', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+        content: const Text(
+          'هل أنت متأكد من حذف هذه الفاتورة نهائياً؟ هذا الإجراء سيؤثر على التقارير المالية للعيادة ولا يمكن التراجع عنه.',
+          style: TextStyle(fontFamily: 'Cairo'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('إلغاء', style: TextStyle(fontFamily: 'Cairo')),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<InvoicesCubit>().deleteInvoice(invoice.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('تم حذف الفاتورة بنجاح')),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+            child: const Text('حذف', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
+          ),
+        ],
       ),
     );
   }

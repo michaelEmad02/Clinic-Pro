@@ -11,7 +11,8 @@ NOT auto-generated after examination.
 Creation flow:
   1. Select patient          → autocomplete search
   2. Select appointment      → filtered to selected patient,
-                                appointments with status = 'done' only
+                                appointments that are not fully paid yet
+                                (regardless of appointment status)
   3. appointment.price       → shown as HINT only ("السعر المتوقع: X")
                                 NOT pre-filled in the total_amount input
   4. Enter total_amount      → actual charged amount (required, > 0)
@@ -54,7 +55,7 @@ String get status {
 - One appointment can have multiple invoice records (partial payments over time)
 - Secretary and Owner can create/edit invoices
 - Doctor can VIEW invoices only — cannot create
-- Invoices cannot be deleted — only amounts updated
+- Invoices can be edited or deleted (deleting triggers confirmation dialog since it impacts reports)
 ```
 
 ---

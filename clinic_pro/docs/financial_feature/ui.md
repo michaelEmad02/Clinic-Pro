@@ -18,9 +18,10 @@
 
 ```
 Summary bar: إيرادات اليوم | فواتير معلقة | إجمالي الشهر
+Date range chips: اليوم | هذا الأسبوع | هذا الشهر | 3 أشهر | الكل | مخصص
 Filter chips: الكل | مدفوع | جزئي | معلق  (status derived client-side)
 List items: patient name + amount (Inter Bold) + date + status badge + (···)
-(···) → تحصيل دفعة | إرسال للمريض | تفاصيل   ⚠️ no "حذف" — invoices not deletable
+(···) → تسديد دفعة (if not fully paid) | تعديل الفاتورة | طباعة الفاتورة | حذف الفاتورة (with confirm dialog)
 FAB → Add Invoice Sheet
 ```
 

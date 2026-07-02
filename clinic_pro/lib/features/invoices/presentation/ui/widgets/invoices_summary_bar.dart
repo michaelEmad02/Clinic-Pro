@@ -10,6 +10,11 @@ class InvoicesSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    // ضبط الهوامش الداخلية والخارجية والخط بناءً على عرض الشاشة لضمان التناسق التام
+    final isSmallScreen = width < 380;
+    final paddingValue = isSmallScreen ? 8.0 : 12.0;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -20,12 +25,25 @@ class InvoicesSummaryBar extends StatelessWidget {
               value: state.todayRevenue.toStringAsFixed(0),
               currency: 'ج.م',
               color: AppColors.primary,
+              padding: paddingValue,
+              isSmallScreen: isSmallScreen,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _SummaryCard(
+              label: 'فواتير معلقة',
+              value: state.pendingCount.toString(),
+              currency: 'فاتورة',
+              color: AppColors.warning,
+              padding: paddingValue,
+              isSmallScreen: isSmallScreen,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(paddingValue),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 gradient: const LinearGradient(
@@ -47,8 +65,11 @@ class InvoicesSummaryBar extends StatelessWidget {
                 children: [
                   Text(
                     'الشهر الحالي',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.caption(context).copyWith(
                       color: AppColors.textSecondary,
+                      fontSize: isSmallScreen ? 10 : 12,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -56,19 +77,25 @@ class InvoicesSummaryBar extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        state.monthRevenue.toStringAsFixed(0),
-                        style: AppTextStyles.headlineMedium(context).copyWith(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                      Flexible(
+                        child: Text(
+                          state.monthRevenue.toStringAsFixed(0),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.headlineMedium(context).copyWith(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                            fontSize: isSmallScreen ? 16 : 20,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 2),
                       Text(
                         'ج.م',
                         style: AppTextStyles.caption(context).copyWith(
                           color: AppColors.primary,
+                          fontSize: isSmallScreen ? 9 : 11,
                         ),
                       ),
                     ],
@@ -88,18 +115,22 @@ class _SummaryCard extends StatelessWidget {
   final String value;
   final String currency;
   final Color color;
+  final double padding;
+  final bool isSmallScreen;
 
   const _SummaryCard({
     required this.label,
     required this.value,
     required this.currency,
     required this.color,
+    required this.padding,
+    required this.isSmallScreen,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
@@ -117,8 +148,11 @@ class _SummaryCard extends StatelessWidget {
         children: [
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.caption(context).copyWith(
               color: AppColors.textSecondary,
+              fontSize: isSmallScreen ? 10 : 12,
             ),
           ),
           const SizedBox(height: 4),
@@ -126,19 +160,25 @@ class _SummaryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                value,
-                style: AppTextStyles.headlineMedium(context).copyWith(
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold,
-                  color: color,
+              Flexible(
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.headlineMedium(context).copyWith(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                    fontSize: isSmallScreen ? 16 : 20,
+                  ),
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 2),
               Text(
                 currency,
                 style: AppTextStyles.caption(context).copyWith(
                   color: color,
+                  fontSize: isSmallScreen ? 9 : 11,
                 ),
               ),
             ],

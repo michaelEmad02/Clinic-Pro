@@ -10,6 +10,7 @@ import 'widgets/add_invoice_sheet.dart';
 import 'widgets/invoice_action_sheet.dart';
 import 'widgets/invoices_list.dart';
 import 'widgets/invoices_summary_bar.dart';
+import 'widgets/invoices_date_range_chips.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -86,6 +87,28 @@ class _InvoicesBody extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 children: [
                   InvoicesSummaryBar(state: state),
+                  const SizedBox(height: 12),
+                  InvoicesDateRangeChips(
+                    activeRange: state.activeRange,
+                    onChanged: (range) async {
+                      if (range == InvoicesDateRange.custom) {
+                        final picked = await showDateRangePicker(
+                          context: context,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null && context.mounted) {
+                          context.read<InvoicesCubit>().changeDateRange(
+                                range,
+                                start: picked.start,
+                                end: picked.end,
+                              );
+                        }
+                      } else {
+                        context.read<InvoicesCubit>().changeDateRange(range);
+                      }
+                    },
+                  ),
                   const SizedBox(height: 12),
                   InvoicesList(
                     invoices: state.filteredInvoices,

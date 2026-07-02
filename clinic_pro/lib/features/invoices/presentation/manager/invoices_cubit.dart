@@ -29,6 +29,16 @@ class InvoicesCubit extends Cubit<InvoicesState> {
     }
   }
 
+  void changeDateRange(InvoicesDateRange range, {DateTime? start, DateTime? end}) {
+    if (state is InvoicesLoaded) {
+      emit((state as InvoicesLoaded).copyWith(
+        activeRange: range,
+        customStart: start,
+        customEnd: end,
+      ));
+    }
+  }
+
   Future<void> createInvoice({
     required String patientId,
     required String patientName,
@@ -78,6 +88,87 @@ class InvoicesCubit extends Cubit<InvoicesState> {
       emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
     } catch (_) {
       emit(const InvoicesError('تعذّر تحديث مبلغ الفاتورة'));
+    }
+  }
+
+  /// تحديث بيانات فاتورة قائمة بالكامل
+  Future<void> updateInvoice({
+    required String invoiceId,
+    required double totalAmount,
+    required double paidAmount,
+    String? paymentMethod,
+  }) async {
+    if (state is! InvoicesLoaded) return;
+    final loaded = state as InvoicesLoaded;
+
+    try {
+      await _repository.updateInvoice(
+        invoiceId: invoiceId,
+        totalAmount: totalAmount,
+        paidAmount: paidAmount,
+        paymentMethod: paymentMethod,
+      );
+      // إعادة تحميل الفواتير
+      final items = await _repository.loadInvoices();
+      emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
+    } catch (_) {
+      emit(const InvoicesError('تعذّر تحديث الفاتورة'));
+    }
+  }
+
+  /// البحث عن المرضى عبر المستودع
+  Future<List<Map<String, dynamic>>> searchPatients(String query) async {
+    try {
+      final patients = await _repository.loadPatients();
+      if (query.isEmpty) return patients;
+      final q = query.trim().toLowerCase();
+      return patients.where((p) {
+        final name = (p['name'] as String).toLowerCase();
+        final phone = (p['phone'] as String);
+        return name.contains(q) || phone.contains(q);
+      }).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// تحميل مواعيد المريض المنتهية وغير المفوترة بعد
+  Future<List<Map<String, dynamic>>> loadPatientAppointments(String patientId) async {
+    try {
+      return await _repository.loadAppointmentsForPatient(patientId);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// جلب تفاصيل موعد محدد
+  Future<Map<String, dynamic>?> getAppointmentDetails(String appointmentId) async {
+    try {
+      return await _repository.getAppointment(appointmentId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// جلب تفاصيل مريض محدد
+  Future<Map<String, dynamic>?> getPatientDetails(String patientId) async {
+    try {
+      return await _repository.getPatient(patientId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// حذف الفاتورة نهائياً وإعادة تحميل القائمة
+  Future<void> deleteInvoice(String invoiceId) async {
+    if (state is! InvoicesLoaded) return;
+    final loaded = state as InvoicesLoaded;
+    try {
+      await _repository.deleteInvoice(invoiceId);
+      final items = await _repository.loadInvoices();
+      emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
+    } catch (_) {
+      emit(const InvoicesError('تعذّر حذف الفاتورة'));
     }
   }
 

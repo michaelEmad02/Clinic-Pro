@@ -52,12 +52,25 @@ class InvoiceListItem extends StatelessWidget {
               ],
             ),
             const Spacer(),
-            Text(
-              '${invoice.totalAmount.toStringAsFixed(0)} ج.م',
-              style: AppTextStyles.dataNumeric(context).copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+            Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  invoice.totalAmount.toStringAsFixed(0),
+                  style: AppTextStyles.dataNumeric(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  invoice.paidAmount.toStringAsFixed(0),
+                  style: AppTextStyles.dataNumeric(context).copyWith(
+                    fontWeight: FontWeight.normal,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 4),
             SizedBox(

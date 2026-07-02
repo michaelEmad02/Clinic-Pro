@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/mocks/mock_data.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -33,15 +34,9 @@ class ClinicVisitTypesSection extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
+        boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,23 +45,24 @@ class ClinicVisitTypesSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppConstants.spaceMd, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.border)),
+            decoration: const BoxDecoration(
+              border: Border(
+                  bottom: BorderSide(color: AppColors.border)),
             ),
             child: Row(
               children: [
                 const Icon(Icons.medical_services_outlined,
-                    size: 18, color: AppColors.primary),
-                const SizedBox(width: 8),
+                    size: AppConstants.iconSizeLg, color: AppColors.primary),
+                const SizedBox(width: AppConstants.spaceSm),
                 Text(
-                  'أنواع الزيارات والأسعار',
+                  AppStrings.visitTypesAndPrices,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Spacer(),
                 Text(
-                  'إضافة خدمة',
+                  AppStrings.addService,
                   style: AppTextStyles.labelChip(context).copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
@@ -76,11 +72,13 @@ class ClinicVisitTypesSection extends StatelessWidget {
             ),
           ),
           if (types.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(16),
+            Padding(
+              padding: const EdgeInsets.all(AppConstants.spaceMd),
               child: Text(
-                'لا توجد خدمات مسجلة',
-                style: TextStyle(color: AppColors.textHint),
+                AppStrings.noServices,
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: AppColors.textHint,
+                ),
               ),
             )
           else
@@ -102,7 +100,8 @@ class ClinicVisitTypesSection extends StatelessWidget {
                           children: [
                             Text(
                               name,
-                              style: AppTextStyles.bodyLarge(context).copyWith(
+                              style:
+                                  AppTextStyles.bodyLarge(context).copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -111,7 +110,8 @@ class ClinicVisitTypesSection extends StatelessWidget {
                                 padding: const EdgeInsets.only(top: 2),
                                 child: Text(
                                   description,
-                                  style: AppTextStyles.caption(context).copyWith(
+                                  style:
+                                      AppTextStyles.caption(context).copyWith(
                                     color: AppColors.textSecondary,
                                   ),
                                 ),
@@ -119,7 +119,9 @@ class ClinicVisitTypesSection extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(
+                          width:
+                              AppConstants.spaceSm + AppConstants.spaceXs),
                       Row(
                         children: [
                           Text(
@@ -132,16 +134,16 @@ class ClinicVisitTypesSection extends StatelessWidget {
                           ),
                           const SizedBox(width: 2),
                           Text(
-                            'ر.س',
-                            style: AppTextStyles.caption(context).copyWith(
+                            AppStrings.sar,
+                            style:
+                                AppTextStyles.labelChip(context).copyWith(
                               color: AppColors.textPrimary,
-                              fontSize: 11,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Icon(
+                          const SizedBox(width: AppConstants.spaceSm),
+                          const Icon(
                             Icons.chevron_left,
-                            size: 18,
+                            size: AppConstants.iconSizeLg,
                             color: AppColors.outline,
                           ),
                         ],

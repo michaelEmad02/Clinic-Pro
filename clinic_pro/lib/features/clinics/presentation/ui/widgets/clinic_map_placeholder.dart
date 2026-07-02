@@ -4,6 +4,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -16,18 +17,12 @@ class ClinicMapPlaceholder extends StatelessWidget {
       height: 180,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
+        boxShadow: AppConstants.cardShadow,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(11),
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         child: Stack(
           children: [
             // خلفية وهمية للخريطة
@@ -71,14 +66,14 @@ class ClinicMapPlaceholder extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.directions_outlined,
-                      color: Colors.white,
+                      color: AppColors.surface,
                       size: 16,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'احصل على الاتجاهات',
                       style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
