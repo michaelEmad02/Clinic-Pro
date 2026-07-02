@@ -14,7 +14,7 @@ class MockCloudService implements ICloudService {
     String? order,
     bool ascending = true,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 300));
     List<Map<String, dynamic>> data = List.from(_getTableData(table));
     
     // Filtering (eq)
@@ -109,6 +109,8 @@ class MockCloudService implements ICloudService {
       case 'clinics': return MockData.clinics;
       case 'clinic_staff': return MockData.clinicStaff;
       case 'patients': return MockData.patients;
+      case 'patient_visits': return MockData.patientVisits;
+      case 'patient_prescription_records': return MockData.patientPrescriptionRecords;
       case 'appointment_types': return MockData.appointmentTypes;
       case 'appointments': return MockData.appointments;
       case 'doctor_queue_rules': return MockData.doctorQueueRules;
@@ -121,8 +123,6 @@ class MockCloudService implements ICloudService {
       case 'expense_categories': return MockData.expenseCategories;
       case 'invoices': return MockData.invoices;
       case 'subscriptions': return MockData.subscriptions;
-      case 'patient_visits': return MockData.patientVisits;
-      case 'patient_prescription_records': return MockData.patientPrescriptionRecords;
       case 'weekly_revenue': return MockData.weeklyRevenue;
       case 'top_services': return MockData.topServices;
       case 'doctor_performance': return MockData.doctorPerformance;

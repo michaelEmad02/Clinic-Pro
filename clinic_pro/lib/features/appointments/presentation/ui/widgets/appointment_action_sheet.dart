@@ -15,7 +15,10 @@ class AppointmentActionSheet {
     required VoidCallback? onConfirmArrival,
     required VoidCallback? onToggleUrgent,
     required VoidCallback? onCancel,
+    required VoidCallback? onRegisterInvoice,
     required VoidCallback onViewDetails,
+    VoidCallback? onEdit,
+    VoidCallback? onDelete,
   }) {
     return AppBottomSheet.show(
       context: context,
@@ -49,7 +52,23 @@ class AppointmentActionSheet {
                   onConfirmArrival();
                 },
               ),
-            if (onToggleUrgent != null)
+            // تعديل الموعد — فقط إذا لم يبدأ الكشف ولم ينتهِ بعد
+            if (onEdit != null &&
+                appointment.status != 'done' &&
+                appointment.status != 'in_progress' &&
+                appointment.status != 'cancelled')
+              _ActionTile(
+                icon: Icons.edit_outlined,
+                label: 'تعديل الموعد',
+                color: AppColors.primary,
+                onTap: () {
+                  Navigator.pop(context);
+                  onEdit();
+                },
+              ),
+            if (onToggleUrgent != null &&
+                appointment.status != 'cancelled' &&
+                appointment.status != 'done')
               _ActionTile(
                 icon: Icons.priority_high,
                 label: appointment.isUrgent ? 'إلغاء حالة الطوارئ' : 'تحديد كحالة طارئة',
@@ -59,17 +78,18 @@ class AppointmentActionSheet {
                   onToggleUrgent();
                 },
               ),
-            _ActionTile(
-              icon: Icons.receipt_long_outlined,
-              label: 'تسجيل فاتورة',
-              color: AppColors.primaryContainer,
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('سيتم تفعيل تسجيل الفاتورة في المرحلة المالية')),
-                );
-              },
-            ),
+            if (onRegisterInvoice != null &&
+                appointment.status != 'cancelled' &&
+                appointment.status != 'done')
+              _ActionTile(
+                icon: Icons.receipt_long_outlined,
+                label: 'تسجيل فاتورة',
+                color: AppColors.primaryContainer,
+                onTap: () {
+                  Navigator.pop(context);
+                  onRegisterInvoice();
+                },
+              ),
             _ActionTile(
               icon: Icons.info_outline,
               label: 'عرض التفاصيل',
@@ -89,6 +109,16 @@ class AppointmentActionSheet {
                 onTap: () {
                   Navigator.pop(context);
                   onCancel();
+                },
+              ),
+            if (appointment.status == 'cancelled' && onDelete != null)
+              _ActionTile(
+                icon: Icons.delete_outline,
+                label: 'حذف الموعد نهائياً',
+                color: AppColors.danger,
+                onTap: () {
+                  Navigator.pop(context);
+                  onDelete();
                 },
               ),
           ],

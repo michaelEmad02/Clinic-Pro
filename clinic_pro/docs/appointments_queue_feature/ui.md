@@ -24,13 +24,18 @@ Arrived indicator: green dot + "وصل" if arrived_at != null
 
 (···) actions:
   ✅ تأكيد الوصول     — shown when arrived_at = null AND status = 'scheduled'
-  🚨 تمييز كطارئ      — shown when is_urgent = false
+  🚨 تمييز كطارئ      — shown when status is not cancelled and not done
   تأكيد الكشف          — doctor only → opens Prescription screen
-  تعديل الموعد
-  إلغاء الموعد
+  تعديل الموعد        — shown when status is not done, not in_progress, and not cancelled
+  إلغاء الموعد        — shown when status is not done and not cancelled
+  حذف الموعد نهائياً   — shown when status is cancelled
+  تسجيل فاتورة        — shown when status is not cancelled and not done
   عرض التفاصيل
 
 FAB → Add Appointment Sheet
+
+Urgent indicator: Shows 🚨 emoji badge next to items if is_urgent = true
+
 ```
 
 ### Add Appointment Sheet

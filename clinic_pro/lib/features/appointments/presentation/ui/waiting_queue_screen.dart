@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/di/injection_container.dart';
 import '../manager/waiting_queue_cubit.dart';
 import '../manager/waiting_queue_state.dart';
 import 'widgets/call_next_button.dart';
@@ -18,7 +19,7 @@ class WaitingQueueScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => WaitingQueueCubit()..loadQueue(),
+      create: (_) => sl<WaitingQueueCubit>()..loadQueue(),
       child: const _WaitingQueueBody(),
     );
   }
@@ -93,7 +94,7 @@ class _WaitingQueueBody extends StatelessWidget {
             return RefreshIndicator(
               onRefresh: () async {
                 context.read<WaitingQueueCubit>().loadQueue();
-                await Future.delayed(const Duration(milliseconds: 600));
+                await Future.delayed(const Duration(milliseconds: 200));
               },
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 20),

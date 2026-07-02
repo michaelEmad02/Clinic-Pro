@@ -82,3 +82,37 @@ class AddAppointmentEvent extends AppointmentsEvent {
   List<Object?> get props =>
       [patientId, doctorId, typeId, date, time, notes, isUrgent];
 }
+
+/// حدث تعديل بيانات موعد قائم (النوع، الطبيب، التاريخ، الوقت، الملاحظات، الاستعجال)
+class UpdateAppointmentEvent extends AppointmentsEvent {
+  final String appointmentId;
+  final String doctorId;
+  final String typeId;
+  final String date;
+  final String time;
+  final String? notes;
+  final bool isUrgent;
+
+  const UpdateAppointmentEvent({
+    required this.appointmentId,
+    required this.doctorId,
+    required this.typeId,
+    required this.date,
+    required this.time,
+    this.notes,
+    this.isUrgent = false,
+  });
+
+  @override
+  List<Object?> get props =>
+      [appointmentId, doctorId, typeId, date, time, notes, isUrgent];
+}
+
+class DeleteAppointmentEvent extends AppointmentsEvent {
+  final String appointmentId;
+
+  const DeleteAppointmentEvent(this.appointmentId);
+
+  @override
+  List<Object?> get props => [appointmentId];
+}

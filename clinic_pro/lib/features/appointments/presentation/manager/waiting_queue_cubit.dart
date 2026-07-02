@@ -3,26 +3,46 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/mocks/mock_data.dart';
-import '../../../../core/utils/queue_sorter.dart';
+import 'package:injectable/injectable.dart';
 import 'waiting_queue_state.dart';
+import 'appointments_repository.dart';
 
+@injectable
 class WaitingQueueCubit extends Cubit<WaitingQueueState> {
-  WaitingQueueCubit() : super(WaitingQueueInitial());
+  final AppointmentsRepository _repository;
+
+  WaitingQueueCubit(this._repository) : super(WaitingQueueInitial());
 
   // معرف الطبيب الحالي (Mock — د. ياسر)
   static const _doctorId = 'u-doc-1';
-
   Future<void> loadQueue() async {
     emit(WaitingQueueLoading());
-    await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      final sorted = _buildSortedQueue();
-      final doctor = MockData.users.firstWhere((u) => u['id'] == _doctorId);
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+      final sorted = await _repository.loadQueue(_doctorId, today);
+      
+      final queuePatients = sorted.asMap().entries.map((entry) {
+        final index = entry.key;
+        final raw = entry.value;
+        final patient = raw['patients'] as Map<String, dynamic>? ?? {};
+        final type = raw['appointment_types'] as Map<String, dynamic>? ?? {};
+        final timeRaw = raw['time'] as String? ?? '00:00:00';
+
+        return QueuePatient(
+          id: raw['id'] as String,
+          patientName: patient['name'] as String? ?? 'مريض',
+          typeName: type['name'] as String? ?? 'كشف',
+          displayTime: _formatTime(timeRaw),
+          status: raw['status'] as String,
+          isUrgent: raw['is_urgent'] as bool? ?? false,
+          queueNumber: index + 1,
+        );
+      }).toList();
+
       emit(WaitingQueueLoaded(
-        queue: sorted,
-        doctorName: doctor['name'] as String,
+        queue: queuePatients,
+        doctorName: 'د. ياسر مصطفى',
       ));
     } catch (e) {
       emit(const WaitingQueueError('تعذّر تحميل طابور الانتظار'));
@@ -30,79 +50,32 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
   }
 
   /// استدعاء المريض التالي في الطابور
-  void callNext() {
+  Future<void> callNext() async {
     if (state is! WaitingQueueLoaded) return;
     final loaded = state as WaitingQueueLoaded;
 
-    // أول مريض في الانتظار (confirmed) وليس in_progress أو done
     final nextIndex = loaded.queue.indexWhere((p) => p.status == 'confirmed');
     if (nextIndex == -1) return;
 
-    final updated = loaded.queue.map((p) {
-      if (p.id == loaded.queue[nextIndex].id) {
-        return p.copyWith(status: 'in_progress');
-      }
-      return p;
-    }).toList();
-
-    emit(loaded.copyWith(queue: updated));
+    try {
+      final apptId = loaded.queue[nextIndex].id;
+      await _repository.callPatient(apptId);
+      await loadQueue();
+    } catch (_) {
+      emit(const WaitingQueueError('تعذّر استدعاء المريض التالي'));
+    }
   }
 
   /// استدعاء مريض محدد
-  void callPatient(String appointmentId) {
+  Future<void> callPatient(String appointmentId) async {
     if (state is! WaitingQueueLoaded) return;
-    final loaded = state as WaitingQueueLoaded;
 
-    final updated = loaded.queue.map((p) {
-      if (p.id == appointmentId && p.status == 'confirmed') {
-        return p.copyWith(status: 'in_progress');
-      }
-      return p;
-    }).toList();
-
-    emit(loaded.copyWith(queue: updated));
-  }
-
-  List<QueuePatient> _buildSortedQueue() {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-
-    // فلترة مواعيد اليوم التي وصلت (arrived_at != null)
-    final todayAppointments = MockData.appointments.where((a) {
-      return a['doctor_id'] == _doctorId &&
-          a['date'] == today &&
-          a['arrived_at'] != null &&
-          a['status'] != 'cancelled';
-    }).toList();
-
-    // جلب نمط الترتيب من doctor_queue_rules
-    final rule = MockData.doctorQueueRules.firstWhere(
-      (r) => r['doctor_id'] == _doctorId,
-      orElse: () => {'slots': <String>[]},
-    );
-    final slots = (rule['slots'] as List?)?.cast<String>();
-
-    final sorted = QueueSorter.sort(
-      appointments: todayAppointments,
-      ruleSlots: slots,
-    );
-
-    return sorted.asMap().entries.map((entry) {
-      final index = entry.key;
-      final raw = entry.value;
-      final patient = raw['patients'] as Map<String, dynamic>? ?? {};
-      final type = raw['appointment_types'] as Map<String, dynamic>? ?? {};
-      final timeRaw = raw['time'] as String;
-
-      return QueuePatient(
-        id: raw['id'] as String,
-        patientName: patient['name'] as String? ?? 'مريض',
-        typeName: type['name'] as String? ?? 'كشف',
-        displayTime: _formatTime(timeRaw),
-        status: raw['status'] as String,
-        isUrgent: raw['is_urgent'] as bool? ?? false,
-        queueNumber: index + 1,
-      );
-    }).toList();
+    try {
+      await _repository.callPatient(appointmentId);
+      await loadQueue();
+    } catch (_) {
+      emit(const WaitingQueueError('تعذّر استدعاء المريض'));
+    }
   }
 
   String _formatTime(String raw) {

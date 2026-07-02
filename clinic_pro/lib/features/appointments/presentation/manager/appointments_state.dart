@@ -19,6 +19,8 @@ class AppointmentItem extends Equatable {
   final String typeName;
   final String date;
   final String displayTime;
+  /// الوقت الخام من قاعدة البيانات (مثل '16:30:00') لاستخدامه عند التعديل
+  final String rawTime;
   final String status;
   final double price;
   final bool isUrgent;
@@ -43,6 +45,7 @@ class AppointmentItem extends Equatable {
     required this.typeName,
     required this.date,
     required this.displayTime,
+    this.rawTime = '00:00:00',
     required this.status,
     required this.price,
     required this.isUrgent,
@@ -76,6 +79,7 @@ class AppointmentItem extends Equatable {
       typeName: typeName,
       date: date,
       displayTime: displayTime,
+      rawTime: rawTime,
       status: status ?? this.status,
       price: price,
       isUrgent: isUrgent ?? this.isUrgent,

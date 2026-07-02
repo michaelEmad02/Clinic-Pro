@@ -109,6 +109,7 @@ any         → cancelled   (owner or secretary — except 'done')
 - Doctor can only confirm examination for their own appointments
 - Secretary can book for any doctor in the clinic
 - Cancellation allowed at any status except 'done'
+- Deletion allowed: removes the appointment and any associated invoices from the database completely
 - No separate queue table — queue is derived from appointments
 ```
 

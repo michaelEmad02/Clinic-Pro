@@ -9,6 +9,7 @@ import '../../../../core/constants/route_constants.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/di/injection_container.dart';
 import '../manager/appointments_bloc.dart';
 import '../manager/appointments_event.dart';
 import '../manager/appointments_state.dart';
@@ -16,6 +17,7 @@ import 'widgets/add_appointment_sheet.dart';
 import 'widgets/appointment_action_sheet.dart';
 import 'widgets/appointments_list.dart';
 import 'widgets/appointments_tab_bar.dart';
+import '../../../invoices/presentation/ui/widgets/add_invoice_sheet.dart';
 
 class AppointmentsScreen extends StatelessWidget {
   const AppointmentsScreen({super.key});
@@ -23,7 +25,7 @@ class AppointmentsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AppointmentsBloc()..add(LoadAppointmentsEvent()),
+      create: (_) => sl<AppointmentsBloc>()..add(LoadAppointmentsEvent()),
       child: const _AppointmentsBody(),
     );
   }
@@ -87,7 +89,7 @@ class _AppointmentsBody extends StatelessWidget {
             return RefreshIndicator(
               onRefresh: () async {
                 context.read<AppointmentsBloc>().add(LoadAppointmentsEvent());
-                await Future.delayed(const Duration(milliseconds: 600));
+                await Future.delayed(const Duration(milliseconds: 200));
               },
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -136,10 +138,77 @@ class _AppointmentsBody extends StatelessWidget {
           : null,
       onToggleUrgent: () => bloc.add(ToggleUrgentEvent(item.id)),
       onCancel: item.status != 'done' && item.status != 'cancelled'
-          ? () => bloc.add(CancelAppointmentEvent(item.id))
+          ? () => _confirmCancel(context, item, bloc)
           : null,
+      onRegisterInvoice: () async {
+        await AddInvoiceSheet.show(context, initialAppointmentId: item.id);
+        if (context.mounted) {
+          bloc.add(LoadAppointmentsEvent());
+        }
+      },
       onViewDetails: () =>
           context.push('${RouteConstants.appointments}/${item.id}'),
+      onEdit: () async {
+        await AddAppointmentSheet.show(context, appointment: item);
+        if (context.mounted) {
+          bloc.add(LoadAppointmentsEvent());
+        }
+      },
+      onDelete: () => _confirmDelete(context, item, bloc),
+    );
+  }
+
+  void _confirmCancel(BuildContext context, AppointmentItem item, AppointmentsBloc bloc) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('إلغاء الموعد'),
+        content: Text(
+          item.hasInvoice
+              ? 'هذا الموعد لديه فاتورة مسجلة. هل أنت متأكد من إلغاء الموعد؟ سيتم حذف الفاتورة المرتبطة به نهائياً واسترجاع المبلغ.'
+              : 'هل أنت متأكد من إلغاء هذا الموعد؟',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('تراجع'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              bloc.add(CancelAppointmentEvent(item.id));
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: const Text('تأكيد الإلغاء'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, AppointmentItem item, AppointmentsBloc bloc) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف الموعد نهائياً'),
+        content: const Text(
+          'هل أنت متأكد من حذف هذا الموعد نهائياً؟ لا يمكن التراجع عن هذا الإجراء.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('تراجع'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              bloc.add(DeleteAppointmentEvent(item.id));
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: const Text('تأكيد الحذف'),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -21,10 +21,10 @@ class QueueSorter {
       return arrivedAt != null && status != 'cancelled';
     }).toList();
 
-    // 2. تقسيم المواعيد إلى: ثابتة (بدأ كشفها أو انتهى) وقيد الانتظار
+    // 2. تقسيم المواعيد إلى: ثابتة (قيد الفحص حالياً) وقيد الانتظار
     final fixedAppointments = activeAppointments.where((appt) {
       final status = appt['status'] as String?;
-      return status == 'in_progress' || status == 'done';
+      return status == 'in_progress';
     }).toList();
 
     final waitingAppointments = activeAppointments.where((appt) {

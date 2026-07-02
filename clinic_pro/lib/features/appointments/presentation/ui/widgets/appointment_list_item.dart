@@ -27,13 +27,16 @@ class AppointmentListItem extends StatelessWidget {
       child: AppListItem(
         onTap: onTap,
         title: appointment.patientName,
-        subtitle: '${appointment.doctorName} • ${appointment.typeName} • ${appointment.displayTime}',
+        subtitle:
+            '${appointment.doctorName} • ${appointment.typeName} • ${appointment.displayTime}',
         leading: CircleAvatar(
           backgroundColor: appointment.isUrgent
               ? AppColors.dangerBg
               : AppColors.primaryLight,
           child: Icon(
-            appointment.isUrgent ? Icons.priority_high : Icons.calendar_today_outlined,
+            appointment.isUrgent
+                ? Icons.priority_high
+                : Icons.calendar_today_outlined,
             color: appointment.isUrgent ? AppColors.danger : AppColors.primary,
             size: 18,
           ),
@@ -41,7 +44,18 @@ class AppointmentListItem extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildStatusBadge(appointment.status),
+            Column(
+              children: [
+                if (appointment.isUrgent) ...[
+                  const StatusBadge(
+                      text: '🚨',
+                      status: BadgeStatus.error,
+                      addBackgroundColor: false),
+                  const SizedBox(width: 8),
+                ],
+                _buildStatusBadge(appointment.status),
+              ],
+            ),
             IconButton(
               icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
               onPressed: onMore,
@@ -59,7 +73,8 @@ class AppointmentListItem extends StatelessWidget {
       case 'confirmed':
         return const StatusBadge(text: 'مؤكد', status: BadgeStatus.success);
       case 'in_progress':
-        return const StatusBadge(text: 'قيد الكشف', status: BadgeStatus.warning);
+        return const StatusBadge(
+            text: 'قيد الكشف', status: BadgeStatus.warning);
       case 'done':
         return const StatusBadge(text: 'منتهي', status: BadgeStatus.success);
       case 'cancelled':

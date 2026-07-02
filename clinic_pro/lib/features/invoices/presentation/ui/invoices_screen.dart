@@ -14,13 +14,15 @@ import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
 
+import '../../../../core/di/injection_container.dart';
+
 class InvoicesScreen extends StatelessWidget {
   const InvoicesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => InvoicesCubit()..loadInvoices(),
+      create: (_) => sl<InvoicesCubit>()..loadInvoices(),
       child: const _InvoicesBody(),
     );
   }

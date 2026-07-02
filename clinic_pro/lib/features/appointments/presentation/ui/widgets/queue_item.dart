@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_list_item.dart';
+import '../../../../../core/widgets/status_badge.dart';
 import '../../manager/waiting_queue_state.dart';
 
 class QueueItem extends StatelessWidget {
@@ -44,23 +45,14 @@ class QueueItem extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (patient.isUrgent)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                margin: const EdgeInsets.only(left: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.dangerBg,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'مستعجل',
-                  style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.dangerText,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
-                ),
+            if (patient.isUrgent) ...[
+              const StatusBadge(
+                text: '🚨',
+                status: BadgeStatus.error,
+                addBackgroundColor: false,
               ),
+              const SizedBox(width: 8),
+            ],
             if (isInProgress)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

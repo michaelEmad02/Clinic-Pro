@@ -5,19 +5,24 @@ import '../../../../../core/mocks/mock_data.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/di/injection_container.dart';
 import '../../manager/invoices_cubit.dart';
 
 class AddInvoiceSheet {
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(BuildContext context, {String? initialAppointmentId}) {
     return AppBottomSheet.show(
       context: context,
-      child: const _AddInvoiceForm(),
+      child: BlocProvider(
+        create: (_) => sl<InvoicesCubit>(),
+        child: _AddInvoiceForm(initialAppointmentId: initialAppointmentId),
+      ),
     );
   }
 }
 
 class _AddInvoiceForm extends StatefulWidget {
-  const _AddInvoiceForm();
+  final String? initialAppointmentId;
+  const _AddInvoiceForm({this.initialAppointmentId});
 
   @override
   State<_AddInvoiceForm> createState() => _AddInvoiceFormState();
@@ -55,6 +60,56 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
         _searchPatients(_patientSearchController.text);
       }
     });
+
+    if (widget.initialAppointmentId != null) {
+      final existingInvoice = MockData.invoices.firstWhere(
+        (inv) => inv['source_id'] == widget.initialAppointmentId,
+        orElse: () => <String, dynamic>{},
+      );
+
+      if (existingInvoice.isNotEmpty) {
+        final totalAmount = (existingInvoice['total_amount'] as num).toDouble();
+        final paidAmount = (existingInvoice['paid_amount'] as num).toDouble();
+        
+        if (paidAmount >= totalAmount) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('هذا الموعد مسجل له فاتورة مدفوعة بالكامل بالفعل.')),
+            );
+          });
+          return;
+        }
+      }
+
+      final appt = MockData.appointments.firstWhere(
+        (a) => a['id'] == widget.initialAppointmentId,
+        orElse: () => <String, dynamic>{},
+      );
+      if (appt.isNotEmpty) {
+        final patient = MockData.patients.firstWhere(
+          (p) => p['id'] == appt['patient_id'],
+          orElse: () => <String, dynamic>{},
+        );
+        if (patient.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _selectPatient(patient);
+            _selectAppointment(appt);
+
+            if (existingInvoice.isNotEmpty) {
+              final totalAmount = (existingInvoice['total_amount'] as num).toDouble();
+              final paidAmount = (existingInvoice['paid_amount'] as num).toDouble();
+              final remaining = totalAmount - paidAmount;
+              
+              setState(() {
+                _totalAmountController.text = remaining.toStringAsFixed(0);
+                _expectedPrice = remaining;
+              });
+            }
+          });
+        }
+      }
+    }
   }
 
   @override
@@ -88,10 +143,12 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
         .map((inv) => inv['source_id'] as String)
         .toSet();
 
-    final appointments = MockData.appointments.where((a) =>
-        a['patient_id'] == patientId &&
-        a['status'] == 'done' &&
-        !invoicedSourceIds.contains(a['id'])).toList();
+    final appointments = MockData.appointments.where((a) {
+      final isTarget = widget.initialAppointmentId != null && a['id'] == widget.initialAppointmentId;
+      return isTarget || (a['patient_id'] == patientId &&
+          a['status'] == 'done' &&
+          !invoicedSourceIds.contains(a['id']));
+    }).toList();
 
     setState(() {
       _selectedPatientId = patientId;
@@ -147,20 +204,40 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       return;
     }
 
-    await context.read<InvoicesCubit>().createInvoice(
-          patientId: _selectedPatientId!,
-          patientName: _selectedPatientName!,
-          appointmentType: _selectedAppointmentType ?? 'كشف عادي',
-          sourceId: _selectedAppointmentId ?? 'manual-${DateTime.now().millisecondsSinceEpoch}',
-          totalAmount: totalAmount,
-          paidAmount: paidAmount,
-          paymentMethod: _paymentMethod,
-        );
+    final existingInvoice = MockData.invoices.firstWhere(
+      (inv) => inv['source_id'] == widget.initialAppointmentId,
+      orElse: () => <String, dynamic>{},
+    );
+
+    if (existingInvoice.isNotEmpty) {
+      final prevPaid = (existingInvoice['paid_amount'] as num).toDouble();
+      final newPaidTotal = prevPaid + paidAmount;
+
+      await context.read<InvoicesCubit>().updatePaidAmount(
+            invoiceId: existingInvoice['id'] as String,
+            newPaidAmount: newPaidTotal,
+            paymentMethod: _paymentMethod,
+          );
+    } else {
+      await context.read<InvoicesCubit>().createInvoice(
+            patientId: _selectedPatientId!,
+            patientName: _selectedPatientName!,
+            appointmentType: _selectedAppointmentType ?? 'كشف عادي',
+            sourceId: _selectedAppointmentId ?? 'manual-${DateTime.now().millisecondsSinceEpoch}',
+            totalAmount: totalAmount,
+            paidAmount: paidAmount,
+            paymentMethod: _paymentMethod,
+          );
+    }
 
     if (context.mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم إنشاء الفاتورة بنجاح')),
+        SnackBar(
+          content: Text(existingInvoice.isNotEmpty
+              ? 'تم تحديث سداد الفاتورة بنجاح'
+              : 'تم إنشاء الفاتورة بنجاح'),
+        ),
       );
     }
   }

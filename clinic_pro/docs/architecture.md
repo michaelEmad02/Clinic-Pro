@@ -308,14 +308,3 @@ else
 | subscriptions | SubscriptionCubit | GetSubscriptionUseCase, CreateSubscriptionUseCase, CancelSubscriptionUseCase |
 
 ---
-
-## Design Reference
-
-All screens have been designed in Figma.
-See `plan_frontend.md` for:
-- Node IDs for every screen
-- How to call `Figma:get_design_context` during implementation
-- Confirmed colors, typography, and spacing from actual design
-- All design tokens and component specs
-
-**Figma File Key:** `mEUvHbVNmTJTecPkxr4Adj`

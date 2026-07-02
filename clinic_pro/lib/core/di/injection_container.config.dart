@@ -16,6 +16,11 @@ import 'package:clinic_pro/features/prescription/presentation/manager/drugs_cubi
 import 'package:clinic_pro/features/prescription/presentation/manager/templates_cubit.dart';
 import 'package:clinic_pro/features/reports/presentation/manager/reports_cubit.dart';
 import 'package:clinic_pro/features/reports/presentation/manager/reports_repository.dart';
+import 'package:clinic_pro/features/appointments/presentation/manager/appointments_bloc.dart';
+import 'package:clinic_pro/features/appointments/presentation/manager/appointments_repository.dart';
+import 'package:clinic_pro/features/appointments/presentation/manager/waiting_queue_cubit.dart';
+import 'package:clinic_pro/features/invoices/presentation/manager/invoices_cubit.dart';
+import 'package:clinic_pro/features/invoices/presentation/manager/invoices_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 
@@ -48,6 +53,11 @@ extension GetItInjectableX on GetIt {
     gh.factory<ExpensesCubit>(() => ExpensesCubit(gh<ExpensesRepository>()));
     gh.factory<ReportsRepository>(() => ReportsRepository(gh<ICloudService>()));
     gh.factory<ReportsCubit>(() => ReportsCubit(gh<ReportsRepository>()));
+    gh.factory<AppointmentsRepository>(() => AppointmentsRepository(gh<ICloudService>()));
+    gh.factory<AppointmentsBloc>(() => AppointmentsBloc(gh<AppointmentsRepository>()));
+    gh.factory<WaitingQueueCubit>(() => WaitingQueueCubit(gh<AppointmentsRepository>()));
+    gh.factory<InvoicesRepository>(() => InvoicesRepository(gh<ICloudService>()));
+    gh.factory<InvoicesCubit>(() => InvoicesCubit(gh<InvoicesRepository>()));
     return this;
   }
 }

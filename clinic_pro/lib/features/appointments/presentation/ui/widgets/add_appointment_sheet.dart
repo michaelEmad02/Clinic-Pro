@@ -2,6 +2,7 @@
 // Bottom Sheet إضافة موعد جديد — مطابق لتصميم Stitch
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
@@ -11,19 +12,29 @@ import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
 import '../../manager/appointments_bloc.dart';
 import '../../manager/appointments_event.dart';
+import '../../manager/appointments_state.dart';
 import 'patient_picker_field.dart';
 
 class AddAppointmentSheet {
-  static Future<void> show(BuildContext context) {
+  /// يفتح sheet إضافة موعد جديد أو تعديل موعد موجود
+  static Future<void> show(BuildContext context,
+      {AppointmentItem? appointment}) {
+    // نلتقط الـ Bloc الحالي من الشاشة الأم لنشاركه مع الـ Sheet
+    final bloc = context.read<AppointmentsBloc>();
     return AppBottomSheet.show(
       context: context,
-      child: const _AddAppointmentForm(),
+      child: BlocProvider.value(
+        value: bloc,
+        child: _AddAppointmentForm(appointment: appointment),
+      ),
     );
   }
 }
 
 class _AddAppointmentForm extends StatefulWidget {
-  const _AddAppointmentForm();
+  final AppointmentItem? appointment;
+
+  const _AddAppointmentForm({this.appointment});
 
   @override
   State<_AddAppointmentForm> createState() => _AddAppointmentFormState();
@@ -37,6 +48,33 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
   TimeOfDay _time = TimeOfDay.now();
   bool _isUrgent = false;
   final _notesController = TextEditingController();
+
+  /// هل نحن في وضع التعديل أم الإضافة؟
+  bool get _isEditing => widget.appointment != null;
+
+  @override
+  void initState() {
+    super.initState();
+    // ملء الحقول بقيم الموعد الحالي عند التعديل
+    final appt = widget.appointment;
+    if (appt != null) {
+      _patientId = appt.patientId;
+      _doctorId = appt.doctorId;
+      _typeId = appt.typeId;
+      _date = DateTime.parse(appt.date);
+      _isUrgent = appt.isUrgent;
+      _notesController.text = appt.notes ?? '';
+
+      // تحويل الوقت الخام '16:30:00' إلى TimeOfDay
+      final parts = appt.rawTime.split(':');
+      if (parts.length >= 2) {
+        _time = TimeOfDay(
+          hour: int.tryParse(parts[0]) ?? 0,
+          minute: int.tryParse(parts[1]) ?? 0,
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -74,19 +112,37 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
     final timeStr =
         '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}:00';
 
-    context.read<AppointmentsBloc>().add(AddAppointmentEvent(
-          patientId: _patientId!,
-          doctorId: _doctorId!,
-          typeId: _typeId!,
-          date: _date.toIso8601String().substring(0, 10),
-          time: timeStr,
-          notes: _notesController.text.isEmpty ? null : _notesController.text,
-          isUrgent: _isUrgent,
-        ));
+    final bloc = context.read<AppointmentsBloc>();
+
+    if (_isEditing) {
+      // وضع التعديل — تحديث الموعد القائم
+      bloc.add(UpdateAppointmentEvent(
+        appointmentId: widget.appointment!.id,
+        doctorId: _doctorId!,
+        typeId: _typeId!,
+        date: _date.toIso8601String().substring(0, 10),
+        time: timeStr,
+        notes: _notesController.text.isEmpty ? null : _notesController.text,
+        isUrgent: _isUrgent,
+      ));
+    } else {
+      // وضع الإضافة — إنشاء موعد جديد
+      bloc.add(AddAppointmentEvent(
+        patientId: _patientId!,
+        doctorId: _doctorId!,
+        typeId: _typeId!,
+        date: _date.toIso8601String().substring(0, 10),
+        time: timeStr,
+        notes: _notesController.text.isEmpty ? null : _notesController.text,
+        isUrgent: _isUrgent,
+      ));
+    }
 
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('تم إضافة الموعد بنجاح')),
+      SnackBar(
+          content: Text(
+              _isEditing ? 'تم تعديل الموعد بنجاح' : 'تم إضافة الموعد بنجاح')),
     );
   }
 
@@ -114,7 +170,7 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
             children: [
               Expanded(
                 child: Text(
-                  'إضافة موعد جديد',
+                  _isEditing ? 'تعديل الموعد' : 'إضافة موعد جديد',
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
@@ -128,9 +184,16 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
             ],
           ),
           const SizedBox(height: 16),
-          PatientPickerField(
-            selectedPatientId: _patientId,
-            onChanged: (id) => setState(() => _patientId = id),
+          // في وضع التعديل لا يمكن تغيير المريض
+          IgnorePointer(
+            ignoring: _isEditing,
+            child: Opacity(
+              opacity: _isEditing ? 0.5 : 1.0,
+              child: PatientPickerField(
+                selectedPatientId: _patientId,
+                onChanged: (id) => setState(() => _patientId = id),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           // الدكتور المعالج
@@ -304,7 +367,9 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
           Container(
             padding: const EdgeInsets.all(AppConstants.spaceMd),
             decoration: BoxDecoration(
-              color: _isUrgent ? AppColors.dangerBg : AppColors.surfaceContainerLow,
+              color: _isUrgent
+                  ? AppColors.dangerBg
+                  : AppColors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppConstants.radiusCard),
               border: Border.all(
                 color: _isUrgent
@@ -359,7 +424,7 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
               ),
             ),
             child: Text(
-              'حفظ الموعد',
+              _isEditing ? 'حفظ التعديلات' : 'حفظ الموعد',
               style: AppTextStyles.headlineSmall(context).copyWith(
                 color: AppColors.onPrimaryContainer,
                 fontWeight: FontWeight.bold,

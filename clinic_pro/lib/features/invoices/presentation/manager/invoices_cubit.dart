@@ -1,21 +1,23 @@
 // ────────────────────────────────────────────────────────
-// Cubit شاشة الفواتير — تحميل وإضافة وتعديل (Mock)
+// Cubit شاشة الفواتير — تحميل وإضافة وتعديل عبر المستودع
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/mocks/mock_data.dart';
+import 'package:injectable/injectable.dart';
 import 'invoices_state.dart';
+import 'invoices_repository.dart';
 
+@injectable
 class InvoicesCubit extends Cubit<InvoicesState> {
-  InvoicesCubit() : super(InvoicesInitial());
+  final InvoicesRepository _repository;
+
+  InvoicesCubit(this._repository) : super(InvoicesInitial());
 
   Future<void> loadInvoices() async {
     emit(InvoicesLoading());
-    await Future.delayed(const Duration(milliseconds: 500));
-
     try {
-      final items = _mapInvoicesFromMock();
-      emit(InvoicesLoaded(allInvoices: items));
+      final items = await _repository.loadInvoices();
+      emit(InvoicesLoaded(allInvoices: _mapInvoices(items)));
     } catch (_) {
       emit(const InvoicesError('تعذّر تحميل الفواتير'));
     }
@@ -38,25 +40,23 @@ class InvoicesCubit extends Cubit<InvoicesState> {
   }) async {
     if (state is! InvoicesLoaded) return;
     final loaded = state as InvoicesLoaded;
-    await Future.delayed(const Duration(milliseconds: 400));
 
-    final newInvoice = InvoiceItem(
-      id: 'inv-new-${DateTime.now().millisecondsSinceEpoch}',
-      clinicId: 'c-1',
-      patientId: patientId,
-      patientName: patientName,
-      appointmentType: appointmentType,
-      sourceId: sourceId,
-      sourceType: 'appointment',
-      totalAmount: totalAmount,
-      paidAmount: paidAmount,
-      paymentMethod: paymentMethod,
-      createdAt: DateTime.now().toIso8601String(),
-      createdBy: 'u-sec-1',
-    );
-
-    emit(loaded.copyWith(
-        allInvoices: [newInvoice, ...loaded.allInvoices]));
+    try {
+      await _repository.createInvoice(
+        patientId: patientId,
+        patientName: patientName,
+        appointmentType: appointmentType,
+        sourceId: sourceId,
+        totalAmount: totalAmount,
+        paidAmount: paidAmount,
+        paymentMethod: paymentMethod,
+      );
+      // إعادة تحميل الفواتير لتحديث القائمة مع الحفاظ على الفلتر
+      final items = await _repository.loadInvoices();
+      emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
+    } catch (_) {
+      emit(const InvoicesError('تعذّر إنشاء الفاتورة'));
+    }
   }
 
   Future<void> updatePaidAmount({
@@ -66,21 +66,23 @@ class InvoicesCubit extends Cubit<InvoicesState> {
   }) async {
     if (state is! InvoicesLoaded) return;
     final loaded = state as InvoicesLoaded;
-    await Future.delayed(const Duration(milliseconds: 300));
 
-    final list = loaded.allInvoices.map((inv) {
-      if (inv.id != invoiceId) return inv;
-      return inv.copyWith(
-        paidAmount: newPaidAmount,
-        paymentMethod: paymentMethod ?? inv.paymentMethod,
+    try {
+      await _repository.updatePaidAmount(
+        invoiceId: invoiceId,
+        newPaidAmount: newPaidAmount,
+        paymentMethod: paymentMethod,
       );
-    }).toList();
-
-    emit(loaded.copyWith(allInvoices: list));
+      // إعادة تحميل الفواتير لتحديث القائمة مع الحفاظ على الفلتر
+      final items = await _repository.loadInvoices();
+      emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
+    } catch (_) {
+      emit(const InvoicesError('تعذّر تحديث مبلغ الفاتورة'));
+    }
   }
 
-  List<InvoiceItem> _mapInvoicesFromMock() {
-    return MockData.invoices.map((inv) {
+  List<InvoiceItem> _mapInvoices(List<Map<String, dynamic>> rawList) {
+    return rawList.map((inv) {
       return InvoiceItem(
         id: inv['id'] as String,
         clinicId: inv['clinic_id'] as String? ?? 'c-1',

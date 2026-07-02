@@ -8,11 +8,13 @@ enum BadgeStatus { success, warning, error, info }
 class StatusBadge extends StatelessWidget {
   final String text;
   final BadgeStatus status;
+  final bool addBackgroundColor;
 
   const StatusBadge({
     super.key,
     required this.text,
     required this.status,
+    this.addBackgroundColor = true,
   });
 
   @override
@@ -22,19 +24,19 @@ class StatusBadge extends StatelessWidget {
 
     switch (status) {
       case BadgeStatus.success:
-        backgroundColor = AppColors.accent.withOpacity(0.1);
+        backgroundColor = addBackgroundColor ? AppColors.accent.withOpacity(0.1) : Colors.transparent;
         textColor = AppColors.accent;
         break;
       case BadgeStatus.warning:
-        backgroundColor = AppColors.warning.withOpacity(0.1);
+        backgroundColor = addBackgroundColor ? AppColors.warning.withOpacity(0.1) : Colors.transparent;
         textColor = AppColors.warning;
         break;
       case BadgeStatus.error:
-        backgroundColor = AppColors.danger.withOpacity(0.1);
+        backgroundColor = addBackgroundColor ? AppColors.danger.withOpacity(0.1) : Colors.transparent;
         textColor = AppColors.danger;
         break;
       case BadgeStatus.info:
-        backgroundColor = AppColors.primary.withOpacity(0.1);
+        backgroundColor = addBackgroundColor ? AppColors.primary.withOpacity(0.1) : Colors.transparent;
         textColor = AppColors.primary;
         break;
     }
