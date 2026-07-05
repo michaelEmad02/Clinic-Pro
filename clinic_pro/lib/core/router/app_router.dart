@@ -60,7 +60,11 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteConstants.onboardingInvite,
-      builder: (context, state) => const InviteStaffScreen(),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final isOnboarding = extra?['isOnboarding'] as bool? ?? true;
+        return InviteStaffScreen(isOnboarding: isOnboarding);
+      },
     ),
     GoRoute(
       path: RouteConstants.ownerDashboard,

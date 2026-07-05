@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/doctor_dashboard_state.dart';
+import '../../../../appointments/presentation/manager/appointments_state.dart';
 
 class CurrentPatientCard extends StatelessWidget {
-  final PatientMock? patient;
+  final AppointmentItem? patient;
   final VoidCallback onStartExamination;
 
   const CurrentPatientCard({
@@ -90,13 +90,13 @@ class CurrentPatientCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: patient!.type == 'urgent' ? AppColors.dangerBg : AppColors.successBg,
+                  color: patient!.isUrgent ? AppColors.dangerBg : AppColors.successBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  patient!.type == 'urgent' ? 'مستعجل' : 'كشف عادي',
+                  patient!.isUrgent ? 'مستعجل' : 'كشف عادي',
                   style: AppTextStyles.caption(context).copyWith(
-                    color: patient!.type == 'urgent' ? AppColors.dangerText : AppColors.successText,
+                    color: patient!.isUrgent ? AppColors.dangerText : AppColors.successText,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -123,7 +123,7 @@ class CurrentPatientCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      patient!.name,
+                      patient!.patientName,
                       style: AppTextStyles.headlineSmall(context).copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -133,16 +133,17 @@ class CurrentPatientCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          patient!.age,
+                          patient!.patientPhone,
                           style: AppTextStyles.caption(context).copyWith(
                             color: AppColors.textSecondary,
+                            fontFamily: 'Inter',
                           ),
                         ),
                         const SizedBox(width: 8),
                         Container(width: 1, height: 12, color: AppColors.border),
                         const SizedBox(width: 8),
                         Text(
-                          patient!.time,
+                          patient!.displayTime,
                           style: AppTextStyles.caption(context).copyWith(
                             color: AppColors.textSecondary,
                             fontFamily: 'Inter',
@@ -169,7 +170,7 @@ class CurrentPatientCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    patient!.condition,
+                    patient!.notes ?? 'لا توجد ملاحظات إضافية للموعد',
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: AppColors.onSurfaceVariant,
                     ),

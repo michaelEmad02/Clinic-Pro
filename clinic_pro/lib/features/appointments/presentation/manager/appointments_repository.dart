@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/utils/queue_sorter.dart';
 
@@ -188,9 +189,10 @@ class AppointmentsRepository {
   Future<List<Map<String, dynamic>>> loadQueue(String doctorId, String date) async {
     final list = await loadAppointments();
     
-    // تصفية المواعيد لليوم وللطبيب المحدد فقط التي وصلت ولم تلغَ ولم تنتهِ بعد
+    // تصفية المواعيد لليوم وللطبيب المحدد وللعيادة النشطة فقط التي وصلت ولم تلغَ ولم تنتهِ بعد
     final todayAppointments = list.where((a) {
       return a['doctor_id'] == doctorId &&
+          a['clinic_id'] == AppConstants.activeClinicId &&
           a['date'] == date &&
           a['arrived_at'] != null &&
           a['status'] != 'cancelled' &&

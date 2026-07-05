@@ -11,7 +11,6 @@ import 'widgets/shared_settings_widgets.dart';
 import 'widgets/settings_account_section.dart';
 import 'widgets/settings_logout_section.dart';
 import 'widgets/edit_profile_sheet.dart';
-import 'subscription_screen.dart';
 
 class OwnerSettingsScreen extends StatelessWidget {
   final bool showBottomNav;
@@ -48,7 +47,11 @@ class OwnerSettingsScreen extends StatelessWidget {
                   const SizedBox(height: AppConstants.spaceMd),
                   SettingsAccountSection(
                     name: state.userName,
-                    subtitle: state.userRole,
+                    subtitle: state.clinicName, // عيادة النور
+                    avatarUrl: state.userAvatarUrl,
+                    layout: AccountSectionLayout.centered,
+                    roleBadge: 'صاحب عيادة',
+                    showSectionTitle: false,
                     onEdit: () => EditProfileSheet.show(context),
                   ),
                   const SizedBox(height: AppConstants.spaceLg),
@@ -56,121 +59,78 @@ class OwnerSettingsScreen extends StatelessWidget {
                   const SizedBox(height: AppConstants.spaceLg),
                   _buildOtherSection(context),
                   const SizedBox(height: AppConstants.spaceLg),
+                  _buildDangerZoneSection(context),
+                  const SizedBox(height: AppConstants.spaceLg),
                   const SettingsLogoutSection(),
                   const SizedBox(height: AppConstants.spaceXl),
-                  buildSettingsFooter(context),
+                  const SettingsFooter(),
                   const SizedBox(height: 16),
                 ],
               ),
             );
           },
         ),
-        bottomNavigationBar: showBottomNav ? buildBottomNavBar(context) : null,
+        bottomNavigationBar: showBottomNav ? const SettingsBottomNavBar() : null,
       ),
     );
   }
 
   Widget _buildManagementSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
-          child: Text('الإدارة', style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary)),
-        ),
-        const SizedBox(height: AppConstants.spaceSm),
-        _buildSettingsItem(
-          context: context,
-          icon: Icons.local_hospital_outlined,
-          label: 'إدارة العيادات',
-          onTap: () => context.push(RouteConstants.clinics),
-        ),
-        const SizedBox(height: AppConstants.spaceSm),
-        _buildSettingsItem(
-          context: context,
-          icon: Icons.group_outlined,
-          label: 'إدارة الطاقم الطبي',
-          onTap: () => context.push(RouteConstants.staff),
-        ),
-        const SizedBox(height: AppConstants.spaceSm),
-        _buildSettingsItem(
-          context: context,
-          icon: Icons.payments,
-          label: 'الاشتراك والخطة',
-          onTap: () {
-            final cubit = context.read<SettingsCubit>();
-            Navigator.push(context, MaterialPageRoute(
-              builder: (_) => BlocProvider.value(value: cubit, child: const SubscriptionScreen()),
-            ));
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingsItem({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        border: Border.all(color: AppColors.border, width: 0.5),
-        boxShadow: const [
-          BoxShadow(color: Color(0x14000000), blurRadius: 3, offset: Offset(0, 1)),
-        ],
-      ),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: AppConstants.spaceMd),
-          child: Row(
-            children: [
-              Icon(icon, color: AppColors.primaryContainer, size: 20),
-              const SizedBox(width: AppConstants.spaceSm),
-              Expanded(child: Text(label, style: AppTextStyles.bodyLarge(context))),
-              const Icon(Icons.chevron_left, color: AppColors.textHint, size: 18),
-            ],
+    return SectionCard(
+      title: 'الإدارة',
+      child: Column(
+        children: [
+          NavSettingsItem(
+            icon: Icons.groups_outlined,
+            label: 'إدارة الطاقم',
+            onTap: () => context.push(RouteConstants.staff),
           ),
-        ),
+          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          NavSettingsItem(
+            icon: Icons.person_add_outlined,
+            label: 'دعوة عضو',
+            onTap: () => context.push(RouteConstants.staff), // Leads to staff list/invitation view
+          ),
+          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          NavSettingsItem(
+            icon: Icons.payments,
+            label: 'الاشتراك والخطة',
+            onTap: () => context.push(RouteConstants.settingsSubscription),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildOtherSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
-          child: Text('أخرى', style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary)),
-        ),
-        const SizedBox(height: AppConstants.spaceSm),
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            border: Border.all(color: AppColors.border, width: 0.5),
-            boxShadow: const [
-              BoxShadow(color: Color(0x14000000), blurRadius: 3, offset: Offset(0, 1)),
-            ],
+    return const SectionCard(
+      title: 'أخرى',
+      child: Column(
+        children: [
+          ToggleSettingsItem(
+            icon: Icons.dark_mode_outlined,
+            label: 'المظهر - الوضع الليلي',
+            trailing: DarkModeSwitch(),
           ),
-          padding: const EdgeInsets.all(AppConstants.spaceMd),
-          child: Row(
-            children: [
-              Icon(Icons.dark_mode, size: 20, color: AppColors.primaryContainer),
-              const SizedBox(width: AppConstants.spaceMd),
-              Expanded(child: Text('المظهر - الوضع الليلي', style: AppTextStyles.bodyLarge(context))),
-              const DarkModeSwitch(),
-            ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDangerZoneSection(BuildContext context) {
+    return SectionCard(
+      title: '',
+      child: Column(
+        children: [
+          NavSettingsItem(
+            icon: Icons.medical_services_outlined,
+            label: 'الدخول كطبيب',
+            onTap: () {
+              // Action logic to switch role representation if simulated
+            },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

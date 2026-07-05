@@ -6,6 +6,9 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
+  // معرف العيادة النشطة حالياً على مستوى التطبيق (للمحاكاة ودعم العيادات المتعددة)
+  static String activeClinicId = 'c-1';
+
   // أقطار الحواف الدائرية للبطاقات والأزرار والحقول (Border Radius)
   static const double radiusCard = 16.0;
   static const double radiusButton = 12.0;

@@ -1,22 +1,28 @@
-// ────────────────────────────────────────────────────────
-// Cubit شاشة الطاقم الطبي — تحميل وفلترة ودعوة موظفين (Mock)
-// ────────────────────────────────────────────────────────
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/mocks/mock_data.dart';
+import '../../../../core/services/i_cloud_service.dart';
 import 'staff_state.dart';
 
 class StaffCubit extends Cubit<StaffState> {
-  StaffCubit() : super(StaffInitial());
+  final ICloudService _cloudService;
+
+  StaffCubit(this._cloudService) : super(StaffInitial());
 
   Future<void> loadStaff() async {
     emit(StaffLoading());
-    await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      final items = _mapStaffFromMock();
-      final invitations = _mapInvitationsFromMock();
-      emit(StaffLoaded(allStaff: items, invitations: invitations));
+      final staffRows = await _cloudService.select(table: 'clinic_staff');
+      final userRows = await _cloudService.select(table: 'users');
+      final invitationRows = await _cloudService.select(table: 'invitations');
+      final clinicRows = await _cloudService.select(table: 'clinics');
+
+      final items = _mapStaff(staffRows, userRows);
+      final invitations = _mapInvitations(invitationRows);
+      emit(StaffLoaded(
+        allStaff: items,
+        invitations: invitations,
+        clinics: clinicRows,
+      ));
     } catch (_) {
       emit(const StaffError('تعذّر تحميل قائمة الطاقم الطبي'));
     }
@@ -34,26 +40,48 @@ class StaffCubit extends Cubit<StaffState> {
     }
   }
 
+  void changeClinicFilter(String? clinicId) {
+    if (state is StaffLoaded) {
+      emit((state as StaffLoaded).copyWith(selectedClinicId: clinicId));
+    }
+  }
+
   Future<void> inviteStaff({
     required String email,
     required String name,
     required String role,
+    String? clinicId,
   }) async {
     if (state is! StaffLoaded) return;
     final loaded = state as StaffLoaded;
-    await Future.delayed(const Duration(milliseconds: 400));
 
     final now = DateTime.now();
+    final data = {
+      'clinic_id': clinicId ?? 'c-1',
+      'owner_id': 'u-owner-1',
+      'email': email,
+      'name': name,
+      'role': role,
+      'status': 'pending',
+      'created_at': now.toIso8601String(),
+      'expires_at': now.add(const Duration(days: 7)).toIso8601String(),
+    };
+
+    final newRecord = await _cloudService.insert(
+      table: 'invitations',
+      data: data,
+    );
+
     final newInvitation = StaffInvitationItem(
-      id: 'inv-new-${now.millisecondsSinceEpoch}',
-      clinicId: 'c-1',
-      ownerId: 'u-owner-1',
-      email: email,
-      name: name,
-      role: role,
-      status: 'pending',
-      createdAt: now.toIso8601String(),
-      expiresAt: now.add(const Duration(days: 7)).toIso8601String(),
+      id: newRecord['id']?.toString() ?? 'inv-${now.millisecondsSinceEpoch}',
+      clinicId: newRecord['clinic_id'] as String? ?? 'c-1',
+      ownerId: newRecord['owner_id'] as String? ?? 'u-owner-1',
+      email: newRecord['email'] as String,
+      name: newRecord['name'] as String?,
+      role: newRecord['role'] as String,
+      status: newRecord['status'] as String,
+      createdAt: newRecord['created_at'] as String,
+      expiresAt: newRecord['expires_at'] as String?,
     );
 
     emit(loaded.copyWith(
@@ -68,7 +96,12 @@ class StaffCubit extends Cubit<StaffState> {
   Future<void> cancelInvitation(String invitationId) async {
     if (state is! StaffLoaded) return;
     final loaded = state as StaffLoaded;
-    await Future.delayed(const Duration(milliseconds: 300));
+
+    await _cloudService.delete(
+      table: 'invitations',
+      matchColumn: 'id',
+      matchValue: invitationId,
+    );
 
     final updated = loaded.invitations
         .where((inv) => inv.id != invitationId)
@@ -79,7 +112,13 @@ class StaffCubit extends Cubit<StaffState> {
   Future<void> updateStaffRole(String staffId, String newRole) async {
     if (state is! StaffLoaded) return;
     final loaded = state as StaffLoaded;
-    await Future.delayed(const Duration(milliseconds: 300));
+
+    await _cloudService.update(
+      table: 'clinic_staff',
+      data: {'role': newRole},
+      matchColumn: 'user_id',
+      matchValue: staffId,
+    );
 
     final list = loaded.allStaff.map((s) {
       return s.id == staffId ? s.copyWith(role: newRole) : s;
@@ -90,7 +129,14 @@ class StaffCubit extends Cubit<StaffState> {
   Future<void> toggleSuspend(String staffId) async {
     if (state is! StaffLoaded) return;
     final loaded = state as StaffLoaded;
-    await Future.delayed(const Duration(milliseconds: 300));
+    final staffItem = loaded.allStaff.firstWhere((s) => s.id == staffId);
+
+    await _cloudService.update(
+      table: 'clinic_staff',
+      data: {'is_active': !staffItem.isActive},
+      matchColumn: 'user_id',
+      matchValue: staffId,
+    );
 
     final list = loaded.allStaff.map((s) {
       return s.id == staffId
@@ -100,14 +146,9 @@ class StaffCubit extends Cubit<StaffState> {
     emit(loaded.copyWith(allStaff: list));
   }
 
-  /// تحويل MockData (users + clinicStaff) إلى StaffItem
-  List<StaffItem> _mapStaffFromMock() {
-    final users = MockData.users;
-    final clinicStaff = MockData.clinicStaff;
-
+  List<StaffItem> _mapStaff(List<Map<String, dynamic>> clinicStaff, List<Map<String, dynamic>> users) {
     // نجمع user_id النشطين من clinicStaff
     final activeUserIds = clinicStaff
-        .where((cs) => cs['is_active'] == true)
         .map((cs) => cs['user_id'] as String)
         .toSet()
         .toList();
@@ -120,16 +161,14 @@ class StaffCubit extends Cubit<StaffState> {
 
       if (userData.isEmpty) return null;
 
-      // نحدد الدور من clinicStaff
       final staffEntry = clinicStaff.firstWhere(
         (cs) => cs['user_id'] == userId,
       );
       final role = staffEntry['role'] as String;
+      final isActive = staffEntry['is_active'] as bool? ?? true;
 
       final isOnline = role == 'doctor';
-      final lastSeen = isOnline
-          ? null
-          : 'آخر ظهور: أمس';
+      final lastSeen = isOnline ? null : 'آخر ظهور: أمس';
 
       return StaffItem(
         id: userId,
@@ -143,14 +182,13 @@ class StaffCubit extends Cubit<StaffState> {
         rating: (userData['rating'] as num?)?.toDouble(),
         isOnline: isOnline,
         lastSeen: lastSeen,
-        isActive: true,
+        isActive: isActive,
       );
     }).whereType<StaffItem>().toList();
   }
 
-  /// تحويل MockData.invitations إلى StaffInvitationItem
-  List<StaffInvitationItem> _mapInvitationsFromMock() {
-    return MockData.invitations.map((inv) {
+  List<StaffInvitationItem> _mapInvitations(List<Map<String, dynamic>> invitationRows) {
+    return invitationRows.map((inv) {
       return StaffInvitationItem(
         id: inv['id'] as String,
         clinicId: inv['clinic_id'] as String? ?? '',

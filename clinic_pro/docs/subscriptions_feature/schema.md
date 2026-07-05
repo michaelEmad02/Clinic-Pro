@@ -2,7 +2,7 @@
 
 ## Tables
 
-### `plans`
+### `plans` (only for developers)
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
@@ -41,8 +41,28 @@
 | `max_clinics` | smallint (int2) | NO | — | |
 | `max_staff` | smallint (int2) | NO | — | |
 | `max_patients` | integer (int4) | NO | — | |
-| `features` ⚠️ | jsonb | YES | — | column is `features`, not `feature` |
+| `features` ⚠️ | jsonb | YES | — | column is `features`, not `feature` |    
 
+
+//Example of features jsonb:
+ {
+  "print": [
+    {
+      "value": false
+    },
+    {
+      "title": "طباعه التقارير"
+    }
+  ],
+  "export": [
+    {
+      "value": false
+    },
+    {
+      "title": "تصدير التقارير"
+    }
+  ]
+}
 > ⚠️ Table is `plans_features` (plural "plans") and column is `features` (plural).
 > Previous docs used `plan_features` / singular `feature` — both wrong.
 

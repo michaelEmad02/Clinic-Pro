@@ -2,22 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/constants/supabase_constants.dart';
+import '../../../../../core/di/injection_container.dart';
+import '../../../../../core/services/i_cloud_service.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
 import '../../manager/queue_pattern_cubit.dart';
 import '../../manager/queue_pattern_state.dart';
+import '../../manager/settings_cubit.dart';
 
 class EditQueuePatternSheet extends StatelessWidget {
-  const EditQueuePatternSheet({super.key});
+  final String doctorId;
+  final String clinicId;
+
+  const EditQueuePatternSheet({
+    super.key,
+    required this.doctorId,
+    required this.clinicId,
+  });
 
   static Future<void> show(BuildContext context) {
     final cubit = context.read<QueuePatternCubit>();
+    final state = context.read<SettingsCubit>().state;
     return AppBottomSheet.show(
       context: context,
       child: BlocProvider.value(
         value: cubit,
-        child: const EditQueuePatternSheet(),
+        child: EditQueuePatternSheet(
+          doctorId: state.userId,
+          clinicId: state.clinicId,
+        ),
       ),
     );
   }
@@ -95,17 +109,19 @@ class EditQueuePatternSheet extends StatelessWidget {
                   )
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    reverse: true,
                     itemCount: state.slots.length,
                     itemBuilder: (context, index) {
                       final slotType = state.slots[index];
+                      final label = index < state.slotLabels.length && state.slotLabels[index].isNotEmpty
+                          ? state.slotLabels[index]
+                          : mapSlotTypeToLabel(slotType);
                       return Padding(
                         padding: const EdgeInsetsDirectional.only(end: 8),
                         child: _SlotCard(
-                          label: mapSlotTypeToLabel(slotType),
+                          label: label,
                           isUrgent: isSlotTypeUrgent(slotType),
                           slotType: slotType,
-                          onRemove: () => cubit.removeSlot(state.slots.length - 1 - index),
+                          onRemove: () => cubit.removeSlot(index),
                         ),
                       );
                     },
@@ -165,11 +181,14 @@ class EditQueuePatternSheet extends StatelessWidget {
           const SizedBox(height: AppConstants.spaceMd),
           ...List.generate(state.slots.length, (i) {
             final slotType = state.slots[i];
+            final label = i < state.slotLabels.length && state.slotLabels[i].isNotEmpty
+                ? state.slotLabels[i]
+                : mapSlotTypeToLabel(slotType);
             return Padding(
               padding: const EdgeInsets.only(bottom: AppConstants.spaceSm),
               child: _PreviewPatient(
                 number: i + 1,
-                type: mapSlotTypeToLabel(slotType),
+                type: label,
                 isUrgent: isSlotTypeUrgent(slotType),
               ),
             );
@@ -178,9 +197,11 @@ class EditQueuePatternSheet extends StatelessWidget {
           if (cycleLen > 0)
             Padding(
               padding: const EdgeInsets.only(top: AppConstants.spaceSm),
-              child: _PreviewPatient(
+              child:               _PreviewPatient(
                 number: cycleLen + 1,
-                type: mapSlotTypeToLabel(state.slots.first),
+                type: state.slotLabels.isNotEmpty && state.slotLabels.first.isNotEmpty
+                    ? state.slotLabels.first
+                    : mapSlotTypeToLabel(state.slots.first),
                 isUrgent: isSlotTypeUrgent(state.slots.first),
                 faded: true,
               ),
@@ -229,14 +250,50 @@ class EditQueuePatternSheet extends StatelessWidget {
     );
   }
 
-  void _showAddTypePicker(BuildContext context, QueuePatternCubit cubit) {
-    final types = [
-      _SlotTypeOption(label: 'عادي', slotType: QueueSlotType.normal, icon: Icons.person, color: AppColors.primary),
-      _SlotTypeOption(label: 'مستعجل', slotType: QueueSlotType.urgent, icon: Icons.bolt, color: AppColors.warningText),
-      _SlotTypeOption(label: 'مراجعة', slotType: QueueSlotType.revisit, icon: Icons.refresh, color: AppColors.successText),
-      _SlotTypeOption(label: 'استشارة', slotType: QueueSlotType.consult, icon: Icons.forum, color: AppColors.primaryContainer),
-    ];
+  void _showAddTypePicker(BuildContext context, QueuePatternCubit cubit) async {
+    final cloudService = sl<ICloudService>();
 
+    List<_SlotTypeOption> types;
+    try {
+      final doctorTypes = await cloudService.select(
+        table: 'doctor_appointment_types',
+        eq: {'doctor_id': doctorId, 'clinic_id': clinicId},
+      );
+
+      final allAppTypes = await cloudService.select(table: 'appointment_types');
+
+      types = [];
+      for (final dt in doctorTypes) {
+        final typeId = dt['appointment_type_id'] as String;
+        final appType = allAppTypes.firstWhere(
+          (t) => t['id'] == typeId,
+          orElse: () => <String, dynamic>{},
+        );
+        final name = appType['name'] as String? ?? '';
+        final slotType = _mapAppointmentTypeToSlot(name);
+        types.add(_SlotTypeOption(
+          label: name.isNotEmpty ? name : '',
+          slotType: slotType,
+          icon: mapSlotTypeToIcon(slotType),
+          color: slotType == 'urgent' ? AppColors.warningText : AppColors.primary,
+        ));
+      }
+    } catch (_) {
+      types = [];
+    }
+
+    if (types.isEmpty) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى إضافة أنواع الزيارات أولاً من الإعدادات', textAlign: TextAlign.right),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (!context.mounted) return;
     showDialog(
       context: context,
       builder: (ctx) => Directionality(
@@ -258,10 +315,14 @@ class EditQueuePatternSheet extends StatelessWidget {
                   ),
                   leading: Icon(type.icon, color: type.color),
                   title: Text(type.label, style: AppTextStyles.bodyLarge(ctx)),
+                  subtitle: Text(
+                    mapSlotTypeToLabel(type.slotType),
+                    style: AppTextStyles.caption(ctx).copyWith(color: AppColors.textHint),
+                  ),
                   trailing: const Icon(Icons.add_circle_outline, color: AppColors.textHint),
                   onTap: () {
                     Navigator.pop(ctx);
-                    cubit.addSlot(type.slotType);
+                    cubit.addSlot(type.slotType, label: type.label);
                   },
                 ),
               );
@@ -270,6 +331,23 @@ class EditQueuePatternSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _mapAppointmentTypeToSlot(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('طارئ') || lower.contains('urgent') || lower.contains('مستعجل')) {
+      return QueueSlotType.urgent;
+    }
+    if (lower.contains('إعادة') || lower.contains('revisit') || lower.contains('مراجعة')) {
+      return QueueSlotType.revisit;
+    }
+    if (lower.contains('استشارة') || lower.contains('consult')) {
+      return QueueSlotType.consult;
+    }
+    if (lower.contains('متابعة') || lower.contains('موعد') || lower.contains('فحص')) {
+      return QueueSlotType.normal;
+    }
+    return QueueSlotType.normal;
   }
 }
 
@@ -308,17 +386,17 @@ class _SlotCard extends StatelessWidget {
           ),
         ),
         Positioned(
-          left: -2, top: -2,
+          right: 0, top: 0,
           child: GestureDetector(
             onTap: onRemove,
             child: Container(
-              width: 16, height: 16,
+              width: 20, height: 20,
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColors.border),
               ),
-              child: const Icon(Icons.close, size: 10, color: AppColors.textSecondary),
+              child: const Icon(Icons.close, size: 12, color: AppColors.textSecondary),
             ),
           ),
         ),

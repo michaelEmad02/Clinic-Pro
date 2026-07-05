@@ -1,8 +1,5 @@
-// ────────────────────────────────────────────────────────
-// فلاتر الطاقم الطبي — الكل، أطباء، تمريض، إدارة
-// ────────────────────────────────────────────────────────
-
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/staff_roles.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../manager/staff_state.dart';
 
@@ -16,20 +13,20 @@ class StaffFilterChips extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const _filters = [
-    (StaffFilter.all, 'الكل'),
-    (StaffFilter.doctors, 'أطباء'),
-    (StaffFilter.nursing, 'تمريض'),
-    (StaffFilter.admin, 'إدارة'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    // بناء قائمة الفلاتر ديناميكياً بناءً على الأدوار الحقيقية للنظام
+    final filters = [
+      (StaffFilter.all, 'الكل'),
+      (StaffFilter.doctor, StaffRoles.doctor.label),
+      (StaffFilter.secretary, StaffRoles.secretary.label),
+    ];
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        children: _filters.map((f) {
+        children: filters.map((f) {
           final isSelected = activeFilter == f.$1;
           return Padding(
             padding: const EdgeInsetsDirectional.only(start: 8),

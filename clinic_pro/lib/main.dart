@@ -13,6 +13,7 @@ void main() async {
 
   // تهيئة حقن الاعتماديات (Dependency Injection)
   configureDependencies();
+  await sl.allReady();
 
   runApp(const ClinicPro());
 }

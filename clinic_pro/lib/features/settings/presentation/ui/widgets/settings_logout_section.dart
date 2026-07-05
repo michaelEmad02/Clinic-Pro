@@ -6,10 +6,37 @@ import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/settings_cubit.dart';
 
 class SettingsLogoutSection extends StatelessWidget {
-  const SettingsLogoutSection({super.key});
+  final bool inline;
+
+  const SettingsLogoutSection({super.key, this.inline = false});
 
   @override
   Widget build(BuildContext context) {
+    if (inline) {
+      return InkWell(
+        onTap: () => context.read<SettingsCubit>().logout(),
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: AppConstants.spaceMd),
+          child: Row(
+            children: [
+              const Icon(Icons.logout, size: 20, color: AppColors.danger),
+              const SizedBox(width: AppConstants.spaceMd),
+              Expanded(
+                child: Text(
+                  'تسجيل الخروج',
+                  style: AppTextStyles.bodyLarge(context).copyWith(
+                    color: AppColors.danger,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(

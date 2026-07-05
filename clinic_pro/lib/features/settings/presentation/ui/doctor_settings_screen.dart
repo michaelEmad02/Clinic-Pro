@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/themes/app_colors.dart';
@@ -16,6 +17,8 @@ import 'widgets/shared_settings_widgets.dart';
 import 'widgets/edit_profile_sheet.dart';
 import 'widgets/clinic_picker_sheet.dart';
 import 'widgets/edit_queue_pattern_sheet.dart';
+import 'widgets/edit_visit_types_sheet.dart';
+import 'widgets/edit_working_hours_sheet.dart';
 
 class DoctorSettingsScreen extends StatelessWidget {
   final bool showBottomNav;
@@ -25,11 +28,15 @@ class DoctorSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => QueuePatternCubit()..loadPattern(),
+      create: (_) => sl<QueuePatternCubit>()..loadPattern(),
       child: Directionality(
         textDirection: TextDirection.rtl,
         child: Scaffold(
           appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_forward, color: AppColors.primary),
+              onPressed: () => Navigator.maybePop(context),
+            ),
             title: Text('الإعدادات',
                 style: AppTextStyles.headlineMedium(context)
                     .copyWith(color: AppColors.primary)),
@@ -60,12 +67,19 @@ class DoctorSettingsScreen extends StatelessWidget {
                     const SizedBox(height: AppConstants.spaceMd),
                     SettingsAccountSection(
                       name: state.userName,
-                      subtitle: state.userRole,
+                      subtitle: state.userSpecialty ?? 'طبيب عام',
+                      avatarUrl: state.userAvatarUrl,
+                      layout: AccountSectionLayout.centered,
+                      roleBadge: 'طبيب',
+                      showSectionTitle: false,
                       onEdit: () => EditProfileSheet.show(context),
                     ),
                     const SizedBox(height: AppConstants.spaceLg),
+                    _buildManagementSection(context),
+                    const SizedBox(height: AppConstants.spaceLg),
                     SettingsClinicSection(
                       clinicName: state.clinicName,
+                      clinicAddress: state.clinicAddress,
                       onChangeClinic: () => ClinicPickerSheet.show(context),
                     ),
                     const SizedBox(height: AppConstants.spaceLg),
@@ -73,9 +87,7 @@ class DoctorSettingsScreen extends StatelessWidget {
                     const SizedBox(height: AppConstants.spaceLg),
                     _buildOtherSection(context),
                     const SizedBox(height: AppConstants.spaceLg),
-                    const SettingsLogoutSection(),
-                    const SizedBox(height: AppConstants.spaceLg),
-                    buildSettingsFooter(context, showSystemStatus: true),
+                    const SettingsFooter(showSystemStatus: true),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -83,8 +95,43 @@ class DoctorSettingsScreen extends StatelessWidget {
             },
           ),
           bottomNavigationBar:
-              showBottomNav ? buildBottomNavBar(context) : null,
+              showBottomNav ? const SettingsBottomNavBar() : null,
         ),
+      ),
+    );
+  }
+
+  Widget _buildManagementSection(BuildContext context) {
+    return SectionCard(
+      title: 'الإدارة',
+      child: Column(
+        children: [
+          NavSettingsItem(
+            icon: Icons.medical_services_outlined,
+            label: 'إدارة الأدوية',
+            onTap: () => context.push(RouteConstants.drugs),
+          ),
+          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          NavSettingsItem(
+            icon: Icons.description_outlined,
+            label: 'قوالب الروشتات',
+            onTap: () => context.push(RouteConstants.prescriptionTemplates),
+          ),
+          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          NavSettingsItem(
+            icon: Icons.loyalty_outlined,
+            label: 'أنواع الزيارات',
+            subLabel: 'لتحديد أسعار الكشف',
+            onTap: () => EditVisitTypesSheet.show(context),
+          ),
+          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          NavSettingsItem(
+            icon: Icons.calendar_month_outlined,
+            label: 'المواعيد',
+            subLabel: 'لتعديل مواعيد الطبيب',
+            onTap: () => EditWorkingHoursSheet.show(context),
+          ),
+        ],
       ),
     );
   }
@@ -118,37 +165,17 @@ class DoctorSettingsScreen extends StatelessWidget {
   }
 
   Widget _buildOtherSection(BuildContext context) {
-    return SectionCard(
+    return const SectionCard(
       title: 'أخرى',
       child: Column(
         children: [
-          buildNavItem(
-            context,
-            icon: Icons.description_outlined,
-            label: 'قوالب الروشتات',
-            onTap: () => context.push(RouteConstants.prescriptionTemplates),
-          ),
-          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
-          buildNavItem(
-            context,
-            icon: Icons.description_outlined,
-            label: 'ادارة الادوية',
-            onTap: () => context.push(RouteConstants.drugs),
-          ),
-          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
-          buildNavItem(
-            context,
-            icon: Icons.notifications_active_outlined,
-            label: 'التنبيهات',
-            onTap: () {},
-          ),
-          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
-          buildToggleItem(
-            context,
-            icon: Icons.dark_mode,
+          ToggleSettingsItem(
+            icon: Icons.dark_mode_outlined,
             label: 'المظهر الداكن',
-            trailing: const DarkModeSwitch(),
+            trailing: DarkModeSwitch(),
           ),
+          Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          SettingsLogoutSection(inline: true),
         ],
       ),
     );

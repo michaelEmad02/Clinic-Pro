@@ -1,25 +1,5 @@
 import 'package:equatable/equatable.dart';
-
-class PatientMock extends Equatable {
-  final String id;
-  final String name;
-  final String age;
-  final String condition; // e.g. "متابعة ضغط الدم"
-  final String type; // 'normal', 'urgent'
-  final String time;
-
-  const PatientMock({
-    required this.id,
-    required this.name,
-    required this.age,
-    required this.condition,
-    required this.type,
-    required this.time,
-  });
-
-  @override
-  List<Object?> get props => [id, name, age, condition, type, time];
-}
+import '../../../appointments/presentation/manager/appointments_state.dart';
 
 abstract class DoctorDashboardState extends Equatable {
   const DoctorDashboardState();
@@ -34,14 +14,16 @@ class DoctorDashboardLoading extends DoctorDashboardState {}
 
 class DoctorDashboardLoaded extends DoctorDashboardState {
   final String doctorName;
-  final PatientMock? currentPatient;
-  final List<PatientMock> waitingQueue;
+  final String clinicName;
+  final AppointmentItem? currentPatient;
+  final List<AppointmentItem> waitingQueue;
   final int completedCount;
   final int waitingCount;
   final String avgWaitingTime; // e.g. "١٥ دقيقة"
 
   const DoctorDashboardLoaded({
     required this.doctorName,
+    required this.clinicName,
     this.currentPatient,
     required this.waitingQueue,
     required this.completedCount,
@@ -52,6 +34,7 @@ class DoctorDashboardLoaded extends DoctorDashboardState {
   @override
   List<Object?> get props => [
         doctorName,
+        clinicName,
         currentPatient,
         waitingQueue,
         completedCount,
@@ -68,3 +51,4 @@ class DoctorDashboardError extends DoctorDashboardState {
   @override
   List<Object?> get props => [message];
 }
+

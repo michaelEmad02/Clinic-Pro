@@ -3,8 +3,9 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:equatable/equatable.dart';
+import '../../../../core/constants/staff_roles.dart';
 
-enum StaffFilter { all, doctors, nursing, admin }
+enum StaffFilter { all, doctor, secretary }
 
 class StaffItem extends Equatable {
   final String id;
@@ -141,18 +142,26 @@ class StaffLoading extends StaffState {}
 class StaffLoaded extends StaffState {
   final List<StaffItem> allStaff;
   final List<StaffInvitationItem> invitations;
+  final List<Map<String, dynamic>> clinics;
+  final String? selectedClinicId;
   final String searchQuery;
   final StaffFilter activeFilter;
 
   const StaffLoaded({
     required this.allStaff,
     this.invitations = const [],
+    this.clinics = const [],
+    this.selectedClinicId,
     this.searchQuery = '',
     this.activeFilter = StaffFilter.all,
   });
 
   List<StaffItem> get filteredStaff {
     var list = allStaff;
+
+    if (selectedClinicId != null && selectedClinicId!.isNotEmpty) {
+      list = list.where((s) => s.clinicId == selectedClinicId).toList();
+    }
 
     if (searchQuery.isNotEmpty) {
       list = list
@@ -164,34 +173,38 @@ class StaffLoaded extends StaffState {
     switch (activeFilter) {
       case StaffFilter.all:
         break;
-      case StaffFilter.doctors:
-        list = list.where((s) => s.role == 'doctor').toList();
-      case StaffFilter.nursing:
-        list = list.where((s) => s.role == 'nurse').toList();
-      case StaffFilter.admin:
-        list = list
-            .where((s) =>
-                s.role == 'secretary' ||
-                s.role == 'accountant' ||
-                s.role == 'owner')
-            .toList();
+      case StaffFilter.doctor:
+        list = list.where((s) => s.role == StaffRoles.doctor.name).toList();
+        break;
+      case StaffFilter.secretary:
+        list = list.where((s) => s.role == StaffRoles.secretary.name).toList();
+        break;
     }
 
     return list;
   }
 
-  List<StaffInvitationItem> get pendingInvitations =>
-      invitations.where((inv) => inv.status == 'pending').toList();
+  List<StaffInvitationItem> get pendingInvitations {
+    var list = invitations.where((inv) => inv.status == 'pending').toList();
+    if (selectedClinicId != null && selectedClinicId!.isNotEmpty) {
+      list = list.where((inv) => inv.clinicId == selectedClinicId).toList();
+    }
+    return list;
+  }
 
   StaffLoaded copyWith({
     List<StaffItem>? allStaff,
     List<StaffInvitationItem>? invitations,
+    List<Map<String, dynamic>>? clinics,
+    String? selectedClinicId,
     String? searchQuery,
     StaffFilter? activeFilter,
   }) {
     return StaffLoaded(
       allStaff: allStaff ?? this.allStaff,
       invitations: invitations ?? this.invitations,
+      clinics: clinics ?? this.clinics,
+      selectedClinicId: selectedClinicId ?? this.selectedClinicId,
       searchQuery: searchQuery ?? this.searchQuery,
       activeFilter: activeFilter ?? this.activeFilter,
     );
@@ -199,7 +212,7 @@ class StaffLoaded extends StaffState {
 
   @override
   List<Object?> get props =>
-      [allStaff, invitations, searchQuery, activeFilter];
+      [allStaff, invitations, clinics, selectedClinicId, searchQuery, activeFilter];
 }
 
 class StaffError extends StaffState {

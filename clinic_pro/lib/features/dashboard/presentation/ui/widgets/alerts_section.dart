@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/owner_dashboard_state.dart';
+import '../../../domain/entities/dashboard_alert_entity.dart';
 
 class AlertsSection extends StatelessWidget {
-  final List<DashboardAlertMock> alerts;
+  final List<DashboardAlertEntity> alerts;
 
   const AlertsSection({
     super.key,
@@ -36,7 +36,7 @@ class AlertsSection extends StatelessWidget {
           itemCount: alerts.length,
           itemBuilder: (context, index) {
             final alert = alerts[index];
-            final isWarning = alert.type == 'warning';
+            final isWarning = alert.type == DashboardAlertType.warning;
             final bg = isWarning ? AppColors.warningBg : AppColors.primaryLight;
             final textCol = isWarning ? AppColors.warningText : AppColors.primary;
             final borderCol = isWarning

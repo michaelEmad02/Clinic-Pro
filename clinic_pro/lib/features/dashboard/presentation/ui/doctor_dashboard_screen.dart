@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../appointments/presentation/manager/appointments_repository.dart';
 import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../../../patients/presentation/ui/patients_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
@@ -11,6 +14,7 @@ import '../manager/doctor_dashboard_state.dart';
 import 'widgets/current_patient_card.dart';
 import 'widgets/waiting_queue_list.dart';
 import 'widgets/doctor_stats_row.dart';
+import 'widgets/doctor_quick_actions.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
   const DoctorDashboardScreen({super.key});
@@ -25,7 +29,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => DoctorDashboardCubit()..loadDashboardData(),
+      create: (context) => DoctorDashboardCubit(
+        sl<AppointmentsRepository>(),
+        sl<ICloudService>(),
+      )..loadDashboardData(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
@@ -51,15 +58,17 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       scrolledUnderElevation: 0,
       title: BlocBuilder<DoctorDashboardCubit, DoctorDashboardState>(
         builder: (context, state) {
+          String clinicName = 'عيادتك المتكاملة';
           String doctorName = 'أهلاً بك يا دكتور';
           if (state is DoctorDashboardLoaded) {
+            clinicName = state.clinicName;
             doctorName = 'مرحباً، ${state.doctorName}';
           }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'عيادتك المتكاملة',
+                clinicName,
                 style: AppTextStyles.headlineMedium(context).copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
@@ -131,11 +140,16 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   avgWaitingTime: state.avgWaitingTime,
                 ),
                 const SizedBox(height: 24),
+                const DoctorQuickActions(),
+                const SizedBox(height: 24),
                 CurrentPatientCard(
                   patient: state.currentPatient,
-                  onStartExamination: () {
+                  onStartExamination: () async {
                     if (state.currentPatient != null) {
-                      context.push('/prescription/${state.currentPatient!.id}');
+                      await context.push('/prescription/${state.currentPatient!.id}');
+                      if (context.mounted) {
+                        context.read<DoctorDashboardCubit>().loadDashboardData(autoCallNext: true);
+                      }
                     }
                   },
                 ),
@@ -182,6 +196,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
               setState(() {
                 _currentIndex = index;
               });
+              if (index == 0) {
+                context.read<DoctorDashboardCubit>().loadDashboardData();
+              }
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),

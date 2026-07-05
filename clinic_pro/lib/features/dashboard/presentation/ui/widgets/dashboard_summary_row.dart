@@ -3,7 +3,7 @@ import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
 class DashboardSummaryRow extends StatelessWidget {
-  final String totalRevenue;
+  final num totalRevenue;
   final int totalPatients;
   final int todayAppointments;
   final int activeClinics;
@@ -27,11 +27,11 @@ class DashboardSummaryRow extends StatelessWidget {
           _buildBentoCard(
             context: context,
             title: 'إجمالي الإيرادات',
-            value: '\$$totalRevenue',
+            value: '\$${totalRevenue.toStringAsFixed(0)}',
             icon: Icons.payments_outlined,
             iconBgColor: AppColors.successBg,
             iconColor: AppColors.successText,
-            hasLeftAccent: true,
+            hasRightAccent: true,
             accentColor: AppColors.accent,
           ),
           const SizedBox(width: 12),
@@ -42,6 +42,7 @@ class DashboardSummaryRow extends StatelessWidget {
             icon: Icons.people_outline,
             iconBgColor: AppColors.primaryLight,
             iconColor: AppColors.primaryContainer,
+            accentColor: AppColors.primaryContainer,
           ),
           const SizedBox(width: 12),
           _buildBentoCard(
@@ -51,6 +52,7 @@ class DashboardSummaryRow extends StatelessWidget {
             icon: Icons.today_outlined,
             iconBgColor: AppColors.warningBg,
             iconColor: AppColors.warningText,
+            accentColor: AppColors.warning,
           ),
           const SizedBox(width: 12),
           _buildBentoCard(
@@ -58,8 +60,9 @@ class DashboardSummaryRow extends StatelessWidget {
             title: 'العيادات النشطة',
             value: '$activeClinics',
             icon: Icons.business_outlined,
-            iconBgColor: const Color(0xFFF3E8FF), // purple tint
-            iconColor: const Color(0xFF7C3AED), // purple
+            iconBgColor: AppColors.iconBg, // purple tint
+            iconColor: AppColors.icon, // purple
+            accentColor: AppColors.icon,
           ),
         ],
       ),
@@ -73,7 +76,7 @@ class DashboardSummaryRow extends StatelessWidget {
     required IconData icon,
     required Color iconBgColor,
     required Color iconColor,
-    bool hasLeftAccent = false,
+    bool hasRightAccent = true,
     Color? accentColor,
   }) {
     return Container(
@@ -108,11 +111,11 @@ class DashboardSummaryRow extends StatelessWidget {
               ),
             ),
             // Left Accent Border
-            if (hasLeftAccent && accentColor != null)
+            if (hasRightAccent && accentColor != null)
               Positioned(
                 top: 0,
                 bottom: 0,
-                left: 0,
+                right: 0,
                 child: Container(
                   width: 4,
                   color: accentColor,

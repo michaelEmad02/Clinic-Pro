@@ -14,7 +14,6 @@ class MockCloudService implements ICloudService {
     String? order,
     bool ascending = true,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 300));
     List<Map<String, dynamic>> data = List.from(_getTableData(table));
     
     // Filtering (eq)
@@ -22,6 +21,20 @@ class MockCloudService implements ICloudService {
       data = data.where((item) {
         return eq.entries.every((entry) => item[entry.key] == entry.value);
       }).toList();
+    }
+
+    // Filtering (neq)
+    final neqFilter = neq;
+    if (neqFilter != null) {
+      data = data.where((item) {
+        return neqFilter.entries.every((entry) => item[entry.key] != entry.value);
+      }).toList();
+    }
+
+    // Filtering (notIsNull)
+    final nullCheckColumn = notIsNull;
+    if (nullCheckColumn != null) {
+      data = data.where((item) => item[nullCheckColumn] != null).toList();
     }
     
     // Sorting (order)
@@ -42,7 +55,6 @@ class MockCloudService implements ICloudService {
     required String table,
     required Map<String, dynamic> data,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
     final tableData = _getTableData(table);
     final newData = Map<String, dynamic>.from(data);
     newData['id'] = DateTime.now().millisecondsSinceEpoch.toString();
@@ -57,7 +69,6 @@ class MockCloudService implements ICloudService {
     required String matchColumn,
     required dynamic matchValue,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
     final tableData = _getTableData(table);
     final results = <Map<String, dynamic>>[];
     
@@ -81,7 +92,6 @@ class MockCloudService implements ICloudService {
     required String matchColumn,
     required dynamic matchValue,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
     final tableData = _getTableData(table);
     tableData.removeWhere((item) => item[matchColumn] == matchValue);
   }
@@ -108,10 +118,12 @@ class MockCloudService implements ICloudService {
       case 'users': return MockData.users;
       case 'clinics': return MockData.clinics;
       case 'clinic_staff': return MockData.clinicStaff;
+      case 'invitations': return MockData.invitations;
       case 'patients': return MockData.patients;
       case 'patient_visits': return MockData.patientVisits;
       case 'patient_prescription_records': return MockData.patientPrescriptionRecords;
       case 'appointment_types': return MockData.appointmentTypes;
+      case 'doctor_appointment_types': return MockData.doctorAppointmentTypes;
       case 'appointments': return MockData.appointments;
       case 'doctor_queue_rules': return MockData.doctorQueueRules;
       case 'drugs': return MockData.drugs;
@@ -126,6 +138,12 @@ class MockCloudService implements ICloudService {
       case 'weekly_revenue': return MockData.weeklyRevenue;
       case 'top_services': return MockData.topServices;
       case 'doctor_performance': return MockData.doctorPerformance;
+      case 'doctor_secretary_schedule': return MockData.doctorSecretarySchedule;
+      case 'clinic_working_hours': return MockData.clinicWorkingHours;
+      case 'clinic_stats': return MockData.clinicStats;
+      case 'diagnosis_templates': return MockData.diagnosisTemplates;
+      case 'plans': return MockData.plans;
+      case 'plans_features': return MockData.plansFeatures;
       default: return [];
     }
   }

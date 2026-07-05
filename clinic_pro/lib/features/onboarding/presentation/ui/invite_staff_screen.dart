@@ -1,113 +1,259 @@
-import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/i_cloud_service.dart';
 import '../manager/onboarding_cubit.dart';
 import '../manager/onboarding_state.dart';
 import 'widgets/progress_indicator_bar.dart';
 import 'widgets/invite_form_row.dart';
 import 'widgets/invited_staff_list.dart';
 
-/// شاشة دعوة الموظفين — الخطوة 3 من 3 في عملية الـ Onboarding
-/// تتيح للمالك إضافة أعضاء الفريق عن طريق البريد الإلكتروني مع تحديد الصلاحية
+/// شاشة دعوة الموظفين — تستخدم في خطوة الـ Onboarding أو من داخل إدارة الطاقم الطبي
 class InviteStaffScreen extends StatefulWidget {
-  const InviteStaffScreen({super.key});
+  final bool isOnboarding;
+
+  const InviteStaffScreen({
+    super.key,
+    this.isOnboarding = true,
+  });
 
   @override
   State<InviteStaffScreen> createState() => _InviteStaffScreenState();
 }
 
 class _InviteStaffScreenState extends State<InviteStaffScreen> {
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  
   StaffRoles _selectedRole = StaffRoles.doctor;
+  
+  List<Map<String, dynamic>> _clinics = [];
+  String? _selectedClinicId;
+  
+  List<Map<String, dynamic>> _doctors = [];
+  String? _selectedDoctorId;
 
-  /// قائمة الموظفين المدعوين (Mock Data)
+  /// قائمة الموظفين المدعوين في هذه الجلسة قبل الإرسال النهائي
   final List<InvitedStaffItem> _invitedStaff = [];
+  bool _isLoadingData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClinicsAndDoctors();
+  }
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     super.dispose();
   }
 
-  /// إضافة موظف جديد إلى القائمة بعد التحقق من صحة البريد
-  void _addInvitee() {
-    final email = _emailController.text.trim();
-    if (email.isEmpty || !email.contains('@')) {
-      // عرض رسالة خطأ بسيطة
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('الرجاء إدخال بريد إلكتروني صحيح'),
-          backgroundColor: AppColors.danger,
-          behavior: SnackBarBehavior.floating,
-        ),
+  /// تحميل العيادات والأطباء من قاعدة البيانات الافتراضية
+  Future<void> _loadClinicsAndDoctors() async {
+    try {
+      final clinics = await sl<ICloudService>().select(table: 'clinics');
+      setState(() {
+        _clinics = clinics;
+        if (clinics.isNotEmpty) {
+          _selectedClinicId = clinics.first['id'] as String;
+        }
+      });
+
+      if (_selectedClinicId != null) {
+        await _loadDoctorsForClinic(_selectedClinicId!);
+      }
+    } catch (_) {
+      // التعامل مع الخطأ بصمت في البيئة الوهمية
+    } finally {
+      setState(() {
+        _isLoadingData = false;
+      });
+    }
+  }
+
+  /// تحميل الأطباء لعيادة محددة لتصفية حقل الطبيب المسؤول
+  Future<void> _loadDoctorsForClinic(String clinicId) async {
+    try {
+      final staff = await sl<ICloudService>().select(
+        table: 'clinic_staff',
+        eq: {'clinic_id': clinicId, 'role': 'doctor'},
       );
+      final userIds = staff.map((s) => s['user_id'] as String).toList();
+      
+      final allUsers = await sl<ICloudService>().select(table: 'users');
+      final clinicDocs = allUsers.where((u) => userIds.contains(u['id'])).toList();
+      
+      setState(() {
+        _doctors = clinicDocs;
+        _selectedDoctorId = clinicDocs.isNotEmpty ? clinicDocs.first['id'] as String : null;
+      });
+    } catch (_) {}
+  }
+
+  /// إضافة موظف جديد إلى القائمة المؤقتة
+  void _addInvitee() {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+
+    if (name.isEmpty) {
+      _showError('الرجاء إدخال اسم الموظف الكامل');
+      return;
+    }
+
+    if (email.isEmpty || !email.contains('@')) {
+      _showError('الرجاء إدخال بريد إلكتروني صحيح');
       return;
     }
 
     // التحقق من عدم التكرار
     final alreadyExists = _invitedStaff.any((s) => s.email == email);
     if (alreadyExists) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('هذا البريد مضاف مسبقاً'),
-          backgroundColor: AppColors.warning,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('هذا البريد مضاف مسبقاً في القائمة');
       return;
     }
 
-    // // الحصول على اسم الصلاحية بالعربية
-    // final roleLabel = StaffRole.values
-    //     .firstWhere((r) => r == _selectedRole).label  ;
+    final clinicName = _clinics.firstWhere((c) => c['id'] == _selectedClinicId)['name'] as String? ?? 'العيادة';
+    
+    String? doctorName;
+    if (_selectedRole == StaffRoles.secretary && _selectedDoctorId != null) {
+      doctorName = _doctors.firstWhere((d) => d['id'] == _selectedDoctorId)['name'] as String?;
+    }
 
     setState(() {
       _invitedStaff.add(InvitedStaffItem(
+        name: name,
         email: email,
         role: _selectedRole,
+        clinicId: _selectedClinicId ?? 'c-1',
+        clinicName: clinicName,
+        doctorId: _selectedRole == StaffRoles.secretary ? _selectedDoctorId : null,
+        doctorName: doctorName,
       ));
+      _nameController.clear();
       _emailController.clear();
     });
   }
 
-  /// حذف موظف من القائمة
   void _removeInvitee(int index) {
     setState(() {
       _invitedStaff.removeAt(index);
     });
   }
 
-  /// إرسال الدعوات والمتابعة
-  void _onSendInvitations() {
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: AppColors.danger,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// إرسال الدعوات وحفظها في قاعدة البيانات السحابية الوهمية
+  Future<void> _onSendInvitations() async {
     if (_invitedStaff.isEmpty) {
       _onSkip();
       return;
     }
 
-    final emails = _invitedStaff.map((s) => s.email).toList();
-    context.read<OnboardingCubit>().inviteStaff(emails);
+    setState(() {
+      _isLoadingData = true;
+    });
+
+    final cloudService = sl<ICloudService>();
+    final now = DateTime.now();
+
+    // حفظ كل دعوة في قاعدة البيانات الوهمية
+    for (final staff in _invitedStaff) {
+      final dbRole = staff.role == StaffRoles.doctor ? 'doctor' : 'secretary';
+      
+      await cloudService.insert(
+        table: 'invitations',
+        data: {
+          'clinic_id': staff.clinicId,
+          'owner_id': 'u-owner-1',
+          'email': staff.email,
+          'name': staff.name,
+          'role': dbRole,
+          'status': 'pending',
+          'created_at': now.toIso8601String(),
+          'expires_at': now.add(const Duration(days: 7)).toIso8601String(),
+        },
+      );
+
+      // إذا كان هناك ربط بين سكرتير وطبيب، ننشئ جدول الربط أيضاً
+      if (dbRole == 'secretary' && staff.doctorId != null) {
+        // ننشئ حساب موظف سكرتارية وهمي مفعل مباشرة للتأثير الفوري بالربط
+        final newSecId = 'u-sec-gen-${now.millisecondsSinceEpoch}';
+        await cloudService.insert(
+          table: 'users',
+          data: {
+            'id': newSecId,
+            'name': staff.name,
+            'email': staff.email,
+            'role': 'secretary',
+          },
+        );
+        await cloudService.insert(
+          table: 'clinic_staff',
+          data: {
+            'clinic_id': staff.clinicId,
+            'user_id': newSecId,
+            'role': 'secretary',
+            'is_active': true,
+          },
+        );
+        await cloudService.insert(
+          table: 'doctor_secretary_schedule',
+          data: {
+            'doctor_id': staff.doctorId!,
+            'secretary_id': newSecId,
+            'clinic_id': staff.clinicId,
+            'is_active': true,
+            'created_at': now.toIso8601String(),
+          },
+        );
+      }
+    }
+
+    if (widget.isOnboarding) {
+      if (mounted) {
+        context.read<OnboardingCubit>().inviteStaff(_invitedStaff.map((e) => e.email).toList());
+      }
+    } else {
+      if (mounted) {
+        context.pop();
+      }
+    }
   }
 
-  /// تخطي الدعوات والذهاب للوحة التحكم
   void _onSkip() {
-    context.go(RouteConstants.ownerDashboard);
+    if (widget.isOnboarding) {
+      context.go(RouteConstants.ownerDashboard);
+    } else {
+      context.pop();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<OnboardingCubit, OnboardingState>(
       listener: (context, state) {
-        if (state is OnboardingStaffInvited) {
+        if (state is OnboardingStaffInvited && widget.isOnboarding) {
           context.go(RouteConstants.ownerDashboard);
         }
       },
       builder: (context, state) {
-        final isLoading = state is OnboardingLoading;
+        final isLoading = state is OnboardingLoading || _isLoadingData;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -123,8 +269,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius:
-                          BorderRadius.circular(AppConstants.radiusCard),
+                      borderRadius: BorderRadius.circular(AppConstants.radiusCard),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.08),
@@ -137,13 +282,19 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // ── القسم العلوي: Header ──
+                        // Header
                         _buildHeader(context),
 
-                        // ── المحتوى الرئيسي ──
-                        _buildContent(context),
+                        // Form & Content
+                        if (_isLoadingData)
+                          const Padding(
+                            padding: EdgeInsets.all(AppConstants.spaceLg),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else
+                          _buildContent(context),
 
-                        // ── الأزرار السفلية ──
+                        // Footer
                         _buildFooter(context, isLoading),
                       ],
                     ),
@@ -157,28 +308,23 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
     );
   }
 
-  /// بناء القسم العلوي: زر الرجوع + مؤشر الخطوات + العنوان + الوصف
   Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceLg),
       decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.border),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // صف زر الرجوع + مؤشر الخطوات
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // زر الرجوع
               Material(
                 color: AppColors.surfaceContainerLow,
                 shape: const CircleBorder(),
                 child: InkWell(
-                  onTap: () => context.pop(),
+                  onTap: () => _onSkip(),
                   customBorder: const CircleBorder(),
                   child: const Padding(
                     padding: EdgeInsets.all(6),
@@ -190,21 +336,17 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                   ),
                 ),
               ),
-
-              // مؤشر الخطوات
-              const Expanded(
-                child: ProgressIndicatorBar(
-                  step: 3,
-                  totalSteps: 3,
-                  title: '',
+              if (widget.isOnboarding)
+                const Expanded(
+                  child: ProgressIndicatorBar(
+                    step: 3,
+                    totalSteps: 3,
+                    title: '',
+                  ),
                 ),
-              ),
             ],
           ),
-
           const SizedBox(height: AppConstants.spaceMd),
-
-          // العنوان
           Text(
             'دعوة الفريق',
             style: AppTextStyles.headlineLarge(context).copyWith(
@@ -212,8 +354,6 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
             ),
           ),
           const SizedBox(height: AppConstants.spaceXs),
-
-          // الوصف
           Text(
             'قم بدعوة زملائك في العيادة للانضمام إلى النظام بصلاحيات محددة.',
             style: AppTextStyles.bodyMedium(context).copyWith(
@@ -226,15 +366,14 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
     );
   }
 
-  /// بناء المحتوى الرئيسي: نموذج الإدخال + قائمة المدعوين
   Widget _buildContent(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(AppConstants.spaceLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // نموذج إضافة موظف
           InviteFormRow(
+            nameController: _nameController,
             emailController: _emailController,
             selectedRole: _selectedRole,
             onRoleChanged: (val) {
@@ -244,12 +383,26 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                 });
               }
             },
+            clinics: _clinics,
+            selectedClinicId: _selectedClinicId,
+            onClinicChanged: (val) {
+              if (val != null) {
+                setState(() {
+                  _selectedClinicId = val;
+                });
+                _loadDoctorsForClinic(val);
+              }
+            },
+            doctors: _doctors,
+            selectedDoctorId: _selectedDoctorId,
+            onDoctorChanged: (val) {
+              setState(() {
+                _selectedDoctorId = val;
+              });
+            },
             onAdd: _addInvitee,
           ),
-
           const SizedBox(height: AppConstants.spaceLg),
-
-          // قائمة المدعوين
           InvitedStaffList(
             items: _invitedStaff,
             onRemove: _removeInvitee,
@@ -259,7 +412,6 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
     );
   }
 
-  /// بناء الأزرار السفلية: إرسال الدعوات + تخطي
   Widget _buildFooter(BuildContext context, bool isLoading) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -271,27 +423,22 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // زر إرسال الدعوات
           ElevatedButton(
             onPressed: isLoading ? null : _onSendInvitations,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryContainer,
-              foregroundColor: AppColors.onPrimary,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusButton),
               ),
               elevation: 0,
-              shadowColor: AppColors.primary.withOpacity(0.25),
             ),
             child: isLoading
                 ? const SizedBox(
                     height: 24,
                     width: 24,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -301,32 +448,29 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                       Text(
                         'إرسال الدعوات',
                         style: AppTextStyles.headlineSmall(context).copyWith(
-                          color: AppColors.onPrimary,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
           ),
-
-          const SizedBox(height: AppConstants.spaceSm),
-
-          // زر تخطي
-          TextButton(
-            onPressed: isLoading ? null : _onSkip,
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.textSecondary,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+          if (widget.isOnboarding) ...[
+            const SizedBox(height: AppConstants.spaceSm),
+            TextButton(
+              onPressed: isLoading ? null : _onSkip,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.textSecondary,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              child: Text(
+                'تخطي الآن',
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
-            child: Text(
-              'تخطي الآن',
-              style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
+          ],
         ],
       ),
     );

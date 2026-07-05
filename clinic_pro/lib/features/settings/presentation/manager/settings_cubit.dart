@@ -1,104 +1,212 @@
 // ────────────────────────────────────────────────────────
-// SettingsCubit — يدير بيانات صفحة الإعدادات
-// يحمل بيانات المستخدم والعيادة والاشتراك من MockData
+// SettingsCubit — يدير بيانات صفحة الإعدادات عبر الـ Repository
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/constants/staff_roles.dart';
-import '../../../../core/mocks/mock_data.dart';
+import '../../domain/repositories/i_settings_repository.dart';
 import 'settings_state.dart';
 
+@injectable
 class SettingsCubit extends Cubit<SettingsState> {
-  SettingsCubit() : super(const SettingsState());
+  final ISettingsRepository _repository;
+
+  SettingsCubit(this._repository) : super(const SettingsState());
 
   String _getUserId(StaffRoles role) {
     switch (role) {
-      case StaffRoles.owner: return 'u-owner-1';
-      case StaffRoles.secretary: return 'u-sec-1';
-      case StaffRoles.doctor: default: return 'u-doc-1';
+      case StaffRoles.owner:
+        return 'u-owner-1';
+      case StaffRoles.secretary:
+        return 'u-sec-1';
+      case StaffRoles.doctor:
+      default:
+        return 'u-doc-1';
     }
   }
 
   String _getClinicId(StaffRoles role) {
-    return 'c-1'; // جميع الأدوار في العيادة الأولى حالياً
+    return AppConstants.activeClinicId;
   }
 
   String _getRoleLabel(StaffRoles role) {
     switch (role) {
-      case StaffRoles.owner: return 'صاحب عيادة';
-      case StaffRoles.secretary: return 'سكرتيرة';
-      case StaffRoles.doctor: default: return 'طبيب عام';
+      case StaffRoles.owner:
+        return 'صاحب عيادة';
+      case StaffRoles.secretary:
+        return 'سكرتيرة';
+      case StaffRoles.doctor:
+      default:
+        return 'طبيب عام';
     }
   }
 
-  /// تحميل البيانات من MockData حسب الدور
-  void loadSettings(StaffRoles role) {
+  /// تحميل الإعدادات من المستودع حسب دور المستخدم
+  Future<void> loadSettings(StaffRoles role) async {
     emit(state.copyWith(isLoading: true, error: null));
 
-    try {
-      final userId = _getUserId(role);
-      final clinicId = _getClinicId(role);
+    final userId = _getUserId(role);
+    final clinicId = _getClinicId(role);
 
-      // المستخدم
-      final user = MockData.users.firstWhere((u) => u['id'] == userId);
-      // العيادة الحالية
-      final clinic = MockData.clinics.firstWhere((c) => c['id'] == clinicId);
-      // قائمة العيادات
-      final clinics = List<Map<String, dynamic>>.from(MockData.clinics);
-      // الاشتراك
-      final subscription = MockData.subscriptions.isNotEmpty
-          ? MockData.subscriptions.first
-          : <String, dynamic>{};
+    // 1. جلب الملف الشخصي
+    final userResult = await _repository.getUserProfile(userId);
+    // 2. جلب العيادة الحالية
+    final clinicResult = await _repository.getClinicInfo(clinicId);
+    // 3. جلب العيادات المتاحة
+    final clinicsResult = await _repository.getAvailableClinics();
+    // 4. جلب الاشتراك (للمالك)
+    final subResult = role == StaffRoles.owner
+        ? await _repository.getSubscription(userId)
+        : null;
 
-      emit(state.copyWith(
-        isLoading: false,
-        userId: user['id'] as String,
-        userName: user['name'] as String,
-        userEmail: user['email'] as String,
-        userRole: _getRoleLabel(role),
-        userPhone: user['phone'] as String,
-        userAvatarUrl: user['avatar_url'] as String?,
-        clinicId: clinic['id'] as String,
-        clinicName: clinic['name'] as String,
-        clinicAddress: clinic['address'] as String,
-        clinicPhone: clinic['phone'] as String,
-        clinicLogoUrl: clinic['logo_url'] as String?,
-        availableClinics: clinics,
-        planType: subscription['plan_type'] as String? ?? '',
-        planStatus: subscription['status'] as String? ?? '',
-        trialEndAt: subscription['trial_end_at'] as String?,
-        currentPeriodEnd: subscription['current_period_end'] as String?,
-      ));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
-    }
+    userResult.fold(
+      (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+      (user) {
+        clinicResult.fold(
+          (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+          (clinic) {
+            clinicsResult.fold(
+              (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+              (clinics) async {
+                SettingsState updatedState = state.copyWith(
+                  isLoading: false,
+                  userId: user['id'] as String,
+                  userName: user['name'] as String,
+                  userEmail: user['email'] as String,
+                  userRole: _getRoleLabel(role),
+                  userPhone: user['phone'] as String,
+                  userAvatarUrl: user['avatar_url'] as String?,
+                  userSpecialty: user['specialty'] as String?,
+                  clinicId: clinic['id'] as String,
+                  clinicName: clinic['name'] as String,
+                  clinicAddress: clinic['address'] as String,
+                  clinicPhone: clinic['phone'] as String,
+                  clinicLogoUrl: clinic['logo_url'] as String?,
+                  availableClinics: clinics,
+                );
+
+                if (subResult != null) {
+                  subResult.fold(
+                    (_) {},
+                    (sub) {
+                      updatedState = updatedState.copyWith(
+                        planType: sub['plan_type'] as String? ?? '',
+                        planStatus: sub['status'] as String? ?? '',
+                        trialEndAt: sub['trial_end_at'] as String?,
+                        currentPeriodEnd: sub['current_period_end'] as String?,
+                      );
+                    },
+                  );
+                }
+
+                emit(updatedState);
+
+                // للسكرتيرة: تحميل الأطباء والجدول النشط
+                if (role == StaffRoles.secretary) {
+                  await loadSecretaryDoctorsList();
+                }
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
-  /// تحديث الملف الشخصي (محلي — لا يمسح MockData)
-  void updateProfile({required String name, required String phone}) {
-    emit(state.copyWith(userName: name, userPhone: phone));
+  /// تحميل الأطباء المقترنين بالسكرتيرة
+  Future<void> loadSecretaryDoctorsList() async {
+    if (state.userId.isEmpty || state.clinicId.isEmpty) return;
+    
+    final doctorsResult = await _repository.getSecretaryDoctors(state.userId, state.clinicId);
+    doctorsResult.fold(
+      (failure) => emit(state.copyWith(error: failure.message)),
+      (doctors) {
+        final activeDoc = doctors.firstWhere(
+          (d) => d['is_active'] == true,
+          orElse: () => <String, dynamic>{},
+        );
+        emit(state.copyWith(
+          secretaryDoctors: doctors,
+          currentDoctorId: activeDoc['doctor_id'] as String?,
+          currentDoctorName: activeDoc['name'] as String?,
+          currentDoctorSpecialty: activeDoc['specialty'] as String?,
+          currentDoctorAvatar: activeDoc['avatar_url'] as String?,
+        ));
+      },
+    );
+  }
+
+  /// تحديث الملف الشخصي في المستودع
+  Future<void> updateProfile({required String name, required String phone}) async {
+    if (state.userId.isEmpty) return;
+    emit(state.copyWith(isLoading: true));
+
+    final result = await _repository.updateProfile(
+      userId: state.userId,
+      name: name,
+      phone: phone,
+    );
+
+    result.fold(
+      (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+      (_) {
+        emit(state.copyWith(
+          isLoading: false,
+          userName: name,
+          userPhone: phone,
+        ));
+      },
+    );
+  }
+
+  /// تغيير الطبيب النشط للسكرتيرة
+  Future<void> changeActiveDoctor(String doctorId) async {
+    if (state.userId.isEmpty || state.clinicId.isEmpty) return;
+
+    final result = await _repository.setSecretaryActiveDoctor(
+      state.userId,
+      state.clinicId,
+      doctorId,
+    );
+
+    result.fold(
+      (failure) => emit(state.copyWith(error: failure.message)),
+      (_) async {
+        await loadSecretaryDoctorsList();
+      },
+    );
   }
 
   /// تبديل العيادة النشطة
-  void changeClinic(String clinicId) {
-    final clinic = MockData.clinics.firstWhere(
-      (c) => c['id'] == clinicId,
-      orElse: () => <String, dynamic>{},
-    );
-    if (clinic.isEmpty) return;
+  Future<void> changeClinic(String clinicId) async {
+    emit(state.copyWith(isLoading: true));
+    final clinicResult = await _repository.getClinicInfo(clinicId);
 
-    emit(state.copyWith(
-      clinicId: clinic['id'] as String,
-      clinicName: clinic['name'] as String,
-      clinicAddress: clinic['address'] as String,
-      clinicPhone: clinic['phone'] as String,
-      clinicLogoUrl: clinic['logo_url'] as String?,
-    ));
+    clinicResult.fold(
+      (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+      (clinic) async {
+        AppConstants.activeClinicId = clinicId; // تحديث العيادة النشطة عالمياً
+        emit(state.copyWith(
+          isLoading: false,
+          clinicId: clinic['id'] as String,
+          clinicName: clinic['name'] as String,
+          clinicAddress: clinic['address'] as String,
+          clinicPhone: clinic['phone'] as String,
+          clinicLogoUrl: clinic['logo_url'] as String?,
+        ));
+
+        // إذا كانت سكرتيرة، أعد تحميل قائمة الأطباء التابعة للعيادة الجديدة
+        if (state.userRole == 'سكرتيرة') {
+          await loadSecretaryDoctorsList();
+        }
+      },
+    );
   }
 
   /// تسجيل الخروج
   void logout() {
-    // محاكاة تسجيل خروج (في التطبيق الحقيقي يتم مسح التوكن)
     emit(state.copyWith(isLoading: false));
   }
 }

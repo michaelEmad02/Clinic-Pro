@@ -32,39 +32,59 @@ class SettingsClinicSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
             border: Border.all(color: AppColors.border, width: 0.5),
             boxShadow: const [
-              BoxShadow(color: Color(0x14000000), blurRadius: 3, offset: Offset(0, 1)),
+              BoxShadow(color: Color(0x0F000000), blurRadius: 4, offset: Offset(0, 2)),
             ],
           ),
-          padding: const EdgeInsets.all(AppConstants.spaceMd),
-          child: Row(
+          child: Column(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-                ),
-                child: const Icon(Icons.local_hospital, color: AppColors.primary, size: 20),
-              ),
-              const SizedBox(width: AppConstants.spaceMd),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: const EdgeInsets.all(AppConstants.spaceMd),
+                child: Row(
                   children: [
-                    Text(clinicName, style: AppTextStyles.headlineSmall(context)),
-                    if (clinicAddress != null) ...[
-                      const SizedBox(height: 2),
-                      Text(clinicAddress!, style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary)),
-                    ],
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight,
+                        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                      ),
+                      child: const Icon(Icons.local_hospital, color: AppColors.primary, size: 20),
+                    ),
+                    const SizedBox(width: AppConstants.spaceMd),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(clinicName, style: AppTextStyles.headlineSmall(context)),
+                          if (clinicAddress != null) ...[
+                            const SizedBox(height: 2),
+                            Text(clinicAddress!, style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary)),
+                          ],
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-              TextButton.icon(
-                onPressed: onChangeClinic,
-                label: Text('تغيير العيادة', style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary)),
-                icon: const Icon(Icons.chevron_left, color: AppColors.primary, size: 18),
-              ),
+              if (onChangeClinic != null) ...[
+                const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+                InkWell(
+                  onTap: onChangeClinic,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd, horizontal: AppConstants.spaceMd),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'تغيير العيادة',
+                          style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
+                        ),
+                        const Icon(Icons.chevron_left, color: AppColors.primary, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

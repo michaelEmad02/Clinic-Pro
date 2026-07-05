@@ -3,10 +3,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/owner_dashboard_state.dart';
+import '../../../domain/entities/clinic_summary_entity.dart';
 
 class ClinicsHorizontalScroll extends StatelessWidget {
-  final List<ClinicMock> clinics;
+  final List<ClinicSummaryEntity> clinics;
 
   const ClinicsHorizontalScroll({
     super.key,

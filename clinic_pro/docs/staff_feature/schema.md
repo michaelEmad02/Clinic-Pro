@@ -1,5 +1,7 @@
 # schema.md — Clinics & Staff Feature
 
+> ✅ Verified against live Supabase project `sybsvobonipnmvymauvc` on 2025
+
 ---
 
 ## Tables
@@ -48,10 +50,11 @@ Comment: *"يحتوي علي موظفين كل عياده"*
 'doctor', 'secretary'
 ```
 
-> ⚠️ **Database Enum constraints:** The database currently supports `'doctor', 'secretary'`.
-> However, for UI demonstration and filtering purposes, the `MockData` also supports `'nurse'` and `'accountant'` to showcase the nursing/admin filters in the UI.
-> 
-> When integrating with Supabase, these roles will need to be added to the database enum or handled as permissions.
+> ⚠️ **Only 2 values currently** — `nurse` and `accountant` are NOT in the database enum,
+> even though the `users` table comment mentions them. These roles are confirmed
+> **not yet available** — see `upcoming_features.md` → "Additional Staff Roles".
+>
+> Do NOT build UI that allows selecting nurse/accountant until the enum is updated.
 
 ---
 
@@ -80,13 +83,52 @@ CREATE TABLE invitations (
 
 ---
 
+
+---
+
+### `doctor_schedules` — مواعيد عمل الأطباء
+
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| `id` | uuid | NO | `gen_random_uuid()` | |
+| `doctor_id` | uuid | NO | — | FK → users.id |
+| `clinic_id` | uuid | NO | — | FK → clinics.id |
+| `day_of_week` | smallint | NO | — | 0=Sunday … 6=Saturday |
+| `start_time` | time | NO | — | |
+| `end_time` | time | NO | — | |
+| `is_active` | bool | NO | `true` | |
+
+> Managed by Owner in clinic settings.
+> Will serve as the base for a future patient-facing booking system.
+
+---
+
+### `doctor_secretary_schedule` — ربط السكرتير بالطبيب
+
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| `id` | uuid | NO | `gen_random_uuid()` | |
+| `doctor_id` | uuid | NO | — | FK → users.id |
+| `secretary_id` | uuid | NO | — | FK → users.id |
+| `clinic_id` | uuid | NO | — | FK → clinics.id |
+| `is_active` | bool | NO | `true` | |
+| `created_at` | timestamptz | NO | `now()` | |
+
+> No `day_of_week` here — the link is fixed.
+> Time-based resolution uses `doctor_schedules` at runtime.
+> One secretary can serve multiple doctors (in different clinics or on different days).
+> One doctor can have multiple secretaries.
+> A secretary serves only ONE doctor at a time (never concurrent).
+
 ## Constants
 
 ```dart
 class SupabaseTables {
-  static const clinics      = 'clinics';
-  static const clinicStaff  = 'clinic_staff';
-  static const invitations  = 'invitations';  // not yet created in DB
+  static const clinics                  = 'clinics';
+  static const clinicStaff             = 'clinic_staff';
+  static const invitations             = 'invitations';       // not yet created in DB
+  static const doctorSchedules         = 'doctor_schedules';
+  static const doctorSecretarySchedule = 'doctor_secretary_schedule';
 }
 
 class StaffRole {

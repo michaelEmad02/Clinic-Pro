@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/i_cloud_service.dart';
 import '../../../clinics/presentation/ui/clinics_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/owner_dashboard_cubit.dart';
@@ -28,7 +30,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => OwnerDashboardCubit()..loadDashboardData(),
+      create: (context) => OwnerDashboardCubit(sl<ICloudService>())..loadDashboardData(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
@@ -42,7 +44,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             const SettingsScreen(role: StaffRoles.owner, showBottomNav: false),
           ],
         ),
-        bottomNavigationBar: _buildBottomNav(),
+        bottomNavigationBar: buildBottomNav(),
       ),
     );
   }
@@ -57,7 +59,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
         builder: (context, state) {
           String subtitle = 'لوحة التحكم';
           if (state is OwnerDashboardLoaded) {
-            subtitle = 'مرحباً، ${state.ownerName}';
+            subtitle = 'مرحباً، ${state.dashboard.ownerName}';
           }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,17 +132,17 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               children: [
                 DashboardSummaryRow(
-                  totalRevenue: state.totalRevenue,
-                  totalPatients: state.totalPatients,
-                  todayAppointments: state.todayAppointments,
-                  activeClinics: state.activeClinics,
+                  totalRevenue: state.dashboard.totalRevenue,
+                  totalPatients: state.dashboard.totalPatients,
+                  todayAppointments: state.dashboard.todayAppointments,
+                  activeClinics: state.dashboard.activeClinics,
                 ),
                 const SizedBox(height: 24),
-                AlertsSection(alerts: state.alerts),
+                AlertsSection(alerts: state.dashboard.alerts),
                 const SizedBox(height: 24),
-                ClinicsHorizontalScroll(clinics: state.clinics),
-                const SizedBox(height: 24),
-                RevenueBarChart(weeklyRevenue: state.weeklyRevenue),
+                // ClinicsHorizontalScroll(clinics: state.dashboard.clinics),
+                // const SizedBox(height: 24),
+                RevenueBarChart(weeklyRevenue: state.dashboard.weeklyRevenue),
                 const SizedBox(height: 24),
                 const QuickActionsRow(),
               ],
@@ -152,7 +154,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget buildBottomNav() {
     final tabs = [
       {'label': 'الرئيسية', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
       {'label': 'العيادات', 'icon': Icons.business_outlined, 'activeIcon': Icons.business},

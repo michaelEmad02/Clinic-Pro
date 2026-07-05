@@ -1,0 +1,286 @@
+<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ClinicPro — الإعدادات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;family=Inter:wght@700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#ffdbaf",
+                    "warning-bg": "#FEF3C7",
+                    "tertiary-fixed-dim": "#ffb955",
+                    "secondary": "#006c4e",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e6e8eb",
+                    "surface": "#FFFFFF",
+                    "tertiary": "#6a4300",
+                    "primary": "#00526d",
+                    "text-hint": "#A0AEC0",
+                    "tertiary-fixed": "#ffddb4",
+                    "primary-fixed-dim": "#8bcff2",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-light": "#EAF4F8",
+                    "on-secondary-container": "#007152",
+                    "primary-fixed": "#c0e8ff",
+                    "on-primary-container": "#bce7ff",
+                    "success-bg": "#D1FAE5",
+                    "surface-variant": "#e0e3e6",
+                    "on-primary-fixed-variant": "#004d66",
+                    "success-text": "#065F46",
+                    "secondary-fixed": "#6afbc6",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#001e2b",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#eff1f4",
+                    "inverse-surface": "#2d3133",
+                    "on-secondary-fixed-variant": "#00513a",
+                    "surface-container": "#eceef1",
+                    "surface-container-low": "#f2f4f7",
+                    "danger": "#E84C4C",
+                    "text-secondary": "#64748B",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#8a5900",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#d8dadd",
+                    "primary-container": "#1a6b8a",
+                    "on-tertiary-fixed-variant": "#633f00",
+                    "error-container": "#ffdad6",
+                    "text-primary": "#1A202C",
+                    "surface-bright": "#f7f9fc",
+                    "inverse-primary": "#8bcff2",
+                    "secondary-fixed-dim": "#48deab",
+                    "surface-container-highest": "#e0e3e6",
+                    "on-surface-variant": "#40484d",
+                    "outline": "#70787e",
+                    "danger-text": "#991B1B",
+                    "on-tertiary-fixed": "#291800",
+                    "background": "#f7f9fc",
+                    "border": "#E2E8F0",
+                    "on-surface": "#191c1e",
+                    "on-secondary-fixed": "#002115",
+                    "secondary-container": "#67f8c3",
+                    "on-background": "#191c1e",
+                    "danger-bg": "#FEE2E2",
+                    "warning-text": "#92400E",
+                    "surface-tint": "#106685",
+                    "outline-variant": "#bfc8ce"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "8px",
+                    "base": "4px",
+                    "xl": "32px",
+                    "screen-edge-v": "20px",
+                    "lg": "24px",
+                    "list-item-height": "72px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "screen-edge-h": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Cairo"],
+                    "caption": ["Cairo"],
+                    "label-chip": ["Cairo"],
+                    "headline-sm": ["Cairo"],
+                    "headline-md": ["Cairo"],
+                    "headline-lg": ["Cairo"],
+                    "body-md": ["Cairo"],
+                    "data-numeric": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "label-chip": ["11px", {"lineHeight": "1", "fontWeight": "500"}],
+                    "headline-sm": ["16px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "headline-md": ["22px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "data-numeric": ["13px", {"lineHeight": "1", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f7f9fc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .clinic-card {
+            border: 0.5px solid #E2E8F0;
+            border-radius: 16px;
+            background: #FFFFFF;
+        }
+        .custom-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .custom-toggle input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e0;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #1A6B8A; }
+        input:checked + .slider:before { transform: translateX(20px); }
+    </style>
+</head>
+<body class="font-body-md text-text-primary mb-24 overflow-x-hidden">
+<!-- Top AppBar -->
+<header class="bg-surface sticky top-0 z-50 h-16 flex items-center justify-between px-screen-edge-h shadow-sm">
+<div class="flex items-center gap-4">
+<h1 class="font-headline-md text-headline-md text-primary">الإعدادات</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-text-secondary">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-xl mx-auto px-screen-edge-h py-lg space-y-lg">
+<!-- Section الحساب -->
+<section><div class="flex flex-col items-center gap-4 p-md clinic-card shadow-sm mt-[20px]">
+<div class="relative">
+<div class="w-24 h-24 rounded-full overflow-hidden border-2 border-primary-light shadow-sm">
+<img alt="د. أحمد محمد" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALYwiVbBDPVKQzKAt3b8-VxAUoMVk0HfQWpftVnzL_Ks6oW1x3kBc9WuYOFlotMULli2HirGaQSfq0t9sk0adFEFHm7w7B0gQzY4t1cl8djrfYjletGvurXyY6KbdJtHUy7p8WvYXlBZ2Hsvt66T0OQ4cjkHzyGf8qD1vtBjU_hTb14ZIrsIT3WkKak5LDn6VpbRT_sXH_27YQOb2ViwVlMfCFOkDvJjht6BcUF7NQSE7fvnQPkxew3W3xLq3crq-7XF5Lfuo9wlor">
+</div>
+<div class="absolute bottom-1 right-1 w-5 h-5 bg-secondary border-2 border-surface rounded-full shadow-sm"></div>
+</div>
+<div class="text-center">
+<h3 class="font-headline-md text-headline-md text-text-primary">د. أحمد محمد</h3>
+<p class="font-body-md text-text-secondary">عيادة النور</p>
+<div class="flex justify-center mt-2">
+<span class="bg-primary-container text-white text-label-chip px-3 py-1 rounded-full">صاحب عيادة</span>
+</div>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary rounded-xl font-headline-sm hover:bg-primary-light transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[20px]">person_edit</span>
+<span class="">تعديل الملف الشخصي</span>
+</button>
+</div></section>
+<!-- Section الإدارة -->
+<section>
+<h2 class="font-headline-sm text-headline-sm text-text-secondary mb-sm px-1">الإدارة</h2>
+<div class="clinic-card divide-y divide-border overflow-hidden">
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container">groups</span>
+<span class="font-body-lg">إدارة الطاقم</span>
+</div>
+<span class="material-symbols-outlined text-text-hint">arrow_back</span>
+</a>
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container">person_add</span>
+<span class="font-body-lg">دعوة عضو</span>
+</div>
+<span class="material-symbols-outlined text-text-hint">arrow_back</span>
+</a><a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: &quot;FILL&quot; 1;">payments</span>
+<span class="font-body-lg">الاشتراك والخطة</span>
+</div>
+<span class="material-symbols-outlined text-text-hint">arrow_back</span>
+</a>
+</div>
+</section>
+<!-- Section أخرى -->
+<section>
+<h2 class="font-headline-sm text-headline-sm text-text-secondary mb-sm px-1">أخرى</h2>
+<div class="clinic-card p-md flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container">dark_mode</span>
+<span class="font-body-lg">المظهر - الوضع الليلي</span>
+</div>
+<label class="custom-toggle">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+</section>
+<!-- Danger Action -->
+<section class="mb-sm">
+<div class="clinic-card divide-y divide-border overflow-hidden">
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container">medical_services</span>
+<span class="font-body-lg">الدخول كطبيب</span>
+</div>
+<span class="material-symbols-outlined text-text-hint">arrow_back</span>
+</a>
+</div>
+</section><div class="pt-lg">
+<button class="w-full bg-surface border-2 border-danger-bg text-danger font-headline-sm py-md rounded-xl flex items-center justify-center gap-2 hover:bg-danger-bg/20 transition-all active:scale-95 duration-150 shadow-sm" style="border-color: rgb(232, 76, 76); color: rgb(232, 76, 76);">
+<span class="material-symbols-outlined">logout</span>
+                تسجيل الخروج
+            </button>
+</div>
+<!-- Footer -->
+<footer class="pt-xl pb-10 text-center">
+<p class="font-caption text-caption text-text-hint flex items-center justify-center gap-2">
+<span class="font-data-numeric">v1.0.0</span> — ClinicPro
+            </p>
+</footer>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full bg-surface z-50 rounded-t-xl shadow-[0_-4px_24px_rgba(0,0,0,0.12)] h-16 flex justify-around items-center px-4">
+<button class="flex flex-col items-center justify-center text-text-secondary px-4 py-1 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-chip text-label-chip">الرئيسية</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-secondary px-4 py-1 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-chip text-label-chip">المواعيد</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-secondary px-4 py-1 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-chip text-label-chip">المرضى</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-light text-primary rounded-xl px-4 py-1 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">settings</span>
+<span class="font-label-chip text-label-chip">الإعدادات</span>
+</button>
+</nav>
+<script>
+        // Simple micro-interaction for toggle
+        const toggle = document.querySelector('.custom-toggle input');
+        if(toggle) {
+            toggle.addEventListener('change', function() {
+                if(this.checked) {
+                    console.log('Night mode enabled');
+                } else {
+                    console.log('Night mode disabled');
+                }
+            });
+        }
+    </script>
+
+
+</body></html>

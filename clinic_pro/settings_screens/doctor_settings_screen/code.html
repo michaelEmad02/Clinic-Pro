@@ -1,0 +1,323 @@
+<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#ffdbaf",
+                    "warning-bg": "#FEF3C7",
+                    "tertiary-fixed-dim": "#ffb955",
+                    "secondary": "#006c4e",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e6e8eb",
+                    "surface": "#FFFFFF",
+                    "tertiary": "#6a4300",
+                    "primary": "#00526d",
+                    "text-hint": "#A0AEC0",
+                    "tertiary-fixed": "#ffddb4",
+                    "primary-fixed-dim": "#8bcff2",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-light": "#EAF4F8",
+                    "on-secondary-container": "#007152",
+                    "primary-fixed": "#c0e8ff",
+                    "on-primary-container": "#bce7ff",
+                    "success-bg": "#D1FAE5",
+                    "surface-variant": "#e0e3e6",
+                    "on-primary-fixed-variant": "#004d66",
+                    "success-text": "#065F46",
+                    "secondary-fixed": "#6afbc6",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#001e2b",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#eff1f4",
+                    "inverse-surface": "#2d3133",
+                    "on-secondary-fixed-variant": "#00513a",
+                    "surface-container": "#eceef1",
+                    "surface-container-low": "#f2f4f7",
+                    "danger": "#E84C4C",
+                    "text-secondary": "#64748B",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#8a5900",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#d8dadd",
+                    "primary-container": "#1a6b8a",
+                    "on-tertiary-fixed-variant": "#633f00",
+                    "error-container": "#ffdad6",
+                    "text-primary": "#1A202C",
+                    "surface-bright": "#f7f9fc",
+                    "inverse-primary": "#8bcff2",
+                    "secondary-fixed-dim": "#48deab",
+                    "surface-container-highest": "#e0e3e6",
+                    "on-surface-variant": "#40484d",
+                    "outline": "#70787e",
+                    "danger-text": "#991B1B",
+                    "on-tertiary-fixed": "#291800",
+                    "background": "#f7f9fc",
+                    "border": "#E2E8F0",
+                    "on-surface": "#191c1e",
+                    "on-secondary-fixed": "#002115",
+                    "secondary-container": "#67f8c3",
+                    "on-background": "#191c1e",
+                    "danger-bg": "#FEE2E2",
+                    "warning-text": "#92400E",
+                    "surface-tint": "#106685",
+                    "outline-variant": "#bfc8ce"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "8px",
+                    "base": "4px",
+                    "xl": "32px",
+                    "screen-edge-v": "20px",
+                    "lg": "24px",
+                    "list-item-height": "72px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "screen-edge-h": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Cairo"],
+                    "caption": ["Cairo"],
+                    "label-chip": ["Cairo"],
+                    "headline-sm": ["Cairo"],
+                    "headline-md": ["Cairo"],
+                    "headline-lg": ["Cairo"],
+                    "body-md": ["Cairo"],
+                    "data-numeric": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "label-chip": ["11px", {"lineHeight": "1", "fontWeight": "500"}],
+                    "headline-sm": ["16px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "headline-md": ["22px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "data-numeric": ["13px", {"lineHeight": "1", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .card-shadow {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        @media (min-width: 1024px) {
+            .bento-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .account-span { grid-column: span 2; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky z-40 bg-surface shadow-sm h-16 flex items-center justify-between px-screen-edge-h max-w-screen-xl mx-auto" style="transform: translateY(0px); transition: transform 0.2s ease-out, border-color 0.2s ease-out;">
+<div class="flex items-center gap-sm">
+<button class="active:scale-95 duration-150 p-2 rounded-full hover:bg-primary-light">
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary">الإعدادات</h1>
+</div>
+<div class="flex items-center">
+<button class="active:scale-95 duration-150 p-2 rounded-full hover:bg-primary-light">
+<span class="material-symbols-outlined text-text-secondary">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-screen-xl mx-auto p-screen-edge-h pb-32">
+<div class="bento-grid">
+<!-- Section: الحساب -->
+<section class="account-span"><h2 class="font-headline-sm text-headline-sm text-text-secondary mb-sm px-base">الحساب</h2><div class="bg-surface rounded-xl p-md border-[0.5px] border-border card-shadow flex flex-col items-center gap-md transition-all hover:border-primary" style="transform: translateY(0px); transition: transform 0.2s ease-out, border-color 0.2s ease-out;"><div class="relative"><div class="w-[80px] h-[80px] rounded-full overflow-hidden border-2 border-primary-light"><img class="w-full h-full object-cover" alt="د. أحمد محمد" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRE8Q_h2H3Zf96hrkIIzinS1BgnIdqMrhJL0crXONPj8bmGykI-ZFF1l3Qm7cDXxOgEIX6hcaTNrUQfPp4nmwfq6BxrAgVGJlOJmOnK6EwbOeiTJSxBkmGq_IYoZ_WThbJ8WXLmy2Pa0cgS5XDyRKQxAQXW7dMwtTUrlv7q4DDbcHJZyT_idOBVlxjE2D7Qtf5dVDYEGTkAk_uME0GG59oYukyN9GV_qaEJKE_tHyype29ZNdXiTpEvw95-5kv8VnAq0v39AO290ti"></div><div class="absolute bottom-0 right-0 w-4 h-4 bg-success-text border-2 border-surface rounded-full"></div></div><div class="flex flex-col items-center text-center"><h3 class="font-headline-sm text-headline-sm text-text-primary">د. أحمد محمد</h3><span class="font-caption text-caption text-text-secondary">طبيب عام</span><span class="mt-xs px-md py-1 bg-primary-light text-primary rounded-full font-label-chip text-label-chip">طبيب</span></div><button class="w-full py-2 px-4 border border-primary text-primary rounded-lg font-body-lg flex items-center justify-center gap-sm hover:bg-primary-light transition-colors active:scale-95"><span class="material-symbols-outlined text-[20px]">edit</span>تعديل الملف الشخصي</button></div></section>
+<!-- Section: العيادة الحالية -->
+<section>
+  <h2 class="font-headline-sm text-headline-sm text-text-secondary mb-sm px-base">الإدارة</h2>
+  <div class="bg-surface rounded-xl border-[0.5px] border-border card-shadow divide-y divide-border overflow-hidden" style="transform: translateY(0px); transition: transform 0.2s ease-out, border-color 0.2s ease-out;">
+    <!-- Drug Management -->
+    <div class="p-md flex items-center justify-between hover:bg-surface-container-low cursor-pointer transition-colors">
+      <div class="flex items-center gap-md">
+        <span class="material-symbols-outlined text-text-secondary">medical_services</span>
+        <span class="font-body-lg text-body-lg text-text-primary">إدارة الأدوية</span>
+      </div>
+      <span class="material-symbols-outlined text-text-hint">chevron_left</span>
+    </div>
+    <!-- Prescription Templates -->
+    <div class="p-md flex items-center justify-between hover:bg-surface-container-low cursor-pointer transition-colors">
+      <div class="flex items-center gap-md">
+        <span class="material-symbols-outlined text-text-secondary">description</span>
+        <span class="font-body-lg text-body-lg text-text-primary">قوالب الروشتات</span>
+      </div>
+      <span class="material-symbols-outlined text-text-hint">chevron_left</span>
+    </div>
+    <!-- Visit Types -->
+    <div class="p-md flex items-center justify-between hover:bg-surface-container-low cursor-pointer transition-colors">
+      <div class="flex items-center gap-md">
+        <span class="material-symbols-outlined text-text-secondary">loyalty</span>
+        <span class="font-body-lg text-body-lg text-text-primary">أنواع الزيارات</span>
+      </div>
+      <span class="material-symbols-outlined text-text-hint">chevron_left</span>
+    </div>
+  <!-- Appointments -->
+<div class="p-md flex items-center justify-between hover:bg-surface-container-low cursor-pointer transition-colors">
+  <div class="flex items-center gap-md">
+    <span class="material-symbols-outlined text-text-secondary">calendar_month</span>
+    <div class="flex flex-col">
+      <span class="font-body-lg text-body-lg text-text-primary">المواعيد</span>
+      <span class="font-caption text-caption text-text-hint">لتعديل مواعيد الطبيب</span>
+    </div>
+  </div>
+  <span class="material-symbols-outlined text-text-hint">chevron_left</span>
+</div></div>
+</section><section>
+<h2 class="font-headline-sm text-headline-sm text-text-secondary mb-sm px-base">العيادة الحالية</h2>
+<div class="bg-surface rounded-xl p-md border-[0.5px] border-border card-shadow flex items-center justify-between transition-all hover:border-primary" style="transform: translateY(0px); transition: transform 0.2s ease-out, border-color 0.2s ease-out;">
+<div class="flex items-center gap-md">
+<div class="w-[40px] h-[40px] rounded-lg bg-primary-light flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-contain" data-alt="A minimalist medical clinic logo design featuring an abstract medical cross intertwined with a sun symbol. The colors are professional petrol blue and clean white. The style is modern, corporate, and trustworthy, presented as a sharp, clean vector-style icon on a light medical-themed background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM5P4xsGVE2uLUjZdLKwieQkyDftRrGtBBErYMcGy8xla6wyXIcKwZ9PsBv7ENDz8dCeY5S5jGm1YqRuPFXC7Ije94GP-6ao0nkZymq9UaXbTDuA2yi_KszmMwluNO3dOHBM81ELVZKWd0H2kKOeOAMX-QtsVtHx-3IqVW2YT1nqzf15zHtVKB41JBD8XtyBzqkPSqkyK-LcI4SsC7Qw8AunUqs0TK18r8cByMZY2EO65EbEqK_V7GXXaMNxrWTM7fySV-mx_2YsZx">
+</div>
+<span class="font-headline-sm text-headline-sm text-text-primary">عيادة النور</span>
+</div>
+<a class="text-primary font-body-lg text-body-lg flex items-center gap-base active:scale-95 transition-transform" href="#">
+                        تغيير العيادة
+                        <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</a>
+</div>
+</section>
+<!-- Section: نظام قائمة الانتظار -->
+<section>
+<h2 class="font-headline-sm text-headline-sm text-text-secondary mb-sm px-base">نظام قائمة الانتظار</h2>
+<div class="bg-surface rounded-xl p-md border-[0.5px] border-border card-shadow flex flex-col gap-md relative min-h-[140px] transition-all hover:border-primary" style="transform: translateY(0px); transition: transform 0.2s ease-out, border-color 0.2s ease-out;">
+<div class="flex flex-col gap-sm">
+<span class="font-body-md text-body-md text-text-secondary">النمط الحالي:</span>
+<div class="flex flex-wrap gap-sm">
+<span class="px-md py-1 bg-primary-light text-primary rounded-full font-label-chip text-label-chip">عادي</span>
+<span class="px-md py-1 bg-primary-light text-primary rounded-full font-label-chip text-label-chip">عادي</span>
+<span class="px-md py-1 bg-primary-light text-primary rounded-full font-label-chip text-label-chip">عادي</span>
+<span class="px-md py-1 bg-warning-bg text-warning-text rounded-full font-label-chip text-label-chip">مستعجل</span>
+</div>
+<div class="flex items-center gap-xs mt-base text-text-secondary">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span class="font-body-md text-body-md">يتكرر كل <span class="font-data-numeric">4</span> مرضى</span>
+</div>
+</div>
+<div class="absolute bottom-md left-md">
+<a class="text-primary font-body-lg text-body-lg flex items-center gap-base active:scale-95 transition-transform" href="#">
+                            تعديل
+                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Section: أخرى -->
+<section class="lg:col-span-1">
+<h2 class="font-headline-sm text-headline-sm text-text-secondary mb-sm px-base">أخرى</h2>
+<div class="bg-surface rounded-xl border-[0.5px] border-border card-shadow divide-y divide-border" style="transform: translateY(0px); transition: transform 0.2s ease-out, border-color 0.2s ease-out;">
+<!-- Appearance Toggle -->
+<div class="p-md flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-text-secondary">dark_mode</span>
+<span class="font-body-lg text-body-lg text-text-primary">المظهر الداكن</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[-100%] rtl:peer-checked:after:translate-x-[-100%] after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Notification Settings -->
+<div class="p-md flex items-center justify-between hover:bg-surface-container-low cursor-pointer transition-colors">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-text-secondary">notifications_active</span>
+<span class="font-body-lg text-body-lg text-text-primary">التنبيهات</span>
+</div>
+<span class="material-symbols-outlined text-text-hint">chevron_left</span>
+</div>
+<!-- Logout -->
+<button class="w-full p-md flex items-center justify-between hover:bg-danger-bg group transition-colors">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-danger group-hover:scale-110 transition-transform">logout</span>
+<span class="font-body-lg text-body-lg text-danger-text font-bold">تسجيل الخروج</span>
+</div>
+</button>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<footer class="mt-xl text-center py-lg">
+<span class="text-caption font-caption text-text-hint block">v1.0.0 — ClinicPro</span>
+<div class="flex justify-center gap-md mt-sm opacity-50">
+<span class="w-2 h-2 rounded-full bg-success-text animate-pulse"></span>
+<span class="text-caption font-caption text-text-hint">جميع الأنظمة تعمل بشكل طبيعي</span>
+</div>
+</footer>
+</main>
+<!-- Bottom Navigation Bar (Mobile only, hidden on desktop) -->
+<nav class="fixed bottom-0 w-full rounded-t-xl z-50 bg-surface shadow-[0_-4px_24px_rgba(0,0,0,0.12)] md:hidden" style="transform: translateY(0px); transition: transform 0.2s ease-out, border-color 0.2s ease-out;">
+<div class="flex justify-around items-center h-16 w-full px-4">
+<a class="flex flex-col items-center justify-center text-text-secondary px-4 py-1 hover:bg-surface-container-low active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-chip text-label-chip">الرئيسية</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary px-4 py-1 hover:bg-surface-container-low active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-chip text-label-chip">المواعيد</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary px-4 py-1 hover:bg-surface-container-low active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-chip text-label-chip">المرضى</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-light text-primary rounded-xl px-4 py-1 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">settings</span>
+<span class="font-label-chip text-label-chip">الإعدادات</span>
+</a>
+</div>
+</nav>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('.bg-surface').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+                card.style.transition = 'transform 0.2s ease-out, border-color 0.2s ease-out';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+
+
+
+
+
+
+</body></html>

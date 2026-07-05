@@ -8,9 +8,10 @@ import 'package:flutter/material.dart';
 class AppColors {
   // ألوان باليت الوضع الفاتح (Light Palette)
   static const Color primary = Color(0xFF00526D); // HTML 'primary'
-  static const Color primaryContainer = Color(0xFF1A6B8A); // HTML 'primary-container'
+  static const Color primaryContainer =
+      Color(0xFF1A6B8A); // HTML 'primary-container'
   static const Color primaryLight = Color(0xFFEAF4F8); // HTML 'primary-light'
-  
+
   static const Color accent = Color(0xFF2ECC9A);
   static const Color warning = Color(0xFFF5A623);
   static const Color danger = Color(0xFFE84C4C);
@@ -34,6 +35,8 @@ class AppColors {
   static const Color onPrimaryContainer = Color(0xFFBCE7FF);
 
   // ألوان ثنائية النغمة (Semantic Badges)
+  static const Color icon = Color(0xFF7C3AED);
+  static const Color iconBg = Color(0xFFF3E8FF);
   static const Color successBg = Color(0xFFD1FAE5);
   static const Color successText = Color(0xFF065F46);
   static const Color warningBg = Color(0xFFFEF3C7);
@@ -44,7 +47,8 @@ class AppColors {
   static const Color surfaceAlt = Color(0xFFF1F5F9); // سطح بديل للرقاقات
   static const Color surfaceVariant = Color(0xFFE0E3E6);
   static const Color surfaceBright = Color(0xFFF7F9FC);
-  static const Color surfaceContainer = Color(0xFFECEEF1); // DESIGN.md surface-container
+  static const Color surfaceContainer =
+      Color(0xFFECEEF1); // DESIGN.md surface-container
   static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
   static const Color primaryFixedDim = Color(0xFF8BCFF2);
   static const Color surfaceTint = Color(0xFF106685); // DESIGN.md surface-tint

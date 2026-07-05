@@ -13,12 +13,12 @@ class UsageProgressSection extends StatelessWidget {
 
   const UsageProgressSection({
     super.key,
-    this.patientsUsed = 150,
-    this.patientsMax = 500,
-    this.usersUsed = 3,
-    this.usersMax = 5,
-    this.clinicsUsed = 1,
-    this.clinicsMax = 2,
+    required this.patientsUsed,
+    required this.patientsMax,
+    required this.usersUsed,
+    required this.usersMax,
+    required this.clinicsUsed,
+    required this.clinicsMax,
   });
 
   @override
@@ -81,7 +81,7 @@ class _UsageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fraction = used / max;
+    final fraction = max > 0 ? (used / max).clamp(0.0, 1.0) : 0.0;
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
@@ -123,8 +123,12 @@ class _UsageCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppConstants.spaceXs),
-          Text('متبقي ${max - used} ${label == 'المرضى' ? 'مريض' : label == 'المستخدمين' ? 'مستخدمين' : 'فرع'}',
-              style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary)),
+          Text(
+            max - used >= 0
+                ? 'متبقي ${max - used} ${label == 'المرضى' ? 'مريض' : label == 'المستخدمين' ? 'مستخدمين' : 'فرع'}'
+                : 'تجاوز الحد المسموح',
+            style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary),
+          ),
         ],
       ),
     );

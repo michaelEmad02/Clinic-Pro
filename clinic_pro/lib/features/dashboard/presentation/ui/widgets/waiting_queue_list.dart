@@ -3,10 +3,10 @@ import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/realtime_indicator.dart';
 import '../../../../../core/widgets/app_list_item.dart';
-import '../../manager/doctor_dashboard_state.dart';
+import '../../../../appointments/presentation/manager/appointments_state.dart';
 
 class WaitingQueueList extends StatelessWidget {
-  final List<PatientMock> queue;
+  final List<AppointmentItem> queue;
   final VoidCallback onCallNext;
 
   const WaitingQueueList({
@@ -79,13 +79,13 @@ class WaitingQueueList extends StatelessWidget {
             itemCount: queue.length,
             itemBuilder: (context, index) {
               final patient = queue[index];
-              final isUrgent = patient.type == 'urgent';
+              final isUrgent = patient.isUrgent;
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: AppListItem(
-                  title: patient.name,
-                  subtitle: '${patient.condition} • ${patient.age}',
+                  title: patient.patientName,
+                  subtitle: '${patient.typeName} ${patient.notes != null ? '• ${patient.notes}' : ''}',
                   leading: CircleAvatar(
                     backgroundColor: AppColors.primaryLight,
                     child: Text(
@@ -118,7 +118,7 @@ class WaitingQueueList extends StatelessWidget {
                           ),
                         ),
                       Text(
-                        patient.time,
+                        patient.displayTime,
                         style: const TextStyle(
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.bold,

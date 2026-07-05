@@ -1,30 +1,174 @@
+// ────────────────────────────────────────────────────────
+// ويدجت قسم الحساب في صفحة الإعدادات (SettingsAccountSection)
+// ────────────────────────────────────────────────────────
+
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
+enum AccountSectionLayout { centered, horizontal }
+
 class SettingsAccountSection extends StatelessWidget {
   final String name;
   final String subtitle;
+  final String? avatarUrl;
   final VoidCallback? onEdit;
+  final AccountSectionLayout layout;
+  final String? roleBadge;
+  final bool showSectionTitle;
 
   const SettingsAccountSection({
     super.key,
     required this.name,
     required this.subtitle,
+    this.avatarUrl,
     this.onEdit,
+    this.layout = AccountSectionLayout.horizontal,
+    this.roleBadge,
+    this.showSectionTitle = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasAvatar = avatarUrl != null && avatarUrl!.isNotEmpty;
+    final firstChar = name.isNotEmpty ? name[0] : '?';
+
+    Widget content;
+    if (layout == AccountSectionLayout.centered) {
+      content = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primaryLight, width: 2),
+                ),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: AppColors.primaryLight,
+                  backgroundImage: hasAvatar ? NetworkImage(avatarUrl!) : null,
+                  child: !hasAvatar
+                      ? Text(
+                          firstChar,
+                          style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary, fontSize: 28),
+                        )
+                      : null,
+                ),
+              ),
+              Positioned(
+                bottom: 2,
+                right: 2,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.surface, width: 2),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppConstants.spaceMd),
+          Text(name, style: AppTextStyles.headlineMedium(context).copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary),
+          ),
+          if (roleBadge != null) ...[
+            const SizedBox(height: AppConstants.spaceSm),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(AppConstants.radiusChip),
+              ),
+              child: Text(
+                roleBadge!,
+                style: AppTextStyles.labelChip(context).copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: AppConstants.spaceMd),
+          OutlinedButton.icon(
+            onPressed: onEdit,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppColors.primary, width: 1.5),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+              ),
+            ),
+            icon: const Icon(Icons.person_outline, size: 20, color: AppColors.primary),
+            label: Text(
+              'تعديل الملف الشخصي',
+              style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Horizontal layout
+      content = Row(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: AppColors.primaryLight,
+            backgroundImage: hasAvatar ? NetworkImage(avatarUrl!) : null,
+            child: !hasAvatar
+                ? Text(
+                    firstChar,
+                    style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary),
+                  )
+                : null,
+          ),
+          const SizedBox(width: AppConstants.spaceMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: AppTextStyles.headlineSmall(context)),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            onPressed: onEdit,
+            label: Text(
+              'تعديل الملف',
+              style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary),
+            ),
+            icon: const Icon(Icons.arrow_back, color: AppColors.primary, size: 18),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
-          child: Text('الحساب', style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary)),
-        ),
-        const SizedBox(height: AppConstants.spaceSm),
+        if (showSectionTitle) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
+            child: Text(
+              'الحساب',
+              style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+          const SizedBox(height: AppConstants.spaceSm),
+        ],
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
@@ -32,38 +176,15 @@ class SettingsAccountSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
             border: Border.all(color: AppColors.border, width: 0.5),
             boxShadow: const [
-              BoxShadow(color: Color(0x14000000), blurRadius: 3, offset: Offset(0, 1)),
+              BoxShadow(
+                color: Color(0x0F000000),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
             ],
           ),
           padding: const EdgeInsets.all(AppConstants.spaceMd),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: AppColors.primaryLight,
-                child: CircleAvatar(
-                  radius: 26,
-                  backgroundColor: AppColors.surface,
-                  child: Icon(Icons.person, color: AppColors.primary, size: 28),
-                ),
-              ),
-              const SizedBox(width: AppConstants.spaceMd),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(name, style: AppTextStyles.headlineSmall(context)),
-                    Text(subtitle, style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
-                  ],
-                ),
-              ),
-              TextButton.icon(
-                onPressed: onEdit,
-                label: Text('تعديل الملف', style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary)),
-                icon: const Icon(Icons.chevron_left, color: AppColors.primary, size: 18),
-              ),
-            ],
-          ),
+          child: content,
         ),
       ],
     );

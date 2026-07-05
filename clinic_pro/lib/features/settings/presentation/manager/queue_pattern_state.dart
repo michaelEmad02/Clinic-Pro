@@ -7,6 +7,7 @@ import 'package:equatable/equatable.dart';
 
 class QueuePatternState extends Equatable {
   final List<String> slots;
+  final List<String> slotLabels;
   final int cycleLength;
   final bool isActive;
   final bool isLoading;
@@ -16,6 +17,7 @@ class QueuePatternState extends Equatable {
 
   const QueuePatternState({
     this.slots = const [],
+    this.slotLabels = const [],
     this.cycleLength = 0,
     this.isActive = false,
     this.isLoading = false,
@@ -26,6 +28,7 @@ class QueuePatternState extends Equatable {
 
   QueuePatternState copyWith({
     List<String>? slots,
+    List<String>? slotLabels,
     int? cycleLength,
     bool? isActive,
     bool? isLoading,
@@ -35,6 +38,7 @@ class QueuePatternState extends Equatable {
   }) {
     return QueuePatternState(
       slots: slots ?? this.slots,
+      slotLabels: slotLabels ?? this.slotLabels,
       cycleLength: cycleLength ?? this.cycleLength,
       isActive: isActive ?? this.isActive,
       isLoading: isLoading ?? this.isLoading,
@@ -45,5 +49,5 @@ class QueuePatternState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [slots, cycleLength, isActive, isLoading, isSaving, error, isDirty];
+  List<Object?> get props => [slots, slotLabels, cycleLength, isActive, isLoading, isSaving, error, isDirty];
 }

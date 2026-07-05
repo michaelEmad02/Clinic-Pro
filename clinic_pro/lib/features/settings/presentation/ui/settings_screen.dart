@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/constants/staff_roles.dart';
 import '../manager/settings_cubit.dart';
 import 'doctor_settings_screen.dart';
@@ -15,7 +16,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => SettingsCubit()..loadSettings(role),
+      create: (_) => sl<SettingsCubit>()..loadSettings(role),
       child: _buildScreen(),
     );
   }

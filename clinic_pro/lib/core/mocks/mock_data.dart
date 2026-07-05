@@ -832,6 +832,38 @@ class MockData {
     },
   ];
 
+  // أسعار أنواع الزيارات لكل طبيب (doctor_appointment_types)
+  static final List<Map<String, dynamic>> doctorAppointmentTypes = [
+    {
+      'id': 'dat-1',
+      'appointment_type_id': 'at-1',
+      'price': 250.0,
+      'doctor_id': 'u-doc-1',
+      'clinic_id': 'c-1',
+    },
+    {
+      'id': 'dat-2',
+      'appointment_type_id': 'at-2',
+      'price': 0.0,
+      'doctor_id': 'u-doc-1',
+      'clinic_id': 'c-1',
+    },
+    {
+      'id': 'dat-3',
+      'appointment_type_id': 'at-3',
+      'price': 100.0,
+      'doctor_id': 'u-doc-1',
+      'clinic_id': 'c-1',
+    },
+    {
+      'id': 'dat-4',
+      'appointment_type_id': 'at-4',
+      'price': 400.0,
+      'doctor_id': 'u-doc-1',
+      'clinic_id': 'c-1',
+    },
+  ];
+
   // نمط ترتيب الطابور للطبيب
   static final List<Map<String, dynamic>> doctorQueueRules = [
     {
@@ -1353,5 +1385,114 @@ class MockData {
       'friday': 'مغلق',
       'saturday': '10:00 - 18:00',
     },
+  ];
+
+  // علاقة سكرتيرة بطبيب لعيادة معينة
+  static final List<Map<String, dynamic>> doctorSecretarySchedule = [
+    {
+      'id': 'dss-1',
+      'secretary_id': 'u-sec-1',
+      'doctor_id': 'u-doc-1',
+      'clinic_id': 'c-1',
+      'is_active': true,
+    },
+    {
+      'id': 'dss-2',
+      'secretary_id': 'u-sec-1',
+      'doctor_id': 'u-doc-2',
+      'clinic_id': 'c-1',
+      'is_active': false,
+    },
+    {
+      'id': 'dss-3',
+      'secretary_id': 'u-sec-1',
+      'doctor_id': 'u-doc-3',
+      'clinic_id': 'c-1',
+      'is_active': false,
+    },
+  ];
+
+  // خطط الأسعار
+  static final List<Map<String, dynamic>> plans = [
+    {
+      'id': 'plan-basic',
+      'name': 'basic',
+      'monthly_price': 7.0,
+      'yearly_price': 70.0,
+      'lifetime_price': 155.0,
+    },
+    {
+      'id': 'plan-pro',
+      'name': 'pro',
+      'monthly_price': 11.0,
+      'yearly_price': 110.0,
+      'lifetime_price': 250.0,
+    },
+    {
+      'id': 'plan-enterprise',
+      'name': 'enterprise',
+      'monthly_price': 17.0,
+      'yearly_price': 170.0,
+      'lifetime_price': 350.0,
+    },
+  ];
+
+  // ميزات الخطط
+  static final List<Map<String, dynamic>> plansFeatures = [
+    {
+      'id': 'pf-basic',
+      'plan_id': 'plan-basic',
+      'max_clinics': 1,
+      'max_staff': 2,
+      'max_patients': 500,
+      'features': {
+        'print': [
+          {'value': false},
+          {'title': 'طباعة الروشتات الفورية'}
+        ],
+        'advanced_reports': [
+          {'value': false},
+          {'title': 'تقارير مالية متقدمة'}
+        ]
+      }
+    },
+    {
+      'id': 'pf-pro',
+      'plan_id': 'plan-pro',
+      'max_clinics': 3,
+      'max_staff': 5,
+      'max_patients': 2000,
+      'features': {
+        'print': [
+          {'value': true},
+          {'title': 'طباعة الروشتات الفورية'}
+        ],
+        'advanced_reports': [
+          {'value': true},
+          {'title': 'تقارير مالية متقدمة'}
+        ]
+      }
+    },
+    {
+      'id': 'pf-enterprise',
+      'plan_id': 'plan-enterprise',
+      'max_clinics': 10,
+      'max_staff': 20,
+      'max_patients': 10000,
+      'features': {
+        'print': [
+          {'value': true},
+          {'title': 'طباعة الروشتات الفورية'}
+        ],
+        'advanced_reports': [
+          {'value': true},
+          {'title': 'تقارير مالية متقدمة'}
+        ],
+        'support_24_7': [
+          {'value': true},
+          {'title': 'دعم فني مخصص 24/7'}
+        ]
+      }
+    }
   ];
 }

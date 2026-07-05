@@ -1,12 +1,13 @@
-// ────────────────────────────────────────────────────────
-// شاشة الطاقم الطبي — إدارة الأطباء والموظفين
-// ────────────────────────────────────────────────────────
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/constants/route_constants.dart';
+import '../../../../core/constants/staff_roles.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/i_cloud_service.dart';
 import '../manager/staff_cubit.dart';
 import '../manager/staff_state.dart';
-import 'widgets/invite_staff_sheet.dart';
+import 'widgets/clinic_filter_chips.dart';
 import 'widgets/pending_invitations_section.dart';
 import 'widgets/staff_action_sheet.dart';
 import 'widgets/staff_filter_chips.dart';
@@ -21,7 +22,7 @@ class StaffScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => StaffCubit()..loadStaff(),
+      create: (_) => StaffCubit(sl<ICloudService>())..loadStaff(),
       child: const _StaffBody(),
     );
   }
@@ -95,12 +96,30 @@ class _StaffBody extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 children: [
+                  ClinicFilterChips(
+                    clinics: state.clinics,
+                    selectedClinicId: state.selectedClinicId,
+                    onChanged: (clinicId) =>
+                        context.read<StaffCubit>().changeClinicFilter(clinicId),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'تصفية حسب الدور',
+                      style: AppTextStyles.caption(context).copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   StaffFilterChips(
                     activeFilter: state.activeFilter,
                     onChanged: (f) =>
                         context.read<StaffCubit>().changeFilter(f),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   if (state.pendingInvitations.isNotEmpty) ...[
                     PendingInvitationsSection(
                       invitations: state.pendingInvitations,
@@ -124,7 +143,13 @@ class _StaffBody extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => InviteStaffSheet.show(context),
+        onPressed: () {
+          context.push(RouteConstants.onboardingInvite, extra: {'isOnboarding': false}).then((_) {
+            if (context.mounted) {
+              context.read<StaffCubit>().loadStaff();
+            }
+          });
+        },
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
@@ -155,38 +180,25 @@ class _StaffBody extends StatelessWidget {
   }
 
   Future<void> _pickRole(BuildContext context, StaffItem staff) async {
-    final selectedRole = await showDialog<String>(
+    final staffCubit = context.read<StaffCubit>();
+    final allowedRoles = [StaffRoles.doctor, StaffRoles.secretary];
+    final selectedRole = await showDialog<StaffRoles>(
       context: context,
       builder: (ctx) => SimpleDialog(
         title: const Text('تغيير الدور'),
-        children: ['doctor', 'nurse', 'secretary', 'accountant'].map((role) {
+        children: allowedRoles.map((role) {
           return SimpleDialogOption(
             onPressed: () => Navigator.pop(ctx, role),
-            child: Text(_roleDisplayName(role)),
+            child: Text(role.label),
           );
         }).toList(),
       ),
     );
     if (selectedRole == null) return;
-    await context.read<StaffCubit>().updateStaffRole(staff.id, selectedRole);
+    await staffCubit.updateStaffRole(staff.id, selectedRole.name);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('تم تغيير الدور إلى ${staff.roleLabel}')),
     );
-  }
-
-  String _roleDisplayName(String role) {
-    switch (role) {
-      case 'doctor':
-        return 'طبيب';
-      case 'nurse':
-        return 'تمريض';
-      case 'accountant':
-        return 'محاسب';
-      case 'secretary':
-        return 'سكرتير';
-      default:
-        return role;
-    }
   }
 }

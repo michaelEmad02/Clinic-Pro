@@ -14,6 +14,7 @@ class SupabaseTables {
   static const String prescriptionTemplates = 'prescription_templates';
   static const String prescriptionTemplateItems = 'prescription_template_items';
   static const String appointmentTypes = 'appointment_types';
+  static const String doctorAppointmentTypes = 'doctor_appointment_types';
   static const String appointments = 'appointments';
   static const String doctorQueueRules = 'doctor_queue_rules';
   static const String prescriptions = 'prescriptions';

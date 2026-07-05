@@ -7,15 +7,25 @@ import '../../../../../core/constants/staff_roles.dart';
 /// نموذج بيانات الموظف المدعو (Mock)
 class InvitedStaffItem {
   final String email;
+  final String name;
   final StaffRoles role;
+  final String clinicId;
+  final String clinicName;
+  final String? doctorId;
+  final String? doctorName;
 
   const InvitedStaffItem({
     required this.email,
+    required this.name,
     required this.role,
+    required this.clinicId,
+    required this.clinicName,
+    this.doctorId,
+    this.doctorName,
   });
 
-  /// الحرف الأول من البريد الإلكتروني لعرضه في الأيقونة
-  String get initial => email.isNotEmpty ? email[0].toUpperCase() : '?';
+  /// الحرف الأول من الاسم لعرضه في الأيقونة
+  String get initial => name.isNotEmpty ? name[0].toUpperCase() : '?';
 }
 
 /// ويدجت لعرض قائمة الموظفين المدعوين مع إمكانية الحذف
@@ -92,7 +102,6 @@ class InvitedStaffList extends StatelessWidget {
                 child: Text(
                   item.initial,
                   style: AppTextStyles.headlineSmall(context).copyWith(
-                    fontFamily: 'Inter',
                     fontWeight: FontWeight.w700,
                     color: avatarColor,
                   ),
@@ -101,39 +110,41 @@ class InvitedStaffList extends StatelessWidget {
             ),
             const SizedBox(width: AppConstants.spaceSm),
 
-            // البريد الإلكتروني والصلاحية
+            // الاسم والبريد الإلكتروني والصلاحية
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    item.name,
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
                   // البريد بالإنجليزية (LTR)
                   Text(
                     item.email,
                     style: const TextStyle(
                       fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
                     ),
                     textDirection: TextDirection.ltr,
                     textAlign: TextAlign.left,
                   ),
-                  const SizedBox(height: 2),
-                  // الصلاحية مع أيقونة
-                  Row(
+                  const SizedBox(height: 4),
+                  // الصلاحية + العيادة + الطبيب
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
-                      Icon(
-                        item.role.icon,
-                        size: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.role.label,
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
+                      _buildBadge(context, item.role.icon, item.role.label),
+                      _buildBadge(context, Icons.business_outlined, item.clinicName),
+                      if (item.doctorName != null)
+                        _buildBadge(context, Icons.person_outline, 'الطبيب: ${item.doctorName}'),
                     ],
                   ),
                 ],
@@ -159,6 +170,31 @@ class InvitedStaffList extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(BuildContext context, IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: AppColors.textHint),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppTextStyles.caption(context).copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }
