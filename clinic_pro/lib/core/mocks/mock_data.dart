@@ -178,14 +178,14 @@ class MockData {
     {
       'id': 'cs-2',
       'clinic_id': 'c-1',
-      'user_id': 'u-doc-1',
+      'user_id': '74239bbe-1cf4-4a10-a446-095d543a6ca7',
       'role': 'doctor',
       'is_active': true,
     },
     {
       'id': 'cs-3',
       'clinic_id': 'c-1',
-      'user_id': 'u-sec-1',
+      'user_id': 'c844c040-0a73-462c-99f5-b889adb99445',
       'role': 'secretary',
       'is_active': true,
     },

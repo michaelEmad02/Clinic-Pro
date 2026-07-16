@@ -134,7 +134,7 @@ class ClinicStaffSection extends StatelessWidget {
                           initials: initials,
                           staffEntryId: staffEntryId,
                           onRemove: () => _confirmRemoveStaff(context,
-                              staff.name, staffEntryId, staff.role.name),
+                              staff.name, staff.userId, staff.role.name),
                         );
                       },
                     ),

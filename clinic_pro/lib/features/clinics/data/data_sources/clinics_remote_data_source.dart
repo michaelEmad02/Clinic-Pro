@@ -77,8 +77,10 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
   Future<void> deleteStaff(String clinicId, String staffId) async {
     await iCloudService.delete(
       table: SupabaseTables.clinicStaff,
-      matchColumn: 'id',
-      matchValue: staffId,
+      matchMap: {
+        'clinic_id': clinicId,
+        'user_id': staffId,
+      },
     );
   }
 
