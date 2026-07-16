@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/services/i_cloud_service.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/utils/queue_sorter.dart';
 
 @injectable
@@ -23,14 +24,14 @@ class AppointmentsRepository {
         table: 'patients',
         eq: {'id': patientId},
       );
-      final patient = patients.isNotEmpty ? patients.first : {'name': 'مريض غير معروف', 'phone': ''};
+      final patient = patients.isNotEmpty ? patients.first : {'name': AppStrings.unknownPatient, 'phone': ''};
 
       // جلب بيانات نوع الموعد
       final types = await _cloud.select(
         table: 'appointment_types',
         eq: {'id': typeId},
       );
-      final type = types.isNotEmpty ? types.first : {'name': 'كشف', 'price': 0.0};
+      final type = types.isNotEmpty ? types.first : {'name': AppStrings.normalCheckup, 'price': 0.0};
 
       // التحقق من وجود روشتة أو فاتورة مرتبطة بالموعد
       final prescriptions = await _cloud.select(

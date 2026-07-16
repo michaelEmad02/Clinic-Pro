@@ -1,4 +1,4 @@
-package com.example.clinic_pro
+package com.nova_tech.clinic_pro
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -109,7 +110,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isEditing ? 'تم تعديل المصروف' : 'تم إضافة المصروف'),
+          content: Text(AppStrings.operationSuccessful),
         ),
       );
     }
@@ -128,11 +129,11 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
               const SizedBox(width: 40),
               Expanded(
                 child: Text(
-                  isEditing ? 'تعديل المصروف' : 'تسجيل مصروف جديد',
+                  isEditing ? AppStrings.editExpense : AppStrings.addExpense,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimary,
                   ),
                 ),
               ),
@@ -140,7 +141,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                 width: 40,
                 height: 40,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: context.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -153,27 +154,27 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildLabel('عنوان المصروف'),
+                  _buildLabel(AppStrings.expenseName),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _titleController,
-                    decoration: _inputDecoration('أدخل عنوان المصروف...'),
+                    decoration: _inputDecoration(AppStrings.expenseName),
                   ),
                   const SizedBox(height: 16),
-                  _buildLabel('نوع المصروف'),
+                  _buildLabel(AppStrings.expenseCategory),
                   const SizedBox(height: 6),
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: context.border),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _categoryId,
                         isExpanded: true,
-                        icon: const Icon(Icons.expand_more,
-                            color: AppColors.textSecondary, size: 20),
+                        icon: Icon(Icons.expand_more,
+                            color: context.textSecondary, size: 20),
                         items: widget.categories.map((cat) {
                           return DropdownMenuItem(
                             value: cat.id,
@@ -193,7 +194,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildLabel('المبلغ'),
+                  _buildLabel(AppStrings.amount),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _amountController,
@@ -201,45 +202,25 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                     textDirection: TextDirection.ltr,
                     decoration: InputDecoration(
                       hintText: '0.00',
-                      hintStyle: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.bold,
-                      ),
-                      prefixIcon: Container(
-                        width: 40,
-                        margin: const EdgeInsetsDirectional.only(end: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceContainerLow,
-                          border: const Border(
-                            left: BorderSide(color: AppColors.border),
-                          ),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'ر.س',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
+                      hintStyle: TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.bold,
+                          color: context.textHint),
                       prefixIconConstraints:
                           const BoxConstraints(minWidth: 56, minHeight: 0),
-                      fillColor: AppColors.surface,
+                      fillColor: context.surface,
                       filled: true,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: context.border),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: context.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.primary),
+                        borderSide: BorderSide(color: context.primary),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -248,12 +229,12 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildLabel('التاريخ'),
+                  _buildLabel(AppStrings.date),
                   const SizedBox(height: 6),
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: context.border),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(
@@ -261,20 +242,20 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                         Expanded(
                           child: Text(
                             _formattedDate(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 14,
-                              color: AppColors.textPrimary,
+                              color: context.textPrimary,
                             ),
                           ),
                         ),
-                        const Icon(Icons.calendar_today,
-                            size: 20, color: AppColors.textSecondary),
+                        Icon(Icons.calendar_today,
+                            size: 20, color: context.textSecondary),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildLabel('ملاحظات (اختياري)'),
+                  _buildLabel(AppStrings.notes),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _notesController,
@@ -288,20 +269,20 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                       onPressed: _submit,
                       icon: const Icon(Icons.save, size: 20),
                       label: Text(
-                        isEditing ? 'حفظ التعديلات' : 'حفظ المصروف',
+                        isEditing ? AppStrings.save : AppStrings.save,
                         style: AppTextStyles.headlineSmall(context).copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: context.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 4,
-                        shadowColor: AppColors.primary.withOpacity(0.3),
+                        shadowColor: context.primary.withOpacity(0.3),
                       ),
                     ),
                   ),
@@ -319,7 +300,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
       text,
       style: AppTextStyles.bodyMedium(context).copyWith(
         fontWeight: FontWeight.bold,
-        color: AppColors.textPrimary,
+        color: context.textPrimary,
       ),
     );
   }
@@ -328,20 +309,20 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
     return InputDecoration(
       hintText: hint,
       hintStyle:
-          AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
-      fillColor: AppColors.surface,
+          AppTextStyles.bodyMedium(context).copyWith(color: context.textHint),
+      fillColor: context.surface,
       filled: true,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: context.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: context.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.primary),
+        borderSide: BorderSide(color: context.primary),
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppConstants.spaceMd,
@@ -352,20 +333,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
 
   String _formattedDate() {
     final now = DateTime.now();
-    final months = [
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر'
-    ];
+    final months = AppStrings.fullMonths;
     return '${now.day} ${months[now.month - 1]} ${now.year}';
   }
 }

@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -28,45 +29,47 @@ class InvoiceActionSheet {
               invoice.patientName,
               style: AppTextStyles.headlineSmall(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             Text(
               invoice.appointmentType,
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
             _DetailRow(
-              label: 'المبلغ الإجمالي',
-              value: '${invoice.totalAmount.toStringAsFixed(0)} ج.م',
+              label: AppStrings.total,
+              value:
+                  '${invoice.totalAmount.toStringAsFixed(0)} ${AppStrings.egp}',
             ),
             _DetailRow(
-              label: 'المبلغ المدفوع',
-              value: '${invoice.paidAmount.toStringAsFixed(0)} ج.م',
+              label: AppStrings.paid,
+              value:
+                  '${invoice.paidAmount.toStringAsFixed(0)} ${AppStrings.egp}',
               valueColor: invoice.paidAmount >= invoice.totalAmount
-                  ? AppColors.successText
-                  : AppColors.warningText,
+                  ? context.successText
+                  : context.warningText,
             ),
             _DetailRow(
-              label: 'طريقة الدفع',
+              label: AppStrings.paymentMethod,
               value: invoice.paymentMethodLabel,
             ),
             _DetailRow(
-              label: 'التاريخ',
+              label: AppStrings.date,
               value: invoice.formattedDate,
             ),
             _DetailRow(
-              label: 'الحالة',
+              label: AppStrings.status,
               value: invoice.statusLabel,
             ),
-             const SizedBox(height: 16),
+            const SizedBox(height: 16),
             if (invoice.paidAmount < invoice.totalAmount)
               _ActionTile(
                 icon: Icons.payment,
-                label: 'تسديد دفعة',
-                color: AppColors.primary,
+                label: AppStrings.isArabic ? 'تسديد دفعة' : 'Make Payment',
+                color: context.primary,
                 onTap: () {
                   Navigator.pop(context);
                   _showPaymentSheet(context, invoice);
@@ -74,23 +77,24 @@ class InvoiceActionSheet {
               ),
             _ActionTile(
               icon: Icons.edit_outlined,
-              label: 'تعديل الفاتورة',
-              color: AppColors.primary,
+              label: AppStrings.isArabic ? 'تعديل الفاتورة' : 'Edit Invoice',
+              color: context.primary,
               onTap: () {
                 Navigator.pop(context);
-                AddInvoiceSheet.show(context, initialAppointmentId: invoice.sourceId, invoice: invoice);
+                AddInvoiceSheet.show(context,
+                    initialAppointmentId: invoice.sourceId, invoice: invoice);
               },
             ),
             _ActionTile(
               icon: Icons.print_outlined,
-              label: 'طباعة الفاتورة',
-              color: AppColors.textSecondary,
+              label: '${AppStrings.print} ${AppStrings.invoice}',
+              color: context.textSecondary,
               onTap: () => Navigator.pop(context),
             ),
             _ActionTile(
               icon: Icons.delete_outline,
-              label: 'حذف الفاتورة',
-              color: AppColors.danger,
+              label: AppStrings.isArabic ? 'حذف الفاتورة' : 'Delete Invoice',
+              color: context.danger,
               onTap: () {
                 Navigator.pop(context);
                 _confirmDelete(context, invoice);
@@ -106,26 +110,31 @@ class InvoiceActionSheet {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('تأكيد الحذف', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-        content: const Text(
-          'هل أنت متأكد من حذف هذه الفاتورة نهائياً؟ هذا الإجراء سيؤثر على التقارير المالية للعيادة ولا يمكن التراجع عنه.',
-          style: TextStyle(fontFamily: 'Cairo'),
+        title: Text(AppStrings.confirmDelete,
+            style: const TextStyle(
+                fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+        content: Text(
+          AppStrings.isArabic ? 'هل أنت متأكد من حذف هذه الفاتورة نهائياً؟ هذا الإجراء سيؤثر على التقارير المالية للعيادة ولا يمكن التراجع عنه.' : 'Are you sure you want to permanently delete this invoice? This will affect financial reports and cannot be undone.',
+          style: const TextStyle(fontFamily: 'Cairo'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء', style: TextStyle(fontFamily: 'Cairo')),
+            child: Text(AppStrings.cancel,
+                style: const TextStyle(fontFamily: 'Cairo')),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.read<InvoicesCubit>().deleteInvoice(invoice.id);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('تم حذف الفاتورة بنجاح')),
+                SnackBar(content: Text(AppStrings.invoiceDeleted)),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
-            child: const Text('حذف', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: context.danger),
+            child: Text(AppStrings.delete,
+                style:
+                    const TextStyle(fontFamily: 'Cairo', color: Colors.white)),
           ),
         ],
       ),
@@ -135,21 +144,23 @@ class InvoiceActionSheet {
   static Future<void> _showPaymentSheet(
       BuildContext context, InvoiceItem invoice) {
     final remaining = invoice.totalAmount - invoice.paidAmount;
-    final amountController = TextEditingController(
-        text: remaining.toStringAsFixed(0));
+    final amountController =
+        TextEditingController(text: remaining.toStringAsFixed(0));
     String selectedMethod = invoice.paymentMethod ?? 'cash';
 
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
         return Padding(
           padding: EdgeInsets.only(
-            left: 16, right: 16, top: 16,
+            left: 16,
+            right: 16,
+            top: 16,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
           ),
           child: Column(
@@ -158,27 +169,28 @@ class InvoiceActionSheet {
             children: [
               Center(
                 child: Container(
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: context.border,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                'تسديد دفعة',
+                AppStrings.isArabic ? 'تسديد دفعة' : 'Make Payment',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimary,
                 ),
               ),
               const SizedBox(height: 20),
               Text(
-                'المبلغ المتبقي: ${remaining.toStringAsFixed(0)} ج.م',
+                AppStrings.isArabic ? 'المبلغ المتبقي: ${remaining.toStringAsFixed(0)} ${AppStrings.egp}' : 'Remaining: ${remaining.toStringAsFixed(0)} ${AppStrings.egp}',
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -189,47 +201,51 @@ class InvoiceActionSheet {
                 decoration: InputDecoration(
                   hintText: '0',
                   hintStyle: const TextStyle(
-                    fontFamily: 'Inter', fontWeight: FontWeight.bold,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.bold,
                   ),
-                  suffixIcon: const SizedBox(
+                  suffixIcon: SizedBox(
                     width: 40,
                     child: Center(
                       child: Text(
-                        'ج.م',
+                        AppStrings.egp,
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
-                  fillColor: AppColors.surfaceContainerLow,
+                  fillColor: context.surfaceContainerLow,
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide(color: context.border),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppColors.primary),
+                    borderSide: BorderSide(color: context.primary),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _methodChip('cash', '💵', 'نقد', selectedMethod, (v) {
+                  _methodChip(ctx, 'cash', '💵', AppStrings.cash, selectedMethod,
+                      (v) {
                     selectedMethod = v;
                     (ctx as Element).markNeedsBuild();
                   }),
                   const SizedBox(width: 8),
-                  _methodChip('card', '💳', 'بطاقة', selectedMethod, (v) {
+                  _methodChip(ctx, 'card', '💳', AppStrings.card, selectedMethod,
+                      (v) {
                     selectedMethod = v;
                     (ctx as Element).markNeedsBuild();
                   }),
                   const SizedBox(width: 8),
-                  _methodChip('bank', '🔄', 'تحويل', selectedMethod, (v) {
+                  _methodChip(ctx, 'bank', '🔄', AppStrings.transfer, selectedMethod,
+                      (v) {
                     selectedMethod = v;
                     (ctx as Element).markNeedsBuild();
                   }),
@@ -240,19 +256,16 @@ class InvoiceActionSheet {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    final amount =
-                        double.tryParse(amountController.text) ?? 0;
+                    final amount = double.tryParse(amountController.text) ?? 0;
                     if (amount <= 0) {
                       ScaffoldMessenger.of(ctx).showSnackBar(
-                        const SnackBar(
-                            content: Text('يرجى إدخال مبلغ صحيح')),
+                        SnackBar(content: Text(AppStrings.isArabic ? 'يرجى إدخال مبلغ صحيح' : 'Please enter a valid amount')),
                       );
                       return;
                     }
-                    final newPaid =
-                        (invoice.paidAmount + amount)
-                            .clamp(0, invoice.totalAmount)
-                            .toDouble();
+                    final newPaid = (invoice.paidAmount + amount)
+                        .clamp(0, invoice.totalAmount)
+                        .toDouble();
                     context.read<InvoicesCubit>().updatePaidAmount(
                           invoiceId: invoice.id,
                           newPaidAmount: newPaid,
@@ -260,23 +273,21 @@ class InvoiceActionSheet {
                         );
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('تم تسجيل الدفعة بنجاح')),
+                      SnackBar(content: Text(AppStrings.operationSuccessful)),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 4,
-                    shadowColor: AppColors.primary.withOpacity(0.3),
+                    shadowColor: context.primary.withOpacity(0.3),
                   ),
                   child: Text(
-                    'تأكيد الدفع',
-                    style:
-                        AppTextStyles.headlineSmall(context).copyWith(
+                    AppStrings.confirm,
+                    style: AppTextStyles.headlineSmall(context).copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -291,6 +302,7 @@ class InvoiceActionSheet {
   }
 
   static Widget _methodChip(
+    BuildContext context,
     String value,
     String emoji,
     String label,
@@ -310,18 +322,18 @@ class InvoiceActionSheet {
         ),
         selected: isSelected,
         onSelected: (_) => onChanged(value),
-        selectedColor: AppColors.primary,
-        backgroundColor: AppColors.surface,
+        selectedColor: context.primary,
+        backgroundColor: context.surface,
         labelStyle: TextStyle(
           fontFamily: 'Cairo',
           fontSize: 12,
-          color: isSelected ? Colors.white : AppColors.textSecondary,
+          color: isSelected ? Colors.white : context.textSecondary,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? context.primary : context.border,
           ),
         ),
         showCheckmark: false,
@@ -351,15 +363,15 @@ class _DetailRow extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.bodyMedium(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
             ),
           ),
           Text(
             value,
             style: AppTextStyles.bodyMedium(context).copyWith(
               fontWeight: FontWeight.bold,
-              fontFamily: value.contains('ج.م') ? 'Inter' : 'Cairo',
-              color: valueColor ?? AppColors.textPrimary,
+              fontFamily: (AppStrings.isArabic || value.contains('ج.م')) ? 'Cairo' : 'Inter',
+              color: valueColor ?? context.textPrimary,
             ),
           ),
         ],

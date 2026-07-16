@@ -7,7 +7,6 @@ class StaffMemberCard extends StatelessWidget {
   final String name;
   final String displaySpecialty;
   final String? avatarUrl;
-  final double rating;
   final String initials;
   final String staffEntryId;
   final VoidCallback onRemove;
@@ -17,7 +16,6 @@ class StaffMemberCard extends StatelessWidget {
     required this.name,
     required this.displaySpecialty,
     this.avatarUrl,
-    required this.rating,
     required this.initials,
     required this.staffEntryId,
     required this.onRemove,
@@ -29,9 +27,9 @@ class StaffMemberCard extends StatelessWidget {
       width: 160,
       padding: const EdgeInsets.all(AppConstants.spaceSm),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
       ),
       child: Stack(
         children: [
@@ -39,14 +37,14 @@ class StaffMemberCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 32,
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: context.primaryLightColor,
                 backgroundImage:
                     avatarUrl != null ? NetworkImage(avatarUrl!) : null,
                 child: avatarUrl == null
                     ? Text(
                         initials,
                         style: AppTextStyles.headlineSmall(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       )
@@ -56,43 +54,26 @@ class StaffMemberCard extends StatelessWidget {
               Text(
                 name,
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontWeight: FontWeight.bold, color: context.textPrimary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppConstants.spaceXs),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.primaryLightColor,
                   borderRadius: BorderRadius.circular(AppConstants.radiusChip),
                 ),
                 child: Text(
                   displaySpecialty,
                   style: AppTextStyles.labelChip(context).copyWith(
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
               ),
               const SizedBox(height: AppConstants.spaceXs),
-              if (rating > 0)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.star,
-                        size: AppConstants.iconSizeSm, color: AppColors.warning),
-                    const SizedBox(width: 2),
-                    Text(
-                      rating.toStringAsFixed(1),
-                      style: AppTextStyles.labelChip(context).copyWith(
-                        color: AppColors.warningText,
-                      ),
-                    ),
-                  ],
-                ),
             ],
           ),
           Positioned(
@@ -106,9 +87,9 @@ class StaffMemberCard extends StatelessWidget {
                   color: Colors.transparent,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.remove_circle,
-                  color: AppColors.danger,
+                  color: context.danger,
                   size: AppConstants.iconSizeLg,
                 ),
               ),

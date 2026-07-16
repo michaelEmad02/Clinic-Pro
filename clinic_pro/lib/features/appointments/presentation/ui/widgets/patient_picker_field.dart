@@ -5,17 +5,20 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/mocks/mock_data.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
 class PatientPickerField extends StatefulWidget {
   final String? selectedPatientId;
   final ValueChanged<String?> onChanged;
+  final String? doctorId;
 
   const PatientPickerField({
     super.key,
     required this.selectedPatientId,
     required this.onChanged,
+    this.doctorId,
   });
 
   @override
@@ -42,11 +45,18 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
   }
 
   List<Map<String, dynamic>> get _filteredPatients {
-    final query = _searchController.text.trim();
-    if (query.isEmpty) return MockData.patients;
-    return MockData.patients
-        .where((p) => (p['name'] as String).contains(query))
-        .toList();
+    final query = _searchController.text.trim().toLowerCase();
+    var list = MockData.patients;
+
+    // تصفية المرضى حسب العيادة النشطة بدلاً من الطبيب، لأن المريض يمكن حجزه لدى أي طبيب بالعيادة
+    list = list.where((p) => p['clinic_id'] == AppConstants.activeClinicId).toList();
+
+    if (query.isNotEmpty) {
+      list = list
+          .where((p) => (p['name'] as String).toLowerCase().contains(query))
+          .toList();
+    }
+    return list;
   }
 
   @override
@@ -55,9 +65,9 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'اختيار المريض',
+          AppStrings.selectPatient,
           style: AppTextStyles.caption(context).copyWith(
-            color: AppColors.textSecondary,
+            color: context.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -70,9 +80,9 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
               vertical: 13,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.surfaceColor,
               borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.borderColor),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -85,15 +95,15 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
               children: [
                 Expanded(
                   child: Text(
-                    _selectedName ?? 'ابحث أو اختر مريضاً...',
+                    _selectedName ?? AppStrings.searchPatientHint,
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: _selectedName != null
-                          ? AppColors.textPrimary
+                          ? context.textPrimary
                           : AppColors.textHint,
                     ),
                   ),
                 ),
-                const Icon(Icons.search, color: AppColors.textSecondary, size: 20),
+                Icon(Icons.search, color: context.textSecondary, size: 20),
               ],
             ),
           ),
@@ -104,7 +114,7 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
             controller: _searchController,
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              hintText: 'بحث بالاسم...',
+              hintText: AppStrings.searchByName,
               prefixIcon: const Icon(Icons.search, size: 20),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusInput),
@@ -129,7 +139,7 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
               subtitle: Text(
                 patient['phone'] as String,
                 style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                 ),
                 textDirection: TextDirection.ltr,
               ),

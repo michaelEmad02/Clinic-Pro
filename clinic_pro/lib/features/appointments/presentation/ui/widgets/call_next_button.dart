@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -25,7 +26,7 @@ class CallNextButton extends StatelessWidget {
         onPressed: enabled ? onPressed : null,
         icon: const Icon(Icons.volume_up_outlined),
         label: Text(
-          'استدعاء التالي',
+          AppStrings.callNext,
           style: AppTextStyles.bodyMedium(context).copyWith(
             fontWeight: FontWeight.bold,
             color: enabled ? Colors.white : AppColors.textHint,

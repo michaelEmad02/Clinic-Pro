@@ -1,10 +1,13 @@
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/strings/app_strings.dart';
 import 'widgets/account_form.dart';
-import 'widgets/social_login_button.dart';
+import 'widgets/social_login_row.dart';
 import 'dart:ui' as ui;
 
 class CreateAccountScreen extends StatelessWidget {
@@ -13,21 +16,23 @@ class CreateAccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       body: Stack(
         children: [
           // Ambient Background Elements
           Positioned(
             top: -40,
             right: -20,
-            child: _buildBlurCircle(AppColors.primaryContainer.withOpacity(0.1), 384),
+            child: _buildBlurCircle(
+                AppColors.primaryContainer.withOpacity(0.1), 384),
           ),
           Positioned(
             bottom: -40,
             left: -20,
-            child: _buildBlurCircle(const Color(0xFF6AFBC6).withOpacity(0.1), 288), // secondary-fixed
+            child: _buildBlurCircle(
+                AppColors.accent.withOpacity(0.1), 288), // secondary-fixed
           ),
-          
+
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
@@ -36,7 +41,7 @@ class CreateAccountScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: context.surfaceColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -59,84 +64,73 @@ class CreateAccountScreen extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
+                          color: context.primaryLightColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          Icons.monitor_heart_outlined, // vital_signs approximate
+                          Icons
+                              .monitor_heart_outlined, // vital_signs approximate
                           color: AppColors.primaryContainer,
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'إنشاء حساب جديد',
+                        AppStrings.createAccount,
                         style: AppTextStyles.headlineLarge(context),
                       ),
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceContainerLow,
+                          color: context.isDarkMode
+                              ? AppColors.darkBackground
+                              : AppColors.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: context.borderColor),
                         ),
                         child: Text(
-                          'أعضاء الفريق يُضافون عبر الدعوة',
+                          AppStrings.teamViaInvite,
                           style: AppTextStyles.caption(context).copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.textSecondary,
                           ),
                         ),
                       ),
                       const SizedBox(height: 32),
-                      
+
                       // Form Section
-                      AccountForm(
-                        onSubmit: () {
-                          // Navigate to plan selection on success
-                          context.go(RouteConstants.onboardingPlan);
-                        },
+                      const AccountForm(
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Divider
                       Row(
                         children: [
-                          const Expanded(child: Divider(color: AppColors.border)),
+                          Expanded(child: Divider(color: context.borderColor)),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
-                              'أو التسجيل باستخدام',
+                              AppStrings.orRegisterWith,
                               style: AppTextStyles.caption(context).copyWith(
                                 color: AppColors.textHint,
                               ),
                             ),
                           ),
-                          const Expanded(child: Divider(color: AppColors.border)),
+                          Expanded(child: Divider(color: context.borderColor)),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
-                      // Social Login Actions
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SocialLoginButton(
-                              type: SocialLoginType.google,
-                              text: 'Google',
-                              onPressed: () {},
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: SocialLoginButton(
-                              type: SocialLoginType.apple,
-                              text: 'Apple',
-                              onPressed: () {},
-                            ),
-                          ),
-                        ],
+
+                      // أزرار تسجيل الدخول الاجتماعي المشتركة
+                      SocialLoginRow(
+                        onGooglePressed: () {
+                          // منطق تسجيل الدخول بـ Google عند إنشاء الحساب
+                        },
+                        onApplePressed: () {
+                          // منطق تسجيل الدخول بـ Apple عند إنشاء الحساب
+                        },
                       ),
                     ],
                   ),

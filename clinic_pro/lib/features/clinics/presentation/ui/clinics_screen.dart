@@ -2,18 +2,22 @@
 // شاشة العيادات — نظرة عامة على جميع الفروع
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
-import '../../../onboarding/presentation/ui/create_clinic_screen.dart';
-import '../manager/clinics_cubit.dart';
-import '../manager/clinics_state.dart';
+import 'create_clinic_screen.dart';
+import '../../domain/entities/clinic_entity.dart';
+import '../manager/cubit/clinics_cubit.dart';
+import '../manager/cubit/clinics_state.dart';
 import 'widgets/clinics_list.dart';
 
 class ClinicsScreen extends StatelessWidget {
@@ -22,7 +26,7 @@ class ClinicsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ClinicsCubit()..loadClinics(),
+      create: (_) => sl<ClinicsCubit>()..fetchClinics(),
       child: const _ClinicsBody(),
     );
   }
@@ -34,33 +38,33 @@ class _ClinicsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         toolbarHeight: 64,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'عياداتي',
+              AppStrings.myClinics,
               style: AppTextStyles.headlineMedium(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             Text(
-              'نظرة عامة على أداء جميع الفروع',
+              AppStrings.clinicOverview,
               style: AppTextStyles.caption(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
           ],
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.border, height: 1),
         ),
       ),
       body: BlocBuilder<ClinicsCubit, ClinicsState>(
@@ -80,8 +84,8 @@ class _ClinicsBody extends StatelessWidget {
                   const SizedBox(height: AppConstants.spaceMd),
                   ElevatedButton(
                     onPressed: () =>
-                        context.read<ClinicsCubit>().loadClinics(),
-                    child: const Text(AppStrings.retry),
+                        context.read<ClinicsCubit>().fetchClinics(),
+                    child: Text(AppStrings.retry),
                   ),
                 ],
               ),
@@ -90,7 +94,7 @@ class _ClinicsBody extends StatelessWidget {
           if (state is ClinicsLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<ClinicsCubit>().loadClinics();
+                context.read<ClinicsCubit>().fetchClinics();
                 await Future.delayed(const Duration(milliseconds: 600));
               },
               child: ClinicsList(
@@ -98,10 +102,8 @@ class _ClinicsBody extends StatelessWidget {
                 onItemTap: (c) =>
                     context.push('${RouteConstants.clinics}/${c.id}'),
                 onItemEdit: (c) => _openClinicForm(context, clinic: c),
-                onItemToggleActive: (c) =>
-                    _toggleClinicActive(context, c),
-                onItemDelete: (c) =>
-                    _deleteClinic(context, c),
+                onItemToggleActive: (c) => _toggleClinicActive(context, c),
+                onItemDelete: (c) => _deleteClinic(context, c),
               ),
             );
           }
@@ -110,32 +112,37 @@ class _ClinicsBody extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openClinicForm(context),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
+        backgroundColor: context.primary,
+        foregroundColor: context.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         ),
-        child: const Icon(Icons.add),
+        child: Icon(
+          Icons.add,
+          color: context.surfaceBright,
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 
-  Future<void> _deleteClinic(BuildContext context, ClinicItem clinic) async {
+  // حذف عيادة مع تأكيد
+  Future<void> _deleteClinic(BuildContext context, ClinicEntity clinic) async {
     final cubit = context.read<ClinicsCubit>();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text(AppStrings.confirmDelete),
-        content: Text('هل أنت متأكد من حذف "${clinic.name}"؟'),
+        title: Text(AppStrings.confirmDelete),
+        content: Text(AppStrings.confirmDeleteClinic(clinic.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(AppStrings.cancel),
+            child: Text(AppStrings.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(AppStrings.delete, style: TextStyle(color: AppColors.danger)),
+            child: Text(AppStrings.delete,
+                style: TextStyle(color: context.danger)),
           ),
         ],
       ),
@@ -148,19 +155,25 @@ class _ClinicsBody extends StatelessWidget {
     );
   }
 
-  Future<void> _toggleClinicActive(BuildContext context, ClinicItem clinic) async {
+  // تبديل حالة التفعيل
+  Future<void> _toggleClinicActive(
+      BuildContext context, ClinicEntity clinic) async {
     final cubit = context.read<ClinicsCubit>();
     await cubit.toggleActive(clinic.id);
     if (!context.mounted) return;
-    final action = clinic.isActive ? 'تعطيل' : 'تفعيل';
+    final action =
+        clinic.isActive ? AppStrings.toggleClinic : AppStrings.enableClinic;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('تم $action "${clinic.name}"')),
+      SnackBar(
+          content:
+              Text('${AppStrings.toggledSuccess}$action "${clinic.name}"')),
     );
   }
 
+  // فتح نموذج إضافة / تعديل عيادة
   Future<void> _openClinicForm(
     BuildContext context, {
-    ClinicItem? clinic,
+    ClinicEntity? clinic,
   }) async {
     final cubit = context.read<ClinicsCubit>();
     final result = await Navigator.push<Map<String, String>>(
@@ -177,20 +190,29 @@ class _ClinicsBody extends StatelessWidget {
     if (clinic != null) {
       cubit.updateClinic(clinic.copyWith(
         name: result['name']!,
-        phone: result['phone']!,
+        phone1: result['phone']!,
         address: result['address']!,
       ));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.updatedSuccess)),
+        SnackBar(content: Text(AppStrings.updatedSuccess)),
       );
     } else {
-      cubit.addClinic(
+      var userId =
+          (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
+      // إنشاء entity جديد لإضافته
+      cubit.addClinic(ClinicEntity(
+        id: '', // سيتم توليده من الخادم
+        ownerId: userId, // سيتم تحديده من الجلسة
         name: result['name']!,
-        phone: result['phone']!,
+        phone1: result['phone']!,
+        phone2: '',
         address: result['address']!,
-      );
+        logoUrl: '',
+        isActive: true,
+        createdAt: DateTime.now(),
+      ));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.addedSuccess)),
+        SnackBar(content: Text(AppStrings.addedSuccess)),
       );
     }
   }

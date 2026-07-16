@@ -1,5 +1,6 @@
 import 'package:clinic_pro/core/constants/prescription_enums.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/dose_chip_selector.dart';
@@ -26,8 +27,6 @@ class DrugDoseCard extends StatelessWidget {
     required this.onRemove,
   });
 
-
-
   @override
   Widget build(BuildContext context) {
     final isPrn = drug.isPrn;
@@ -35,12 +34,12 @@ class DrugDoseCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: context.background,
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -59,11 +58,11 @@ class DrugDoseCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceAlt,
+                    color: context.surfaceBright,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Center(
-                    child: Icon(Icons.medication, color: AppColors.textSecondary),
+                  child: Center(
+                    child: Icon(Icons.medication, color: context.textSecondary),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -81,20 +80,20 @@ class DrugDoseCard extends StatelessWidget {
                       Text(
                         drug.genericName,
                         style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+                  icon: Icon(Icons.delete_outline, color: context.danger),
                   onPressed: onRemove,
                 ),
               ],
             ),
           ),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: context.border),
 
           // خيارات التكرار والمدة والتوقيت
           Padding(
@@ -106,51 +105,59 @@ class DrugDoseCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildRowTitle(context, 'عند اللزوم (PRN)'),
+                    _buildRowTitle(context, AppStrings.whenNeeded),
                     Switch(
                       value: isPrn,
-                      activeColor: AppColors.primary,
+                      activeColor: context.primary,
                       onChanged: (val) {
-                        onUpdate(isPrn: val, doseFrequency: val ? null : 2, doseDuration: val ? null : 7);
+                        onUpdate(
+                            isPrn: val,
+                            doseFrequency: val ? null : 2,
+                            doseDuration: val ? null : 7);
                       },
                     ),
                   ],
                 ),
-                
+
                 if (!isPrn) ...[
                   const SizedBox(height: 6),
-                  _buildRowTitle(context, 'التكرار'),
+                  _buildRowTitle(context, AppStrings.frequency),
                   const SizedBox(height: 6),
                   DoseChipSelector(
                     options: DrugFrequency.values.map((e) => e.label).toList(),
-                    selectedOption: DrugFrequency.fromDbValue(drug.doseFrequency)?.label,
+                    selectedOption:
+                        DrugFrequency.fromDbValue(drug.doseFrequency)?.label,
                     onSelected: (val) {
-                      final freq = DrugFrequency.values.firstWhere((e) => e.label == val);
+                      final freq = DrugFrequency.values
+                          .firstWhere((e) => e.label == val);
                       onUpdate(doseFrequency: freq.dbValue);
                     },
                   ),
-
                   const SizedBox(height: 12),
-                  _buildRowTitle(context, 'المدة'),
+                  _buildRowTitle(context, AppStrings.duration),
                   const SizedBox(height: 6),
                   DoseChipSelector(
                     options: DrugDuration.values.map((e) => e.label).toList(),
-                    selectedOption: DrugDuration.fromDbValue(drug.doseDuration)?.label,
+                    selectedOption:
+                        DrugDuration.fromDbValue(drug.doseDuration)?.label,
                     onSelected: (val) {
-                      final dur = DrugDuration.values.firstWhere((e) => e.label == val);
+                      final dur =
+                          DrugDuration.values.firstWhere((e) => e.label == val);
                       onUpdate(doseDuration: dur.dbValue);
                     },
                   ),
                 ],
 
                 const SizedBox(height: 12),
-                _buildRowTitle(context, 'التوقيت'),
+                _buildRowTitle(context, AppStrings.timing),
                 const SizedBox(height: 6),
                 DoseChipSelector(
                   options: DrugTiming.values.map((e) => e.label).toList(),
-                  selectedOption: DrugTiming.fromDbValue(drug.doseTiming)?.label,
+                  selectedOption:
+                      DrugTiming.fromDbValue(drug.doseTiming)?.label,
                   onSelected: (val) {
-                    final timing = DrugTiming.values.firstWhere((e) => e.label == val);
+                    final timing =
+                        DrugTiming.values.firstWhere((e) => e.label == val);
                     onUpdate(doseTiming: timing.dbValue);
                   },
                 ),
@@ -166,7 +173,7 @@ class DrugDoseCard extends StatelessWidget {
     return Text(
       text,
       style: AppTextStyles.caption(context).copyWith(
-        color: AppColors.textHint,
+        color: context.textHint,
         fontWeight: FontWeight.bold,
       ),
     );

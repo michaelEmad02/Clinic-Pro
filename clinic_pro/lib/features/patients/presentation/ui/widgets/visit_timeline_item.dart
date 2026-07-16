@@ -29,8 +29,8 @@ class VisitTimelineItem extends StatelessWidget {
               Container(
                 width: 12,
                 height: 12,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
+                decoration: BoxDecoration(
+                  color: context.primary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -38,7 +38,7 @@ class VisitTimelineItem extends StatelessWidget {
                 Expanded(
                   child: Container(
                     width: 2,
-                    color: AppColors.border,
+                    color: context.border,
                   ),
                 ),
             ],
@@ -49,9 +49,9 @@ class VisitTimelineItem extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(AppConstants.spaceMd),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.surface,
                 borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,26 +66,26 @@ class VisitTimelineItem extends StatelessWidget {
                   Text(
                     visit.displayDate,
                     style: AppTextStyles.caption(context).copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     visit.description,
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.medical_services_outlined,
-                          size: 14, color: AppColors.primaryContainer),
+                      Icon(Icons.medical_services_outlined,
+                          size: 14, color: context.primaryContainer),
                       const SizedBox(width: 4),
                       Text(
                         visit.doctorName,
                         style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

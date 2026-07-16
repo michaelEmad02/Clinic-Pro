@@ -1,3 +1,4 @@
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import 'prescription_state.dart';
 
@@ -52,10 +53,10 @@ class PrescriptionRepository {
       table: 'users',
       eq: {'id': doctorId},
     );
-    final doctor = users.isNotEmpty ? users.first : {'name': 'د. أحمد يوسف'};
+    final doctor = users.isNotEmpty ? users.first : {'name': AppStrings.generalPractitioner};
 
     final typeMap = apptRaw['appointment_types'] as Map<String, dynamic>? ?? {};
-    final typeName = typeMap['name'] as String? ?? 'كشف عادي';
+    final typeName = typeMap['name'] as String? ?? AppStrings.normalCheckup;
 
     List<String> selectedDiag = [];
     List<SelectedDrugModel> selectedDrugs = [];
@@ -86,7 +87,7 @@ class PrescriptionRepository {
         final drugs = await _cloud.select(table: 'drugs', eq: {'id': drugId});
         final drugRaw = drugs.isNotEmpty
             ? drugs.first
-            : {'trade_name': 'دواء غير معروف', 'generic_name': '', 'category': ''};
+            : {'trade_name': AppStrings.unknownDrug, 'generic_name': '', 'category': ''};
 
         selectedDrugs.add(SelectedDrugModel(
           id: drugId,
@@ -197,7 +198,7 @@ class PrescriptionRepository {
       final drugs = await _cloud.select(table: 'drugs', eq: {'id': drugId});
       final drugRaw = drugs.isNotEmpty
           ? drugs.first
-          : {'trade_name': 'دواء غير معروف', 'generic_name': '', 'category': ''};
+          : {'trade_name': AppStrings.unknownDrug, 'generic_name': '', 'category': ''};
 
       copiedDrugs.add(SelectedDrugModel(
         id: drugId,
@@ -238,7 +239,7 @@ class PrescriptionRepository {
       final drugs = await _cloud.select(table: 'drugs', eq: {'id': drugId});
       final drugRaw = drugs.isNotEmpty
           ? drugs.first
-          : {'trade_name': 'دواء غير معروف', 'generic_name': '', 'category': ''};
+          : {'trade_name': AppStrings.unknownDrug, 'generic_name': '', 'category': ''};
 
       result.add(SelectedDrugModel(
         id: drugId,

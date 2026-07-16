@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import 'template_list_item.dart';
 
@@ -30,12 +31,12 @@ class TemplatesList extends StatelessWidget {
     }).toList();
 
     if (filtered.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 40),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
         child: EmptyState(
           icon: Icons.assignment_outlined,
-          title: 'لا توجد قوالب مطابقة',
-          subtitle: 'حاول تغيير معايير البحث أو تصنيف الفلترة أو أضف قالباً جديداً.',
+          title: AppStrings.noTemplates,
+          subtitle: '${AppStrings.search} ${AppStrings.template}',
         ),
       );
     }

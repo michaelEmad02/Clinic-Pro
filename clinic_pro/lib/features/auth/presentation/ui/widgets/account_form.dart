@@ -1,11 +1,18 @@
+import 'package:clinic_pro/core/constants/route_constants.dart';
+import 'package:clinic_pro/core/mocks/mock_data.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/strings/app_strings.dart';
 
 class AccountForm extends StatefulWidget {
-  final VoidCallback onSubmit;
-
-  const AccountForm({super.key, required this.onSubmit});
+  const AccountForm({
+    super.key,
+  });
 
   @override
   State<AccountForm> createState() => _AccountFormState();
@@ -34,281 +41,313 @@ class _AccountFormState extends State<AccountForm> {
         _passwordController.text.isNotEmpty &&
         _mobileController.text.isNotEmpty &&
         _agreedToTerms) {
-      widget.onSubmit();
+      // Navigate to plan selection on success
+      context.read<AuthCubit>().register(
+          email: _emailController.text,
+          password: _passwordController.text,
+          name: _nameController.text,
+          phone: _mobileController.text,
+          country: "",
+          address: "");
+      // context.go(RouteConstants.onboardingPlan);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Full Name Field
-        Text(
-          'الاسم الكامل',
-          style: AppTextStyles.bodyMedium(context).copyWith(
-            fontWeight: FontWeight.w500,
-            color: AppColors.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: _nameController,
-            style: AppTextStyles.bodyMedium(context),
-            decoration: const InputDecoration(
-              hintText: 'د. أحمد العلي',
-              hintStyle: TextStyle(color: AppColors.textHint),
-              suffixIcon: Icon(Icons.person_outline, color: AppColors.textHint),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          context.go(RouteConstants.onboardingPlan);
+          
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Full Name Field
+          Text(
+            AppStrings.fullName,
+            style: AppTextStyles.bodyMedium(context).copyWith(
+              fontWeight: FontWeight.w500,
+              color: AppColors.onSurfaceVariant,
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Email Field
-        Text(
-          'البريد الإلكتروني',
-          style: AppTextStyles.bodyMedium(context).copyWith(
-            fontWeight: FontWeight.w500,
-            color: AppColors.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            textDirection: TextDirection.ltr,
-            textAlign: TextAlign.left,
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 14,
-              color: AppColors.textPrimary,
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: context.borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
-            decoration: const InputDecoration(
-              hintText: 'example@clinic.com',
-              hintStyle: TextStyle(
+            child: TextField(
+              controller: _nameController,
+              style: AppTextStyles.bodyMedium(context),
+              decoration: const InputDecoration(
+                hintText: 'د. أحمد العلي',
+                hintStyle: TextStyle(color: AppColors.textHint),
+                suffixIcon:
+                    Icon(Icons.person_outline, color: AppColors.textHint),
+                border: InputBorder.none,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Email Field
+          Text(
+            AppStrings.email,
+            style: AppTextStyles.bodyMedium(context).copyWith(
+              fontWeight: FontWeight.w500,
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: context.borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              textDirection: TextDirection.ltr,
+              textAlign: TextAlign.left,
+              style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
-                color: AppColors.textHint,
+                color: context.textPrimary,
               ),
-              suffixIcon: Icon(Icons.email_outlined, color: AppColors.textHint),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: InputDecoration(
+                hintText: 'example@clinic.com',
+                hintStyle: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: context.textHint,
+                ),
+                suffixIcon: Icon(Icons.email_outlined, color: context.textHint),
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Password Field
-        Text(
-          'كلمة المرور',
-          style: AppTextStyles.bodyMedium(context).copyWith(
-            fontWeight: FontWeight.w500,
-            color: AppColors.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: _passwordController,
-            obscureText: _obscurePassword,
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 14,
-              color: AppColors.textPrimary,
+          const SizedBox(height: 16),
+
+          // Password Field
+          Text(
+            AppStrings.password,
+            style: AppTextStyles.bodyMedium(context).copyWith(
+              fontWeight: FontWeight.w500,
+              color: AppColors.onSurfaceVariant,
             ),
-            decoration: InputDecoration(
-              hintText: '••••••••',
-              hintStyle: const TextStyle(
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: context.borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
-                color: AppColors.textHint,
+                color: context.textPrimary,
               ),
-              // زر إظهار/إخفاء كلمة المرور
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              decoration: InputDecoration(
+                hintText: '••••••••',
+                hintStyle: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
                   color: AppColors.textHint,
                 ),
-                onPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
+                // زر إظهار/إخفاء كلمة المرور
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.textHint,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Mobile Number Field
-        Text(
-          'رقم الجوال',
-          style: AppTextStyles.bodyMedium(context).copyWith(
-            fontWeight: FontWeight.w500,
-            color: AppColors.onSurfaceVariant,
+          const SizedBox(height: 16),
+
+          // Mobile Number Field
+          Text(
+            AppStrings.phoneNumber,
+            style: AppTextStyles.bodyMedium(context).copyWith(
+              fontWeight: FontWeight.w500,
+              color: AppColors.onSurfaceVariant,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          height: 46,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Row(
-            textDirection: TextDirection.ltr,
-            children: [
-              // Prefix
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
-                  border: Border(right: BorderSide(color: AppColors.border)), // because of LTR
+          const SizedBox(height: 8),
+          Container(
+            height: 46,
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: context.borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
                 ),
-                child: const Text(
-                  '+966',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textSecondary,
+              ],
+            ),
+            child: Row(
+              textDirection: TextDirection.ltr,
+              children: [
+                // Prefix
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: context.isDarkMode
+                        ? AppColors.darkBackground
+                        : AppColors.surfaceContainerLow,
+                    border: Border(
+                        right: BorderSide(
+                            color: context.borderColor)), // because of LTR
                   ),
-                ),
-              ),
-              // Input
-              Expanded(
-                child: TextField(
-                  controller: _mobileController,
-                  keyboardType: TextInputType.phone,
-                  textDirection: TextDirection.ltr,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                  decoration: const InputDecoration(
-                    hintText: '5X XXX XXXX',
-                    hintStyle: TextStyle(
+                  child: Text(
+                    '+966',
+                    style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textHint,
+                      color: context.textSecondary,
                     ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                ),
+                // Input
+                Expanded(
+                  child: TextField(
+                    controller: _mobileController,
+                    keyboardType: TextInputType.phone,
+                    textDirection: TextDirection.ltr,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: context.textPrimary,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: '5X XXX XXXX',
+                      hintStyle: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textHint,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Terms Checkbox
+          Row(
+            children: [
+              Checkbox(
+                value: _agreedToTerms,
+                onChanged: (val) {
+                  setState(() {
+                    _agreedToTerms = val ?? false;
+                  });
+                },
+                activeColor: AppColors.primaryContainer,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4)),
+              ),
+              Expanded(
+                child: Text(
+                  AppStrings.agreeToTerms,
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    color: context.textSecondary,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Terms Checkbox
-        Row(
-          children: [
-            Checkbox(
-              value: _agreedToTerms,
-              onChanged: (val) {
-                setState(() {
-                  _agreedToTerms = val ?? false;
-                });
-              },
-              activeColor: AppColors.primaryContainer,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            ),
-            Expanded(
-              child: Text(
-                'أوافق على الشروط والأحكام',
-                style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.textSecondary,
-                ),
+          const SizedBox(height: 16),
+
+          // Submit Button
+          ElevatedButton(
+            onPressed: _submit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryContainer,
+              foregroundColor: AppColors.onPrimary,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
+              elevation: 4,
+              shadowColor: AppColors.primaryContainer.withOpacity(0.4),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        
-        // Submit Button
-        ElevatedButton(
-          onPressed: _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryContainer,
-            foregroundColor: AppColors.onPrimary,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 4,
-            shadowColor: AppColors.primaryContainer.withOpacity(0.4),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'إنشاء حساب',
-                style: AppTextStyles.headlineSmall(context).copyWith(
-                  color: AppColors.onPrimary,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  AppStrings.createAccount,
+                  style: AppTextStyles.headlineSmall(context).copyWith(
+                    color: AppColors.onPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_back), // Points left in RTL (arrow_left_alt equivalent)
-            ],
+                const SizedBox(width: 8),
+                const Icon(Icons
+                    .arrow_back), // Points left in RTL (arrow_left_alt equivalent)
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

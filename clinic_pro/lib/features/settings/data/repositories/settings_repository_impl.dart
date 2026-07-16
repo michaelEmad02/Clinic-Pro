@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/services/i_cloud_service.dart';
+import '../../../../core/strings/app_strings.dart';
 import 'package:clinic_pro/features/settings/domain/repositories/i_settings_repository.dart';
 
 @LazySingleton(as: ISettingsRepository)
@@ -22,7 +23,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
         eq: {'id': userId},
       );
       if (results.isEmpty) {
-        return const Left(ServerFailure(message: 'المستخدم غير موجود'));
+        return Left(ServerFailure(message: AppStrings.loadFailed));
       }
       return Right(results.first);
     } catch (e) {
@@ -38,7 +39,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
         eq: {'id': clinicId},
       );
       if (results.isEmpty) {
-        return const Left(ServerFailure(message: 'العيادة غير موجودة'));
+        return Left(ServerFailure(message: AppStrings.clinicNotFound));
       }
       return Right(results.first);
     } catch (e) {
@@ -124,7 +125,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
             'doctor_id': doctorId,
             'is_active': schedule['is_active'] as bool? ?? false,
             'name': docResults.first['name'],
-            'specialty': docResults.first['specialty'] ?? 'طبيب',
+            'specialty': docResults.first['specialty'] ?? AppStrings.doctorRoleLabel,
             'avatar_url': docResults.first['avatar_url'],
           });
         }

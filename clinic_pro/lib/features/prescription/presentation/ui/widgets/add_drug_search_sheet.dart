@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/di/injection_container.dart';
@@ -35,7 +36,7 @@ class AddDrugSearchSheet extends StatelessWidget {
               child: Center(
                 child: Text(
                   state.message,
-                  style: const TextStyle(color: AppColors.danger),
+                  style: TextStyle(color: context.danger),
                 ),
               ),
             );
@@ -44,7 +45,8 @@ class AddDrugSearchSheet extends StatelessWidget {
           final drugs = state is DrugsLoaded ? state.drugs : [];
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -56,7 +58,7 @@ class AddDrugSearchSheet extends StatelessWidget {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.border,
+                      color: context.border,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -65,9 +67,9 @@ class AddDrugSearchSheet extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'إضافة دواء للوصفة',
+                      AppStrings.addDrug,
                       style: AppTextStyles.headlineMedium(context).copyWith(
-                        color: AppColors.primary,
+                        color: context.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -84,9 +86,9 @@ class AddDrugSearchSheet extends StatelessWidget {
                     context.read<DrugsCubit>().search(val);
                   },
                   decoration: InputDecoration(
-                    hintText: 'ابحث عن دواء باسمه العلمي أو التجاري...',
+                    hintText: AppStrings.searchDrugs,
                     hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.textHint,
+                      color: context.textHint,
                     ),
                     prefixIcon: const Icon(Icons.search),
                     border: const OutlineInputBorder(
@@ -101,9 +103,9 @@ class AddDrugSearchSheet extends StatelessWidget {
                     maxHeight: MediaQuery.of(context).size.height * 0.4,
                   ),
                   child: drugs.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(child: Text('لا توجد أدوية مطابقة للبحث')),
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: Text(AppStrings.noDrugs)),
                         )
                       : ListView.builder(
                           shrinkWrap: true,
@@ -111,17 +113,19 @@ class AddDrugSearchSheet extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final drug = drugs[index];
                             return ListTile(
-                              leading: const Icon(Icons.medication, color: AppColors.primary),
+                              leading: Icon(Icons.medication,
+                                  color: context.primary),
                               title: Text(
                                 drug['trade_name'] ?? '',
-                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                style:
+                                    AppTextStyles.bodyMedium(context).copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               subtitle: Text(
                                 drug['generic_name'] ?? '',
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: context.textSecondary,
                                 ),
                               ),
                               trailing: ElevatedButton(
@@ -130,14 +134,14 @@ class AddDrugSearchSheet extends StatelessWidget {
                                   Navigator.pop(context);
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primaryLight,
-                                  foregroundColor: AppColors.primary,
+                                  backgroundColor: context.primaryLightColor,
+                                  foregroundColor: context.primary,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                child: const Text('إضافة'),
+                                child: Text(AppStrings.add),
                               ),
                             );
                           },

@@ -2,14 +2,18 @@
 // شاشة تفاصيل العيادة — تخطيط عمودين (رئيسي + جانبي) مع Bento Grid
 // مستوحى من تصميم phase8_ui/clinic_details_screen
 // ────────────────────────────────────────────────────────
-
+import 'package:clinic_pro/core/enities/performance_statistics.dart';
+import 'package:clinic_pro/features/clinics/presentation/manager/cubit/clinics_cubit.dart';
+import 'package:clinic_pro/features/clinics/presentation/manager/cubit/fetch_clinic_by_id_cubit.dart';
+import 'package:clinic_pro/features/clinics/presentation/manager/cubit/fetch_clinic_staff_cubit.dart';
+import 'package:clinic_pro/features/clinics/presentation/manager/cubit/fetch_clinic_statistics_cubit.dart';
+import 'package:clinic_pro/features/clinics/presentation/ui/widgets/clinic_summary_cards.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../manager/clinics_cubit.dart';
-import '../manager/clinics_state.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../domain/entities/clinic_entity.dart';
 import 'widgets/clinic_details_header.dart';
 import 'widgets/clinic_staff_section.dart';
-import 'widgets/clinic_summary_cards.dart';
 import 'widgets/clinic_performance_chart.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/themes/app_colors.dart';
@@ -24,8 +28,23 @@ class ClinicDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ClinicsCubit()..loadClinics(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => sl<FetchClinicByIdCubit>()..fetchClinicById(id),
+        ),
+        BlocProvider(
+          create: (context) =>
+              sl<FetchClinicStatisticsCubit>()..fetchClinicStatistics(id),
+        ),
+        BlocProvider(
+          create: (context) => sl<ClinicsCubit>(),
+        ),
+        BlocProvider(
+          create: (context) =>
+              sl<FetchClinicStaffCubit>()..fetchClinicStaff(id),
+        ),
+      ],
       child: _ClinicDetailsBody(id: id),
     );
   }
@@ -39,13 +58,13 @@ class _ClinicDetailsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textSecondary),
+          icon: Icon(Icons.arrow_back, color: context.textSecondary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -56,34 +75,30 @@ class _ClinicDetailsBody extends StatelessWidget {
           Container(
             margin: const EdgeInsetsDirectional.only(end: AppConstants.spaceSm),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: context.primaryLightColor,
               borderRadius: BorderRadius.circular(AppConstants.radiusChip),
             ),
             child: IconButton(
-              icon: const Icon(Icons.edit_outlined, color: AppColors.primary, size: 20),
+              icon: Icon(Icons.edit_outlined, color: context.primary, size: 20),
               onPressed: () {},
             ),
           ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.border, height: 1),
         ),
       ),
-      body: BlocBuilder<ClinicsCubit, ClinicsState>(
+      body: BlocBuilder<FetchClinicByIdCubit, FetchClinicByIdState>(
         builder: (context, state) {
-          if (state is ClinicsLoading) {
+          if (state is FetchClinicByIdILoadind) {
             return const Center(child: CircularProgressIndicator());
+          } else if (state is FetchClinicByIdLoaded) {
+            return _DetailsContent(clinic: state.clinic);
+          } else if (state is FetchClinicByIdFailure) {
+            return Center(child: Text(AppStrings.loadFailed));
           }
-          if (state is ClinicsLoaded) {
-            final clinic =
-                state.clinics.where((c) => c.id == id).toList();
-            if (clinic.isEmpty) {
-              return const Center(child: Text(AppStrings.clinicNotFound));
-            }
-            return _DetailsContent(clinic: clinic.first);
-          }
-          return const Center(child: Text(AppStrings.loadFailed));
+          return const Center();
         },
       ),
     );
@@ -91,16 +106,24 @@ class _ClinicDetailsBody extends StatelessWidget {
 }
 
 class _DetailsContent extends StatelessWidget {
-  final ClinicItem clinic;
+  final ClinicEntity clinic;
 
   const _DetailsContent({required this.clinic});
 
   @override
   Widget build(BuildContext context) {
     final isDesktop = ResponsiveHelper.isDesktop(context);
+    List<PerformanceStatistics> performanceStatistics = [];
 
     return RefreshIndicator(
-      onRefresh: () => context.read<ClinicsCubit>().loadClinics(),
+      onRefresh: () async {
+        context.read<FetchClinicByIdCubit>().fetchClinicById(clinic.id);
+        context
+            .read<FetchClinicStatisticsCubit>()
+            .fetchClinicStatistics(clinic.id);
+
+        context.read<FetchClinicStaffCubit>().fetchClinicStaff(clinic.id);
+      },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppConstants.spaceMd),
@@ -111,9 +134,27 @@ class _DetailsContent extends StatelessWidget {
               children: [
                 ClinicDetailsHeader(clinic: clinic),
                 const SizedBox(height: AppConstants.spaceMd),
-                ClinicSummaryCards(clinic: clinic),
+                BlocBuilder<FetchClinicStatisticsCubit,
+                    FetchClinicStatisticsState>(
+                  builder: (context, state) {
+                    if (state is FetchClinicStatisticsLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is FetchClinicStatisticsLoaded) {
+                      performanceStatistics =
+                          state.clinicStatistics.clinicMonthlyPerformance;
+                      return ClinicSummaryCards(
+                          statistics: state.clinicStatistics);
+                    } else if (state is FetchClinicStatisticsFailure) {
+                      return Center(
+                          child: Text(
+                              '${AppStrings.loadFailed} \n ${state.message}'));
+                    }
+                    return const Center();
+                  },
+                ),
                 const SizedBox(height: AppConstants.spaceMd),
-                const ClinicPerformanceChart(),
+                ClinicPerformanceChart(
+                    performanceStatistics: performanceStatistics),
                 const SizedBox(height: AppConstants.spaceMd),
                 // تخطيط عمودين في سطح المكتب، عمود واحد في الجوال
                 if (isDesktop)

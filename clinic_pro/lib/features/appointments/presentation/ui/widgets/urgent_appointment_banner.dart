@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -29,7 +30,7 @@ class UrgentAppointmentBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'حالة طارئة — أولوية قصوى',
+              AppStrings.emergencyBanner,
               style: AppTextStyles.bodyMedium(context).copyWith(
                 color: AppColors.dangerText,
                 fontWeight: FontWeight.bold,

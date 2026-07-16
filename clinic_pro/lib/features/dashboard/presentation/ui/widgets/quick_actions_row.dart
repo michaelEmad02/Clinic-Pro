@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/strings/app_strings.dart';
 
 class QuickActionsRow extends StatelessWidget {
   const QuickActionsRow({super.key});
@@ -15,7 +16,7 @@ class QuickActionsRow extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'إجراءات سريعة',
+            AppStrings.quickActions,
             style: AppTextStyles.headlineSmall(context).copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
@@ -31,28 +32,28 @@ class QuickActionsRow extends StatelessWidget {
             children: [
               _buildActionButton(
                 context: context,
-                label: 'إضافة عيادة',
+                label: AppStrings.addClinic,
                 icon: Icons.add_business_outlined,
                 onTap: () => context.push(RouteConstants.onboardingClinic),
               ),
               const SizedBox(width: 12),
               _buildActionButton(
                 context: context,
-                label: 'دعوة موظف',
+                label: AppStrings.inviteStaff,
                 icon: Icons.person_add_alt_1_outlined,
                 onTap: () => context.push(RouteConstants.onboardingInvite),
               ),
               const SizedBox(width: 12),
               _buildActionButton(
                 context: context,
-                label: 'إدارة الطاقم',
+                label: AppStrings.manageStaff,
                 icon: Icons.people_outlined,
                 onTap: () => context.push(RouteConstants.staff),
               ),
               const SizedBox(width: 12),
               _buildActionButton(
                 context: context,
-                label: 'التقارير المالية',
+                label: AppStrings.financialReports,
                 icon: Icons.analytics_outlined,
                 onTap: () {
                   // Action to view financial reports
@@ -78,9 +79,9 @@ class QuickActionsRow extends StatelessWidget {
         width: 120,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.borderColor),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.01),
@@ -102,7 +103,7 @@ class QuickActionsRow extends StatelessWidget {
               label,
               style: AppTextStyles.caption(context).copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: context.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),

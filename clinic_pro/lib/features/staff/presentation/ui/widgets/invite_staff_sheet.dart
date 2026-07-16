@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -31,12 +32,12 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
   final _emailController = TextEditingController();
   String _role = 'doctor';
 
-  static const _roles = [
-    ('doctor', 'طبيب'),
-    ('nurse', 'تمريض'),
-    ('secretary', 'سكرتير'),
-    ('accountant', 'محاسب'),
-  ];
+  static List<(String, String)> get _roles => [
+        ('doctor', AppStrings.roleLabel('doctor')),
+        ('nurse', AppStrings.roleLabel('nurse')),
+        ('secretary', AppStrings.roleLabel('secretary')),
+        ('accountant', AppStrings.roleLabel('accountant')),
+      ];
 
   @override
   void dispose() {
@@ -49,7 +50,10 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
     if (_nameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى ملء جميع الحقول المطلوبة')),
+        SnackBar(
+            content: Text(AppStrings.isArabic
+                ? 'يرجى ملء جميع الحقول المطلوبة'
+                : 'Please fill all required fields')),
       );
       return;
     }
@@ -64,8 +68,9 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text('تم إرسال دعوة إلى ${_emailController.text.trim()}'),
+        content: Text(AppStrings.isArabic
+            ? 'تم إرسال دعوة إلى ${_emailController.text.trim()}'
+            : 'Invitation sent to ${_emailController.text.trim()}'),
       ),
     );
   }
@@ -82,29 +87,28 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
             children: [
               Expanded(
                 child: Text(
-                  'دعوة موظف جديد',
+                  AppStrings.inviteNewStaff,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close,
-                    color: AppColors.textSecondary),
+                icon: Icon(Icons.close, color: context.textSecondary),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
           const SizedBox(height: 16),
           _buildField(
-            label: 'الاسم الكامل *',
+            label: '${AppStrings.fullName} *',
             icon: Icons.person_outline,
             controller: _nameController,
           ),
           const SizedBox(height: 12),
           _buildField(
-            label: 'البريد الإلكتروني *',
+            label: '${AppStrings.email} *',
             icon: Icons.email_outlined,
             controller: _emailController,
             textDirection: TextDirection.ltr,
@@ -112,17 +116,15 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             decoration: InputDecoration(
-              labelText: 'الدور *',
+              labelText: '${AppStrings.isArabic ? 'الدور' : 'Role'} *',
               prefixIcon: const Icon(Icons.badge_outlined),
               border: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(AppConstants.radiusInput),
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               ),
             ),
             value: _role,
             items: _roles
-                .map((r) => DropdownMenuItem(
-                    value: r.$1, child: Text(r.$2)))
+                .map((r) => DropdownMenuItem(value: r.$1, child: Text(r.$2)))
                 .toList(),
             onChanged: (v) => setState(() => _role = v!),
           ),
@@ -130,14 +132,13 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
           ElevatedButton.icon(
             onPressed: _submit,
             icon: const Icon(Icons.send_outlined),
-            label: const Text('إرسال الدعوة'),
+            label: Text(AppStrings.inviteStaff),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimaryContainer,
+              backgroundColor: context.primary,
+              foregroundColor: context.onPrimaryContainer,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(AppConstants.radiusButton),
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
               ),
             ),
           ),
@@ -159,8 +160,7 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
         labelText: label,
         prefixIcon: Icon(icon, size: 20),
         border: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(AppConstants.radiusInput),
+          borderRadius: BorderRadius.circular(AppConstants.radiusInput),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppConstants.spaceMd,

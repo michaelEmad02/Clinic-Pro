@@ -31,7 +31,7 @@ class EmptyState extends StatelessWidget {
             Icon(
               icon,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: context.textSecondary.withOpacity(0.5),
             ),
             const SizedBox(height: AppConstants.spaceMd),
             Text(
@@ -43,7 +43,7 @@ class EmptyState extends StatelessWidget {
             Text(
               subtitle,
               style: AppTextStyles.bodyLarge(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),

@@ -1,30 +1,71 @@
+import 'package:clinic_pro/features/staff/domain/entities/invitation_entity.dart';
+import 'package:clinic_pro/features/staff/domain/entities/staff_entity.dart';
+import 'package:clinic_pro/features/staff/domain/use_cases/cancel_invitation_use_case.dart';
+import 'package:clinic_pro/features/staff/domain/use_cases/delete_staff_use_case.dart';
+import 'package:clinic_pro/features/staff/domain/use_cases/edit_staff_entity_use_case.dart';
+import 'package:clinic_pro/features/staff/domain/use_cases/fetch_all_staff_use_case.dart';
+import 'package:clinic_pro/features/staff/domain/use_cases/fetch_pending_invitations_use_case.dart';
+import 'package:clinic_pro/features/staff/domain/use_cases/fetch_staff_by_is_use_case.dart';
+import 'package:clinic_pro/features/staff/domain/use_cases/invite_staff_use_case.dart';
+import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/services/i_cloud_service.dart';
+
+import 'package:injectable/injectable.dart';
+import '../../../../core/strings/app_strings.dart';
 import 'staff_state.dart';
 
+@injectable
 class StaffCubit extends Cubit<StaffState> {
-  final ICloudService _cloudService;
+  final FetchAllStaffUseCase fetchAllStaffUseCase;
+  final FetchStaffByIsUseCase fetchStaffByIsUseCase;
+  final FetchPendingInvitationsUseCase fetchPendingInvitationsUseCase;
+  final DeleteStaffUseCase deleteStaffUseCase;
+  final EditStaffEntityUseCase editStaffEntityUseCase;
+  final InviteStaffUseCase inviteStaffUseCase;
+  final CancelInvitationUseCase cancelInvitationUseCase;
 
-  StaffCubit(this._cloudService) : super(StaffInitial());
+  StaffCubit({
+    required this.fetchAllStaffUseCase,
+    required this.fetchStaffByIsUseCase,
+    required this.fetchPendingInvitationsUseCase,
+    required this.deleteStaffUseCase,
+    required this.editStaffEntityUseCase,
+    required this.inviteStaffUseCase,
+    required this.cancelInvitationUseCase,
+  }) : super(StaffInitial());
 
-  Future<void> loadStaff() async {
+  Future<void> fetchAllStaff(String ownerId) async {
     emit(StaffLoading());
 
     try {
-      final staffRows = await _cloudService.select(table: 'clinic_staff');
-      final userRows = await _cloudService.select(table: 'users');
-      final invitationRows = await _cloudService.select(table: 'invitations');
-      final clinicRows = await _cloudService.select(table: 'clinics');
+      final staffResult = await fetchAllStaffUseCase.call(ownerId);
+      final invitationsResult =
+          await fetchPendingInvitationsUseCase.call(ownerId);
 
-      final items = _mapStaff(staffRows, userRows);
-      final invitations = _mapInvitations(invitationRows);
+      List<StaffEntity> items = [];
+      List<InvitationEntity> invitations = [];
+
+      staffResult.fold(
+        (failure) => throw Exception(failure.message),
+        (entities) {
+          items = entities;
+        },
+      );
+
+      invitationsResult.fold(
+        (failure) => throw Exception(failure.message),
+        (entities) {
+          invitations = entities;
+        },
+      );
+
       emit(StaffLoaded(
         allStaff: items,
         invitations: invitations,
-        clinics: clinicRows,
       ));
     } catch (_) {
-      emit(const StaffError('تعذّر تحميل قائمة الطاقم الطبي'));
+      emit(StaffError(AppStrings.loadStaffFailed));
     }
   }
 
@@ -56,36 +97,47 @@ class StaffCubit extends Cubit<StaffState> {
     final loaded = state as StaffLoaded;
 
     final now = DateTime.now();
-    final data = {
-      'clinic_id': clinicId ?? 'c-1',
-      'owner_id': 'u-owner-1',
-      'email': email,
-      'name': name,
-      'role': role,
-      'status': 'pending',
-      'created_at': now.toIso8601String(),
-      'expires_at': now.add(const Duration(days: 7)).toIso8601String(),
-    };
-
-    final newRecord = await _cloudService.insert(
-      table: 'invitations',
-      data: data,
+    final staffRole = StaffRoles.values.firstWhere(
+      (r) => r.name == role,
+      orElse: () => StaffRoles.secretary,
     );
 
-    final newInvitation = StaffInvitationItem(
-      id: newRecord['id']?.toString() ?? 'inv-${now.millisecondsSinceEpoch}',
-      clinicId: newRecord['clinic_id'] as String? ?? 'c-1',
-      ownerId: newRecord['owner_id'] as String? ?? 'u-owner-1',
-      email: newRecord['email'] as String,
-      name: newRecord['name'] as String?,
-      role: newRecord['role'] as String,
-      status: newRecord['status'] as String,
-      createdAt: newRecord['created_at'] as String,
-      expiresAt: newRecord['expires_at'] as String?,
+    final invitation = InvitationEntity(
+      id: '',
+      clinicId: clinicId ?? 'c-1',
+      ownerId: 'u-owner-1',
+      email: email,
+      name: name,
+      role: staffRole,
+      token: 'token-${now.millisecondsSinceEpoch}',
+      status: InvitationStatus.pending,
+      expiredAt: now.add(const Duration(days: 7)),
+      createdAt: now,
     );
 
-    emit(loaded.copyWith(
-        invitations: [...loaded.invitations, newInvitation]));
+    final result = await inviteStaffUseCase.call(invitation);
+
+    result.fold(
+      (failure) => emit(StaffError(failure.message)),
+      (_) {
+        final newInvitation = InvitationEntity(
+          id: invitation.id.isEmpty
+              ? 'inv-${now.millisecondsSinceEpoch}'
+              : invitation.id,
+          clinicId: invitation.clinicId,
+          ownerId: invitation.ownerId,
+          email: invitation.email,
+          name: invitation.name,
+          role: invitation.role,
+          token: invitation.token,
+          status: invitation.status,
+          expiredAt: invitation.expiredAt,
+          createdAt: invitation.createdAt,
+        );
+        emit(loaded
+            .copyWith(invitations: [...loaded.invitations, newInvitation]));
+      },
+    );
   }
 
   Future<void> resendInvitation(String invitationId) async {
@@ -97,33 +149,72 @@ class StaffCubit extends Cubit<StaffState> {
     if (state is! StaffLoaded) return;
     final loaded = state as StaffLoaded;
 
-    await _cloudService.delete(
-      table: 'invitations',
-      matchColumn: 'id',
-      matchValue: invitationId,
-    );
+    final result = await cancelInvitationUseCase.call(invitationId);
 
-    final updated = loaded.invitations
-        .where((inv) => inv.id != invitationId)
-        .toList();
-    emit(loaded.copyWith(invitations: updated));
+    result.fold(
+      (failure) => emit(StaffError(failure.message)),
+      (_) {
+        final updated =
+            loaded.invitations.where((inv) => inv.id != invitationId).toList();
+        emit(loaded.copyWith(invitations: updated));
+      },
+    );
   }
 
   Future<void> updateStaffRole(String staffId, String newRole) async {
     if (state is! StaffLoaded) return;
     final loaded = state as StaffLoaded;
 
-    await _cloudService.update(
-      table: 'clinic_staff',
-      data: {'role': newRole},
-      matchColumn: 'user_id',
-      matchValue: staffId,
+    final staffItem = loaded.allStaff.firstWhere((s) => s.id == staffId);
+    final staffRole = StaffRoles.values.firstWhere(
+      (r) => r.name == newRole,
+      orElse: () => StaffRoles.secretary,
     );
 
-    final list = loaded.allStaff.map((s) {
-      return s.id == staffId ? s.copyWith(role: newRole) : s;
-    }).toList();
-    emit(loaded.copyWith(allStaff: list));
+    final staffEntity = StaffEntity(
+      id: staffItem.id,
+      clinicId: staffItem.clinicId,
+      userId: staffItem.userId,
+      name: staffItem.name,
+      email: staffItem.email,
+      phone: staffItem.phone,
+      avatarUrl: staffItem.avatarUrl,
+      specialty: staffItem.specialty,
+      role: staffRole,
+      isActive: staffItem.isActive,
+      joinedAt: staffItem.joinedAt,
+      doctorSecretaries: staffItem.doctorSecretaries,
+      doctorSchedules: staffItem.doctorSchedules,
+    );
+
+    final result = await editStaffEntityUseCase.call(staffEntity);
+
+    result.fold(
+      (failure) => emit(StaffError(failure.message)),
+      (_) {
+        final list = loaded.allStaff.map((s) {
+          if (s.id == staffId) {
+            return StaffEntity(
+              id: s.id,
+              clinicId: s.clinicId,
+              userId: s.userId,
+              name: s.name,
+              email: s.email,
+              phone: s.phone,
+              avatarUrl: s.avatarUrl,
+              specialty: s.specialty,
+              role: staffRole,
+              isActive: s.isActive,
+              joinedAt: s.joinedAt,
+              doctorSecretaries: s.doctorSecretaries,
+              doctorSchedules: s.doctorSchedules,
+            );
+          }
+          return s;
+        }).toList();
+        emit(loaded.copyWith(allStaff: list));
+      },
+    );
   }
 
   Future<void> toggleSuspend(String staffId) async {
@@ -131,77 +222,64 @@ class StaffCubit extends Cubit<StaffState> {
     final loaded = state as StaffLoaded;
     final staffItem = loaded.allStaff.firstWhere((s) => s.id == staffId);
 
-    await _cloudService.update(
-      table: 'clinic_staff',
-      data: {'is_active': !staffItem.isActive},
-      matchColumn: 'user_id',
-      matchValue: staffId,
+    final staffEntity = StaffEntity(
+      id: staffItem.id,
+      clinicId: staffItem.clinicId,
+      userId: staffItem.userId,
+      name: staffItem.name,
+      email: staffItem.email,
+      phone: staffItem.phone,
+      avatarUrl: staffItem.avatarUrl,
+      specialty: staffItem.specialty,
+      role: staffItem.role,
+      isActive: !staffItem.isActive,
+      joinedAt: staffItem.joinedAt,
+      doctorSecretaries: staffItem.doctorSecretaries,
+      doctorSchedules: staffItem.doctorSchedules,
     );
 
-    final list = loaded.allStaff.map((s) {
-      return s.id == staffId
-          ? s.copyWith(isActive: !s.isActive)
-          : s;
-    }).toList();
-    emit(loaded.copyWith(allStaff: list));
+    final result = await editStaffEntityUseCase.call(staffEntity);
+
+    result.fold(
+      (failure) => emit(StaffError(failure.message)),
+      (_) {
+        final list = loaded.allStaff.map((s) {
+          if (s.id == staffId) {
+            return StaffEntity(
+              id: s.id,
+              clinicId: s.clinicId,
+              userId: s.userId,
+              name: s.name,
+              email: s.email,
+              phone: s.phone,
+              avatarUrl: s.avatarUrl,
+              specialty: s.specialty,
+              role: s.role,
+              isActive: !s.isActive,
+              joinedAt: s.joinedAt,
+              doctorSecretaries: s.doctorSecretaries,
+              doctorSchedules: s.doctorSchedules,
+            );
+          }
+          return s;
+        }).toList();
+        emit(loaded.copyWith(allStaff: list));
+      },
+    );
   }
 
-  List<StaffItem> _mapStaff(List<Map<String, dynamic>> clinicStaff, List<Map<String, dynamic>> users) {
-    // نجمع user_id النشطين من clinicStaff
-    final activeUserIds = clinicStaff
-        .map((cs) => cs['user_id'] as String)
-        .toSet()
-        .toList();
+  Future<void> deleteStaff(String staffId) async {
+    if (state is! StaffLoaded) return;
+    final loaded = state as StaffLoaded;
 
-    return activeUserIds.map((userId) {
-      final userData = users.firstWhere(
-        (u) => u['id'] == userId,
-        orElse: () => <String, dynamic>{},
-      );
+    final result = await deleteStaffUseCase.call(staffId);
 
-      if (userData.isEmpty) return null;
-
-      final staffEntry = clinicStaff.firstWhere(
-        (cs) => cs['user_id'] == userId,
-      );
-      final role = staffEntry['role'] as String;
-      final isActive = staffEntry['is_active'] as bool? ?? true;
-
-      final isOnline = role == 'doctor';
-      final lastSeen = isOnline ? null : 'آخر ظهور: أمس';
-
-      return StaffItem(
-        id: userId,
-        clinicId: staffEntry['clinic_id'] as String? ?? '',
-        name: userData['name'] as String? ?? '',
-        email: userData['email'] as String? ?? '',
-        phone: userData['phone'] as String? ?? '',
-        role: role,
-        avatarUrl: userData['avatar_url'] as String?,
-        specialty: userData['specialty'] as String?,
-        rating: (userData['rating'] as num?)?.toDouble(),
-        isOnline: isOnline,
-        lastSeen: lastSeen,
-        isActive: isActive,
-      );
-    }).whereType<StaffItem>().toList();
-  }
-
-  List<StaffInvitationItem> _mapInvitations(List<Map<String, dynamic>> invitationRows) {
-    return invitationRows.map((inv) {
-      return StaffInvitationItem(
-        id: inv['id'] as String,
-        clinicId: inv['clinic_id'] as String? ?? '',
-        ownerId: inv['owner_id'] as String? ?? '',
-        email: inv['email'] as String,
-        name: inv['name'] as String?,
-        role: inv['role'] as String,
-        status: inv['status'] as String,
-        createdAt: inv['created_at'] as String,
-        expiresAt: inv['expires_at'] as String?,
-      );
-    }).toList();
+    result.fold(
+      (failure) => emit(StaffError(failure.message)),
+      (_) {
+        final list = loaded.allStaff.where((s) => s.id != staffId).toList();
+        emit(loaded.copyWith(allStaff: list));
+      },
+    );
   }
 }
-
-

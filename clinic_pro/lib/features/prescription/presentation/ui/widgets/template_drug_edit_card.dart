@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/constants/prescription_enums.dart';
@@ -19,22 +20,23 @@ class TemplateDrugEditCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final frequencies = DrugFrequency.values.where((e) => e != DrugFrequency.on_demand).toList();
+    final frequencies =
+        DrugFrequency.values.where((e) => e != DrugFrequency.onDemand).toList();
     final durations = DrugDuration.values.toList();
     final timings = DrugTiming.values.toList();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.border),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildHeader(context),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: context.border),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -43,7 +45,7 @@ class TemplateDrugEditCard extends StatelessWidget {
                 _buildPrnRow(context),
                 if (!(drug['is_prn'] as bool? ?? false)) ...[
                   const SizedBox(height: 8),
-                  _buildRowTitle(context, 'التكرار'),
+                  _buildRowTitle(context, AppStrings.frequency),
                   const SizedBox(height: 8),
                   _buildChipsRow(
                     context: context,
@@ -55,7 +57,7 @@ class TemplateDrugEditCard extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 16),
-                  _buildRowTitle(context, 'المدة'),
+                  _buildRowTitle(context, AppStrings.duration),
                   const SizedBox(height: 8),
                   _buildChipsRow(
                     context: context,
@@ -68,7 +70,7 @@ class TemplateDrugEditCard extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 16),
-                _buildRowTitle(context, 'التوقيت'),
+                _buildRowTitle(context, AppStrings.timing),
                 const SizedBox(height: 8),
                 _buildChipsRow(
                   context: context,
@@ -90,9 +92,9 @@ class TemplateDrugEditCard extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: context.background,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(16),
           topRight: Radius.circular(16),
         ),
@@ -106,20 +108,20 @@ class TemplateDrugEditCard extends StatelessWidget {
                 drug['trade_name'] ?? '',
                 style: AppTextStyles.bodyMedium(context).copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimary,
                 ),
               ),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.primaryLightColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   drug['form'] ?? '',
                   style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.primary,
+                    color: context.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -129,7 +131,7 @@ class TemplateDrugEditCard extends StatelessWidget {
           IconButton(
             constraints: const BoxConstraints(),
             padding: EdgeInsets.zero,
-            icon: const Icon(Icons.delete_outline, color: AppColors.danger, size: 20),
+            icon: Icon(Icons.delete_outline, color: context.danger, size: 20),
             onPressed: onDelete,
           ),
         ],
@@ -141,10 +143,10 @@ class TemplateDrugEditCard extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildRowTitle(context, 'عند اللزوم (PRN)'),
+        _buildRowTitle(context, AppStrings.whenNeeded),
         Switch(
           value: drug['is_prn'] as bool? ?? false,
-          activeColor: AppColors.primary,
+          activeColor: context.primary,
           onChanged: (val) {
             drug['is_prn'] = val;
             if (val) {
@@ -165,7 +167,7 @@ class TemplateDrugEditCard extends StatelessWidget {
     return Text(
       text,
       style: AppTextStyles.caption(context).copyWith(
-        color: AppColors.textSecondary,
+        color: context.textSecondary,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -197,17 +199,17 @@ class TemplateDrugEditCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: selected ? AppColors.primaryLight : AppColors.surface,
+              color: selected ? context.primaryLightColor : context.surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: selected ? AppColors.primary : AppColors.border,
+                color: selected ? context.primary : context.border,
                 width: 1,
               ),
             ),
             child: Text(
               label,
               style: AppTextStyles.caption(context).copyWith(
-                color: selected ? AppColors.primary : AppColors.textSecondary,
+                color: selected ? context.textPrimary : context.textSecondary,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               ),
             ),

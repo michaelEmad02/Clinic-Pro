@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -29,14 +30,14 @@ class LinkedPrescriptionCard extends StatelessWidget {
 
   List<PrescriptionDrugItem> get _mockDrugs {
     if (!hasPrescription) return [];
-    return const [
+    return [
       PrescriptionDrugItem(
         name: 'Amoxicillin 500mg',
-        dosage: 'حبة كل 8 ساعات - لمدة 5 أيام',
+        dosage: AppStrings.isArabic ? 'حبة كل 8 ساعات - لمدة 5 أيام' : '1 pill every 8 hours - 5 days',
       ),
       PrescriptionDrugItem(
         name: 'Panadol Extra',
-        dosage: 'عند اللزوم',
+        dosage: AppStrings.isArabic ? 'عند اللزوم' : 'As needed',
       ),
     ];
   }
@@ -47,9 +48,9 @@ class LinkedPrescriptionCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -67,7 +68,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'الروشتة الطبية',
+                  AppStrings.prescriptionLabel,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
@@ -82,7 +83,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
                     }
                   },
                   child: Text(
-                    'تعديل',
+                    AppStrings.edit,
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: AppColors.primaryContainer,
                       fontWeight: FontWeight.w600,
@@ -97,7 +98,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
               Text(
                 diagnosis!,
                 style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -117,7 +118,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
                       Text(
                         drug.dosage,
                         style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                         ),
                       ),
                     ],
@@ -127,15 +128,15 @@ class LinkedPrescriptionCard extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('سيتم تفعيل الطباعة لاحقاً')),
+                  SnackBar(content: Text(AppStrings.noData)),
                 );
               },
               icon: const Icon(Icons.print_outlined, size: 18),
-              label: const Text('طباعة الروشتة'),
+              label: Text(AppStrings.printPrescription),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primary,
                 side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: context.primaryLightColor,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius:
@@ -148,9 +149,9 @@ class LinkedPrescriptionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'لم تُصدر روشتة بعد',
+                  AppStrings.noPrescription,
                   style: AppTextStyles.bodyMedium(context).copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -161,7 +162,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.add_box_outlined, size: 18),
-                  label: const Text('إصدار روشتة جديدة'),
+                  label: Text(AppStrings.newPrescription),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,

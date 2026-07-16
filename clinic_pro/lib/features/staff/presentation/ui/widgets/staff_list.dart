@@ -4,15 +4,16 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/utils/responsive_helper.dart';
 import '../../../../../core/widgets/empty_state.dart';
-import '../../manager/staff_state.dart';
+import 'package:clinic_pro/features/staff/domain/entities/staff_entity.dart';
 import 'staff_list_item.dart';
 
 class StaffList extends StatelessWidget {
-  final List<StaffItem> staffList;
-  final ValueChanged<StaffItem> onItemTap;
-  final ValueChanged<StaffItem> onItemMore;
+  final List<StaffEntity> staffList;
+  final ValueChanged<StaffEntity> onItemTap;
+  final ValueChanged<StaffEntity> onItemMore;
 
   const StaffList({
     super.key,
@@ -24,9 +25,9 @@ class StaffList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (staffList.isEmpty) {
-      return const EmptyState(
-        title: 'لا يوجد موظفين',
-        subtitle: 'لم يتم إضافة أي موظفين بعد.',
+      return EmptyState(
+        title: AppStrings.noStaff,
+        subtitle: AppStrings.isArabic ? 'لم يتم إضافة أي موظفين بعد.' : 'No staff members have been added yet.',
         icon: Icons.group_outlined,
       );
     }

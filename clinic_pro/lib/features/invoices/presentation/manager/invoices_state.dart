@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:equatable/equatable.dart';
+import '../../../../core/strings/app_strings.dart';
 
 enum InvoiceFilter { all, paid, pending, partial }
 
@@ -44,11 +45,11 @@ class InvoiceItem extends Equatable {
   String get statusLabel {
     switch (status) {
       case 'paid':
-        return 'مدفوع';
+        return AppStrings.isArabic ? 'مدفوع' : 'Paid';
       case 'pending':
-        return 'معلق';
+        return AppStrings.isArabic ? 'معلق' : 'Pending';
       case 'partial':
-        return 'جزئي';
+        return AppStrings.isArabic ? 'جزئي' : 'Partial';
       default:
         return status;
     }
@@ -57,11 +58,11 @@ class InvoiceItem extends Equatable {
   String get paymentMethodLabel {
     switch (paymentMethod) {
       case 'cash':
-        return 'نقدي';
+        return AppStrings.isArabic ? 'نقدي' : 'Cash';
       case 'card':
-        return 'بطاقة';
+        return AppStrings.isArabic ? 'بطاقة' : 'Card';
       case 'bank':
-        return 'تحويل بنكي';
+        return AppStrings.isArabic ? 'تحويل بنكي' : 'Bank Transfer';
       default:
         return '—';
     }
@@ -70,10 +71,15 @@ class InvoiceItem extends Equatable {
   String get formattedDate {
     final date = DateTime.tryParse(createdAt);
     if (date == null) return createdAt;
-    final months = [
+    final arabicMonths = [
       'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
       'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
     ];
+    final englishMonths = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final months = AppStrings.isArabic ? arabicMonths : englishMonths;
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 

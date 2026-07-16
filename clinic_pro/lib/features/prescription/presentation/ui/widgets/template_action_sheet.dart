@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -26,17 +27,16 @@ class TemplateActionSheet {
               template['title'] ?? '',
               style: AppTextStyles.headlineMedium(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading:
-                  const Icon(Icons.edit_document, color: AppColors.primary),
+              leading: Icon(Icons.edit_document, color: context.primary),
               title: Text(
-                'تعديل القالب',
+                AppStrings.editTemplate,
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -47,12 +47,11 @@ class TemplateActionSheet {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading:
-                  const Icon(Icons.delete_outline, color: AppColors.danger),
+              leading: Icon(Icons.delete_outline, color: context.danger),
               title: Text(
-                'حذف القالب',
+                AppStrings.deleteTemplate,
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.danger,
+                  color: context.danger,
                   fontWeight: FontWeight.bold,
                 ),
               ),

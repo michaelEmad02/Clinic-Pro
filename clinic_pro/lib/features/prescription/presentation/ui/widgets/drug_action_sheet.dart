@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -26,20 +27,20 @@ class DrugActionSheet {
               drug['trade_name'] ?? '',
               style: AppTextStyles.headlineMedium(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             Text(
               drug['generic_name'] ?? '',
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.edit_outlined, color: AppColors.primary),
+              leading: Icon(Icons.edit_outlined, color: context.primary),
               title: Text(
-                'تعديل الدواء',
+                AppStrings.editDrug,
                 style: AppTextStyles.bodyMedium(context).copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -49,13 +50,13 @@ class DrugActionSheet {
                 onEdit();
               },
             ),
-            const Divider(color: AppColors.border, height: 1),
+            Divider(color: context.border, height: 1),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: AppColors.danger),
+              leading: Icon(Icons.delete_outline, color: context.danger),
               title: Text(
-                'حذف الدواء من القاعدة',
+                AppStrings.deleteDrug,
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.danger,
+                  color: context.danger,
                   fontWeight: FontWeight.bold,
                 ),
               ),

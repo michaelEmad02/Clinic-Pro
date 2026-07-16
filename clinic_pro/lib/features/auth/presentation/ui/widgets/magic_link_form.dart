@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/strings/app_strings.dart';
 
 class MagicLinkForm extends StatefulWidget {
   final Function(String) onSubmit;
@@ -33,15 +34,15 @@ class _MagicLinkFormState extends State<MagicLinkForm> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'البريد الإلكتروني',
+          AppStrings.email,
           style: AppTextStyles.headlineSmall(context),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.borderColor),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.02),
@@ -55,11 +56,11 @@ class _MagicLinkFormState extends State<MagicLinkForm> {
             keyboardType: TextInputType.emailAddress,
             textDirection: TextDirection.ltr,
             textAlign: TextAlign.left,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.textPrimary,
             ),
             decoration: InputDecoration(
               hintText: 'dr@clinic.com',
@@ -97,7 +98,7 @@ class _MagicLinkFormState extends State<MagicLinkForm> {
               const Icon(Icons.auto_awesome), // magic button icon
               const SizedBox(width: 8),
               Text(
-                'إرسال رابط الدخول',
+                AppStrings.sendMagicLink,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   color: AppColors.onPrimaryContainer,
                 ),

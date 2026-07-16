@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/strings/app_strings.dart';
+import '../../../../core/constants/staff_roles.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
 import 'dart:ui' as ui;
@@ -91,12 +93,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          final role = state.user['role'];
-          if (role == 'owner') {
+          final role = state.user.role;
+          if (role == StaffRoles.owner) {
             context.go(RouteConstants.ownerDashboard);
-          } else if (role == 'doctor') {
+          } else if (role == StaffRoles.doctor) {
             context.go(RouteConstants.doctorDashboard);
-          } else if (role == 'secretary') {
+          } else if (role == StaffRoles.secretary) {
             context.go(RouteConstants.secretaryDashboard);
           } else {
             context.go(RouteConstants.login);
@@ -106,19 +108,19 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         body: Stack(
           children: [
             // Blurred Background Circles
             Positioned(
               top: -128,
               right: -128,
-              child: _buildBlurCircle(),
+              child: _buildBlurCircle(context),
             ),
             Positioned(
               bottom: -128,
               left: -128,
-              child: _buildBlurCircle(),
+              child: _buildBlurCircle(context),
             ),
             
             // Central Content Area
@@ -139,7 +141,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             height: 96,
                             margin: const EdgeInsets.only(bottom: 16),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
+                              color: context.primaryLightColor,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
@@ -169,9 +171,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'نظام إدارة العيادات الذكي',
+                    AppStrings.smartManagement,
                     style: AppTextStyles.bodyLarge(context).copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.textSecondary,
                     ),
                   ),
                 ],
@@ -199,12 +201,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     );
   }
 
-  Widget _buildBlurCircle() {
+  Widget _buildBlurCircle(BuildContext context) {
     return Container(
       width: 384,
       height: 384,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryLight,
+      decoration: BoxDecoration(
+        color: context.primaryLightColor,
         shape: BoxShape.circle,
       ),
       child: BackdropFilter(

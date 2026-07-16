@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../domain/entities/clinic_summary_entity.dart';
 
 class ClinicsHorizontalScroll extends StatelessWidget {
@@ -24,7 +25,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'عياداتك النشطة',
+                AppStrings.isArabic ? 'عياداتك النشطة' : 'Your Active Clinics',
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.bold,
@@ -33,7 +34,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
               TextButton(
                 onPressed: () => context.push(RouteConstants.clinics),
                 child: Text(
-                  'عرض الكل',
+                  AppStrings.viewAll,
                   style: AppTextStyles.bodyMedium(context).copyWith(
                     color: AppColors.primaryContainer,
                     fontWeight: FontWeight.w600,
@@ -59,9 +60,9 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                 margin: const EdgeInsets.only(left: 12),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: context.borderColor),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.03),
@@ -82,7 +83,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                             style: AppTextStyles.headlineSmall(context).copyWith(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: context.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -95,7 +96,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            clinic.isActive ? 'نشطة' : 'متوقفة',
+                            clinic.isActive ? (AppStrings.isArabic ? 'نشطة' : 'Active') : (AppStrings.isArabic ? 'متوقفة' : 'Inactive'),
                             style: AppTextStyles.caption(context).copyWith(
                               fontSize: 10,
                               color: clinic.isActive ? AppColors.successText : AppColors.dangerText,
@@ -108,13 +109,13 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textSecondary),
+                        Icon(Icons.location_on_outlined, size: 14, color: context.textSecondary),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             clinic.location,
                             style: AppTextStyles.caption(context).copyWith(
-                              color: AppColors.textSecondary,
+                              color: context.textSecondary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -131,7 +132,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                             const Icon(Icons.medication_outlined, size: 14, color: AppColors.primaryContainer),
                             const SizedBox(width: 4),
                             Text(
-                              'أطباء: ${clinic.doctorsCount}',
+                              '${AppStrings.isArabic ? 'أطباء' : 'Doctors'}: ${clinic.doctorsCount}',
                               style: AppTextStyles.caption(context).copyWith(
                                 color: AppColors.onSurfaceVariant,
                               ),
@@ -143,7 +144,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                             const Icon(Icons.people_outline, size: 14, color: AppColors.primaryContainer),
                             const SizedBox(width: 4),
                             Text(
-                              'مرضى: ${clinic.patientsCount}',
+                              '${AppStrings.isArabic ? 'مرضى' : 'Patients'}: ${clinic.patientsCount}',
                               style: AppTextStyles.caption(context).copyWith(
                                 color: AppColors.onSurfaceVariant,
                               ),

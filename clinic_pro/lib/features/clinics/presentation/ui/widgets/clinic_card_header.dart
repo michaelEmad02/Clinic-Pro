@@ -3,10 +3,10 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/clinics_state.dart';
+import '../../../domain/entities/clinic_entity.dart';
 
 class ClinicCardHeader extends StatelessWidget {
-  final ClinicItem clinic;
+  final ClinicEntity clinic;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback onDelete;
@@ -39,15 +39,15 @@ class ClinicCardHeader extends StatelessWidget {
       height: AppConstants.avatarSizeSm,
       decoration: BoxDecoration(
         color: clinic.isActive
-            ? AppColors.primaryLight
-            : AppColors.surfaceContainerHigh,
+            ? context.primaryLightColor
+            : context.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
       ),
-      child: clinic.logoUrl != null
+      child: clinic.logoUrl.isNotEmpty
           ? ClipRRect(
               borderRadius: BorderRadius.circular(AppConstants.radiusButton),
               child: Image.network(
-                clinic.logoUrl!,
+                clinic.logoUrl,
                 fit: BoxFit.cover,
               ),
             )
@@ -56,8 +56,8 @@ class ClinicCardHeader extends StatelessWidget {
                 clinic.initials,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   color: clinic.isActive
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
+                      ? context.textPrimary
+                      : context.textSecondary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -78,8 +78,8 @@ class ClinicCardHeader extends StatelessWidget {
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: clinic.isActive
-                        ? AppColors.onSurface
-                        : AppColors.textSecondary,
+                        ? context.textPrimary
+                        : context.textSecondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -91,13 +91,13 @@ class ClinicCardHeader extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.danger.withOpacity(0.1),
+                    color: context.danger.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(AppConstants.radiusXs),
                   ),
                   child: Text(
                     AppStrings.disabled,
                     style: AppTextStyles.labelChip(context).copyWith(
-                      color: AppColors.danger,
+                      color: context.danger,
                     ),
                   ),
                 ),
@@ -107,14 +107,14 @@ class ClinicCardHeader extends StatelessWidget {
           const SizedBox(height: AppConstants.spaceXs),
           Row(
             children: [
-              const Icon(Icons.location_on_outlined,
-                  size: AppConstants.iconSizeSm, color: AppColors.textSecondary),
+              Icon(Icons.location_on_outlined,
+                  size: AppConstants.iconSizeSm, color: context.textSecondary),
               const SizedBox(width: AppConstants.spaceXs),
               Flexible(
                 child: Text(
                   clinic.address,
                   style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -139,11 +139,10 @@ class ClinicCardHeader extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'edit',
           child: ListTile(
-            leading:
-                Icon(Icons.edit_outlined, color: AppColors.primary),
+            leading: Icon(Icons.edit_outlined, color: context.primary),
             title: Text(AppStrings.editData),
             contentPadding: EdgeInsets.zero,
             visualDensity: VisualDensity.compact,
@@ -153,24 +152,20 @@ class ClinicCardHeader extends StatelessWidget {
           value: 'toggleActive',
           child: ListTile(
             leading: Icon(
-              clinic.isActive
-                  ? Icons.block
-                  : Icons.check_circle_outline,
-              color: clinic.isActive
-                  ? AppColors.warning
-                  : AppColors.successText,
+              clinic.isActive ? Icons.block : Icons.check_circle_outline,
+              color: clinic.isActive ? context.warning : context.successText,
             ),
-            title: Text(
-                clinic.isActive ? AppStrings.disableClinic : AppStrings.enableClinic),
+            title: Text(clinic.isActive
+                ? AppStrings.disableClinic
+                : AppStrings.enableClinic),
             contentPadding: EdgeInsets.zero,
             visualDensity: VisualDensity.compact,
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'delete',
           child: ListTile(
-            leading:
-                Icon(Icons.delete_outline, color: AppColors.danger),
+            leading: Icon(Icons.delete_outline, color: context.danger),
             title: Text(AppStrings.deleteClinic),
             contentPadding: EdgeInsets.zero,
             visualDensity: VisualDensity.compact,
@@ -180,8 +175,8 @@ class ClinicCardHeader extends StatelessWidget {
       icon: Icon(
         Icons.more_vert,
         color: clinic.isActive
-            ? AppColors.textSecondary
-            : AppColors.textSecondary.withOpacity(0.5),
+            ? context.textSecondary
+            : context.textSecondary.withOpacity(0.5),
       ),
     );
   }

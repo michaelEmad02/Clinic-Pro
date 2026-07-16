@@ -2,6 +2,7 @@
 // Cubit شاشة المرضى — تحميل وفلترة وإضافة/تعديل (Repository)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'patients_repository.dart';
@@ -18,9 +19,10 @@ class PatientsCubit extends Cubit<PatientsState> {
 
     try {
       final items = await _repository.loadPatients();
-      emit(PatientsLoaded(allPatients: items));
+      final doctors = await _repository.getDoctors();
+      emit(PatientsLoaded(allPatients: items, doctors: doctors));
     } catch (_) {
-      emit(const PatientsError('تعذّر تحميل قائمة المرضى'));
+      emit(PatientsError(AppStrings.loadPatientsFailed));
     }
   }
 
@@ -45,6 +47,7 @@ class PatientsCubit extends Cubit<PatientsState> {
     String? allergies,
     String? chronicConditions,
     String? address,
+    String? doctorId,
   }) async {
     if (state is! PatientsLoaded) return;
     final loaded = state as PatientsLoaded;
@@ -59,10 +62,11 @@ class PatientsCubit extends Cubit<PatientsState> {
         allergies: allergies,
         chronicConditions: chronicConditions,
         address: address,
+        doctorId: doctorId,
       );
       emit(loaded.copyWith(allPatients: [...loaded.allPatients, newPatient]));
     } catch (_) {
-      emit(const PatientsError('تعذّر إضافة المريض'));
+      emit(PatientsError(AppStrings.loadPatientsFailed));
     }
   }
 
@@ -77,7 +81,7 @@ class PatientsCubit extends Cubit<PatientsState> {
       }).toList();
       emit(loaded.copyWith(allPatients: list));
     } catch (_) {
-      emit(const PatientsError('تعذّر تحديث بيانات المريض'));
+      emit(PatientsError(AppStrings.loadPatientsFailed));
     }
   }
 
@@ -90,7 +94,7 @@ class PatientsCubit extends Cubit<PatientsState> {
       final list = loaded.allPatients.where((p) => p.id != id).toList();
       emit(loaded.copyWith(allPatients: list));
     } catch (_) {
-      emit(const PatientsError('تعذّر حذف المريض'));
+      emit(PatientsError(AppStrings.loadPatientsFailed));
     }
   }
 }

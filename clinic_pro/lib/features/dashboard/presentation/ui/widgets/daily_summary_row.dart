@@ -1,6 +1,11 @@
+// ─────────────────────────────────────────
+// هذا الملف يحتوي على صف إحصائيات الأداء اليومي لمكتب الاستقبال
+// ─────────────────────────────────────────
+
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/strings/app_strings.dart';
 
 class DailySummaryRow extends StatelessWidget {
   final String totalInvoiced;
@@ -23,19 +28,19 @@ class DailySummaryRow extends StatelessWidget {
           Expanded(
             child: _buildSummaryItem(
               context: context,
-              title: 'الفواتير اليوم',
-              value: '\$$totalInvoiced',
+              title: AppStrings.dailyInvoices,
+              value: '$totalInvoiced ${AppStrings.sar}',
               icon: Icons.receipt_long_outlined,
               color: AppColors.primary,
-              bgColor: AppColors.primaryLight,
+              bgColor: context.primaryLightColor,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: _buildSummaryItem(
               context: context,
-              title: 'المحصل اليوم',
-              value: '\$$totalCollected',
+              title: AppStrings.dailyCollected,
+              value: '$totalCollected ${AppStrings.sar}',
               icon: Icons.payments_outlined,
               color: AppColors.successText,
               bgColor: AppColors.successBg,
@@ -45,7 +50,7 @@ class DailySummaryRow extends StatelessWidget {
           Expanded(
             child: _buildSummaryItem(
               context: context,
-              title: 'إجمالي المواعيد',
+              title: AppStrings.totalAppointmentsStr,
               value: '$totalAppointmentsCount',
               icon: Icons.calendar_today_outlined,
               color: AppColors.warningText,
@@ -68,9 +73,9 @@ class DailySummaryRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -94,7 +99,7 @@ class DailySummaryRow extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.caption(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
               fontWeight: FontWeight.w500,
             ),
             maxLines: 1,
@@ -105,7 +110,7 @@ class DailySummaryRow extends StatelessWidget {
             value,
             style: AppTextStyles.dataNumeric(context).copyWith(
               fontSize: 15,
-              color: AppColors.textPrimary,
+              color: context.textPrimary,
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -28,7 +29,7 @@ class PrescriptionNotesField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'التشخيص النهائي',
+            AppStrings.diagnosis,
             style: AppTextStyles.headlineSmall(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -40,22 +41,27 @@ class PrescriptionNotesField extends StatelessWidget {
             maxLines: 3,
             style: AppTextStyles.bodyMedium(context),
             decoration: InputDecoration(
-              hintText: 'اكتب التشخيص النهائي هنا...',
+              hintText: AppStrings.diagnosisHint,
               hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textHint,
+                color: context.textHint,
               ),
-              border: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: context.border),
               ),
-              focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: AppColors.primary),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: context.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: context.border),
               ),
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            'ملاحظات إضافية',
+            AppStrings.notes,
             style: AppTextStyles.headlineSmall(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -67,16 +73,21 @@ class PrescriptionNotesField extends StatelessWidget {
             maxLines: 3,
             style: AppTextStyles.bodyMedium(context),
             decoration: InputDecoration(
-              hintText: 'تعليمات للمريض أو ملاحظات داخلية...',
+              hintText: AppStrings.notes,
               hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textHint,
+                color: context.textHint,
               ),
-              border: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: context.border),
               ),
-              focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: AppColors.primary),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: context.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: context.border),
               ),
             ),
           ),

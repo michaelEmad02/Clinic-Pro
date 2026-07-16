@@ -1,15 +1,16 @@
 // ────────────────────────────────────────────────────────
 // Bottom Sheet إضافة موعد جديد — مطابق لتصميم Stitch
 // ────────────────────────────────────────────────────────
-
-import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/mocks/mock_data.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../auth/presentation/manager/auth_cubit.dart';
+import '../../../../auth/presentation/manager/auth_state.dart';
 import '../../manager/appointments_bloc.dart';
 import '../../manager/appointments_event.dart';
 import '../../manager/appointments_state.dart';
@@ -73,6 +74,29 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
           minute: int.tryParse(parts[1]) ?? 0,
         );
       }
+    } else {
+      final authState = context.read<AuthCubit>().state;
+      String? currentUserId;
+      String? currentUserRole;
+      if (authState is AuthAuthenticated) {
+        currentUserId = authState.user.id;
+        currentUserRole = authState.user.role.name;
+      }
+
+      if (currentUserRole == 'doctor') {
+        _doctorId = currentUserId;
+      } else {
+        final clinicStaffIds = MockData.clinicStaff
+            .where((cs) => cs['clinic_id'] == AppConstants.activeClinicId && cs['role'] == 'doctor')
+            .map((cs) => cs['user_id'] as String)
+            .toSet();
+        final clinicDoctors = MockData.users
+            .where((u) => clinicStaffIds.contains(u['id']))
+            .toList();
+        if (clinicDoctors.isNotEmpty) {
+          _doctorId = clinicDoctors.first['id'] as String;
+        }
+      }
     }
   }
 
@@ -104,7 +128,10 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
   void _submit() {
     if (_patientId == null || _doctorId == null || _typeId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى ملء جميع الحقول المطلوبة')),
+        SnackBar(
+            content: Text(AppStrings.isArabic
+                ? 'يرجى ملء جميع الحقول المطلوبة'
+                : 'Please fill all required fields')),
       );
       return;
     }
@@ -141,15 +168,20 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text(
-              _isEditing ? 'تم تعديل الموعد بنجاح' : 'تم إضافة الموعد بنجاح')),
+          content: Text(_isEditing
+              ? AppStrings.updatedSuccess
+              : AppStrings.addedSuccess)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final clinicStaffIds = MockData.clinicStaff
+        .where((cs) => cs['clinic_id'] == AppConstants.activeClinicId && cs['role'] == 'doctor')
+        .map((cs) => cs['user_id'] as String)
+        .toSet();
     final doctors = MockData.users
-        .where((u) => u['role'] == 'doctor' || u['role'] == 'owner')
+        .where((u) => clinicStaffIds.contains(u['id']))
         .toList();
 
     final selectedType = _typeId != null
@@ -158,6 +190,10 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
     final typePrice = selectedType != null
         ? (selectedType['price'] as num).toStringAsFixed(0)
         : null;
+
+    final selectedDoctorName = _doctorId != null
+        ? (doctors.firstWhere((d) => d['id'] == _doctorId, orElse: () => {'name': ''})['name'] as String)
+        : '';
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 24),
@@ -170,15 +206,18 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
             children: [
               Expanded(
                 child: Text(
-                  _isEditing ? 'تعديل الموعد' : 'إضافة موعد جديد',
+                  _isEditing
+                      ? '${AppStrings.edit} ${AppStrings.appointment}'
+                      : AppStrings.newAppointment,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                icon: const Icon(Icons.close),
+                color: context.textSecondary,
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -191,39 +230,41 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
               opacity: _isEditing ? 0.5 : 1.0,
               child: PatientPickerField(
                 selectedPatientId: _patientId,
+                doctorId: _doctorId,
                 onChanged: (id) => setState(() => _patientId = id),
               ),
             ),
           ),
           const SizedBox(height: 16),
-          // الدكتور المعالج
+          // الدكتور المعالج (عرض فقط)
           Text(
-            'الدكتور المعالج',
+            AppStrings.doctorLabel,
             style: AppTextStyles.caption(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              hintText: 'اختر الدكتور...',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.spaceMd,
-                vertical: 13,
-              ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+              border: Border.all(color: context.border),
             ),
-            value: _doctorId,
-            items: doctors
-                .map((d) => DropdownMenuItem(
-                      value: d['id'] as String,
-                      child: Text(d['name'] as String),
-                    ))
-                .toList(),
-            onChanged: (v) => setState(() => _doctorId = v),
+            child: Row(
+              children: [
+                Icon(Icons.person_outline, color: context.primary, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  selectedDoctorName.isNotEmpty ? selectedDoctorName : (AppStrings.isArabic ? 'غير محدد' : 'Not specified'),
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimary,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           // التاريخ والوقت
@@ -234,9 +275,9 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'التاريخ',
+                      AppStrings.date,
                       style: AppTextStyles.caption(context).copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -246,20 +287,21 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         side: BorderSide(
-                          color: AppColors.primary.withOpacity(0.2),
+                          color: context.primary.withOpacity(0.2),
                         ),
                         shape: RoundedRectangleBorder(
+                          side: BorderSide(color: context.border),
                           borderRadius:
                               BorderRadius.circular(AppConstants.radiusButton),
                         ),
-                        backgroundColor: AppColors.primaryLight,
+                        backgroundColor: context.primaryLightColor,
                       ),
-                      icon: const Icon(Icons.calendar_month_outlined,
-                          size: 18, color: AppColors.primary),
+                      icon: Icon(Icons.calendar_month_outlined,
+                          size: 18, color: context.primary),
                       label: Text(
                         '${_date.day}/${_date.month}/${_date.year}',
                         style: AppTextStyles.bodyMedium(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -273,9 +315,9 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'الوقت',
+                      AppStrings.timing,
                       style: AppTextStyles.caption(context).copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -285,20 +327,20 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         side: BorderSide(
-                          color: AppColors.primary.withOpacity(0.2),
+                          color: context.primary.withOpacity(0.2),
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius:
                               BorderRadius.circular(AppConstants.radiusButton),
                         ),
-                        backgroundColor: AppColors.primaryLight,
+                        backgroundColor: context.primaryLightColor,
                       ),
-                      icon: const Icon(Icons.schedule_outlined,
-                          size: 18, color: AppColors.primary),
+                      icon: Icon(Icons.schedule_outlined,
+                          size: 18, color: context.primary),
                       label: Text(
                         _time.format(context),
                         style: AppTextStyles.bodyMedium(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -313,18 +355,18 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
           Row(
             children: [
               Text(
-                'نوع الزيارة',
+                AppStrings.visitType,
                 style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               if (typePrice != null) ...[
                 const Spacer(),
                 Text(
-                  '$typePrice ر.س',
+                  '$typePrice ${AppStrings.sar}',
                   style: AppTextStyles.dataNumeric(context).copyWith(
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
               ],
@@ -333,6 +375,15 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             decoration: InputDecoration(
+              fillColor: context.surface,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                borderSide: BorderSide(color: context.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                borderSide: BorderSide(color: context.primary, width: 1.5),
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               ),
@@ -354,8 +405,16 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
           TextField(
             controller: _notesController,
             decoration: InputDecoration(
-              labelText: 'ملاحظات (اختياري)',
+              labelText: '${AppStrings.notes} ${AppStrings.optional}',
               alignLabelWithHint: true,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                borderSide: BorderSide(color: context.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                borderSide: BorderSide(color: context.primary, width: 1.5),
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               ),
@@ -369,12 +428,14 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
             decoration: BoxDecoration(
               color: _isUrgent
                   ? AppColors.dangerBg
-                  : AppColors.surfaceContainerLow,
+                  : (context.isDarkMode
+                      ? const Color(0xFF2A2A2A)
+                      : AppColors.surfaceContainerLow),
               borderRadius: BorderRadius.circular(AppConstants.radiusCard),
               border: Border.all(
                 color: _isUrgent
                     ? AppColors.danger.withOpacity(0.3)
-                    : AppColors.border,
+                    : context.borderColor,
               ),
             ),
             child: Row(
@@ -384,19 +445,19 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'حالة طارئة 🚨',
+                        AppStrings.emergencyBanner,
                         style: AppTextStyles.bodyMedium(context).copyWith(
                           fontWeight: FontWeight.bold,
                           color: _isUrgent
                               ? AppColors.dangerText
-                              : AppColors.textPrimary,
+                              : context.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'سيحصل على الأولوية في الانتظار',
+                        AppStrings.emergencyPriorityDescription,
                         style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                         ),
                       ),
                     ],
@@ -424,7 +485,9 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
               ),
             ),
             child: Text(
-              _isEditing ? 'حفظ التعديلات' : 'حفظ الموعد',
+              _isEditing
+                  ? AppStrings.saveChanges
+                  : '${AppStrings.save} ${AppStrings.appointment}',
               style: AppTextStyles.headlineSmall(context).copyWith(
                 color: AppColors.onPrimaryContainer,
                 fontWeight: FontWeight.bold,

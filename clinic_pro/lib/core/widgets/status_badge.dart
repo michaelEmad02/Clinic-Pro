@@ -24,20 +24,28 @@ class StatusBadge extends StatelessWidget {
 
     switch (status) {
       case BadgeStatus.success:
-        backgroundColor = addBackgroundColor ? AppColors.accent.withOpacity(0.1) : Colors.transparent;
-        textColor = AppColors.accent;
+        backgroundColor = addBackgroundColor
+            ? context.accent.withOpacity(0.1)
+            : Colors.transparent;
+        textColor = context.accent;
         break;
       case BadgeStatus.warning:
-        backgroundColor = addBackgroundColor ? AppColors.warning.withOpacity(0.1) : Colors.transparent;
-        textColor = AppColors.warning;
+        backgroundColor = addBackgroundColor
+            ? context.warning.withOpacity(0.1)
+            : Colors.transparent;
+        textColor = context.warning;
         break;
       case BadgeStatus.error:
-        backgroundColor = addBackgroundColor ? AppColors.danger.withOpacity(0.1) : Colors.transparent;
-        textColor = AppColors.danger;
+        backgroundColor = addBackgroundColor
+            ? context.danger.withOpacity(0.1)
+            : Colors.transparent;
+        textColor = context.danger;
         break;
       case BadgeStatus.info:
-        backgroundColor = addBackgroundColor ? AppColors.primary.withOpacity(0.1) : Colors.transparent;
-        textColor = AppColors.primary;
+        backgroundColor = addBackgroundColor
+            ? context.primary.withOpacity(0.1)
+            : Colors.transparent;
+        textColor = context.primary;
         break;
     }
 

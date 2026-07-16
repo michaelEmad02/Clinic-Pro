@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -16,9 +17,9 @@ class DrugsSearchBar extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -31,13 +32,14 @@ class DrugsSearchBar extends StatelessWidget {
         onChanged: onChanged,
         style: AppTextStyles.bodyMedium(context),
         decoration: InputDecoration(
-          hintText: 'ابحث عن دواء باسمه العلمي أو التجاري...',
+          hintText: AppStrings.searchDrugs,
           hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-            color: AppColors.textHint,
+            color: context.textHint,
           ),
-          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+          prefixIcon: Icon(Icons.search, color: context.textSecondary),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
     );

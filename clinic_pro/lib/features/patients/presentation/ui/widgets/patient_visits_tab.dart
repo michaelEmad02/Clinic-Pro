@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/di/injection_container.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../manager/patients_repository.dart';
 import '../../manager/patients_state.dart';
@@ -28,9 +29,9 @@ class PatientVisitsTab extends StatelessWidget {
 
         final visits = snapshot.data ?? [];
         if (visits.isEmpty) {
-          return const EmptyState(
-            title: 'لا توجد زيارات',
-            subtitle: 'لم يُسجَّل أي زيارة لهذا المريض بعد.',
+          return EmptyState(
+            title: AppStrings.isArabic ? 'لا توجد زيارات' : 'No Visits',
+            subtitle: AppStrings.isArabic ? 'لم يُسجَّل أي زيارة لهذا المريض بعد.' : 'No visits have been recorded for this patient.',
             icon: Icons.history_outlined,
           );
         }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -26,7 +27,7 @@ class UsageProgressSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('استهلاك الباقة الحالية', style: AppTextStyles.headlineSmall(context)),
+        Text(AppStrings.planUsage, style: AppTextStyles.headlineSmall(context)),
         const SizedBox(height: AppConstants.spaceMd),
         GridView.count(
           shrinkWrap: true,
@@ -38,21 +39,21 @@ class UsageProgressSection extends StatelessWidget {
           children: [
             _UsageCard(
               icon: Icons.groups,
-              label: 'المرضى',
+              label: AppStrings.patients,
               used: patientsUsed,
               max: patientsMax,
               color: AppColors.primary,
             ),
             _UsageCard(
               icon: Icons.person,
-              label: 'المستخدمين',
+              label: AppStrings.users,
               used: usersUsed,
               max: usersMax,
               color: AppColors.primary,
             ),
             _UsageCard(
               icon: Icons.domain,
-              label: 'العيادات',
+              label: AppStrings.clinics,
               used: clinicsUsed,
               max: clinicsMax,
               color: AppColors.warningText,

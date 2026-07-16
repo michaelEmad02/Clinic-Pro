@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/appointments_state.dart';
@@ -14,11 +15,11 @@ class AppointmentStatusTimeline extends StatelessWidget {
 
   const AppointmentStatusTimeline({super.key, required this.appointment});
 
-  static const _steps = [
-    ('scheduled', 'حُجز', Icons.event_available_outlined),
-    ('confirmed', 'وصل', Icons.how_to_reg_outlined),
-    ('in_progress', 'داخل', Icons.login_outlined),
-    ('done', 'منتهي', Icons.task_alt_outlined),
+  static final _steps = [
+    ('scheduled', AppStrings.booked, Icons.event_available_outlined),
+    ('confirmed', AppStrings.arrived, Icons.how_to_reg_outlined),
+    ('in_progress', AppStrings.inside, Icons.login_outlined),
+    ('done', AppStrings.completed, Icons.task_alt_outlined),
   ];
 
   @override
@@ -147,7 +148,7 @@ class AppointmentStatusTimeline extends StatelessWidget {
 
   String _formatTime(DateTime dt) {
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
-    final period = dt.hour >= 12 ? 'م' : 'ص';
+    final period = dt.hour >= 12 ? (AppStrings.isArabic ? 'م' : 'PM') : (AppStrings.isArabic ? 'ص' : 'AM');
     return '$hour:${dt.minute.toString().padLeft(2, '0')} $period';
   }
 
@@ -166,7 +167,7 @@ class AppointmentStatusTimeline extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'تم إلغاء هذا الموعد',
+              AppStrings.appointmentCancelled,
               style: AppTextStyles.bodyMedium(context).copyWith(
                 color: AppColors.dangerText,
                 fontWeight: FontWeight.bold,

@@ -25,9 +25,9 @@ class DrugListItem extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -42,13 +42,13 @@ class DrugListItem extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: AppColors.primaryLight,
+            color: context.primaryLightColor,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Center(
+          child: Center(
             child: Icon(
               Icons.medication_outlined,
-              color: AppColors.primary,
+              color: context.primary,
               size: 24,
             ),
           ),
@@ -60,20 +60,20 @@ class DrugListItem extends StatelessWidget {
                 tradeName,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimary,
                 ),
               ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.primaryLightColor,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 category,
                 style: AppTextStyles.labelChip(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -87,13 +87,13 @@ class DrugListItem extends StatelessWidget {
             Text(
               genericName,
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
           ],
         ),
         trailing: IconButton(
-          icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+          icon:  Icon(Icons.more_vert, color: context.textSecondary),
           onPressed: onTap,
         ),
       ),

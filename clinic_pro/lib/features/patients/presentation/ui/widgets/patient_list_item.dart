@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/patients_state.dart';
@@ -25,7 +26,7 @@ class PatientListItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
         child: InkWell(
           onTap: onTap,
@@ -34,7 +35,7 @@ class PatientListItem extends StatelessWidget {
             padding: const EdgeInsets.all(AppConstants.spaceMd),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.border),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.03),
@@ -47,11 +48,11 @@ class PatientListItem extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundColor: AppColors.primaryLight,
+                  backgroundColor: context.primaryLightColor,
                   child: Text(
                     patient.initials,
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.primary,
+                      color: context.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -70,13 +71,13 @@ class PatientListItem extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.phone_iphone_outlined,
-                              size: 14, color: AppColors.textSecondary),
+                          Icon(Icons.phone_iphone_outlined,
+                              size: 14, color: context.textSecondary),
                           const SizedBox(width: 4),
                           Text(
                             patient.phone,
                             style: AppTextStyles.caption(context).copyWith(
-                              color: AppColors.textSecondary,
+                              color: context.textSecondary,
                             ),
                             textDirection: TextDirection.ltr,
                           ),
@@ -84,17 +85,17 @@ class PatientListItem extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'آخر زيارة ${patient.lastVisitLabel}',
+                        '${AppStrings.lastVisit} ${patient.lastVisitLabel}',
                         style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.textHint,
+                          color: context.textHint,
                         ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.more_horiz,
-                      color: AppColors.textSecondary),
+                  icon:  Icon(Icons.more_horiz,
+                      color: context.textSecondary),
                   onPressed: onMore,
                 ),
               ],

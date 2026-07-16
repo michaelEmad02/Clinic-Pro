@@ -12,16 +12,16 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     emit(OnboardingPlanSelected());
   }
 
-  Future<void> createClinic({
-    required String name,
-    required String address,
-    required String phone,
-    required bool isDoctor,
-  }) async {
-    emit(OnboardingLoading());
-    await Future.delayed(const Duration(seconds: 1));
-    emit(OnboardingClinicCreated());
-  }
+  // Future<void> createClinic({
+  //   required String name,
+  //   required String address,
+  //   required String phone,
+  //   required bool isDoctor,
+  // }) async {
+  //   emit(OnboardingLoading());
+  //   await Future.delayed(const Duration(seconds: 1));
+  //   emit(OnboardingClinicCreated());
+  // }
 
   Future<void> inviteStaff(List<String> emails) async {
     emit(OnboardingLoading());

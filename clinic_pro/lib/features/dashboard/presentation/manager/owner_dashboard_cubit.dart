@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/constants/supabase_constants.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../domain/entities/owner_dashboard_entity.dart';
 import '../../domain/entities/clinic_summary_entity.dart';
 import '../../domain/entities/dashboard_alert_entity.dart';
@@ -43,7 +44,7 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
       final weeklyRevenue = await _fetchWeeklyRevenue(clinics);
 
       final dashboard = OwnerDashboardEntity(
-        ownerName: ownerData['name'] ?? 'المالك',
+        ownerName: ownerData['name'] ?? AppStrings.ownerRoleLabel,
         totalRevenue: stats['totalRevenue'],
         totalPatients: stats['totalPatients'],
         todayAppointments: stats['todayAppointments'],
@@ -64,18 +65,18 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
 
       emit(OwnerDashboardLoaded(dashboard: dashboard));
     } catch (e) {
-      emit(OwnerDashboardError('حدث خطأ أثناء تحميل البيانات: ${e.toString()}'));
+      emit(OwnerDashboardError('${AppStrings.loadFailedMsg}: ${e.toString()}'));
     }
   }
 
   /// جلب بيانات المالك من جدول المستخدمين
   Future<Map<String, dynamic>> _fetchOwnerData() async {
     final results = await _cloudService.select(
-      table: SupabaseTables.users,
+      table: SupabaseTables.owners,
       eq: {'id': _currentOwnerId},
     );
     if (results.isEmpty) {
-      return {'name': 'المالك'};
+      return {'name': AppStrings.ownerRoleLabel};
     }
     return results.first;
   }
@@ -89,7 +90,8 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
   }
 
   /// تجميع إحصائيات جميع العيادات
-  Future<Map<String, dynamic>> _aggregateClinicStats(List<Map<String, dynamic>> clinics) async {
+  Future<Map<String, dynamic>> _aggregateClinicStats(
+      List<Map<String, dynamic>> clinics) async {
     int totalPatients = 0;
     int todayAppointments = 0;
     num totalRevenue = 0;
@@ -108,7 +110,8 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
       if (statsResults.isNotEmpty) {
         final clinicStat = statsResults.first;
         final patients = (clinicStat['total_patients'] as num?)?.toInt() ?? 0;
-        final appointments = (clinicStat['today_appointments'] as num?)?.toInt() ?? 0;
+        final appointments =
+            (clinicStat['today_appointments'] as num?)?.toInt() ?? 0;
         final revenue = (clinicStat['monthly_revenue'] as num?) ?? 0;
 
         totalPatients += patients;
@@ -157,18 +160,25 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
             if (daysLeft <= 7 && daysLeft >= 0) {
               alerts.add(DashboardAlertEntity(
                 id: 'sub-trial',
-                title: 'انتهاء الفترة التجريبية قريباً',
-                message: 'متبقي $daysLeft أيام فقط على انتهاء الفترة التجريبية المجانية. يرجى الترقية للحفاظ على استمرار الخدمة.',
+                title: AppStrings.isArabic
+                    ? 'انتهاء الفترة التجريبية قريباً'
+                    : 'Trial Period Ending Soon',
+                message: AppStrings.isArabic
+                    ? 'متبقي $daysLeft أيام فقط على انتهاء الفترة التجريبية المجانية. يرجى الترقية للحفاظ على استمرار الخدمة.'
+                    : 'Only $daysLeft days left in your free trial. Please upgrade to continue service.',
                 type: DashboardAlertType.warning,
               ));
             }
           }
         }
       } else if (status == SubscriptionStatus.expired) {
-        alerts.add(const DashboardAlertEntity(
+        alerts.add(DashboardAlertEntity(
           id: 'sub-expired',
-          title: 'الاشتراك منتهي',
-          message: 'اشتراكك منتهي. يرجى تجديد الاشتراك للاستمرار في استخدام الخدمة.',
+          title:
+              AppStrings.isArabic ? 'الاشتراك منتهي' : 'Subscription Expired',
+          message: AppStrings.isArabic
+              ? 'اشتراكك منتهي. يرجى تجديد الاشتراك للاستمرار في استخدام الخدمة.'
+              : 'Your subscription has expired. Please renew to continue using the service.',
           type: DashboardAlertType.warning,
         ));
       }
@@ -183,8 +193,10 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
     if (invitations.isNotEmpty) {
       alerts.add(DashboardAlertEntity(
         id: 'pending-invitations',
-        title: 'دعوات معلقة',
-        message: 'لديك ${invitations.length} دعوة معلقة في انتظار قبول الموظفين.',
+        title: AppStrings.pendingInvitations,
+        message: AppStrings.isArabic
+            ? 'لديك ${invitations.length} دعوة معلقة في انتظار قبول الموظفين.'
+            : 'You have ${invitations.length} pending invitation(s) awaiting staff acceptance.',
         type: DashboardAlertType.info,
       ));
     }
@@ -193,7 +205,8 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
   }
 
   /// جلب بيانات الإيرادات الأسبوعية من الفواتير
-  Future<List<double>> _fetchWeeklyRevenue(List<Map<String, dynamic>> clinics) async {
+  Future<List<double>> _fetchWeeklyRevenue(
+      List<Map<String, dynamic>> clinics) async {
     final now = DateTime.now();
     final weeklyRevenue = List<double>.filled(7, 0);
 
@@ -212,7 +225,8 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
 
         // تصفية الفواتير حسب اليوم
         for (final invoice in invoices) {
-          final invoiceDate = (invoice['created_at'] as String?)?.substring(0, 10);
+          final invoiceDate =
+              (invoice['created_at'] as String?)?.substring(0, 10);
           if (invoiceDate == dayStr) {
             final amount = (invoice['paid_amount'] as num?) ?? 0;
             weeklyRevenue[i] += amount.toDouble();

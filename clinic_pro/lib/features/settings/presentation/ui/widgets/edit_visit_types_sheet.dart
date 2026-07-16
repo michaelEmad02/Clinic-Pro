@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/services/i_cloud_service.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -78,25 +79,29 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
         eq: {'doctor_id': widget.doctorId, 'clinic_id': widget.clinicId},
       );
 
-      final usedTypeIds = existing.map((e) => e['appointment_type_id'] as String).toSet();
+      final usedTypeIds =
+          existing.map((e) => e['appointment_type_id'] as String).toSet();
 
-      final entries = existing.map((e) => _VisitTypeEntry(
-        appointmentTypeId: e['appointment_type_id'] as String,
-        typeName: '',
-        price: (e['price'] as num?)?.toDouble() ?? 0.0,
-      )).toList();
+      final entries = existing
+          .map((e) => _VisitTypeEntry(
+                appointmentTypeId: e['appointment_type_id'] as String,
+                typeName: '',
+                price: (e['price'] as num?)?.toDouble() ?? 0.0,
+              ))
+          .toList();
 
       for (final entry in entries) {
         final type = results.firstWhere(
           (t) => t['id'] == entry.appointmentTypeId,
           orElse: () => <String, dynamic>{},
         );
-        entry.typeName = type['name'] as String? ?? 'غير معروف';
+        entry.typeName = type['name'] as String? ?? AppStrings.noData;
       }
 
       if (mounted) {
         setState(() {
-          _availableTypes = results.where((t) => !usedTypeIds.contains(t['id'])).toList();
+          _availableTypes =
+              results.where((t) => !usedTypeIds.contains(t['id'])).toList();
           _entries = entries;
           _isLoading = false;
         });
@@ -197,20 +202,23 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.screenEdgeH),
             child: Row(
               children: [
-                Text('أنواع الزيارات', style: AppTextStyles.headlineSmall(context)),
+                Text(AppStrings.visitTypes,
+                    style: AppTextStyles.headlineSmall(context)),
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: AppColors.onSurfaceVariant),
+                  icon: Icon(Icons.close, color: context.dangerText),
                 ),
               ],
             ),
@@ -224,28 +232,36 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
           else ...[
             if (_entries.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.screenEdgeH),
                 child: Text(
                   'الأنواع المضافة',
-                  style: AppTextStyles.labelChip(context).copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.labelChip(context)
+                      .copyWith(color: context.textSecondary),
                 ),
               ),
               const SizedBox(height: AppConstants.spaceSm),
               ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.25),
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.25),
                 child: ListView.builder(
                   shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.screenEdgeH),
                   itemCount: _entries.length,
                   itemBuilder: (context, index) {
                     final entry = _entries[index];
                     return Container(
-                      margin: const EdgeInsets.only(bottom: AppConstants.spaceSm),
-                      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: AppConstants.spaceSm),
+                      margin:
+                          const EdgeInsets.only(bottom: AppConstants.spaceSm),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppConstants.spaceMd,
+                          vertical: AppConstants.spaceSm),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-                        border: Border.all(color: AppColors.border),
+                        color: context.surface,
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusButton),
+                        border: Border.all(color: context.border),
                       ),
                       child: Row(
                         children: [
@@ -253,17 +269,20 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(entry.typeName, style: AppTextStyles.bodyLarge(context)),
+                                Text(entry.typeName,
+                                    style: AppTextStyles.bodyLarge(context)),
                                 Text(
                                   '${entry.price.toStringAsFixed(0)} ريال',
-                                  style: AppTextStyles.dataNumeric(context).copyWith(color: AppColors.primary),
+                                  style: AppTextStyles.dataNumeric(context)
+                                      .copyWith(color: context.primary),
                                 ),
                               ],
                             ),
                           ),
                           IconButton(
                             onPressed: () => _removeEntry(index),
-                            icon: const Icon(Icons.remove_circle_outline, color: AppColors.danger, size: 20),
+                            icon: Icon(Icons.remove_circle_outline,
+                                color: context.danger, size: 20),
                           ),
                         ],
                       ),
@@ -272,41 +291,51 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
                 ),
               ),
               const SizedBox(height: AppConstants.spaceMd),
-              const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+              Divider(height: 1, thickness: 0.5, color: context.border),
               const SizedBox(height: AppConstants.spaceMd),
             ],
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.screenEdgeH),
               child: Text(
                 _entries.isEmpty ? 'أضف نوع زيارة' : 'إضافة نوع جديد',
-                style: AppTextStyles.labelChip(context).copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.labelChip(context)
+                    .copyWith(color: context.textSecondary),
               ),
             ),
             const SizedBox(height: AppConstants.spaceSm),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.screenEdgeH),
               child: Row(
                 children: [
                   Expanded(
                     flex: 3,
                     child: DropdownButtonFormField<String>(
                       value: _selectedTypeId,
-                      hint: Text('اختر النوع', style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint)),
+                      hint: Text('اختر النوع',
+                          style: AppTextStyles.bodyMedium(context)
+                              .copyWith(color: context.textHint)),
                       items: _availableTypes.map((t) {
                         return DropdownMenuItem(
                           value: t['id'] as String,
-                          child: Text(t['name'] as String, style: AppTextStyles.bodyMedium(context)),
+                          child: Text(t['name'] as String,
+                              style: AppTextStyles.bodyMedium(context)),
                         );
                       }).toList(),
                       onChanged: (val) => setState(() => _selectedTypeId = val),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: AppColors.surfaceContainerLowest,
+                        fillColor: context.surface,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-                          borderSide: const BorderSide(color: AppColors.border),
+                          borderRadius:
+                              BorderRadius.circular(AppConstants.radiusInput),
+                          borderSide: BorderSide(color: context.border),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 14),
+                        enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: context.border)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.spaceMd, vertical: 14),
                       ),
                     ),
                   ),
@@ -320,14 +349,19 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         hintText: 'السعر',
-                        hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
+                        hintStyle: AppTextStyles.bodyMedium(context)
+                            .copyWith(color: context.textHint),
                         filled: true,
-                        fillColor: AppColors.surfaceContainerLowest,
+                        fillColor: context.surface,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-                          borderSide: const BorderSide(color: AppColors.border),
+                          borderRadius:
+                              BorderRadius.circular(AppConstants.radiusInput),
+                          borderSide: BorderSide(color: context.border),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 14),
+                        enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: context.border)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.spaceMd, vertical: 14),
                       ),
                       style: AppTextStyles.dataNumeric(context),
                     ),
@@ -337,19 +371,22 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
             ),
             const SizedBox(height: AppConstants.spaceMd),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.screenEdgeH),
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _selectedTypeId != null ? _addEntry : null,
                   icon: const Icon(Icons.add, size: 18),
-                  label: Text('إضافة', style: AppTextStyles.bodyLarge(context)),
+                  label: Text(AppStrings.add,
+                      style: AppTextStyles.bodyLarge(context)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
                     side: BorderSide(color: AppColors.primary.withAlpha(76)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusButton),
                     ),
                   ),
                 ),
@@ -357,7 +394,8 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
             ),
             const SizedBox(height: AppConstants.spaceLg),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.screenEdgeH),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -367,18 +405,26 @@ class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
                     foregroundColor: AppColors.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusButton),
                     ),
                     elevation: 0,
                   ),
                   child: _isSaving
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
-                      : Text('حفظ', style: AppTextStyles.headlineSmall(context)),
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppColors.onPrimary))
+                      : Text(AppStrings.save,
+                          style: AppTextStyles.headlineSmall(context)),
                 ),
               ),
             ),
           ],
-          SizedBox(height: MediaQuery.of(context).padding.bottom + AppConstants.spaceMd),
+          SizedBox(
+              height:
+                  MediaQuery.of(context).padding.bottom + AppConstants.spaceMd),
         ],
       ),
     );

@@ -27,9 +27,9 @@ class AppListItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppConstants.spaceMd),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.borderColor),
         ),
         child: Row(
           children: [

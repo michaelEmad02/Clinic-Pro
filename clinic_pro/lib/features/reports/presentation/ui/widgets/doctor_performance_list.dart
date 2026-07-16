@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/reports_state.dart';
@@ -17,7 +18,7 @@ class DoctorPerformanceList extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.outlineVariant),
         boxShadow: const [
@@ -32,7 +33,7 @@ class DoctorPerformanceList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'أداء الأطباء',
+            AppStrings.doctorPerformance,
             style: AppTextStyles.headlineSmall(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -44,9 +45,9 @@ class DoctorPerformanceList extends StatelessWidget {
             child: TextButton(
               onPressed: () {},
               child: Text(
-                'عـرض الـكـل',
+                AppStrings.viewAll,
                 style: AppTextStyles.labelChip(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -71,15 +72,15 @@ class _DoctorRow extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.primaryLight,
+            backgroundColor: context.primaryLightColor,
             backgroundImage: doctor.avatarUrl != null
                 ? NetworkImage(doctor.avatarUrl!)
                 : null,
             child: doctor.avatarUrl == null
                 ? Text(
                     doctor.doctorName.substring(0, 1),
-                    style: const TextStyle(
-                      color: AppColors.primary,
+                    style: TextStyle(
+                      color: context.primary,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -100,10 +101,10 @@ class _DoctorRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  '${doctor.patientCount} مريض',
+                  '${doctor.patientCount}${AppStrings.patientsCount}',
                   style: AppTextStyles.caption(context).copyWith(
                     fontSize: 10,
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                 ),
               ],
@@ -116,10 +117,10 @@ class _DoctorRow extends StatelessWidget {
                 '${doctor.rating}%',
                 style: AppTextStyles.dataNumeric(context).copyWith(
                   color: doctor.trend == 'up'
-                      ? AppColors.successText
+                      ? context.successText
                       : doctor.trend == 'down'
-                          ? AppColors.dangerText
-                          : AppColors.textSecondary,
+                          ? context.dangerText
+                          : context.textSecondary,
                 ),
               ),
               const SizedBox(width: 2),
@@ -131,10 +132,10 @@ class _DoctorRow extends StatelessWidget {
                         : Icons.horizontal_rule,
                 size: 14,
                 color: doctor.trend == 'up'
-                    ? AppColors.successText
+                    ? context.successText
                     : doctor.trend == 'down'
-                        ? AppColors.dangerText
-                        : AppColors.textSecondary,
+                        ? context.dangerText
+                        : context.textSecondary,
               ),
             ],
           ),

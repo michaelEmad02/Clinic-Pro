@@ -14,9 +14,9 @@ class InvoiceListItem extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: const [
           BoxShadow(
             color: Color(0x08000000),
@@ -44,7 +44,7 @@ class InvoiceListItem extends StatelessWidget {
                 Text(
                   '${invoice.formattedDate} • ${invoice.appointmentType}',
                   style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -59,7 +59,7 @@ class InvoiceListItem extends StatelessWidget {
                   invoice.totalAmount.toStringAsFixed(0),
                   style: AppTextStyles.dataNumeric(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -67,7 +67,7 @@ class InvoiceListItem extends StatelessWidget {
                   invoice.paidAmount.toStringAsFixed(0),
                   style: AppTextStyles.dataNumeric(context).copyWith(
                     fontWeight: FontWeight.normal,
-                    color: AppColors.accent,
+                    color: context.accent,
                   ),
                 ),
               ],
@@ -78,8 +78,8 @@ class InvoiceListItem extends StatelessWidget {
               height: 24,
               child: IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.more_vert,
-                    size: 18, color: AppColors.textSecondary),
+                icon: Icon(Icons.more_vert,
+                    size: 18, color: context.textSecondary),
                 onPressed: () {
                   InvoiceActionSheet.show(
                     context: context,

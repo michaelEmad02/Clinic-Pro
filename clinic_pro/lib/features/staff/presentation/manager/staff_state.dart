@@ -4,129 +4,10 @@
 
 import 'package:equatable/equatable.dart';
 import '../../../../core/constants/staff_roles.dart';
+import '../../domain/entities/staff_entity.dart';
+import '../../domain/entities/invitation_entity.dart';
 
 enum StaffFilter { all, doctor, secretary }
-
-class StaffItem extends Equatable {
-  final String id;
-  final String clinicId;
-  final String name;
-  final String email;
-  final String phone;
-  final String role;
-  final String? avatarUrl;
-  final String? specialty;
-  final double? rating;
-  final bool isOnline;
-  final String? lastSeen;
-  final bool isActive;
-
-  const StaffItem({
-    required this.id,
-    this.clinicId = '',
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.role,
-    this.avatarUrl,
-    this.specialty,
-    this.rating,
-    this.isOnline = false,
-    this.lastSeen,
-    this.isActive = true,
-  });
-
-  String get initials {
-    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
-    if (parts.isEmpty) return '?';
-    if (parts.length == 1) return parts.first[0];
-    return '${parts.first[0]}${parts.last[0]}';
-  }
-
-  String get roleLabel {
-    switch (role) {
-      case 'doctor':
-        return 'طبيب';
-      case 'nurse':
-        return 'تمريض';
-      case 'accountant':
-        return 'محاسب';
-      case 'secretary':
-        return 'سكرتير';
-      case 'owner':
-        return 'مالك';
-      default:
-        return role;
-    }
-  }
-
-  StaffItem copyWith({
-    String? role,
-    bool? isActive,
-    bool? isOnline,
-    String? lastSeen,
-  }) {
-    return StaffItem(
-      id: id,
-      clinicId: clinicId,
-      name: name,
-      email: email,
-      phone: phone,
-      role: role ?? this.role,
-      avatarUrl: avatarUrl,
-      specialty: specialty,
-      rating: rating,
-      isOnline: isOnline ?? this.isOnline,
-      lastSeen: lastSeen ?? this.lastSeen,
-      isActive: isActive ?? this.isActive,
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, name, role, isActive];
-}
-
-class StaffInvitationItem extends Equatable {
-  final String id;
-  final String clinicId;
-  final String ownerId;
-  final String email;
-  final String? name;
-  final String role;
-  final String status;
-  final String createdAt;
-  final String? expiresAt;
-
-  const StaffInvitationItem({
-    required this.id,
-    this.clinicId = '',
-    this.ownerId = '',
-    required this.email,
-    this.name,
-    required this.role,
-    required this.status,
-    required this.createdAt,
-    this.expiresAt,
-  });
-
-  String get roleLabel {
-    switch (role) {
-      case 'doctor':
-        return 'طبيب';
-      case 'nurse':
-        return 'تمريض';
-      case 'accountant':
-        return 'محاسب';
-      case 'secretary':
-        return 'سكرتير';
-      default:
-        return role;
-    }
-  }
-
-  @override
-  List<Object?> get props => [id, clinicId, email, status];
-}
 
 abstract class StaffState extends Equatable {
   const StaffState();
@@ -140,9 +21,8 @@ class StaffInitial extends StaffState {}
 class StaffLoading extends StaffState {}
 
 class StaffLoaded extends StaffState {
-  final List<StaffItem> allStaff;
-  final List<StaffInvitationItem> invitations;
-  final List<Map<String, dynamic>> clinics;
+  final List<StaffEntity> allStaff;
+  final List<InvitationEntity> invitations;
   final String? selectedClinicId;
   final String searchQuery;
   final StaffFilter activeFilter;
@@ -150,13 +30,12 @@ class StaffLoaded extends StaffState {
   const StaffLoaded({
     required this.allStaff,
     this.invitations = const [],
-    this.clinics = const [],
     this.selectedClinicId,
     this.searchQuery = '',
     this.activeFilter = StaffFilter.all,
   });
 
-  List<StaffItem> get filteredStaff {
+  List<StaffEntity> get filteredStaff {
     var list = allStaff;
 
     if (selectedClinicId != null && selectedClinicId!.isNotEmpty) {
@@ -174,17 +53,17 @@ class StaffLoaded extends StaffState {
       case StaffFilter.all:
         break;
       case StaffFilter.doctor:
-        list = list.where((s) => s.role == StaffRoles.doctor.name).toList();
+        list = list.where((s) => s.role == StaffRoles.doctor).toList();
         break;
       case StaffFilter.secretary:
-        list = list.where((s) => s.role == StaffRoles.secretary.name).toList();
+        list = list.where((s) => s.role == StaffRoles.secretary).toList();
         break;
     }
 
     return list;
   }
 
-  List<StaffInvitationItem> get pendingInvitations {
+  List<InvitationEntity> get pendingInvitations {
     var list = invitations.where((inv) => inv.status == 'pending').toList();
     if (selectedClinicId != null && selectedClinicId!.isNotEmpty) {
       list = list.where((inv) => inv.clinicId == selectedClinicId).toList();
@@ -193,9 +72,8 @@ class StaffLoaded extends StaffState {
   }
 
   StaffLoaded copyWith({
-    List<StaffItem>? allStaff,
-    List<StaffInvitationItem>? invitations,
-    List<Map<String, dynamic>>? clinics,
+    List<StaffEntity>? allStaff,
+    List<InvitationEntity>? invitations,
     String? selectedClinicId,
     String? searchQuery,
     StaffFilter? activeFilter,
@@ -203,7 +81,6 @@ class StaffLoaded extends StaffState {
     return StaffLoaded(
       allStaff: allStaff ?? this.allStaff,
       invitations: invitations ?? this.invitations,
-      clinics: clinics ?? this.clinics,
       selectedClinicId: selectedClinicId ?? this.selectedClinicId,
       searchQuery: searchQuery ?? this.searchQuery,
       activeFilter: activeFilter ?? this.activeFilter,
@@ -212,7 +89,7 @@ class StaffLoaded extends StaffState {
 
   @override
   List<Object?> get props =>
-      [allStaff, invitations, clinics, selectedClinicId, searchQuery, activeFilter];
+      [allStaff, invitations, selectedClinicId, searchQuery, activeFilter];
 }
 
 class StaffError extends StaffState {

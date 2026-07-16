@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -23,7 +24,7 @@ class DoctorStatsRow extends StatelessWidget {
           Expanded(
             child: _buildStatItem(
               context: context,
-              title: 'مكتمل اليوم',
+              title: AppStrings.isArabic ? 'مكتمل اليوم' : 'Completed Today',
               value: '$completedCount',
               icon: Icons.check_circle_outline,
               color: AppColors.successText,
@@ -34,7 +35,7 @@ class DoctorStatsRow extends StatelessWidget {
           Expanded(
             child: _buildStatItem(
               context: context,
-              title: 'قيد الانتظار',
+              title: AppStrings.isArabic ? 'قيد الانتظار' : 'Waiting',
               value: '$waitingCount',
               icon: Icons.hourglass_empty_outlined,
               color: AppColors.warningText,
@@ -45,11 +46,11 @@ class DoctorStatsRow extends StatelessWidget {
           Expanded(
             child: _buildStatItem(
               context: context,
-              title: 'متوسط الانتظار',
+              title: AppStrings.isArabic ? 'متوسط الانتظار' : 'Avg Wait Time',
               value: avgWaitingTime,
               icon: Icons.access_time,
               color: AppColors.primaryContainer,
-              bgColor: AppColors.primaryLight,
+              bgColor: context.primaryLightColor,
             ),
           ),
         ],
@@ -68,9 +69,9 @@ class DoctorStatsRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -94,7 +95,7 @@ class DoctorStatsRow extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.caption(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -103,7 +104,7 @@ class DoctorStatsRow extends StatelessWidget {
             value,
             style: AppTextStyles.dataNumeric(context).copyWith(
               fontSize: 15,
-              color: AppColors.textPrimary,
+              color: context.textPrimary,
             ),
           ),
         ],

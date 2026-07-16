@@ -1,90 +1,136 @@
+// ────────────────────────────────────────────────────────
+// متحكم حالة التحقق من الهوية (AuthCubit)
+// ────────────────────────────────────────────────────────
+
+import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/services/i_cloud_service.dart';
+import '../../domain/use_cases/get_current_user_use_case.dart';
+import '../../domain/use_cases/login_with_google_use_case.dart';
+import '../../domain/use_cases/login_with_apple_use_case.dart';
+import '../../domain/use_cases/login_with_email_and_password_use_case.dart';
+import '../../domain/use_cases/register_owner_use_case.dart';
+import '../../domain/use_cases/logout_use_case.dart';
 import 'auth_state.dart';
 
 @injectable
 class AuthCubit extends Cubit<AuthState> {
-  final ICloudService _cloudService;
+  final GetCurrentUserUseCase _getCurrentUserUseCase;
+  final LoginWithGoogleUseCase _loginWithGoogleUseCase;
+  final LoginWithAppleUseCase _loginWithAppleUseCase;
+  final LoginWithEmailAndPasswordUseCase _loginWithEmailAndPasswordUseCase;
+  final RegisterOwnerUseCase _registerOwnerUseCase;
+  final LogoutUseCase _logoutUseCase;
 
-  AuthCubit(this._cloudService) : super(AuthInitial());
+  AuthCubit(
+    this._getCurrentUserUseCase,
+    this._loginWithGoogleUseCase,
+    this._loginWithAppleUseCase,
+    this._loginWithEmailAndPasswordUseCase,
+    this._registerOwnerUseCase,
+    this._logoutUseCase,
+  ) : super(AuthInitial());
 
+  /// التحقق من حالة الجلسة الحالية
   Future<void> checkAuthStatus() async {
     emit(AuthLoading());
-    await Future.delayed(const Duration(seconds: 2));
-    // في مرحلة الـ UI نقوم دائماً ببدء التطبيق كغير مسجل الدخول
-    emit(AuthUnauthenticated());
+    final result = await _getCurrentUserUseCase();
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (user) {
+        if (user != null) {
+          emit(AuthAuthenticated(user: user));
+        } else {
+          emit(AuthUnauthenticated());
+        }
+      },
+    );
   }
 
-  /// تسجيل دخول بأي بيانات (Mock) — يدخل دائماً كمالك عيادة
+  /// تسجيل دخول بالبريد الإلكتروني وكلمة المرور
   Future<void> login(String email, String password) async {
     emit(AuthLoading());
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    // بيانات وهمية للمالك — أي ايميل وباسوورد مقبولين
-    emit(AuthAuthenticated(user: {
-      'id': 'u-owner-1',
-      'name': 'د. محمد عبد الرحمن',
-      'email': email.isNotEmpty ? email : 'owner@clinicpro.com',
-      'role': 'owner',
-      'phone': '+201011111111',
-    }));
+    final result = await _loginWithEmailAndPasswordUseCase(
+      email: email,
+      password: password,
+    );
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (user) => emit(AuthAuthenticated(user: user)),
+    );
   }
 
-  /// تسجيل دخول بدور محدد (للاختبار)
-  Future<void> loginAsRole(String role) async {
+  /// تسجيل دخول سريع بدور محدد للاختبار وتسهيل التطوير
+  Future<void> loginAsRole(StaffRoles role) async {
     emit(AuthLoading());
-    await Future.delayed(const Duration(milliseconds: 600));
+    String email = 'owner@clinicpro.com';
+    if (role == StaffRoles.doctor) {
+      email = 'yasser@clinicpro.com';
+    } else if (role == StaffRoles.secretary) {
+      email = 'sara@clinicpro.com';
+    }
 
-    final Map<String, Map<String, dynamic>> mockUsers = {
-      'owner': {
-        'id': 'u-owner-1',
-        'name': 'د. محمد عبد الرحمن',
-        'email': 'owner@clinicpro.com',
-        'role': 'owner',
-      },
-      'doctor': {
-        'id': 'u-doc-1',
-        'name': 'د. ياسر مصطفى',
-        'email': 'yasser@clinicpro.com',
-        'role': 'doctor',
-      },
-      'secretary': {
-        'id': 'u-sec-1',
-        'name': 'أ. سارة أحمد',
-        'email': 'sara@clinicpro.com',
-        'role': 'secretary',
-      },
-    };
-
-    final user = mockUsers[role] ?? mockUsers['owner']!;
-    emit(AuthAuthenticated(user: user));
+    final result = await _loginWithEmailAndPasswordUseCase(
+      email: email,
+      password: 'mock_password',
+    );
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (user) => emit(AuthAuthenticated(user: user)),
+    );
   }
 
-  /// إنشاء حساب جديد (Mock) — يسجل ويعيد بيانات مالك جديد
+  /// تسجيل الدخول عبر Google
+  Future<void> loginWithGoogle() async {
+    emit(AuthLoading());
+    final result = await _loginWithGoogleUseCase();
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (user) => emit(AuthAuthenticated(user: user)),
+    );
+  }
+
+  /// تسجيل الدخول عبر Apple
+  Future<void> loginWithApple() async {
+    emit(AuthLoading());
+    final result = await _loginWithAppleUseCase();
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (user) => emit(AuthAuthenticated(user: user)),
+    );
+  }
+
+  /// إنشاء حساب جديد لمالك العيادة
   Future<void> register({
-    required String name,
     required String email,
     required String password,
+    required String name,
     required String phone,
+    required String country,
+    required String address,
   }) async {
     emit(AuthLoading());
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    // في مرحلة الـ Mock يتم إنشاء الحساب بنجاح دائماً
-    emit(AuthAuthenticated(user: {
-      'id': 'u-new-owner',
-      'name': name.isNotEmpty ? name : 'مالك جديد',
-      'email': email.isNotEmpty ? email : 'new@clinicpro.com',
-      'role': 'owner',
-      'phone': phone,
-    }));
+    final result = await _registerOwnerUseCase(
+      email: email,
+      password: password,
+      name: name,
+      phone: phone,
+      country: country,
+      address: address,
+    );
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (user) => emit(AuthAuthenticated(user: user)),
+    );
   }
 
+  /// تسجيل الخروج
   Future<void> logout() async {
     emit(AuthLoading());
-    await Future.delayed(const Duration(milliseconds: 500));
-    emit(AuthUnauthenticated());
+    final result = await _logoutUseCase();
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (_) => emit(AuthUnauthenticated()),
+    );
   }
 }
-

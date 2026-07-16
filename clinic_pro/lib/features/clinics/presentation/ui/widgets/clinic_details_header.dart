@@ -8,10 +8,10 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/clinics_state.dart';
+import '../../../domain/entities/clinic_entity.dart';
 
 class ClinicDetailsHeader extends StatelessWidget {
-  final ClinicItem clinic;
+  final ClinicEntity clinic;
 
   const ClinicDetailsHeader({super.key, required this.clinic});
 
@@ -20,9 +20,9 @@ class ClinicDetailsHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: AppConstants.cardShadow,
       ),
       child: Stack(
@@ -35,7 +35,7 @@ class ClinicDetailsHeader extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.primaryLightColor,
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(AppConstants.radiusFull),
                 ),
@@ -53,8 +53,8 @@ class ClinicDetailsHeader extends StatelessWidget {
                   height: AppConstants.avatarSizeLg,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primaryLight,
-                    border: Border.all(color: AppColors.surface, width: 4),
+                    color: context.primaryLightColor,
+                    border: Border.all(color: context.surface, width: 4),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x1A000000),
@@ -63,34 +63,38 @@ class ClinicDetailsHeader extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: clinic.logoUrl != null
+                  child: clinic.logoUrl.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(64),
                           child: Image.network(
-                            clinic.logoUrl!,
+                            clinic.logoUrl,
                             fit: BoxFit.cover,
                           ),
                         )
                       : Center(
                           child: Text(
                             clinic.initials,
-                            style: AppTextStyles.headlineLarge(context).copyWith(
-                              color: AppColors.primary,
+                            style:
+                                AppTextStyles.headlineLarge(context).copyWith(
+                              color: context.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                 ),
-                SizedBox(height: AppConstants.spaceSm + AppConstants.spaceXs),
+                const SizedBox(
+                    height: AppConstants.spaceSm + AppConstants.spaceXs),
                 // شارات مزدوجة: "مفتوح الآن" + "رئيسية"
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.successBg,
-                        borderRadius: BorderRadius.circular(AppConstants.radiusChip),
+                        color: context.successBg,
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusChip),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -99,7 +103,7 @@ class ClinicDetailsHeader extends StatelessWidget {
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: AppColors.successText,
+                              color: context.successText,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -107,7 +111,7 @@ class ClinicDetailsHeader extends StatelessWidget {
                           Text(
                             AppStrings.openNow,
                             style: AppTextStyles.labelChip(context).copyWith(
-                              color: AppColors.successText,
+                              color: context.successText,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -116,22 +120,25 @@ class ClinicDetailsHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: AppConstants.spaceSm),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        borderRadius: BorderRadius.circular(AppConstants.radiusChip),
+                        color: context.primaryLightColor,
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusChip),
                       ),
                       child: Text(
                         AppStrings.mainBranch,
                         style: AppTextStyles.labelChip(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: AppConstants.spaceSm + AppConstants.spaceXs),
+                const SizedBox(
+                    height: AppConstants.spaceSm + AppConstants.spaceXs),
                 // اسم العيادة
                 Text(
                   clinic.name,
@@ -145,14 +152,15 @@ class ClinicDetailsHeader extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.location_on_outlined,
-                        size: AppConstants.iconSizeMd, color: AppColors.textSecondary),
+                    Icon(Icons.location_on_outlined,
+                        size: AppConstants.iconSizeMd,
+                        color: context.textSecondary),
                     const SizedBox(width: AppConstants.spaceXs),
                     Flexible(
                       child: Text(
                         clinic.address,
                         style: AppTextStyles.bodyMedium(context).copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -164,13 +172,14 @@ class ClinicDetailsHeader extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.call_outlined,
-                        size: AppConstants.iconSizeMd, color: AppColors.textSecondary),
+                    Icon(Icons.call_outlined,
+                        size: AppConstants.iconSizeMd,
+                        color: context.textSecondary),
                     const SizedBox(width: AppConstants.spaceXs),
                     Text(
-                      clinic.phone,
+                      clinic.phone1,
                       style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.textSecondary,
                       ),
                       textDirection: TextDirection.ltr,
                     ),

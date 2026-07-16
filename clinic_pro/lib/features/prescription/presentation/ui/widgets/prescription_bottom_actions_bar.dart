@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -22,8 +23,8 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: const Border(top: BorderSide(color: AppColors.border, width: 1)),
+        color: context.surface,
+        border: Border(top: BorderSide(color: context.border, width: 1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -42,7 +43,7 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: onSave,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: context.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
@@ -52,7 +53,7 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
                 ),
                 icon: const Icon(Icons.save, size: 20),
                 label: Text(
-                  'حفظ وإنهاء',
+                  AppStrings.saveAndFinish,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -67,18 +68,18 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onPrint,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.border),
+                  side: BorderSide(color: context.border),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                icon: const Icon(Icons.print, size: 20, color: AppColors.primary),
+                icon: Icon(Icons.print, size: 20, color: context.primary),
                 label: Text(
-                  'طباعة',
+                  AppStrings.print,
                   style: AppTextStyles.bodyMedium(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
               ),
@@ -91,16 +92,16 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE6F7ED),
+                  color: context.successBg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFF25D366).withOpacity(0.3),
+                    color: context.accent.withOpacity(0.3),
                   ),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.send,
-                    color: Color(0xFF006C3E),
+                    color: context.successText,
                     size: 20,
                   ),
                 ),

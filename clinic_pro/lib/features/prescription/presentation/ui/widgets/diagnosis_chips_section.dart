@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/templates_cubit.dart';
@@ -41,22 +42,22 @@ class _DiagnosisChipsSectionState extends State<DiagnosisChipsSection> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.fact_check, color: AppColors.primary),
+              Icon(Icons.fact_check, color: context.primary),
               const SizedBox(width: 8),
               Text(
-                'التشخيص الطبي',
+                AppStrings.medicalDiagnosis,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimary,
                 ),
               ),
             ],
@@ -70,9 +71,9 @@ class _DiagnosisChipsSectionState extends State<DiagnosisChipsSection> {
                   controller: _customController,
                   style: AppTextStyles.bodyMedium(context),
                   decoration: InputDecoration(
-                    hintText: 'أدخل تشخيص مخصص للزيارة الحالية...',
+                    hintText: AppStrings.diagnosisHint,
                     hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.textHint,
+                      color: context.textHint,
                     ),
                     border: const OutlineInputBorder(),
                     contentPadding: const EdgeInsets.symmetric(
@@ -91,23 +92,25 @@ class _DiagnosisChipsSectionState extends State<DiagnosisChipsSection> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: context.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('إضافة'),
+                child: Text(AppStrings.add),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          
+
           BlocBuilder<TemplatesCubit, TemplatesState>(
             builder: (context, state) {
-              final List<Map<String, dynamic>> templates = state is TemplatesLoaded ? state.templates : [];
-              
+              final List<Map<String, dynamic>> templates =
+                  state is TemplatesLoaded ? state.templates : [];
+
               return Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -118,32 +121,32 @@ class _DiagnosisChipsSectionState extends State<DiagnosisChipsSection> {
                       label: Text(
                         diag,
                         style: AppTextStyles.labelChip(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      backgroundColor: AppColors.primaryLight,
-                      side: const BorderSide(color: AppColors.primary, width: 0.5),
-                      deleteIcon: const Icon(Icons.close, size: 14, color: AppColors.primary),
+                      backgroundColor: context.primaryLightColor,
+                      side: BorderSide(color: context.primary, width: 0.5),
+                      deleteIcon:
+                          Icon(Icons.close, size: 14, color: context.primary),
                       onDeleted: () => widget.onToggleDiagnosis(diag),
                     );
                   }),
                   // قوالب التشخيصات الشائعة غير المختارة بعد
-                  ...templates
-                      .where((t) {
-                        final String name = t['name'] ?? '';
-                        return name.isNotEmpty && !widget.selectedDiagnosis.contains(name);
-                      })
-                      .map((t) {
+                  ...templates.where((t) {
+                    final String name = t['name'] ?? '';
+                    return name.isNotEmpty &&
+                        !widget.selectedDiagnosis.contains(name);
+                  }).map((t) {
                     final String name = t['name'] ?? '';
                     return ActionChip(
                       label: Text(
                         name,
                         style: AppTextStyles.labelChip(context).copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                         ),
                       ),
-                      backgroundColor: AppColors.surfaceAlt,
+                      backgroundColor: context.surfaceBright,
                       side: BorderSide.none,
                       onPressed: () => widget.onToggleDiagnosis(name),
                     );

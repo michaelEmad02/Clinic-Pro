@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -33,22 +34,22 @@ class _ExpensesBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         toolbarHeight: 64,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          'المصروفات',
+          AppStrings.expenses,
           style: AppTextStyles.headlineMedium(context).copyWith(
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: context.primary,
           ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.borderColor, height: 1),
         ),
       ),
       body: BlocBuilder<ExpensesCubit, ExpensesState>(
@@ -69,7 +70,7 @@ class _ExpensesBody extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () =>
                         context.read<ExpensesCubit>().loadExpenses(),
-                    child: const Text('إعادة المحاولة'),
+                    child: Text(AppStrings.retry),
                   ),
                 ],
               ),
@@ -123,7 +124,7 @@ class _ExpensesBody extends StatelessWidget {
             );
           }
         },
-        backgroundColor: AppColors.primary,
+        backgroundColor: context.primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -138,22 +139,23 @@ class _ExpensesBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('حذف المصروف'),
+        title: Text(AppStrings.deleteExpense),
         content: Text('هل أنت متأكد من حذف "${expense.title}"؟'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء'),
+            child: Text(AppStrings.cancel),
           ),
           TextButton(
             onPressed: () {
               context.read<ExpensesCubit>().deleteExpense(expense.id);
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('تم حذف المصروف')),
+                SnackBar(content: Text(AppStrings.expenseDeleted)),
               );
             },
-            child: const Text('حذف', style: TextStyle(color: AppColors.danger)),
+            child: Text(AppStrings.delete,
+                style: TextStyle(color: context.danger)),
           ),
         ],
       ),

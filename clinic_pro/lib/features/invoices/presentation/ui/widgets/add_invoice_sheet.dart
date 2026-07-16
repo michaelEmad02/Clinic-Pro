@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -13,7 +14,8 @@ import '../../manager/invoices_cubit.dart';
 import '../../manager/invoices_state.dart';
 
 class AddInvoiceSheet {
-  static Future<void> show(BuildContext context, {String? initialAppointmentId, InvoiceItem? invoice}) {
+  static Future<void> show(BuildContext context,
+      {String? initialAppointmentId, InvoiceItem? invoice}) {
     // التقاط الـ Cubit الحالي من السياق أو إنشاء واحد جديد
     InvoicesCubit cubit;
     try {
@@ -63,11 +65,11 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
   double _expectedPrice = 0;
   bool _isLoading = false;
 
-  static const _paymentMethods = [
-    ('cash', 'نقد'),
-    ('card', 'بطاقة'),
-    ('bank', 'تحويل'),
-  ];
+  List<(String, String)> get _paymentMethods => [
+        ('cash', AppStrings.isArabic ? 'نقد' : 'Cash'),
+        ('card', AppStrings.isArabic ? 'بطاقة' : 'Card'),
+        ('bank', AppStrings.isArabic ? 'تحويل' : 'Transfer'),
+      ];
 
   @override
   void initState() {
@@ -106,7 +108,8 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
         setState(() => _isLoading = true);
 
         // جلب تفاصيل الموعد والمريض عبر الـ Cubit
-        final appt = await cubit.getAppointmentDetails(widget.initialAppointmentId!);
+        final appt =
+            await cubit.getAppointmentDetails(widget.initialAppointmentId!);
         if (appt != null) {
           final patientId = appt['patient_id'] as String;
           final patient = await cubit.getPatientDetails(patientId);
@@ -134,12 +137,16 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
               );
 
               if (existingInvoice.id.isNotEmpty) {
-                final remaining = existingInvoice.totalAmount - existingInvoice.paidAmount;
+                final remaining =
+                    existingInvoice.totalAmount - existingInvoice.paidAmount;
                 if (remaining <= 0) {
                   if (mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('هذا الموعد مسجل له فاتورة مدفوعة بالكامل بالفعل.')),
+                      SnackBar(
+                          content: Text(AppStrings.isArabic
+                              ? 'هذا الموعد مسجل له فاتورة مدفوعة بالكامل بالفعل.'
+                              : 'This appointment already has a fully paid invoice.')),
                     );
                   }
                   return;
@@ -191,7 +198,8 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
 
     final allAppointments = await cubit.loadPatientAppointments(patientId);
     final appointments = allAppointments.where((a) {
-      final isTarget = widget.initialAppointmentId != null && a['id'] == widget.initialAppointmentId;
+      final isTarget = widget.initialAppointmentId != null &&
+          a['id'] == widget.initialAppointmentId;
       return isTarget || !fullyPaidSourceIds.contains(a['id']);
     }).toList();
 
@@ -227,7 +235,10 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
   Future<void> _submit() async {
     if (_selectedPatientId == null || _totalAmountController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى ملء جميع الحقول المطلوبة')),
+        SnackBar(
+            content: Text(AppStrings.isArabic
+                ? 'يرجى ملء جميع الحقول المطلوبة'
+                : 'Please fill all required fields')),
       );
       return;
     }
@@ -237,7 +248,10 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
 
     if (totalAmount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('المبلغ الإجمالي يجب أن يكون أكبر من 0')),
+        SnackBar(
+            content: Text(AppStrings.isArabic
+                ? 'المبلغ الإجمالي يجب أن يكون أكبر من 0'
+                : 'Total amount must be greater than 0')),
       );
       return;
     }
@@ -256,7 +270,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم تعديل الفاتورة بنجاح')),
+          SnackBar(content: Text(AppStrings.operationSuccessful)),
         );
       }
       return;
@@ -294,8 +308,9 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       await cubit.createInvoice(
         patientId: _selectedPatientId!,
         patientName: _selectedPatientName!,
-        appointmentType: _selectedAppointmentType ?? 'كشف عادي',
-        sourceId: _selectedAppointmentId ?? 'manual-${DateTime.now().millisecondsSinceEpoch}',
+        appointmentType: _selectedAppointmentType ?? AppStrings.normalCheckup,
+        sourceId: _selectedAppointmentId ??
+            'manual-${DateTime.now().millisecondsSinceEpoch}',
         totalAmount: totalAmount,
         paidAmount: paidAmount,
         paymentMethod: _paymentMethod,
@@ -308,9 +323,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(existingInvoice.id.isNotEmpty
-              ? 'تم تحديث سداد الفاتورة بنجاح'
-              : 'تم إنشاء الفاتورة بنجاح'),
+          content: Text(AppStrings.operationSuccessful),
         ),
       );
     }
@@ -329,11 +342,11 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
               const SizedBox(width: 40),
               Expanded(
                 child: Text(
-                  'تسجيل فاتورة',
+                  AppStrings.addInvoice,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimary,
                   ),
                 ),
               ),
@@ -341,7 +354,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                 width: 40,
                 height: 40,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: context.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -361,7 +374,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                   children: [
                     if (_showPatientSearch) ...[
                       Text(
-                        'المريض',
+                        AppStrings.patient,
                         style: AppTextStyles.bodyMedium(context).copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -371,21 +384,22 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                         controller: _patientSearchController,
                         focusNode: _patientFocusNode,
                         decoration: InputDecoration(
-                          hintText: 'ابحث باسم المريض أو رقمه',
-                          prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textHint),
-                          fillColor: AppColors.surfaceBright,
+                          hintText: AppStrings.searchByName,
+                          prefixIcon: Icon(Icons.search,
+                              size: 20, color: context.textHint),
+                          fillColor: context.surface,
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: AppColors.border),
+                            borderSide: BorderSide(color: context.border),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: AppColors.border),
+                            borderSide: BorderSide(color: context.border),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: AppColors.primary),
+                            borderSide: BorderSide(color: context.primary),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: AppConstants.spaceMd,
@@ -398,9 +412,9 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                         Container(
                           margin: const EdgeInsets.only(top: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: context.surface,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: context.border),
                           ),
                           child: Column(
                             children: _searchResults.map((p) {
@@ -408,10 +422,11 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                 dense: true,
                                 leading: CircleAvatar(
                                   radius: 16,
-                                  backgroundColor: AppColors.primaryLight,
+                                  backgroundColor: context.primaryLightColor,
                                   child: Text(
                                     (p['name'] as String).substring(0, 1),
-                                    style: const TextStyle(color: AppColors.primary, fontSize: 12),
+                                    style: TextStyle(
+                                        color: context.primary, fontSize: 12),
                                   ),
                                 ),
                                 title: Text(
@@ -429,7 +444,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                         ),
                     ] else ...[
                       Text(
-                        'المريض',
+                        AppStrings.patient,
                         style: AppTextStyles.bodyMedium(context).copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -438,9 +453,10 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
+                          color: context.primaryLightColor,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                          border: Border.all(
+                              color: context.primary.withOpacity(0.2)),
                         ),
                         child: Row(
                           children: [
@@ -449,8 +465,8 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                               backgroundColor: Colors.white,
                               child: Text(
                                 _selectedPatientName!.substring(0, 1),
-                                style: const TextStyle(
-                                  color: AppColors.primary,
+                                style: TextStyle(
+                                  color: context.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -462,15 +478,17 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                 children: [
                                   Text(
                                     _selectedPatientName!,
-                                    style: AppTextStyles.bodyMedium(context).copyWith(
+                                    style: AppTextStyles.bodyMedium(context)
+                                        .copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
+                                      color: context.primary,
                                     ),
                                   ),
                                   Text(
                                     _selectedPatientPhone ?? '',
-                                    style: AppTextStyles.caption(context).copyWith(
-                                      color: AppColors.textSecondary,
+                                    style:
+                                        AppTextStyles.caption(context).copyWith(
+                                      color: context.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -487,10 +505,10 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                   _expectedPrice = 0;
                                 });
                               },
-                              child: const Icon(
+                              child: Icon(
                                 Icons.edit,
                                 size: 20,
-                                color: AppColors.primary,
+                                color: context.primary,
                               ),
                             ),
                           ],
@@ -499,7 +517,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                     ],
                     const SizedBox(height: 16),
                     Text(
-                      'الموعد',
+                      AppStrings.isArabic ? 'الموعد' : 'Appointment',
                       style: AppTextStyles.bodyMedium(context).copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -508,31 +526,39 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: context.border),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedAppointmentId,
                           hint: Text(
-                            _patientAppointments.isEmpty ? 'لا توجد مواعيد غير مدفوعة' : 'اختر الموعد',
-                            style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
+                            _patientAppointments.isEmpty
+                                ? AppStrings.isArabic
+                                    ? 'لا توجد مواعيد غير مدفوعة'
+                                    : 'No unpaid appointments'
+                                : AppStrings.isArabic
+                                    ? 'اختر الموعد'
+                                    : 'Select Appointment',
+                            style: AppTextStyles.bodyMedium(context)
+                                .copyWith(color: context.textHint),
                           ),
                           isExpanded: true,
-                          icon: const Icon(Icons.expand_more, color: AppColors.textHint, size: 20),
+                          icon: Icon(Icons.expand_more,
+                              color: context.textHint, size: 20),
                           items: _patientAppointments.map((a) {
-                            final typeName = a['appointment_types']['name'] as String;
+                            final typeName =
+                                a['appointment_types']['name'] as String;
                             final date = a['date'] as String;
                             final time = (a['time'] as String).substring(0, 5);
-                            final doctorName = a['doctor_name'] as String? ?? 'طبيب معالج';
+                            final doctorName = a['doctor_name'] as String? ??
+                                AppStrings.generalPractitioner;
                             final dateTime = DateTime.tryParse(date);
                             String displayDate = date;
                             if (dateTime != null) {
-                              const months = [
-                                'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-                                'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-                              ];
-                              displayDate = '${dateTime.day} ${months[dateTime.month - 1]}';
+                              final months = AppStrings.fullMonths;
+                              displayDate =
+                                  '${dateTime.day} ${months[dateTime.month - 1]}';
                             }
                             final label = '$typeName • $displayDate • $time';
                             return DropdownMenuItem(
@@ -540,8 +566,14 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(label, style: AppTextStyles.bodyMedium(context).copyWith(fontWeight: FontWeight.bold)),
-                                  Text(doctorName, style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary)),
+                                  Text(label,
+                                      style: AppTextStyles.bodyMedium(context)
+                                          .copyWith(
+                                              fontWeight: FontWeight.bold)),
+                                  Text(doctorName,
+                                      style: AppTextStyles.caption(context)
+                                          .copyWith(
+                                              color: context.textSecondary)),
                                 ],
                               ),
                             );
@@ -549,7 +581,8 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                           onChanged: _patientAppointments.isEmpty
                               ? null
                               : (v) {
-                                  final appointment = _patientAppointments.firstWhere((a) => a['id'] == v);
+                                  final appointment = _patientAppointments
+                                      .firstWhere((a) => a['id'] == v);
                                   _selectAppointment(appointment);
                                 },
                         ),
@@ -558,11 +591,19 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.info_outline, size: 14, color: AppColors.textSecondary),
+                        Icon(Icons.info_outline,
+                            size: 14, color: context.textSecondary),
                         const SizedBox(width: 4),
                         Text(
-                          _patientAppointments.isEmpty ? 'لا توجد مواعيد غير مدفوعة لهذا المريض' : 'يظهر فقط المواعيد غير المدفوعة بالكامل',
-                          style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary),
+                          _patientAppointments.isEmpty
+                              ? AppStrings.isArabic
+                                  ? 'لا توجد مواعيد غير مدفوعة لهذا المريض'
+                                  : 'No unpaid appointments for this patient'
+                              : AppStrings.isArabic
+                                  ? 'يظهر فقط المواعيد غير المدفوعة بالكامل'
+                                  : 'Only showing unpaid appointments',
+                          style: AppTextStyles.caption(context)
+                              .copyWith(color: context.textSecondary),
                         ),
                       ],
                     ),
@@ -574,8 +615,9 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'المبلغ الإجمالي',
-                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                AppStrings.total,
+                                style:
+                                    AppTextStyles.bodyMedium(context).copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -590,32 +632,36 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                     fontFamily: 'Inter',
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  suffixIcon: const SizedBox(
+                                  suffixIcon: SizedBox(
                                     width: 40,
                                     child: Center(
                                       child: Text(
-                                        'ج.م',
+                                        AppStrings.egp,
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: AppColors.textSecondary,
+                                          color: context.textSecondary,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  fillColor: AppColors.surfaceContainerLow,
+                                  fillColor: context.surface,
                                   filled: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(color: AppColors.border),
-                                  ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(color: AppColors.border),
+                                    borderRadius: BorderRadius.circular(
+                                        AppConstants.radiusInput),
+                                    borderSide:
+                                        BorderSide(color: context.border),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(color: AppColors.primary),
+                                    borderRadius: BorderRadius.circular(
+                                        AppConstants.radiusInput),
+                                    borderSide: BorderSide(
+                                        color: context.primary, width: 1.5),
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        AppConstants.radiusInput),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: AppConstants.spaceMd,
@@ -632,8 +678,9 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'المبلغ المدفوع',
-                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                AppStrings.paid,
+                                style:
+                                    AppTextStyles.bodyMedium(context).copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -642,38 +689,43 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                 controller: _paidAmountController,
                                 keyboardType: TextInputType.number,
                                 textDirection: TextDirection.ltr,
+                                
                                 decoration: InputDecoration(
+                                
                                   hintText: '0',
                                   hintStyle: const TextStyle(
                                     fontFamily: 'Inter',
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  suffixIcon: const SizedBox(
+                                  suffixIcon: SizedBox(
                                     width: 40,
                                     child: Center(
                                       child: Text(
-                                        'ج.م',
+                                        AppStrings.egp,
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: AppColors.textSecondary,
+                                          color: context.textSecondary,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  fillColor: AppColors.surfaceContainerLow,
+                                  fillColor: context.surface,
                                   filled: true,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(color: AppColors.border),
+                                    borderSide:
+                                        BorderSide(color: context.border),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(color: AppColors.border),
+                                    borderSide:
+                                        BorderSide(color: context.border),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(color: AppColors.primary),
+                                    borderSide:
+                                        BorderSide(color: context.primary),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: AppConstants.spaceMd,
@@ -691,9 +743,10 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.warningBg,
+                          color: context.warningBg,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.warningText.withOpacity(0.1)),
+                          border: Border.all(
+                              color: context.warningText.withOpacity(0.1)),
                         ),
                         child: Row(
                           children: [
@@ -704,14 +757,15 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              child: const Icon(Icons.lightbulb_outline, size: 18, color: AppColors.warningText),
+                              child: Icon(Icons.lightbulb_outline,
+                                  size: 18, color: context.warningText),
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'السعر المتوقع: $_expectedPrice ج.م',
+                              'السعر المتوقع: $_expectedPrice ${AppStrings.egp}',
                               style: AppTextStyles.bodyMedium(context).copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.warningText,
+                                color: context.warningText,
                               ),
                             ),
                           ],
@@ -720,7 +774,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                     ],
                     const SizedBox(height: 16),
                     Text(
-                      'طريقة الدفع',
+                      AppStrings.paymentMethod,
                       style: AppTextStyles.bodyMedium(context).copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -736,9 +790,9 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  m.$2 == 'نقد'
+                                  m.$1 == 'cash'
                                       ? '💵'
-                                      : m.$2 == 'بطاقة'
+                                      : m.$1 == 'card'
                                           ? '💳'
                                           : '🔄',
                                   style: const TextStyle(fontSize: 16),
@@ -748,19 +802,26 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                               ],
                             ),
                             selected: isSelected,
-                            onSelected: (_) => setState(() => _paymentMethod = m.$1),
-                            selectedColor: AppColors.primary,
-                            backgroundColor: AppColors.surface,
+                            onSelected: (_) =>
+                                setState(() => _paymentMethod = m.$1),
+                            selectedColor: context.primary,
+                            backgroundColor: context.surface,
                             labelStyle: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 12,
-                              color: isSelected ? Colors.white : AppColors.textSecondary,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected
+                                  ? Colors.white
+                                  : context.textSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                               side: BorderSide(
-                                color: isSelected ? AppColors.primary : AppColors.border,
+                                color: isSelected
+                                    ? context.primary
+                                    : context.border,
                               ),
                             ),
                             showCheckmark: false,
@@ -774,16 +835,16 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                       child: ElevatedButton(
                         onPressed: _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 4,
-                          shadowColor: AppColors.primary.withOpacity(0.3),
+                          shadowColor: context.primary.withOpacity(0.3),
                         ),
                         child: Text(
-                          'حفظ الفاتورة',
+                          AppStrings.isArabic ? 'حفظ الفاتورة' : 'Save Invoice',
                           style: AppTextStyles.headlineSmall(context).copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,

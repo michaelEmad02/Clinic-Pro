@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -27,40 +28,40 @@ class ExpenseActionSheet {
               expense.title,
               style: AppTextStyles.headlineSmall(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.primaryLightColor,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 expense.categoryLabel,
                 style: AppTextStyles.labelChip(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.primary,
                 ),
               ),
             ),
             const SizedBox(height: 16),
             _DetailRow(
-              label: 'المبلغ',
-              value: '${expense.amount.toStringAsFixed(0)} ج.م',
-              valueColor: AppColors.dangerText,
+              label: AppStrings.amount,
+              value: '${expense.amount.toStringAsFixed(0)} ${AppStrings.egp}',
+              valueColor: context.dangerText,
             ),
             _DetailRow(
-              label: 'التاريخ',
+              label: AppStrings.date,
               value: expense.formattedDate,
             ),
             if (expense.notes.isNotEmpty)
-              _DetailRow(label: 'ملاحظات', value: expense.notes),
+              _DetailRow(label: AppStrings.notes, value: expense.notes),
             const SizedBox(height: 16),
             _ActionTile(
               icon: Icons.edit_outlined,
-              label: 'تعديل المصروف',
-              color: AppColors.primary,
+              label: AppStrings.editExpense,
+              color: context.primary,
               onTap: () {
                 Navigator.pop(context);
                 onEdit();
@@ -68,8 +69,8 @@ class ExpenseActionSheet {
             ),
             _ActionTile(
               icon: Icons.delete_outline,
-              label: 'حذف المصروف',
-              color: AppColors.danger,
+              label: AppStrings.deleteExpense,
+              color: context.danger,
               onTap: () {
                 Navigator.pop(context);
                 onDelete();
@@ -102,11 +103,11 @@ class _DetailRow extends StatelessWidget {
         children: [
           Text(label,
               style: AppTextStyles.bodyMedium(context)
-                  .copyWith(color: AppColors.textSecondary)),
+                  .copyWith(color: context.textSecondary)),
           Text(value,
               style: AppTextStyles.bodyMedium(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: valueColor ?? AppColors.textPrimary,
+                color: valueColor ?? context.textPrimary,
               )),
         ],
       ),
@@ -131,8 +132,9 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(label, style: AppTextStyles.bodyMedium(context)
-          .copyWith(fontWeight: FontWeight.w600)),
+      title: Text(label,
+          style: AppTextStyles.bodyMedium(context)
+              .copyWith(fontWeight: FontWeight.w600)),
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
     );

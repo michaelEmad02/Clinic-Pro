@@ -14,7 +14,7 @@ import 'widgets/invoices_date_range_chips.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
-
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/di/injection_container.dart';
 
 class InvoicesScreen extends StatelessWidget {
@@ -35,22 +35,22 @@ class _InvoicesBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         toolbarHeight: 64,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          'الفواتير',
+          AppStrings.invoices,
           style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: context.primary,
           ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.borderColor, height: 1),
         ),
       ),
       body: BlocBuilder<InvoicesCubit, InvoicesState>(
@@ -71,7 +71,7 @@ class _InvoicesBody extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () =>
                         context.read<InvoicesCubit>().loadInvoices(),
-                    child: const Text('إعادة المحاولة'),
+                    child: Text(AppStrings.retry),
                   ),
                 ],
               ),
@@ -124,7 +124,7 @@ class _InvoicesBody extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => AddInvoiceSheet.show(context),
-        backgroundColor: AppColors.primary,
+        backgroundColor: context.primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),

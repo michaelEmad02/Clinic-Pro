@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -46,35 +47,44 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: AppConstants.spaceMd),
-          const _SheetHandle(),
+          // const _SheetHandle(),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH, vertical: AppConstants.spaceMd),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.screenEdgeH,
+                vertical: AppConstants.spaceMd),
             child: Row(
               children: [
-                Text('تعديل الملف الشخصي', style: AppTextStyles.headlineSmall(context)),
+                Text(AppStrings.editProfile,
+                    style: AppTextStyles.headlineSmall(context)),
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: AppColors.onSurfaceVariant),
+                  icon:  Icon(Icons.close,
+                      color: context.dangerText),
                 ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.screenEdgeH),
             child: Column(
               children: [
                 _buildAvatarUpload(context),
                 const SizedBox(height: AppConstants.spaceLg),
-                _buildTextField(context, label: 'الاسم الكامل', controller: _nameController),
+                _buildTextField(context,
+                    label: AppStrings.fullName, controller: _nameController),
                 const SizedBox(height: AppConstants.spaceMd),
-                _buildPhoneField(context, label: 'رقم الموبايل', controller: _phoneController),
+                _buildPhoneField(context,
+                    label: AppStrings.mobileNumber,
+                    controller: _phoneController),
                 const SizedBox(height: AppConstants.spaceLg),
                 _buildSaveButton(context),
               ],
@@ -94,27 +104,29 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
             builder: (context, state) {
               return CircleAvatar(
                 radius: 40,
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: context.primaryLightColor,
                 child: CircleAvatar(
                   radius: 38,
-                  backgroundColor: AppColors.surface,
+                  backgroundColor: context.surface,
                   child: Text(
                     state.userName.isNotEmpty ? state.userName[0] : '?',
-                    style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary),
+                    style: AppTextStyles.headlineMedium(context)
+                        .copyWith(color: context.primary),
                   ),
                 ),
               );
             },
           ),
           Positioned(
-            left: 0, bottom: 0,
+            left: 0,
+            bottom: 0,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryContainer,
+              decoration: BoxDecoration(
+                color: context.primaryLightColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.photo_camera, color: AppColors.onPrimary, size: 18),
+              child: Icon(Icons.photo_camera, color: context.primary, size: 18),
             ),
           ),
         ],
@@ -122,31 +134,36 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     );
   }
 
-  Widget _buildTextField(BuildContext context, {required String label, required TextEditingController controller}) {
+  Widget _buildTextField(BuildContext context,
+      {required String label, required TextEditingController controller}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Text(label, style: AppTextStyles.labelChip(context).copyWith(color: AppColors.onSurfaceVariant)),
+          child: Text(label,
+              style: AppTextStyles.labelChip(context)
+                  .copyWith(color: context.textSecondary)),
         ),
         const SizedBox(height: AppConstants.spaceSm),
         TextField(
           controller: controller,
           decoration: InputDecoration(
             hintText: 'أدخل $label',
-            hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
+            hintStyle: AppTextStyles.bodyMedium(context)
+                .copyWith(color: context.textHint),
             filled: true,
-            fillColor: AppColors.surfaceContainerLowest,
+            fillColor: context.backgroundColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: context.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: context.border),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spaceMd, vertical: 14),
           ),
           style: AppTextStyles.bodyMedium(context),
         ),
@@ -154,13 +171,16 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     );
   }
 
-  Widget _buildPhoneField(BuildContext context, {required String label, required TextEditingController controller}) {
+  Widget _buildPhoneField(BuildContext context,
+      {required String label, required TextEditingController controller}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Text(label, style: AppTextStyles.labelChip(context).copyWith(color: AppColors.onSurfaceVariant)),
+          child: Text(label,
+              style: AppTextStyles.labelChip(context)
+                  .copyWith(color: context.textSecondary)),
         ),
         const SizedBox(height: AppConstants.spaceSm),
         TextField(
@@ -169,19 +189,22 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
           textAlign: TextAlign.right,
           decoration: InputDecoration(
             hintText: '+966 5X XXX XXXX',
-            hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
+            hintStyle: AppTextStyles.bodyMedium(context)
+                .copyWith(color: context.textHint),
             filled: true,
-            fillColor: AppColors.surfaceContainerLowest,
+            fillColor: context.backgroundColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: context.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: context.border),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 14),
-            suffixIcon: const Icon(Icons.phone_iphone, color: AppColors.textHint, size: 20),
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spaceMd, vertical: 14),
+            suffixIcon:
+                Icon(Icons.phone_iphone, color: context.textHint, size: 20),
           ),
           style: AppTextStyles.dataNumeric(context),
         ),
@@ -195,26 +218,30 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
       child: ElevatedButton(
         onPressed: () async {
           context.read<SettingsCubit>().updateProfile(
-            name: _nameController.text.trim(),
-            phone: _phoneController.text.trim(),
-          );
+                name: _nameController.text.trim(),
+                phone: _phoneController.text.trim(),
+              );
           if (!context.mounted) return;
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('تم حفظ التغييرات', textAlign: TextAlign.right), behavior: SnackBarBehavior.floating),
+            SnackBar(
+                content:
+                    Text(AppStrings.changesSaved, textAlign: TextAlign.right),
+                behavior: SnackBarBehavior.floating),
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryContainer,
-          foregroundColor: AppColors.onPrimary,
+          backgroundColor: context.primaryContainer,
+          foregroundColor: context.onPrimary,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusButton),
           ),
           elevation: 0,
-          shadowColor: AppColors.primaryContainer.withAlpha(64),
+          shadowColor: context.primaryContainer.withAlpha(64),
         ),
-        child: Text('حفظ التغييرات', style: AppTextStyles.headlineSmall(context)),
+        child: Text(AppStrings.saveChanges,
+            style: AppTextStyles.headlineSmall(context)),
       ),
     );
   }
@@ -227,7 +254,8 @@ class _SheetHandle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 40, height: 4,
+        width: 40,
+        height: 4,
         decoration: BoxDecoration(
           color: AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(2),

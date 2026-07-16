@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/mocks/mock_data.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../manager/appointments_state.dart';
@@ -25,8 +26,8 @@ class AppointmentDetailsScreen extends StatelessWidget {
 
     if (appointment == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('تفاصيل الموعد')),
-        body: const Center(child: Text('الموعد غير موجود')),
+        appBar: AppBar(title: Text(AppStrings.appointmentDetails)),
+        body: Center(child: Text(AppStrings.isArabic ? 'الموعد غير موجود' : 'Appointment not found')),
       );
     }
 
@@ -34,14 +35,14 @@ class AppointmentDetailsScreen extends StatelessWidget {
         appointment.status != 'done' && appointment.status != 'cancelled';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         toolbarHeight: 64,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          'تفاصيل الموعد',
+          AppStrings.appointmentDetails,
           style: AppTextStyles.headlineMedium(context).copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.primary,
@@ -49,7 +50,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.borderColor, height: 1),
         ),
       ),
       body: ListView(
@@ -84,13 +85,13 @@ class AppointmentDetailsScreen extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('تم إلغاء الموعد')),
+                    SnackBar(content: Text(AppStrings.appointmentDeleted)),
                   );
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.cancel_outlined, color: AppColors.danger),
                 label: Text(
-                  'إلغاء الموعد',
+                  '${AppStrings.cancel} ${AppStrings.appointment}',
                   style: AppTextStyles.bodyMedium(context).copyWith(
                     color: AppColors.danger,
                     fontWeight: FontWeight.bold,
@@ -126,7 +127,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
     final doctorId = data['doctor_id'] as String;
     final doctor = MockData.users.firstWhere(
       (u) => u['id'] == doctorId,
-      orElse: () => {'name': 'طبيب'},
+      orElse: () => {'name': AppStrings.doctorRoleLabel},
     );
 
     final prescription = MockData.prescriptions
@@ -140,18 +141,18 @@ class AppointmentDetailsScreen extends StatelessWidget {
     final parts = timeRaw.split(':');
     final hour = int.tryParse(parts[0]) ?? 0;
     final minute = parts.length > 1 ? parts[1] : '00';
-    final period = hour >= 12 ? 'م' : 'ص';
+    final period = hour >= 12 ? (AppStrings.isArabic ? 'م' : 'PM') : (AppStrings.isArabic ? 'ص' : 'AM');
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
 
     return AppointmentItem(
       id: appointmentId,
       patientId: data['patient_id'] as String,
-      patientName: patient['name'] as String? ?? 'مريض',
+      patientName: patient['name'] as String? ?? AppStrings.patient,
       patientPhone: patient['phone'] as String? ?? '',
       doctorId: doctorId,
       doctorName: doctor['name'] as String,
       typeId: data['appointment_type_id'] as String,
-      typeName: type['name'] as String? ?? 'كشف',
+      typeName: type['name'] as String? ?? AppStrings.normalCheckup,
       date: data['date'] as String,
       displayTime: '$displayHour:$minute $period',
       status: data['status'] as String,

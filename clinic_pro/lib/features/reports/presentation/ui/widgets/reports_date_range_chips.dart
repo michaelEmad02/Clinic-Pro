@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../manager/reports_state.dart';
 
@@ -16,12 +17,21 @@ class ReportsDateRangeChips extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const _ranges = [
-    (ReportsDateRange.thisWeek, 'هذا الأسبوع'),
-    (ReportsDateRange.thisMonth, 'هذا الشهر'),
-    (ReportsDateRange.threeMonths, '3 أشهر'),
-    (ReportsDateRange.custom, 'مخصص'),
-  ];
+  static List<(ReportsDateRange, String)> get _ranges => [
+        (
+          ReportsDateRange.thisWeek,
+          AppStrings.isArabic ? 'هذا الأسبوع' : 'This Week'
+        ),
+        (
+          ReportsDateRange.thisMonth,
+          AppStrings.isArabic ? 'هذا الشهر' : 'This Month'
+        ),
+        (
+          ReportsDateRange.threeMonths,
+          AppStrings.isArabic ? '3 أشهر' : '3 Months'
+        ),
+        (ReportsDateRange.custom, AppStrings.customRange),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -46,22 +56,18 @@ class ReportsDateRangeChips extends StatelessWidget {
               ),
               selected: isSelected,
               onSelected: (_) => onChanged(r.$1),
-              selectedColor: AppColors.primaryLight,
-              backgroundColor: AppColors.surface,
+              selectedColor: context.primaryLightColor,
+              backgroundColor: context.surface,
               labelStyle: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 12,
-                color: isSelected
-                    ? AppColors.primary
-                    : AppColors.textSecondary,
-                fontWeight:
-                    isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? context.primary : context.textSecondary,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color:
-                      isSelected ? AppColors.primary : AppColors.outline,
+                  color: isSelected ? context.primary : context.outline,
                 ),
               ),
               showCheckmark: false,

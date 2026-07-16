@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/di/injection_container.dart';
@@ -173,9 +174,9 @@ class CurrentPlanCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           planStatus == 'trial' || planStatus == 'trail'
-                              ? 'تجربة مجانية'
+                              ? AppStrings.trial
                               : planStatus == 'active'
-                                  ? 'نشط'
+                                  ? AppStrings.active
                                   : planStatus,
                           style: AppTextStyles.labelChip(context).copyWith(color: AppColors.primary),
                         ),

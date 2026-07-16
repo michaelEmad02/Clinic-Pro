@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/realtime_indicator.dart';
-import '../../../../../core/widgets/app_list_item.dart';
+import '../../../../../core/constants/route_constants.dart';
+import '../../../../../core/widgets/app_bottom_sheet.dart';
 import '../../../../appointments/presentation/manager/appointments_state.dart';
 
 class WaitingQueueList extends StatelessWidget {
@@ -20,6 +23,7 @@ class WaitingQueueList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── عنوان القسم مع مؤشر الوقت الحقيقي وزر الاستدعاء ──
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -28,7 +32,7 @@ class WaitingQueueList extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    'طابور الانتظار اليوم',
+                    AppStrings.todayQueue,
                     style: AppTextStyles.headlineSmall(context).copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -43,7 +47,7 @@ class WaitingQueueList extends StatelessWidget {
                   onPressed: onCallNext,
                   icon: const Icon(Icons.volume_up_outlined, size: 16),
                   label: Text(
-                    'استدعاء التالي',
+                    AppStrings.callNext,
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: AppColors.primaryContainer,
                       fontWeight: FontWeight.w600,
@@ -54,24 +58,27 @@ class WaitingQueueList extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
+
+        // ── حالة فارغة ──
         if (queue.isEmpty)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.all(24),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.surfaceColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.borderColor),
             ),
             child: Text(
-              'لا يوجد مرضى في طابور الانتظار حالياً.',
+              AppStrings.queueEmptyDesc,
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
           )
         else
+          // ── قائمة عناصر طابور الانتظار ──
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -83,55 +90,161 @@ class WaitingQueueList extends StatelessWidget {
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: AppListItem(
-                  title: patient.patientName,
-                  subtitle: '${patient.typeName} ${patient.notes != null ? '• ${patient.notes}' : ''}',
-                  leading: CircleAvatar(
-                    backgroundColor: AppColors.primaryLight,
-                    child: Text(
-                      '${index + 1}',
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  decoration: BoxDecoration(
+                    color: context.surfaceColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: context.borderColor),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (isUrgent)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          margin: const EdgeInsets.only(left: 8),
-                          decoration: BoxDecoration(
-                            color: AppColors.dangerBg,
-                            borderRadius: BorderRadius.circular(8),
+                      // ── رقم الترتيب في الطابور ──
+                      CircleAvatar(
+                        backgroundColor: context.primaryLightColor,
+                        child: Text(
+                          '${index + 1}',
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
                           ),
-                          child: Text(
-                            'مستعجل',
-                            style: AppTextStyles.caption(context).copyWith(
-                              color: AppColors.dangerText,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      Text(
-                        patient.displayTime,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-                        onPressed: () {
-                          // Action bottom sheet
-                        },
+                      const SizedBox(width: 12),
+
+                      // ── بيانات المريض عموديًا ──
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              patient.patientName,
+                              style: AppTextStyles.headlineSmall(context).copyWith(
+                                color: context.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              patient.doctorName,
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                color: context.textSecondary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              patient.typeName,
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                color: context.textSecondary,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              patient.displayTime,
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                color: context.textSecondary,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // ── أزرار الإجراءات + شارة مستعجل ──
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.more_vert),
+                            color: context.textSecondary,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () {
+                              // إظهار Bottom Sheet مع خيارات المريض
+                              AppBottomSheet.show(
+                                context: context,
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        patient.patientName,
+                                        style: AppTextStyles.headlineSmall(context).copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        patient.patientPhone,
+                                        style: AppTextStyles.bodyMedium(context).copyWith(
+                                          color: context.textSecondary,
+                                        ),
+                                        textDirection: TextDirection.ltr,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      ListTile(
+                                        leading: const Icon(Icons.person_outline, color: AppColors.primary),
+                                        title: Text(
+                                          AppStrings.patientDetails,
+                                          style: AppTextStyles.bodyMedium(context).copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          context.push(
+                                            RouteConstants.patientDetails.replaceAll(':id', patient.patientId),
+                                          );
+                                        },
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          if (isUrgent)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.dangerBg,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                AppStrings.urgent,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: AppColors.dangerText,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),

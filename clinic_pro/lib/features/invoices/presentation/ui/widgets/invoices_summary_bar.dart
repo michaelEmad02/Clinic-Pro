@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/invoices_state.dart';
@@ -21,10 +22,10 @@ class InvoicesSummaryBar extends StatelessWidget {
         children: [
           Expanded(
             child: _SummaryCard(
-              label: 'إيرادات اليوم',
+              label: AppStrings.todayRevenue,
               value: state.todayRevenue.toStringAsFixed(0),
-              currency: 'ج.م',
-              color: AppColors.primary,
+              currency: AppStrings.egp,
+              color: context.primary,
               padding: paddingValue,
               isSmallScreen: isSmallScreen,
             ),
@@ -32,10 +33,10 @@ class InvoicesSummaryBar extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: _SummaryCard(
-              label: 'فواتير معلقة',
+              label: AppStrings.isArabic ? 'فواتير معلقة' : 'Pending Invoices',
               value: state.pendingCount.toString(),
-              currency: 'فاتورة',
-              color: AppColors.warning,
+              currency: AppStrings.invoice,
+              color: context.warning,
               padding: paddingValue,
               isSmallScreen: isSmallScreen,
             ),
@@ -46,12 +47,12 @@ class InvoicesSummaryBar extends StatelessWidget {
               padding: EdgeInsets.all(paddingValue),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(
-                  colors: [AppColors.primaryLight, AppColors.surface],
+                gradient: LinearGradient(
+                  colors: [context.primaryLightColor, context.surface],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.border),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x08000000),
@@ -64,11 +65,11 @@ class InvoicesSummaryBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'الشهر الحالي',
+                    AppStrings.monthly,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.caption(context).copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.textSecondary,
                       fontSize: isSmallScreen ? 10 : 12,
                     ),
                   ),
@@ -85,16 +86,16 @@ class InvoicesSummaryBar extends StatelessWidget {
                           style: AppTextStyles.headlineMedium(context).copyWith(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: context.primary,
                             fontSize: isSmallScreen ? 16 : 20,
                           ),
                         ),
                       ),
                       const SizedBox(width: 2),
                       Text(
-                        'ج.م',
+                        AppStrings.egp,
                         style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                           fontSize: isSmallScreen ? 9 : 11,
                         ),
                       ),
@@ -132,9 +133,9 @@ class _SummaryCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: const [
           BoxShadow(
             color: Color(0x08000000),
@@ -151,7 +152,7 @@ class _SummaryCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.caption(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
               fontSize: isSmallScreen ? 10 : 12,
             ),
           ),

@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../manager/expenses_state.dart';
 
@@ -29,13 +30,13 @@ class ExpensesCategoryChips extends StatelessWidget {
             padding: const EdgeInsetsDirectional.only(start: 8),
             child: ChoiceChip(
               label: Text(
-                'الكل',
+                AppStrings.all,
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 12,
                   color: activeCategoryId == null
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
+                      ? context.primary
+                      : context.textSecondary,
                   fontWeight: activeCategoryId == null
                       ? FontWeight.bold
                       : FontWeight.normal,
@@ -43,14 +44,14 @@ class ExpensesCategoryChips extends StatelessWidget {
               ),
               selected: activeCategoryId == null,
               onSelected: (_) => onChanged(null),
-              selectedColor: AppColors.primaryLight,
-              backgroundColor: AppColors.surface,
+              selectedColor: context.primaryLightColor,
+              backgroundColor: context.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
                   color: activeCategoryId == null
-                      ? AppColors.primary
-                      : AppColors.border,
+                      ? context.primary
+                      : context.border,
                 ),
               ),
               showCheckmark: false,
@@ -65,21 +66,18 @@ class ExpensesCategoryChips extends StatelessWidget {
                 label: Text(cat.name),
                 selected: isSelected,
                 onSelected: (_) => onChanged(isSelected ? null : cat.id),
-                selectedColor: AppColors.primaryLight,
-                backgroundColor: AppColors.surface,
+                selectedColor: context.primaryLightColor,
+                backgroundColor: context.surface,
                 labelStyle: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 12,
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                  fontWeight:
-                      isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? context.primary : context.textSecondary,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: isSelected ? AppColors.primary : AppColors.border,
+                    color: isSelected ? context.primary : context.border,
                   ),
                 ),
                 showCheckmark: false,

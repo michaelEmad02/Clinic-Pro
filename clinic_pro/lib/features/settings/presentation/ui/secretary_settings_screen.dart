@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../manager/settings_cubit.dart';
@@ -22,84 +23,85 @@ class SecretarySettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'الإعدادات',
-            style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          AppStrings.settings,
+          style: AppTextStyles.headlineMedium(context)
+              .copyWith(color: context.primary),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_outlined,
+                color: context.textSecondary),
+            onPressed: () {},
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: AppColors.textSecondary),
-              onPressed: () {},
-            ),
-          ],
-        ),
-        body: BlocBuilder<SettingsCubit, SettingsState>(
-          builder: (context, state) {
-            if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state.error != null) {
-              return Center(
-                child: Text('خطأ: ${state.error}', style: AppTextStyles.bodyLarge(context)),
-              );
-            }
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppConstants.spaceMd),
-                  SettingsAccountSection(
-                    name: state.userName,
-                    subtitle: 'سكرتيرة',
-                    avatarUrl: state.userAvatarUrl,
-                    layout: AccountSectionLayout.horizontal,
-                    showSectionTitle: true,
-                    onEdit: () => EditProfileSheet.show(context),
-                  ),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  _buildManagementSection(context),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  SettingsClinicSection(
-                    clinicName: state.clinicName,
-                    clinicAddress: state.clinicAddress,
-                    onChangeClinic: () => ClinicPickerSheet.show(context),
-                  ),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  _buildCurrentDoctorSection(context, state),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  _buildOtherSection(context),
-                  const SizedBox(height: AppConstants.spaceXl),
-                  const SettingsFooter(),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            );
-          },
-        ),
-        bottomNavigationBar: showBottomNav ? const SettingsBottomNavBar() : null,
+        ],
       ),
+      body: BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state.error != null) {
+            return Center(
+              child: Text('${AppStrings.error}: ${state.error}',
+                  style: AppTextStyles.bodyLarge(context)),
+            );
+          }
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.screenEdgeH),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppConstants.spaceMd),
+                SettingsAccountSection(
+                  name: state.userName,
+                  subtitle: AppStrings.secretaryRoleLabel,
+                  avatarUrl: state.userAvatarUrl,
+                  layout: AccountSectionLayout.horizontal,
+                  showSectionTitle: true,
+                  onEdit: () => EditProfileSheet.show(context),
+                ),
+                const SizedBox(height: AppConstants.spaceLg),
+                _buildManagementSection(context),
+                const SizedBox(height: AppConstants.spaceLg),
+                SettingsClinicSection(
+                  clinicName: state.clinicName,
+                  clinicAddress: state.clinicAddress,
+                  onChangeClinic: () => ClinicPickerSheet.show(context),
+                ),
+                const SizedBox(height: AppConstants.spaceLg),
+                _buildCurrentDoctorSection(context, state),
+                const SizedBox(height: AppConstants.spaceLg),
+                _buildOtherSection(context),
+                const SizedBox(height: AppConstants.spaceXl),
+                const SettingsFooter(),
+                const SizedBox(height: 16),
+              ],
+            ),
+          );
+        },
+      ),
+      bottomNavigationBar: showBottomNav ? const SettingsBottomNavBar() : null,
     );
   }
 
   Widget _buildManagementSection(BuildContext context) {
     return SectionCard(
-      title: 'الإدارة',
+      title: AppStrings.management,
       child: Column(
         children: [
           NavSettingsItem(
-            icon: Icons.medication_liquid_sharp, // Represents pills/medication
-            label: 'إدارة الأدوية',
+            icon: Icons.medication_liquid_sharp,
+            label: AppStrings.manageDrugs,
             onTap: () => context.push(RouteConstants.drugs),
           ),
-          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          Divider(height: 1, thickness: 0.5, color: context.border),
           NavSettingsItem(
             icon: Icons.description_outlined,
-            label: 'قوالب الروشتات',
+            label: AppStrings.prescriptionTemplates,
             onTap: () => context.push(RouteConstants.prescriptionTemplates),
           ),
         ],
@@ -116,17 +118,18 @@ class SecretarySettingsScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
           child: Text(
-            'الطبيب الحالي',
-            style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary),
+            AppStrings.currentDoctor,
+            style: AppTextStyles.headlineSmall(context)
+                .copyWith(color: context.textSecondary),
           ),
         ),
         const SizedBox(height: AppConstants.spaceSm),
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.surface,
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            border: Border.all(color: AppColors.border, width: 0.5),
+            border: Border.all(color: context.border, width: 0.5),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x0F000000),
@@ -143,7 +146,7 @@ class SecretarySettingsScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 20,
-                      backgroundColor: AppColors.primaryLight,
+                      backgroundColor: context.primaryLightColor,
                       backgroundImage: state.currentDoctorAvatar != null
                           ? NetworkImage(state.currentDoctorAvatar!)
                           : null,
@@ -152,8 +155,9 @@ class SecretarySettingsScreen extends StatelessWidget {
                               hasDoctor && state.currentDoctorName!.isNotEmpty
                                   ? state.currentDoctorName![0]
                                   : '?',
-                              style: AppTextStyles.headlineSmall(context).copyWith(
-                                color: AppColors.primary,
+                              style:
+                                  AppTextStyles.headlineSmall(context).copyWith(
+                                color: context.primary,
                                 fontSize: 14,
                               ),
                             )
@@ -165,13 +169,16 @@ class SecretarySettingsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            hasDoctor ? state.currentDoctorName! : 'لم يتم اختيار طبيب',
+                            hasDoctor
+                                ? state.currentDoctorName!
+                                : AppStrings.noDoctorSelected,
                             style: AppTextStyles.headlineSmall(context),
                           ),
                           if (hasDoctor)
                             Text(
                               state.currentDoctorSpecialty!,
-                              style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary),
+                              style: AppTextStyles.caption(context)
+                                  .copyWith(color: context.textSecondary),
                             ),
                         ],
                       ),
@@ -179,19 +186,24 @@ class SecretarySettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+              Divider(height: 1, thickness: 0.5, color: context.border),
               InkWell(
                 onTap: () => DoctorPickerSheet.show(context),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd, horizontal: AppConstants.spaceMd),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppConstants.spaceMd,
+                      horizontal: AppConstants.spaceMd),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'تغيير الطبيب',
-                        style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
+                        AppStrings.changeDoctor,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                            color: context.primary,
+                            fontWeight: FontWeight.bold),
                       ),
-                      const Icon(Icons.chevron_left, color: AppColors.primary, size: 20),
+                      Icon(Icons.chevron_left,
+                          color: context.primary, size: 20),
                     ],
                   ),
                 ),
@@ -205,15 +217,21 @@ class SecretarySettingsScreen extends StatelessWidget {
 
   Widget _buildOtherSection(BuildContext context) {
     return SectionCard(
-      title: 'أخرى',
+      title: AppStrings.other,
       child: Column(
         children: [
           ToggleSettingsItem(
             icon: Icons.dark_mode_outlined,
-            label: 'المظهر',
+            label: AppStrings.appearance,
             trailing: const DarkModeSwitch(),
           ),
-          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          ToggleSettingsItem(
+            icon: Icons.language_outlined,
+            label: AppStrings.language,
+            trailing: const LanguageSwitch(),
+          ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
           const SettingsLogoutSection(inline: true),
         ],
       ),

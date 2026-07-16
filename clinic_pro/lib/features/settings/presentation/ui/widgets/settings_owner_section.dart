@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -15,7 +16,7 @@ class SettingsOwnerSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
-          child: Text('الإدارة', style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary)),
+          child: Text(AppStrings.management, style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary)),
         ),
         const SizedBox(height: AppConstants.spaceSm),
         Container(
@@ -38,7 +39,7 @@ class SettingsOwnerSection extends StatelessWidget {
                     children: [
                       Icon(Icons.payments, color: AppColors.primaryContainer, size: 20),
                       const SizedBox(width: AppConstants.spaceSm),
-                      Expanded(child: Text('الاشتراك والخطة', style: AppTextStyles.bodyLarge(context))),
+                       Expanded(child: Text(AppStrings.subscriptionAndPlan, style: AppTextStyles.bodyLarge(context))),
                       const Icon(Icons.arrow_back, color: AppColors.textHint, size: 18),
                     ],
                   ),

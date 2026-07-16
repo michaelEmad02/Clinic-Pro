@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/reports_state.dart';
@@ -15,17 +16,18 @@ class RevenueVsExpensesChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxValue = data.fold<double>(
-        0, (max, d) => [max, d.revenue, d.expenses].reduce(
-            (a, b) => a > b ? a : b));
+        0,
+        (max, d) =>
+            [max, d.revenue, d.expenses].reduce((a, b) => a > b ? a : b));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.outlineVariant),
+          border: Border.all(color: context.outline),
           boxShadow: const [
             BoxShadow(
               color: Color(0x08000000),
@@ -41,20 +43,19 @@ class RevenueVsExpensesChart extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'الإيرادات مقابل المصروفات',
+                  AppStrings.revenueVsExpenses,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Icon(Icons.more_vert,
-                    size: 18, color: AppColors.textSecondary),
+                Icon(Icons.more_vert, size: 18, color: context.textSecondary),
               ],
             ),
             const SizedBox(height: 16),
             SizedBox(
               height: 200,
               child: Stack(
-                    children: [
+                children: [
                   // خطوط Y
                   Positioned.fill(
                     child: Column(
@@ -66,21 +67,21 @@ class RevenueVsExpensesChart extends StatelessWidget {
                         Container(
                           width: double.infinity,
                           height: 0,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
-                                color: AppColors.textSecondary,
+                                color: context.textSecondary,
                                 width: 1,
                               ),
                             ),
                           ),
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerRight,
                             child: Text('0',
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 10,
-                                  color: AppColors.textHint,
+                                  color: context.textHint,
                                 )),
                           ),
                         ),
@@ -119,7 +120,7 @@ class RevenueVsExpensesChart extends StatelessWidget {
                                               height: (revenueHeight * 100)
                                                   .clamp(0, 120),
                                               decoration: BoxDecoration(
-                                                color: AppColors.primary,
+                                                color: context.primary,
                                                 borderRadius:
                                                     const BorderRadius.vertical(
                                                   top: Radius.circular(4),
@@ -133,7 +134,7 @@ class RevenueVsExpensesChart extends StatelessWidget {
                                               height: (expensesHeight * 100)
                                                   .clamp(0, 120),
                                               decoration: BoxDecoration(
-                                                color: AppColors.dangerBg,
+                                                color: context.dangerBg,
                                                 borderRadius:
                                                     const BorderRadius.vertical(
                                                   top: Radius.circular(4),
@@ -149,10 +150,10 @@ class RevenueVsExpensesChart extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   week.week,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 10,
-                                    color: AppColors.textSecondary,
+                                    color: context.textSecondary,
                                   ),
                                 ),
                               ],
@@ -170,11 +171,10 @@ class RevenueVsExpensesChart extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _LegendItem(
-                    color: AppColors.primary, label: 'الإيرادات'),
+                _LegendItem(color: context.primary, label: AppStrings.revenue),
                 const SizedBox(width: 16),
                 _LegendItem(
-                    color: AppColors.dangerBg, label: 'المصروفات'),
+                    color: context.dangerBg, label: AppStrings.expenses),
               ],
             ),
           ],
@@ -186,18 +186,18 @@ class RevenueVsExpensesChart extends StatelessWidget {
   Widget _yAxisLine(BuildContext context, String label) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppColors.outlineVariant, width: 0.5),
+          bottom: BorderSide(color: context.outline, width: 0.5),
         ),
       ),
       child: Align(
         alignment: Alignment.centerRight,
         child: Text(label,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 10,
-              color: AppColors.textHint,
+              color: context.textHint,
             )),
       ),
     );
@@ -226,7 +226,7 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 4),
         Text(label,
             style: AppTextStyles.caption(context)
-                .copyWith(color: AppColors.textSecondary)),
+                .copyWith(color: context.textSecondary)),
       ],
     );
   }

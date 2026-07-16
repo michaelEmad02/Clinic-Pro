@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_list_item.dart';
@@ -31,14 +32,14 @@ class QueueItem extends StatelessWidget {
         subtitle: '${patient.typeName} • ${patient.displayTime}',
         leading: CircleAvatar(
           backgroundColor: patient.isUrgent
-              ? AppColors.dangerBg
-              : (isInProgress ? AppColors.warningBg : AppColors.primaryLight),
+              ? context.dangerBg
+              : (isInProgress ? context.warningBg : context.primaryLightColor),
           child: Text(
             '${patient.queueNumber}',
             style: TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.bold,
-              color: isInProgress ? AppColors.warningText : AppColors.primary,
+              color: isInProgress ? context.warningText : context.primary,
             ),
           ),
         ),
@@ -57,13 +58,13 @@ class QueueItem extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.warningBg,
+                  color: context.warningBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'عند الطبيب',
+                  AppStrings.atDoctor,
                   style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.warningText,
+                    color: context.warningText,
                     fontWeight: FontWeight.bold,
                     fontSize: 10,
                   ),
@@ -73,13 +74,13 @@ class QueueItem extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.successBg,
+                  color: context.successBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'انتهى',
+                  AppStrings.finished,
                   style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.successText,
+                    color: context.successText,
                     fontWeight: FontWeight.bold,
                     fontSize: 10,
                   ),
@@ -87,9 +88,9 @@ class QueueItem extends StatelessWidget {
               )
             else if (onCall != null)
               IconButton(
-                icon: const Icon(Icons.volume_up_outlined, color: AppColors.primary),
+                icon: Icon(Icons.volume_up_outlined, color: context.primary),
                 onPressed: onCall,
-                tooltip: 'استدعاء',
+                tooltip: AppStrings.call,
               ),
           ],
         ),

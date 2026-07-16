@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -35,9 +36,12 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
   @override
   void initState() {
     super.initState();
-    _tradeNameController = TextEditingController(text: widget.drug?['trade_name'] ?? '');
-    _genericNameController = TextEditingController(text: widget.drug?['generic_name'] ?? '');
-    _categoryController = TextEditingController(text: widget.drug?['category'] ?? '');
+    _tradeNameController =
+        TextEditingController(text: widget.drug?['trade_name'] ?? '');
+    _genericNameController =
+        TextEditingController(text: widget.drug?['generic_name'] ?? '');
+    _categoryController =
+        TextEditingController(text: widget.drug?['category'] ?? '');
   }
 
   @override
@@ -60,9 +64,9 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              isEditing ? 'تعديل بيانات الدواء' : 'إضافة دواء جديد',
+              isEditing ? AppStrings.editDrug : AppStrings.addDrug,
               style: AppTextStyles.headlineMedium(context).copyWith(
-                color: AppColors.primary,
+                color: context.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -71,20 +75,45 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
             // الاسم التجاري
             TextFormField(
               controller: _tradeNameController,
-              decoration: const InputDecoration(
-                labelText: 'الاسم التجاري للدواء',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: AppStrings.drugName,
+                hintStyle: TextStyle(color: context.textHint),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.primary),
+                ),
               ),
-              validator: (v) => (v == null || v.isEmpty) ? 'الرجاء إدخال الاسم التجاري' : null,
+              validator: (v) =>
+                  (v == null || v.isEmpty) ? AppStrings.drugName : null,
             ),
             const SizedBox(height: 12),
 
             // الاسم العلمي
             TextFormField(
               controller: _genericNameController,
-              decoration: const InputDecoration(
-                labelText: 'الاسم العلمي / المادة الفعالة',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: AppStrings.switchToScientific,
+                hintStyle: TextStyle(color: context.textHint),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.primary),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -92,9 +121,22 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
             // التصنيف
             TextFormField(
               controller: _categoryController,
-              decoration: const InputDecoration(
-                labelText: 'تصنيف الدواء (مثال: مضاد حيوي، مسكن)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                //labelText: AppStrings.drugCategory,
+                hintText: AppStrings.drugCategory,
+                hintStyle: TextStyle(color: context.textHint),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.primary),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -112,15 +154,15 @@ class _AddEditDrugSheetState extends State<AddEditDrugSheet> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: context.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: context.border)),
               ),
               child: Text(
-                isEditing ? 'حفظ التعديلات' : 'إضافة إلى القائمة',
+                isEditing ? AppStrings.save : AppStrings.add,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   color: Colors.white,
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/constants/prescription_enums.dart';
 import '../../../../../core/themes/app_colors.dart';
@@ -42,11 +43,12 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
     if (widget.template != null) {
       _nameController.text = widget.template!['name'] ?? '';
 
-      final items = widget.template!['items'] as List<Map<String, dynamic>>? ?? [];
+      final items =
+          widget.template!['items'] as List<Map<String, dynamic>>? ?? [];
       for (final item in items) {
         _addedDrugs.add({
           'drug_id': item['drug_id'],
-          'trade_name': item['trade_name'] ?? 'دواء غير معروف',
+          'trade_name': item['trade_name'] ?? AppStrings.unknownDrug,
           'generic_name': item['generic_name'] ?? '',
           'frequency': item['frequency'],
           'duration': item['duration'],
@@ -72,31 +74,38 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
       create: (context) => sl<DrugsCubit>()..loadDrugs(),
       child: BlocBuilder<DrugsCubit, DrugsState>(
         builder: (context, drugsState) {
-          final allDrugs = drugsState is DrugsLoaded ? drugsState.drugs : <Map<String, dynamic>>[];
+          final allDrugs = drugsState is DrugsLoaded
+              ? drugsState.drugs
+              : <Map<String, dynamic>>[];
 
           final filteredDrugs = <Map<String, dynamic>>[];
           final query = _searchQuery.trim().toLowerCase();
 
           for (final drug in allDrugs) {
             final trade = (drug['trade_name'] as String? ?? '').toLowerCase();
-            final generic = (drug['generic_name'] as String? ?? '').toLowerCase();
+            final generic =
+                (drug['generic_name'] as String? ?? '').toLowerCase();
             final id = drug['id'] as String;
 
             final alreadyAdded = _addedDrugs.any((d) => d['drug_id'] == id);
 
             if (!alreadyAdded) {
-              if (query.isEmpty || trade.contains(query) || generic.contains(query)) {
+              if (query.isEmpty ||
+                  trade.contains(query) ||
+                  generic.contains(query)) {
                 filteredDrugs.add(drug);
               }
             }
           }
 
           return Container(
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            decoration: BoxDecoration(
+              color: context.surface,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Form(
               key: _formKey,
               child: Column(
@@ -109,7 +118,7 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                       height: 5,
                       margin: const EdgeInsets.only(bottom: 24),
                       decoration: BoxDecoration(
-                        color: AppColors.border,
+                        color: context.border,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -118,24 +127,26 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        widget.template != null ? 'تعديل قالب وصفة' : 'إضافة قالب وصفة',
+                        widget.template != null
+                            ? AppStrings.editTemplate
+                            : AppStrings.addTemplate,
                         style: AppTextStyles.headlineMedium(context).copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.textPrimary,
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                        icon: Icon(Icons.close, color: context.textSecondary),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'اسم القالب',
+                    AppStrings.templateName,
                     style: AppTextStyles.headlineSmall(context).copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: context.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -143,32 +154,36 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                     controller: _nameController,
                     style: AppTextStyles.bodyMedium(context),
                     decoration: InputDecoration(
-                      hintText: 'مثال: التهاب اللوزتين (أطفال)',
-                      hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
+                      hintText: AppStrings.templateName,
+                      hintStyle: AppTextStyles.bodyMedium(context)
+                          .copyWith(color: context.textHint),
                       filled: true,
-                      fillColor: AppColors.surface,
+                      fillColor: context.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: context.border),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: context.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.primary),
+                        borderSide: BorderSide(color: context.primary),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
-                    validator: (v) => (v == null || v.isEmpty) ? 'الرجاء إدخال اسم القالب' : null,
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? AppStrings.templateName
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'تصنيف القالب',
+                    AppStrings.templateCategory,
                     style: AppTextStyles.headlineSmall(context).copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: context.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -176,23 +191,25 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                     controller: _categoryController,
                     style: AppTextStyles.bodyMedium(context),
                     decoration: InputDecoration(
-                      hintText: 'مثال: حالات حادة، أمراض مزمنة',
-                      hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
+                      hintText: AppStrings.templateCategory,
+                      hintStyle: AppTextStyles.bodyMedium(context)
+                          .copyWith(color: context.textHint),
                       filled: true,
-                      fillColor: AppColors.surface,
+                      fillColor: context.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: context.border),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: context.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.primary),
+                        borderSide: BorderSide(color: context.primary),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -211,7 +228,7 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                         _addedDrugs.add({
                           'drug_id': drug['id'],
                           'trade_name': drug['trade_name'],
-                          'form': drug['form'] ?? 'أقراص',
+                          'form': drug['form'] ?? AppStrings.dosage,
                           'generic_name': drug['generic_name'] ?? '',
                           'frequency': DrugFrequency.thrice.dbValue,
                           'duration': DrugDuration.threeDays.dbValue,
@@ -251,10 +268,11 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                       if (_formKey.currentState!.validate()) {
                         if (_addedDrugs.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('الرجاء إضافة دواء واحد على الأقل للقالب'),
+                            SnackBar(
+                              content:
+                                  Text('${AppStrings.add} ${AppStrings.drug}'),
                               behavior: SnackBarBehavior.floating,
-                              backgroundColor: AppColors.danger,
+                              backgroundColor: context.danger,
                             ),
                           );
                           return;
@@ -267,7 +285,7 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -275,9 +293,12 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                       ),
                       elevation: 2,
                     ),
-                    child: const Text(
-                      'حفظ القالب',
-                      style: TextStyle(fontFamily: 'Cairo', fontSize: 16, fontWeight: FontWeight.bold),
+                    child: Text(
+                      AppStrings.save,
+                      style: const TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 16),

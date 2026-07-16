@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../manager/appointments_state.dart';
@@ -24,13 +25,13 @@ class AppointmentsList extends StatelessWidget {
     required this.onItemMore,
   });
 
-  static const _filters = [
-    ('all', 'الكل'),
-    ('scheduled', 'مجدول'),
-    ('confirmed', 'مؤكد'),
-    ('in_progress', 'قيد الكشف'),
-    ('done', 'منتهي'),
-    ('cancelled', 'ملغي'),
+  static final _filters = [
+    ('all', AppStrings.all),
+    ('scheduled', AppStrings.scheduled),
+    ('confirmed', AppStrings.confirmed),
+    ('in_progress', AppStrings.inProgress),
+    ('done', AppStrings.completed),
+    ('cancelled', AppStrings.cancelled),
   ];
 
   @override
@@ -52,17 +53,17 @@ class AppointmentsList extends StatelessWidget {
                   selected: isSelected,
                   onSelected: (_) => onFilterChanged(f.$1),
                   selectedColor: AppColors.primary,
-                  backgroundColor: AppColors.surface,
+                  backgroundColor: context.surfaceColor,
                   labelStyle: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 12,
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                    color: isSelected ? Colors.white : context.textSecondary,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color: isSelected ? AppColors.primary : AppColors.border,
+                      color: isSelected ? AppColors.primary : context.borderColor,
                     ),
                   ),
                   showCheckmark: false,
@@ -74,9 +75,9 @@ class AppointmentsList extends StatelessWidget {
         const SizedBox(height: 12),
         // القائمة أو الحالة الفارغة
         if (appointments.isEmpty)
-          const EmptyState(
-            title: 'لا توجد مواعيد',
-            subtitle: 'لا يوجد مواعيد تطابق الفلتر الحالي.',
+          EmptyState(
+            title: AppStrings.noData,
+            subtitle: AppStrings.isArabic ? 'لا يوجد مواعيد تطابق الفلتر الحالي.' : 'No appointments match the current filter.',
             icon: Icons.event_busy_outlined,
           )
         else

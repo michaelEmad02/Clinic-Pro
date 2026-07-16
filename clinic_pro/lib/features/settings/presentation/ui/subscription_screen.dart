@@ -2,6 +2,7 @@ import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/staff_roles.dart';
@@ -19,9 +20,7 @@ class SubscriptionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: BlocProvider<SettingsCubit>(
+    return BlocProvider<SettingsCubit>(
         create: (context) {
           final cubit = sl<SettingsCubit>();
           if (cubit.state.userName.isEmpty) {
@@ -31,7 +30,7 @@ class SubscriptionScreen extends StatelessWidget {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: Text('الاشتراك والخطة', style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary)),
+            title: Text(AppStrings.subscriptionAndPlan, style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary)),
             leading: IconButton(
               icon: const Icon(Icons.arrow_forward, color: AppColors.primary),
               onPressed: () => Navigator.pop(context),
@@ -78,9 +77,9 @@ class SubscriptionScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppConstants.spaceSm),
-                    Text('الاشتراك والخطة', style: AppTextStyles.headlineLarge(context)),
+                    Text(AppStrings.subscriptionAndPlan, style: AppTextStyles.headlineLarge(context)),
                     const SizedBox(height: AppConstants.spaceXs),
-                    Text('إدارة باقة العيادة، ومراقبة الاستهلاك، وتحديث معلومات الدفع.',
+                    Text(AppStrings.manageSubscription,
                         style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
                     const SizedBox(height: AppConstants.spaceLg),
                     CurrentPlanCard(planKey: planKey, planStatus: state.planStatus),
@@ -109,7 +108,6 @@ class SubscriptionScreen extends StatelessWidget {
             },
           ),
         ),
-      ),
-    );
+      );
   }
 }

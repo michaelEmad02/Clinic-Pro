@@ -4,6 +4,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/strings/app_strings.dart';
 import 'appointments_event.dart';
 import 'appointments_state.dart';
 import 'appointments_repository.dart';
@@ -34,7 +35,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       final items = await _repository.loadAppointments();
       emit(AppointmentsLoaded(allAppointments: _mapAppointments(items)));
     } catch (e) {
-      emit(const AppointmentsError('تعذّر تحميل المواعيد. حاول مرة أخرى.'));
+      emit(AppointmentsError(AppStrings.loadAppointmentsFailed));
     }
   }
 
@@ -70,7 +71,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       final items = await _repository.loadAppointments();
       emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
     } catch (_) {
-      emit(const AppointmentsError('تعذّر تأكيد الوصول'));
+      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر تأكيد الوصول' : 'Failed to confirm arrival'));
     }
   }
 
@@ -86,7 +87,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       final items = await _repository.loadAppointments();
       emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
     } catch (_) {
-      emit(const AppointmentsError('تعذّر إلغاء الموعد'));
+      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر إلغاء الموعد' : 'Failed to cancel appointment'));
     }
   }
 
@@ -103,7 +104,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       final items = await _repository.loadAppointments();
       emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
     } catch (_) {
-      emit(const AppointmentsError('تعذّر تعديل حالة الاستعجال'));
+      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر تعديل حالة الاستعجال' : 'Failed to update urgency'));
     }
   }
 
@@ -127,7 +128,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       final items = await _repository.loadAppointments();
       emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
     } catch (_) {
-      emit(const AppointmentsError('تعذّر إضافة الموعد'));
+      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر إضافة الموعد' : 'Failed to add appointment'));
     }
   }
 
@@ -152,7 +153,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       final items = await _repository.loadAppointments();
       emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
     } catch (_) {
-      emit(const AppointmentsError('تعذّر تعديل الموعد'));
+      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر تعديل الموعد' : 'Failed to update appointment'));
     }
   }
 
@@ -168,7 +169,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       final items = await _repository.loadAppointments();
       emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
     } catch (_) {
-      emit(const AppointmentsError('تعذّر حذف الموعد'));
+      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر حذف الموعد' : 'Failed to delete appointment'));
     }
   }
 
@@ -187,12 +188,12 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       return AppointmentItem(
         id: apptId,
         patientId: raw['patient_id'] as String,
-        patientName: patient['name'] as String? ?? 'مريض',
+        patientName: patient['name'] as String? ?? AppStrings.patient,
         patientPhone: patient['phone'] as String? ?? '',
         doctorId: doctorId,
-        doctorName: 'طبيب معالج',
+        doctorName: AppStrings.generalPractitioner,
         typeId: raw['appointment_type_id'] as String,
-        typeName: type['name'] as String? ?? 'كشف',
+        typeName: type['name'] as String? ?? AppStrings.normalCheckup,
         date: raw['date'] as String,
         displayTime: _formatTime(raw['time'] as String? ?? '00:00:00'),
         rawTime: raw['time'] as String? ?? '00:00:00',
@@ -230,7 +231,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (parts.length < 2) return raw;
     final hour = int.tryParse(parts[0]) ?? 0;
     final minute = parts[1];
-    final period = hour >= 12 ? 'م' : 'ص';
+    final period = hour >= 12 ? (AppStrings.isArabic ? 'م' : 'PM') : (AppStrings.isArabic ? 'ص' : 'AM');
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
     return '$displayHour:$minute $period';
   }

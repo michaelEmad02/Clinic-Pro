@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -36,33 +37,33 @@ class _PatientsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         toolbarHeight: 64,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'المرضى',
+              AppStrings.patients,
               style: AppTextStyles.headlineMedium(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             Text(
-              'إدارة سجلات المرضى والبيانات الشخصية',
+              AppStrings.isArabic ? 'إدارة سجلات المرضى والبيانات الشخصية' : 'Manage patient records and personal data',
               style: AppTextStyles.caption(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
           ],
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.border, height: 1),
         ),
       ),
       body: BlocBuilder<PatientsCubit, PatientsState>(
@@ -83,7 +84,7 @@ class _PatientsBody extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () =>
                         context.read<PatientsCubit>().loadPatients(),
-                    child: const Text('إعادة المحاولة'),
+                    child: Text(AppStrings.retry),
                   ),
                 ],
               ),
@@ -124,8 +125,8 @@ class _PatientsBody extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => AddEditPatientSheet.show(context),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: context.primary,
+        foregroundColor: context.onPrimary,
         child: const Icon(Icons.add),
       ),
     );
@@ -140,7 +141,7 @@ class _PatientsBody extends StatelessWidget {
       onEdit: () => AddEditPatientSheet.show(context, patient: patient),
       onBookAppointment: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('سيتم فتح حجز موعد من شاشة المواعيد')),
+          SnackBar(content: Text(AppStrings.isArabic ? 'سيتم فتح حجز موعد من شاشة المواعيد' : 'Booking will open from the appointments screen')),
         );
       },
       onDeletePatient: () {
@@ -153,17 +154,17 @@ class _PatientsBody extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('حذف المريض'),
-        content: Text('هل أنت متأكد من حذف "${patient.name}"؟'),
+        title: Text(AppStrings.deletePatient),
+        content: Text(AppStrings.isArabic ? 'هل أنت متأكد من حذف "${patient.name}"؟' : 'Are you sure you want to delete "${patient.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء'),
+            child: Text(AppStrings.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('حذف'),
+            style: TextButton.styleFrom(foregroundColor: context.danger),
+            child: Text(AppStrings.delete),
           ),
         ],
       ),

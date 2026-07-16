@@ -22,9 +22,9 @@ class ExpenseListItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.border),
           boxShadow: const [
             BoxShadow(
               color: Color(0x08000000),
@@ -39,12 +39,12 @@ class ExpenseListItem extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.surfaceContainer,
+                color: context.background,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 _categoryIcon(expense.categoryId),
-                color: AppColors.primary,
+                color: context.primary,
                 size: 24,
               ),
             ),
@@ -65,7 +65,7 @@ class ExpenseListItem extends StatelessWidget {
                   Text(
                     expense.formattedDate,
                     style: AppTextStyles.caption(context).copyWith(
-                      color: AppColors.textHint,
+                      color: context.textHint,
                     ),
                   ),
                 ],
@@ -74,7 +74,7 @@ class ExpenseListItem extends StatelessWidget {
             Text(
               '- ${expense.amount.toStringAsFixed(0)}',
               style: AppTextStyles.dataNumeric(context).copyWith(
-                color: AppColors.danger,
+                color: context.danger,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

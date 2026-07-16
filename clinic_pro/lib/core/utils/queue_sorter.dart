@@ -3,6 +3,8 @@
 // يتم الترتيب برمجياً في التطبيق (Client-side) دون تخزينه في قاعدة البيانات
 // ────────────────────────────────────────────────────────
 
+import '../strings/app_strings.dart';
+
 class QueueSorter {
   /// ترتيب المواعيد بناءً على القواعد التالية:
   /// 1. المواعيد التي بدأت أو انتهت (in_progress, done) تبقى ثابتة في البداية بترتيب استدعائها (called_at).
@@ -108,13 +110,18 @@ class QueueSorter {
   /// تحويل اسم نوع الموعد النصي للنوع المقابل له في نمط الترتيب
   static String _mapTypeNameToSlotType(String typeName) {
     typeName = typeName.toLowerCase();
-    if (typeName.contains('طارئ') || typeName.contains('urgent') || typeName.contains('مستعجل')) {
+    if (typeName.contains('طارئ') ||
+        typeName.contains(AppStrings.queuePatternUrgent) ||
+        typeName.contains('urgent')) {
       return 'urgent';
     }
-    if (typeName.contains('إعادة') || typeName.contains('revisit') || typeName.contains('مراجعة')) {
+    if (typeName.contains('إعادة') ||
+        typeName.contains(AppStrings.queuePatternRevisit) ||
+        typeName.contains('revisit')) {
       return 'revisit';
     }
-    if (typeName.contains('استشارة') || typeName.contains('consult')) {
+    if (typeName.contains(AppStrings.queuePatternConsult) ||
+        typeName.contains('consult')) {
       return 'consult';
     }
     return 'normal';

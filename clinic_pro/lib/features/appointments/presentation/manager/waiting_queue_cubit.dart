@@ -4,6 +4,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/strings/app_strings.dart';
 import 'waiting_queue_state.dart';
 import 'appointments_repository.dart';
 
@@ -31,8 +32,8 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
 
         return QueuePatient(
           id: raw['id'] as String,
-          patientName: patient['name'] as String? ?? 'مريض',
-          typeName: type['name'] as String? ?? 'كشف',
+          patientName: patient['name'] as String? ?? AppStrings.patient,
+          typeName: type['name'] as String? ?? AppStrings.normalCheckup,
           displayTime: _formatTime(timeRaw),
           status: raw['status'] as String,
           isUrgent: raw['is_urgent'] as bool? ?? false,
@@ -42,10 +43,10 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
 
       emit(WaitingQueueLoaded(
         queue: queuePatients,
-        doctorName: 'د. ياسر مصطفى',
+        doctorName: AppStrings.isArabic ? 'د. ياسر مصطفى' : 'Dr. Yasser Mustafa',
       ));
     } catch (e) {
-      emit(const WaitingQueueError('تعذّر تحميل طابور الانتظار'));
+      emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر تحميل طابور الانتظار' : 'Failed to load queue'));
     }
   }
 
@@ -62,7 +63,7 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
       await _repository.callPatient(apptId);
       await loadQueue();
     } catch (_) {
-      emit(const WaitingQueueError('تعذّر استدعاء المريض التالي'));
+      emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر استدعاء المريض التالي' : 'Failed to call next patient'));
     }
   }
 
@@ -74,7 +75,7 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
       await _repository.callPatient(appointmentId);
       await loadQueue();
     } catch (_) {
-      emit(const WaitingQueueError('تعذّر استدعاء المريض'));
+      emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر استدعاء المريض' : 'Failed to call patient'));
     }
   }
 
@@ -83,7 +84,7 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
     if (parts.length < 2) return raw;
     final hour = int.tryParse(parts[0]) ?? 0;
     final minute = parts[1];
-    final period = hour >= 12 ? 'م' : 'ص';
+    final period = hour >= 12 ? (AppStrings.isArabic ? 'م' : 'PM') : (AppStrings.isArabic ? 'ص' : 'AM');
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
     return '$displayHour:$minute $period';
   }

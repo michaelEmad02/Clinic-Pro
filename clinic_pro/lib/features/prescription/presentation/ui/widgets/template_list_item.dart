@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -17,26 +18,27 @@ class TemplateListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = template['name'] ?? '';
-    final category = template['category'] ?? ''; // Category isn't in DB, kept for UI fallback if needed
+    final category = template['category'] ??
+        ''; // Category isn't in DB, kept for UI fallback if needed
     final useCount = template['user_count'] ?? 0;
-    
+
     final items = template['items'] as List<dynamic>? ?? [];
     final drugCount = items.length;
 
     // تحديد لون جانبي مختلف بناء على الفئة لإضفاء جمالية
-    Color sideColor = AppColors.primary;
+    Color sideColor = context.primary;
     if (category == 'أمراض مزمنة') {
-      sideColor = AppColors.accent;
+      sideColor = context.accent;
     } else if (category == 'حالات حادة') {
-      sideColor = const Color(0xFFF5A623); // Warning color
+      sideColor = context.warning;
     }
 
     return Card(
       elevation: 0,
-      color: AppColors.surface,
+      color: context.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: context.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -64,22 +66,23 @@ class TemplateListItem extends StatelessWidget {
                           name,
                           style: AppTextStyles.headlineSmall(context).copyWith(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: context.textPrimary,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.background,
+                            color: context.background,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             category,
                             style: AppTextStyles.caption(context).copyWith(
-                              color: AppColors.textSecondary,
+                              color: context.textSecondary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -88,7 +91,7 @@ class TemplateListItem extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.more_vert, color: AppColors.textHint),
+                    icon: Icon(Icons.more_vert, color: context.textHint),
                     onPressed: onMoreTap,
                     constraints: const BoxConstraints(),
                     padding: EdgeInsets.zero,
@@ -96,7 +99,7 @@ class TemplateListItem extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              const Divider(height: 1, color: AppColors.border),
+              Divider(height: 1, color: context.border),
               const SizedBox(height: 12),
 
               // الإحصائيات بالأسفل
@@ -104,19 +107,21 @@ class TemplateListItem extends StatelessWidget {
                 children: [
                   // عدد الأدوية
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
+                      color: context.primaryLightColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.medication_outlined, size: 16, color: AppColors.primary),
+                        Icon(Icons.medication_outlined,
+                            size: 16, color: context.primary),
                         const SizedBox(width: 4),
                         Text(
-                          '$drugCount أدوية',
+                          '$drugCount ${AppStrings.drugs}',
                           style: AppTextStyles.caption(context).copyWith(
-                            color: AppColors.primary,
+                            color: context.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -127,13 +132,14 @@ class TemplateListItem extends StatelessWidget {
                   // عدد مرات الاستخدام
                   Row(
                     children: [
-                      const Icon(Icons.history, size: 16, color: AppColors.textSecondary),
+                      Icon(Icons.history,
+                          size: 16, color: context.textSecondary),
                       const SizedBox(width: 4),
                       Text(
-                        'استخدام: $useCount',
+                        '$useCount',
                         style: AppTextStyles.caption(context).copyWith(
                           fontFamily: 'Inter',
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                         ),
                       ),
                     ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/strings/app_strings.dart';
 
 class DashboardSummaryRow extends StatelessWidget {
   final num totalRevenue;
@@ -26,7 +27,7 @@ class DashboardSummaryRow extends StatelessWidget {
         children: [
           _buildBentoCard(
             context: context,
-            title: 'إجمالي الإيرادات',
+            title: AppStrings.totalRevenue,
             value: '\$${totalRevenue.toStringAsFixed(0)}',
             icon: Icons.payments_outlined,
             iconBgColor: AppColors.successBg,
@@ -37,17 +38,17 @@ class DashboardSummaryRow extends StatelessWidget {
           const SizedBox(width: 12),
           _buildBentoCard(
             context: context,
-            title: 'إجمالي المرضى',
+            title: AppStrings.totalPatients,
             value: '$totalPatients',
             icon: Icons.people_outline,
-            iconBgColor: AppColors.primaryLight,
+            iconBgColor: context.primaryLightColor,
             iconColor: AppColors.primaryContainer,
             accentColor: AppColors.primaryContainer,
           ),
           const SizedBox(width: 12),
           _buildBentoCard(
             context: context,
-            title: 'مواعيد اليوم',
+            title: AppStrings.todayAppointments,
             value: '$todayAppointments',
             icon: Icons.today_outlined,
             iconBgColor: AppColors.warningBg,
@@ -57,7 +58,7 @@ class DashboardSummaryRow extends StatelessWidget {
           const SizedBox(width: 12),
           _buildBentoCard(
             context: context,
-            title: 'العيادات النشطة',
+            title: AppStrings.activeClinics,
             value: '$activeClinics',
             icon: Icons.business_outlined,
             iconBgColor: AppColors.iconBg, // purple tint
@@ -82,9 +83,9 @@ class DashboardSummaryRow extends StatelessWidget {
     return Container(
       width: 160,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -151,7 +152,7 @@ class DashboardSummaryRow extends StatelessWidget {
                       Text(
                         title,
                         style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -160,7 +161,7 @@ class DashboardSummaryRow extends StatelessWidget {
                         value,
                         style: AppTextStyles.dataNumeric(context).copyWith(
                           fontSize: 18,
-                          color: AppColors.textPrimary,
+                          color: context.textPrimary,
                         ),
                       ),
                     ],

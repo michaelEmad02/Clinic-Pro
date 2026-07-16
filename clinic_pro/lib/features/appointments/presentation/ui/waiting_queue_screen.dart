@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -31,9 +32,9 @@ class _WaitingQueueBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         title: BlocBuilder<WaitingQueueCubit, WaitingQueueState>(
           builder: (context, state) {
@@ -42,7 +43,7 @@ class _WaitingQueueBody extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'طابور الانتظار',
+                  AppStrings.waitingQueueTitle,
                   style: AppTextStyles.headlineMedium(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
@@ -52,7 +53,7 @@ class _WaitingQueueBody extends StatelessWidget {
                   Text(
                     subtitle,
                     style: AppTextStyles.caption(context).copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.textSecondary,
                     ),
                   ),
               ],
@@ -61,7 +62,7 @@ class _WaitingQueueBody extends StatelessWidget {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.borderColor, height: 1),
         ),
       ),
       body: BlocBuilder<WaitingQueueCubit, WaitingQueueState>(
@@ -82,7 +83,7 @@ class _WaitingQueueBody extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () =>
                         context.read<WaitingQueueCubit>().loadQueue(),
-                    child: const Text('إعادة المحاولة'),
+                    child: Text(AppStrings.retry),
                   ),
                 ],
               ),
@@ -104,7 +105,7 @@ class _WaitingQueueBody extends StatelessWidget {
                     onPressed: () {
                       context.read<WaitingQueueCubit>().callNext();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('تم استدعاء المريض التالي')),
+                        SnackBar(content: Text(AppStrings.patientCalled)),
                       );
                     },
                   ),
@@ -114,7 +115,7 @@ class _WaitingQueueBody extends StatelessWidget {
                     onCallPatient: (id) {
                       context.read<WaitingQueueCubit>().callPatient(id);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('تم استدعاء المريض')),
+                        SnackBar(content: Text(AppStrings.patientCalledDetails)),
                       );
                     },
                   ),

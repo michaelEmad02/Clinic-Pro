@@ -5,8 +5,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/localization/language_cubit.dart';
 import '../../../../core/widgets/shimmer_list.dart';
 import '../manager/reports_cubit.dart';
 import '../manager/reports_state.dart';
@@ -35,26 +37,26 @@ class _ReportsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         toolbarHeight: 64,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'التقارير المالية والأداء',
+              AppStrings.reports,
               style: AppTextStyles.headlineMedium(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             Text(
-              'نظرة شاملة على أداء العيادة والإيرادات',
+              AppStrings.financialReports,
               style: AppTextStyles.caption(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
           ],
@@ -62,11 +64,11 @@ class _ReportsBody extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf_outlined),
-            color: AppColors.primary,
+            color: context.primary,
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('تم تصدير التقرير بنجاح'),
+                SnackBar(
+                  content: Text(AppStrings.reportExported),
                 ),
               );
             },
@@ -74,7 +76,7 @@ class _ReportsBody extends StatelessWidget {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.border, height: 1),
         ),
       ),
       body: BlocBuilder<ReportsCubit, ReportsState>(
@@ -93,9 +95,8 @@ class _ReportsBody extends StatelessWidget {
                   Text(state.message),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () =>
-                        context.read<ReportsCubit>().loadReports(),
-                    child: const Text('إعادة المحاولة'),
+                    onPressed: () => context.read<ReportsCubit>().loadReports(),
+                    child: Text(AppStrings.retry),
                   ),
                 ],
               ),
@@ -133,8 +134,7 @@ class _ReportsBody extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(
-                          child: TopServicesList(
-                              services: state.topServices),
+                          child: TopServicesList(services: state.topServices),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -161,10 +161,13 @@ class _ReportsBody extends StatelessWidget {
       context: context,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      locale: const Locale('ar'),
-      builder: (ctx, child) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: child!,
+      builder: (ctx, child) => BlocBuilder<LanguageCubit, Locale>(
+        builder: (context, locale) => Directionality(
+          textDirection: locale.languageCode == 'ar'
+              ? TextDirection.rtl
+              : TextDirection.ltr,
+          child: child!,
+        ),
       ),
     );
     if (picked != null) {

@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -44,11 +45,11 @@ class SettingsAccountSection extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primaryLight, width: 2),
+                  border: Border.all(color: context.primaryLightColor, width: 2),
                 ),
                 child: CircleAvatar(
                   radius: 40,
-                  backgroundColor: AppColors.primaryLight,
+                  backgroundColor: context.primaryLightColor,
                   backgroundImage: hasAvatar ? NetworkImage(avatarUrl!) : null,
                   child: !hasAvatar
                       ? Text(
@@ -67,7 +68,7 @@ class SettingsAccountSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.accent,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.surface, width: 2),
+                    border: Border.all(color: context.surfaceColor, width: 2),
                   ),
                 ),
               ),
@@ -78,14 +79,14 @@ class SettingsAccountSection extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary),
           ),
           if (roleBadge != null) ...[
             const SizedBox(height: AppConstants.spaceSm),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.primaryLightColor,
                 borderRadius: BorderRadius.circular(AppConstants.radiusChip),
               ),
               child: Text(
@@ -109,7 +110,7 @@ class SettingsAccountSection extends StatelessWidget {
             ),
             icon: const Icon(Icons.person_outline, size: 20, color: AppColors.primary),
             label: Text(
-              'تعديل الملف الشخصي',
+              AppStrings.editProfile,
               style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
             ),
           ),
@@ -121,7 +122,7 @@ class SettingsAccountSection extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: AppColors.primaryLight,
+            backgroundColor: context.primaryLightColor,
             backgroundImage: hasAvatar ? NetworkImage(avatarUrl!) : null,
             child: !hasAvatar
                 ? Text(
@@ -139,7 +140,7 @@ class SettingsAccountSection extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary),
                 ),
               ],
             ),
@@ -147,7 +148,7 @@ class SettingsAccountSection extends StatelessWidget {
           TextButton.icon(
             onPressed: onEdit,
             label: Text(
-              'تعديل الملف',
+              AppStrings.editProfileShort,
               style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary),
             ),
             icon: const Icon(Icons.arrow_back, color: AppColors.primary, size: 18),
@@ -163,8 +164,8 @@ class SettingsAccountSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
             child: Text(
-              'الحساب',
-              style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary),
+              AppStrings.account,
+              style: AppTextStyles.headlineSmall(context).copyWith(color: context.textSecondary),
             ),
           ),
           const SizedBox(height: AppConstants.spaceSm),
@@ -172,9 +173,9 @@ class SettingsAccountSection extends StatelessWidget {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            border: Border.all(color: AppColors.border, width: 0.5),
+            border: Border.all(color: context.borderColor, width: 0.5),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x0F000000),

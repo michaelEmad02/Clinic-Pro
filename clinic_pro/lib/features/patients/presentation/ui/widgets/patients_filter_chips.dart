@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../manager/patients_state.dart';
 
@@ -16,11 +17,11 @@ class PatientsFilterChips extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const _filters = [
-    (PatientsFilter.all, 'الكل'),
-    (PatientsFilter.today, 'اليوم'),
-    (PatientsFilter.thisWeek, 'هذا الأسبوع'),
-    (PatientsFilter.chronic, 'مزمن'),
+  static final _filters = [
+    (PatientsFilter.all, AppStrings.all),
+    (PatientsFilter.today, AppStrings.today),
+    (PatientsFilter.thisWeek, AppStrings.weekly),
+    (PatientsFilter.chronic, AppStrings.isArabic ? 'مزمن' : 'Chronic'),
   ];
 
   @override
@@ -37,18 +38,18 @@ class PatientsFilterChips extends StatelessWidget {
               label: Text(f.$2),
               selected: isSelected,
               onSelected: (_) => onChanged(f.$1),
-              selectedColor: AppColors.primary,
-              backgroundColor: AppColors.surface,
+              selectedColor: context.primary,
+              backgroundColor: context.surface,
               labelStyle: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 12,
-                color: isSelected ? Colors.white : AppColors.textSecondary,
+                color: isSelected ? context.onPrimary : context.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? AppColors.primary : AppColors.border,
+                  color: isSelected ? context.primary : context.border,
                 ),
               ),
               showCheckmark: false,

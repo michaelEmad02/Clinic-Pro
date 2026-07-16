@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -24,22 +25,22 @@ class DrugsScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => sl<DrugsCubit>()..loadDrugs(),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
         appBar: AppBar(
           toolbarHeight: 64,
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.surface,
           elevation: 0,
           scrolledUnderElevation: 0,
           title: Text(
-            'قاعدة الأدوية',
+            AppStrings.drugBase,
             style: AppTextStyles.headlineMedium(context).copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: context.primary,
             ),
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(color: AppColors.border, height: 1),
+            child: Container(color: context.border, height: 1),
           ),
         ),
         body: BlocBuilder<DrugsCubit, DrugsState>(
@@ -63,7 +64,7 @@ class DrugsScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () => context.read<DrugsCubit>().loadDrugs(),
-                      child: const Text('إعادة المحاولة'),
+                      child: Text(AppStrings.retry),
                     ),
                   ],
                 ),
@@ -106,7 +107,7 @@ class DrugsScreen extends StatelessWidget {
           builder: (context) {
             return FloatingActionButton(
               onPressed: () => _showAddDrugSheet(context),
-              backgroundColor: AppColors.primary,
+              backgroundColor: context.primary,
               child: const Icon(Icons.add, color: Colors.white),
             );
           },

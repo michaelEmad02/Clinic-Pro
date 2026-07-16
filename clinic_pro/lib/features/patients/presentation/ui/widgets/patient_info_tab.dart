@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/patients_state.dart';
@@ -24,22 +25,22 @@ class PatientInfoTab extends StatelessWidget {
         const SizedBox(height: 16),
         _sectionCard(
           context,
-          title: 'بيانات التواصل',
+          title: AppStrings.isArabic ? 'بيانات التواصل' : 'Contact Info',
           icon: Icons.contact_page_outlined,
           children: [
             if (patient.email != null)
-              _infoRow(Icons.mail_outline, 'البريد الإلكتروني',
+              _infoRow(context, Icons.mail_outline, AppStrings.email,
                   patient.email!, TextDirection.ltr),
             if (patient.address != null)
-              _infoRow(Icons.location_on_outlined, 'العنوان السكني',
+              _infoRow(context, Icons.location_on_outlined, AppStrings.isArabic ? 'العنوان السكني' : 'Address',
                   patient.address!),
             if (patient.emergencyContact != null)
-              _infoRow(Icons.contact_emergency_outlined, 'جهة اتصال للطوارئ',
+              _infoRow(context, Icons.contact_emergency_outlined, AppStrings.isArabic ? 'جهة اتصال للطوارئ' : 'Emergency Contact',
                   patient.emergencyContact!),
-            _infoRow(Icons.phone_iphone_outlined, 'الهاتف', patient.phone,
+            _infoRow(context, Icons.phone_iphone_outlined, AppStrings.isArabic ? 'الهاتف' : 'Phone', patient.phone,
                 TextDirection.ltr),
             if (patient.birthDate != null)
-              _infoRow(Icons.cake_outlined, 'تاريخ الميلاد', patient.birthDate!),
+              _infoRow(context, Icons.cake_outlined, AppStrings.isArabic ? 'تاريخ الميلاد' : 'Birth Date', patient.birthDate!),
           ],
         ),
         const SizedBox(height: 16),
@@ -49,15 +50,15 @@ class PatientInfoTab extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('سيتم تفعيل المراسلة لاحقاً')),
+                    SnackBar(content: Text(AppStrings.isArabic ? 'سيتم تفعيل المراسلة لاحقاً' : 'Messaging will be available soon')),
                   );
                 },
                 icon: const Icon(Icons.chat_outlined, size: 18),
-                label: const Text('مراسلة'),
+                label: Text(AppStrings.isArabic ? 'مراسلة' : 'Message'),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  foregroundColor: AppColors.primary,
-                  side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+                  foregroundColor: context.primary,
+                  side: BorderSide(color: context.primary.withOpacity(0.2)),
                 ),
               ),
             ),
@@ -67,10 +68,10 @@ class PatientInfoTab extends StatelessWidget {
                 onPressed: () =>
                     AddEditPatientSheet.show(context, patient: patient),
                 icon: const Icon(Icons.edit_document, size: 18),
-                label: const Text('تعديل الملف'),
+                label: Text(AppStrings.isArabic ? 'تعديل الملف' : 'Edit Profile'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.onPrimaryContainer,
+                  backgroundColor: context.primary,
+                  foregroundColor: context.onPrimaryContainer,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
@@ -90,22 +91,22 @@ class PatientInfoTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 20),
+              Icon(icon, color: context.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                   color: context.primary,
                 ),
               ),
             ],
@@ -118,6 +119,7 @@ class PatientInfoTab extends StatelessWidget {
   }
 
   Widget _infoRow(
+    BuildContext context,
     IconData icon,
     String label,
     String value, [
@@ -128,7 +130,7 @@ class PatientInfoTab extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: AppColors.primaryContainer),
+          Icon(icon, size: 18, color: context.primaryContainer),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -136,19 +138,19 @@ class PatientInfoTab extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimary,
                   ),
                   textDirection: textDirection,
                 ),

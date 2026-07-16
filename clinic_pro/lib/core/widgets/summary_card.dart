@@ -26,9 +26,9 @@ class SummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +37,7 @@ class SummaryCard extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: iconColor ?? AppColors.primary,
+                color: iconColor ?? context.primary,
                 size: 20,
               ),
               const SizedBox(width: AppConstants.spaceSm),
@@ -45,7 +45,7 @@ class SummaryCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: AppTextStyles.bodyMedium(context).copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -65,13 +65,13 @@ class SummaryCard extends StatelessWidget {
                 Icon(
                   isPositiveTrend ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 14,
-                  color: isPositiveTrend ? AppColors.accent : AppColors.danger,
+                  color: isPositiveTrend ? context.accent : context.danger,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   trend!,
                   style: AppTextStyles.caption(context).copyWith(
-                    color: isPositiveTrend ? AppColors.accent : AppColors.danger,
+                    color: isPositiveTrend ? context.accent : context.danger,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

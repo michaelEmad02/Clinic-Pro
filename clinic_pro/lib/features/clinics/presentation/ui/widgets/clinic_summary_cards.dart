@@ -1,7 +1,6 @@
 // ────────────────────────────────────────────────────────
 // شبكة الإحصائيات السريعة Bento — 2×2 جوال، 4 أعمدة سطح مكتب
-// بطاقة التقييم بلون مختلف (primary-container)
-// مستوحى من تصميم phase8_ui/clinic_details_screen
+// تعتمد على ClinicStatisticsEntity من طبقة الـ Domain
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -9,12 +8,12 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/clinics_state.dart';
+import '../../../domain/entities/clinic_statistics_entity.dart';
 
 class ClinicSummaryCards extends StatelessWidget {
-  final ClinicItem clinic;
+  final ClinicStatisticsEntity statistics;
 
-  const ClinicSummaryCards({super.key, required this.clinic});
+  const ClinicSummaryCards({super.key, required this.statistics});
 
   @override
   Widget build(BuildContext context) {
@@ -29,45 +28,50 @@ class ClinicSummaryCards extends StatelessWidget {
           mainAxisSpacing: AppConstants.spaceSm,
           childAspectRatio: 1.3,
           children: [
+            // مواعيد اليوم
             _SummaryCard(
               icon: Icons.event,
-              iconBg: AppColors.warningBg,
-              iconColor: AppColors.warningText,
-              value: _formatNumber(clinic.todayAppointments),
+              iconBg: context.warningBg,
+              iconColor: context.warningText,
+              value: _formatNumber(statistics.dayAppointments),
               label: AppStrings.todayAppointments,
-              change: AppStrings.remainingAppointments(clinic.todayRemaining),
-              changeColor: AppColors.textSecondary,
+              change: AppStrings.remainingAppointments(
+                  statistics.dayAppointments -
+                      statistics.numberOfFinishedAppointments),
+              changeColor: context.textSecondary,
             ),
+            // عدد الأطباء
             _SummaryCard(
               icon: Icons.medical_services_outlined,
-              iconBg: AppColors.primaryLight,
-              iconColor: AppColors.primary,
-              value: '${clinic.doctorsCount}',
+              iconBg: context.primaryLightColor,
+              iconColor: context.primary,
+              value: '${statistics.numberOfDoctors}',
               label: AppStrings.doctors,
-              change: clinic.doctorsCount > 0 && clinic.doctorsOnLeave > 0
-                  ? AppStrings.onLeave(clinic.doctorsOnLeave)
-                  : clinic.doctorsCount > 0
-                      ? AppStrings.active
-                      : AppStrings.none,
-              changeColor: AppColors.textSecondary,
+              change: statistics.numberOfDoctors > 0
+                  ? AppStrings.active
+                  : AppStrings.none,
+              changeColor: context.textSecondary,
             ),
+            // إيرادات الشهر
             _SummaryCard(
               icon: Icons.payments_outlined,
-              iconBg: AppColors.successBg,
-              iconColor: AppColors.successText,
-              value: '${_formatNumber(clinic.monthlyRevenue.toInt())} ${AppStrings.egp}',
+              iconBg: context.successBg,
+              iconColor: context.successText,
+              value:
+                  '${_formatNumber(statistics.monthlyRevenue.toInt())} ${AppStrings.egp}',
               label: AppStrings.monthlyRevenue,
               change: AppStrings.active,
-              changeColor: AppColors.successText,
+              changeColor: context.successText,
             ),
+            // المواعيد المكتملة
             _SummaryCard(
               icon: Icons.check_circle_outline,
-              iconBg: AppColors.primaryLight,
-              iconColor: AppColors.primary,
-              value: '${clinic.todayAppointments - clinic.todayRemaining}',
+              iconBg: context.primaryLightColor,
+              iconColor: context.primary,
+              value: '${statistics.numberOfFinishedAppointments}',
               label: AppStrings.completedAppointments,
               change: AppStrings.today,
-              changeColor: AppColors.textSecondary,
+              changeColor: context.textSecondary,
             ),
           ],
         );
@@ -78,9 +82,9 @@ class ClinicSummaryCards extends StatelessWidget {
 
 String _formatNumber(int value) {
   return value.toString().replaceAllMapped(
-    RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-    (m) => '${m[1]},',
-  );
+        RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+        (m) => '${m[1]},',
+      );
 }
 
 class _SummaryCard extends StatelessWidget {
@@ -105,11 +109,12 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppConstants.spaceSm + AppConstants.spaceXs),
+      padding:
+          const EdgeInsets.all(AppConstants.spaceSm + AppConstants.spaceXs),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
@@ -122,7 +127,7 @@ class _SummaryCard extends StatelessWidget {
                 child: Text(
                   label,
                   style: AppTextStyles.bodyMedium(context).copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -134,7 +139,8 @@ class _SummaryCard extends StatelessWidget {
                   color: iconBg,
                   borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                 ),
-                child: Icon(icon, size: AppConstants.iconSizeMd, color: iconColor),
+                child:
+                    Icon(icon, size: AppConstants.iconSizeMd, color: iconColor),
               ),
             ],
           ),
@@ -142,7 +148,7 @@ class _SummaryCard extends StatelessWidget {
           Text(
             value,
             style: AppTextStyles.headlineMedium(context).copyWith(
-              color: AppColors.textPrimary,
+              color: context.textPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -162,95 +168,6 @@ class _SummaryCard extends StatelessWidget {
                     color: changeColor,
                   ),
                   overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RatingCard extends StatelessWidget {
-  final double rating;
-  final int totalReviews;
-
-  const _RatingCard({
-    required this.rating,
-    required this.totalReviews,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(AppConstants.spaceSm + AppConstants.spaceXs),
-      decoration: BoxDecoration(
-        color: AppColors.primaryContainer,
-        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        boxShadow: AppConstants.cardShadow,
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            bottom: -12,
-            right: -12,
-            child: Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceTint.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppStrings.overallRating,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.onPrimaryContainer,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(AppConstants.spaceXs),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceTint.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-                    ),
-                    child: const Icon(Icons.star,
-                        size: AppConstants.iconSizeMd, color: AppColors.onPrimaryContainer),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    rating.toStringAsFixed(1),
-                    style: AppTextStyles.headlineMedium(context).copyWith(
-                      color: AppColors.onPrimaryContainer,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    AppStrings.outOfFive,
-                    style: AppTextStyles.caption(context).copyWith(
-                      color: AppColors.onPrimaryContainer.withOpacity(0.7),
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                AppStrings.reviewCount(totalReviews),
-                style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.onPrimaryContainer.withOpacity(0.8),
                 ),
               ),
             ],

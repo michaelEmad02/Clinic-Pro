@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../manager/expenses_state.dart';
 import 'expense_list_item.dart';
@@ -22,9 +23,9 @@ class ExpensesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (expenses.isEmpty) {
-      return const EmptyState(
-        title: 'لا توجد مصروفات',
-        subtitle: 'لم يتم تسجيل أي مصروفات بعد.',
+      return EmptyState(
+        title: AppStrings.noExpenses,
+        subtitle: AppStrings.noExpenses,
         icon: Icons.account_balance_wallet_outlined,
       );
     }

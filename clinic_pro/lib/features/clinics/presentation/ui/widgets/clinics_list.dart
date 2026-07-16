@@ -7,15 +7,15 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/utils/responsive_helper.dart';
 import '../../../../../core/widgets/empty_state.dart';
-import '../../manager/clinics_state.dart';
+import '../../../domain/entities/clinic_entity.dart';
 import 'clinic_card.dart';
 
 class ClinicsList extends StatelessWidget {
-  final List<ClinicItem> clinics;
-  final ValueChanged<ClinicItem> onItemTap;
-  final ValueChanged<ClinicItem> onItemEdit;
-  final ValueChanged<ClinicItem> onItemToggleActive;
-  final ValueChanged<ClinicItem> onItemDelete;
+  final List<ClinicEntity> clinics;
+  final ValueChanged<ClinicEntity> onItemTap;
+  final ValueChanged<ClinicEntity> onItemEdit;
+  final ValueChanged<ClinicEntity> onItemToggleActive;
+  final ValueChanged<ClinicEntity> onItemDelete;
 
   const ClinicsList({
     super.key,
@@ -29,7 +29,7 @@ class ClinicsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (clinics.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         title: AppStrings.noClinics,
         subtitle: AppStrings.addFirstClinic,
         icon: Icons.local_hospital_outlined,

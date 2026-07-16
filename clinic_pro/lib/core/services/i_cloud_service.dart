@@ -32,8 +32,9 @@ abstract class ICloudService {
   /// حذف سجل من جدول
   Future<void> delete({
     required String table,
-    required String matchColumn,
-    required dynamic matchValue,
+    String? matchColumn,
+    dynamic matchValue,
+    Map<String, dynamic>? matchMap,
   });
 
   /// الاشتراك المباشر بالوقت الفعلي (Realtime Stream)

@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -19,24 +20,24 @@ class PatientsSearchBar extends StatelessWidget {
       child: TextField(
         onChanged: onChanged,
         decoration: InputDecoration(
-          hintText: 'بحث بالاسم أو رقم الهاتف...',
+          hintText: AppStrings.searchByName,
           hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-            color: AppColors.textHint,
+            color: context.textHint,
           ),
-          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+          prefixIcon: Icon(Icons.search, color: context.textSecondary),
           filled: true,
-          fillColor: AppColors.surface,
+          fillColor: context.surface,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppConstants.spaceMd,
             vertical: 13,
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderSide: BorderSide(color: context.border),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderSide: BorderSide(color: context.border),
           ),
         ),
       ),

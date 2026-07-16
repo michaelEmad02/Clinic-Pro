@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -45,7 +46,7 @@ class AppointmentActionSheet {
             if (appointment.status == 'scheduled' && onConfirmArrival != null)
               _ActionTile(
                 icon: Icons.check_circle_outline,
-                label: 'تأكيد الحضور',
+                label: AppStrings.isArabic ? '${AppStrings.confirm} الحضور' : '${AppStrings.confirm} Arrival',
                 color: AppColors.successText,
                 onTap: () {
                   Navigator.pop(context);
@@ -59,7 +60,7 @@ class AppointmentActionSheet {
                 appointment.status != 'cancelled')
               _ActionTile(
                 icon: Icons.edit_outlined,
-                label: 'تعديل الموعد',
+                label: '${AppStrings.edit} ${AppStrings.appointment}',
                 color: AppColors.primary,
                 onTap: () {
                   Navigator.pop(context);
@@ -71,7 +72,7 @@ class AppointmentActionSheet {
                 appointment.status != 'done')
               _ActionTile(
                 icon: Icons.priority_high,
-                label: appointment.isUrgent ? 'إلغاء حالة الطوارئ' : 'تحديد كحالة طارئة',
+                label: appointment.isUrgent ? (AppStrings.isArabic ? '${AppStrings.cancel} حالة الطوارئ' : '${AppStrings.cancel} Emergency Status') : (AppStrings.isArabic ? 'تحديد كحالة طارئة' : 'Mark as Urgent'),
                 color: AppColors.warning,
                 onTap: () {
                   Navigator.pop(context);
@@ -83,7 +84,7 @@ class AppointmentActionSheet {
                 appointment.status != 'done')
               _ActionTile(
                 icon: Icons.receipt_long_outlined,
-                label: 'تسجيل فاتورة',
+                label: AppStrings.createInvoice,
                 color: AppColors.primaryContainer,
                 onTap: () {
                   Navigator.pop(context);
@@ -92,7 +93,7 @@ class AppointmentActionSheet {
               ),
             _ActionTile(
               icon: Icons.info_outline,
-              label: 'عرض التفاصيل',
+              label: AppStrings.viewDetails,
               color: AppColors.primary,
               onTap: () {
                 Navigator.pop(context);
@@ -104,7 +105,7 @@ class AppointmentActionSheet {
                 onCancel != null)
               _ActionTile(
                 icon: Icons.cancel_outlined,
-                label: 'إلغاء الموعد',
+                label: '${AppStrings.cancel} ${AppStrings.appointment}',
                 color: AppColors.danger,
                 onTap: () {
                   Navigator.pop(context);
@@ -114,7 +115,7 @@ class AppointmentActionSheet {
             if (appointment.status == 'cancelled' && onDelete != null)
               _ActionTile(
                 icon: Icons.delete_outline,
-                label: 'حذف الموعد نهائياً',
+                label: AppStrings.isArabic ? '${AppStrings.delete} ${AppStrings.appointment} نهائياً' : '${AppStrings.delete} ${AppStrings.appointment} Permanently',
                 color: AppColors.danger,
                 onTap: () {
                   Navigator.pop(context);

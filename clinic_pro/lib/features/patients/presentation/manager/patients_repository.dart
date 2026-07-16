@@ -5,6 +5,8 @@
 
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'patients_state.dart';
 
 @injectable
@@ -27,6 +29,7 @@ class PatientsRepository {
     String? allergies,
     String? chronicConditions,
     String? address,
+    String? doctorId,
   }) async {
     final data = await _cloud.insert(table: 'patients', data: {
       'name': name,
@@ -37,6 +40,7 @@ class PatientsRepository {
       if (allergies != null) 'allergies': allergies,
       if (chronicConditions != null) 'chronic_conditions': chronicConditions,
       if (address != null) 'address': address,
+      if (doctorId != null) 'doctor_id': doctorId,
     });
     return _mapPatientItem(data);
   }
@@ -53,6 +57,7 @@ class PatientsRepository {
         'allergies': updated.allergies,
         'chronic_conditions': updated.chronicConditions,
         if (updated.address != null) 'address': updated.address,
+        if (updated.doctorId != null) 'doctor_id': updated.doctorId,
       },
       matchColumn: 'id',
       matchValue: updated.id,
@@ -105,6 +110,7 @@ class PatientsRepository {
   PatientItem _mapPatientItem(Map<String, dynamic> raw) {
     return PatientItem(
       id: raw['id'] as String,
+      doctorId: raw['doctor_id'] as String?,
       name: raw['name'] as String,
       phone: raw['phone'] as String,
       gender: raw['gender'] as String,
@@ -113,12 +119,35 @@ class PatientsRepository {
       email: raw['email'] as String?,
       address: raw['address'] as String?,
       emergencyContact: raw['emergency_contact'] as String?,
-      allergies: raw['allergies'] as String? ?? 'لا يوجد',
-      chronicConditions: raw['chronic_conditions'] as String? ?? 'لا يوجد',
+      allergies: raw['allergies'] as String? ?? AppStrings.none,
+      chronicConditions: raw['chronic_conditions'] as String? ?? AppStrings.none,
       isChronic: raw['is_chronic'] as bool? ?? false,
       lastVisitLabel: raw['last_visit_label'] as String? ?? '—',
       lastVisitDate: raw['last_visit_date'] as String?,
       statusTag: raw['status_tag'] as String? ?? 'follow_up',
     );
+  }
+
+  Future<List<Map<String, dynamic>>> getDoctors() async {
+    final staffList = await _cloud.select(
+      table: 'clinic_staff',
+      eq: {
+        'clinic_id': AppConstants.activeClinicId,
+        'role': 'doctor',
+      },
+    );
+
+    final results = <Map<String, dynamic>>[];
+    for (final staff in staffList) {
+      final docId = staff['user_id'] as String;
+      final docDetails = await _cloud.select(
+        table: 'users',
+        eq: {'id': docId},
+      );
+      if (docDetails.isNotEmpty) {
+        results.add(docDetails.first);
+      }
+    }
+    return results;
   }
 }

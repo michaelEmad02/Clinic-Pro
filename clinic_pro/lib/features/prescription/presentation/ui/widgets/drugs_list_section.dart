@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/prescription_state.dart';
@@ -10,7 +11,11 @@ import 'drug_dose_card.dart';
 
 class DrugsListSection extends StatelessWidget {
   final List<SelectedDrugModel> selectedDrugs;
-  final Function(String, {int? doseFrequency, int? doseDuration, String? doseTiming, bool? isPrn}) onUpdateDrug;
+  final Function(String,
+      {int? doseFrequency,
+      int? doseDuration,
+      String? doseTiming,
+      bool? isPrn}) onUpdateDrug;
   final Function(String) onRemoveDrug;
   final VoidCallback onAddDrugTap;
 
@@ -31,10 +36,10 @@ class DrugsListSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             children: [
-              const Icon(Icons.medication_outlined, color: AppColors.primary),
+              Icon(Icons.medication_outlined, color: context.primary),
               const SizedBox(width: 8),
               Text(
-                'الوصفة الطبية (الأدوية)',
+                '${AppStrings.prescription} (${AppStrings.drugs})',
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -68,10 +73,10 @@ class DrugsListSection extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.3),
+                color: context.primary.withOpacity(0.3),
               ),
             ),
             child: Column(
@@ -79,27 +84,27 @@ class DrugsListSection extends StatelessWidget {
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryLight,
+                  decoration: BoxDecoration(
+                    color: context.primaryLightColor,
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
-                    child: Icon(Icons.add, color: AppColors.primary),
+                  child: Center(
+                    child: Icon(Icons.add, color: context.primary),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'إضافة دواء للوصفة',
+                  AppStrings.addDrug,
                   style: AppTextStyles.headlineSmall(context).copyWith(
-                    color: AppColors.primary,
+                    color: context.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'ابحث في قاعدة بيانات الأدوية أو استخدم النماذج المحفوظة مسبقاً',
+                  '${AppStrings.search} ${AppStrings.drugBase}',
                   style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),

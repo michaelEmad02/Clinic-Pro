@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/reports_state.dart';
@@ -17,9 +18,9 @@ class TopServicesList extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant),
+        border: Border.all(color: context.outline),
         boxShadow: const [
           BoxShadow(
             color: Color(0x08000000),
@@ -32,7 +33,7 @@ class TopServicesList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'أبرز الخدمات',
+            AppStrings.topServices,
             style: AppTextStyles.headlineSmall(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -60,12 +61,12 @@ class _ServiceRow extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: context.primaryLightColor,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
               _serviceIcon(service.icon),
-              color: AppColors.primary,
+              color: context.primary,
               size: 18,
             ),
           ),
@@ -81,9 +82,9 @@ class _ServiceRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${service.revenue.toStringAsFixed(0)} ج.م',
+            '${service.revenue.toStringAsFixed(0)} ${AppStrings.egp}',
             style: AppTextStyles.dataNumeric(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
             ),
           ),
         ],

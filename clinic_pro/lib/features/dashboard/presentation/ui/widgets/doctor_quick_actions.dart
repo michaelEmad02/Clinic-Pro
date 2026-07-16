@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:clinic_pro/core/constants/route_constants.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/features/settings/presentation/ui/widgets/edit_visit_types_sheet.dart';
 
 class DoctorQuickActions extends StatelessWidget {
@@ -21,7 +22,7 @@ class DoctorQuickActions extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'اختصارات سريعة',
+            AppStrings.quickActions,
             style: AppTextStyles.headlineSmall(context).copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
@@ -37,21 +38,21 @@ class DoctorQuickActions extends StatelessWidget {
             children: [
               _buildActionCard(
                 context: context,
-                label: 'الأدوية',
+                label: AppStrings.drugs,
                 icon: Icons.medical_services_outlined,
                 onTap: () => context.push(RouteConstants.drugs),
               ),
               const SizedBox(width: 12),
               _buildActionCard(
                 context: context,
-                label: 'قوالب الروشتات',
+                label: AppStrings.prescriptionTemplates,
                 icon: Icons.description_outlined,
                 onTap: () => context.push(RouteConstants.prescriptionTemplates),
               ),
               const SizedBox(width: 12),
               _buildActionCard(
                 context: context,
-                label: 'أنواع الزيارات',
+                label: AppStrings.visitTypes,
                 icon: Icons.loyalty_outlined,
                 onTap: () => EditVisitTypesSheet.show(context),
               ),
@@ -76,9 +77,9 @@ class DoctorQuickActions extends StatelessWidget {
         width: 120,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.borderColor),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.01),
@@ -100,7 +101,8 @@ class DoctorQuickActions extends StatelessWidget {
               label,
               style: AppTextStyles.caption(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: context.textPrimary,
+                overflow: TextOverflow.ellipsis,
               ),
               textAlign: TextAlign.center,
             ),

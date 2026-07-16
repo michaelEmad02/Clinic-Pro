@@ -3,10 +3,12 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/clinics_state.dart';
+import '../../../domain/entities/clinic_entity.dart';
 
+/// إحصائيات سريعة في بطاقة العيادة — تعرض الهاتف و العنوان
+/// ملاحظة: الإحصائيات التفصيلية (مواعيد، إيرادات) تظهر في شاشة التفاصيل فقط
 class ClinicCardStats extends StatelessWidget {
-  final ClinicItem clinic;
+  final ClinicEntity clinic;
 
   const ClinicCardStats({
     super.key,
@@ -19,32 +21,25 @@ class ClinicCardStats extends StatelessWidget {
       children: [
         _buildStatColumn(
           context,
-          label: AppStrings.todayPatients,
-          value: _formatNumber(clinic.todayAppointments),
-          color: AppColors.primary,
+          icon: Icons.phone_outlined,
+          label: AppStrings.phoneNumber,
+          value: clinic.phone1.isNotEmpty ? clinic.phone1 : '—',
+          color: context.primary,
         ),
         Container(
           width: 1,
           height: 32,
-          color: AppColors.border,
+          color: context.border,
         ),
         Padding(
           padding: const EdgeInsetsDirectional.only(start: 12),
           child: _buildStatColumn(
             context,
-            label: AppStrings.upcomingAppointments,
-            value: _formatNumber(clinic.todayRemaining),
-            color: AppColors.primary,
+            icon: Icons.calendar_today_outlined,
+            label: AppStrings.createdAt,
+            value: _formatDate(clinic.createdAt),
+            color: context.primary,
           ),
-        ),
-        Container(
-          width: 1,
-          height: 32,
-          color: AppColors.border,
-        ),
-        Padding(
-          padding: const EdgeInsetsDirectional.only(start: 12),
-          child: _buildRevenueColumn(context),
         ),
       ],
     );
@@ -52,6 +47,7 @@ class ClinicCardStats extends StatelessWidget {
 
   Widget _buildStatColumn(
     BuildContext context, {
+    required IconData icon,
     required String label,
     required String value,
     required Color color,
@@ -63,7 +59,7 @@ class ClinicCardStats extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.caption(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
             ),
           ),
           const SizedBox(height: AppConstants.spaceXs),
@@ -71,61 +67,17 @@ class ClinicCardStats extends StatelessWidget {
             value,
             style: AppTextStyles.dataNumeric(context).copyWith(
               color: color,
-              fontSize: 16,
+              fontSize: 14,
             ),
+            overflow: TextOverflow.ellipsis,
+            textDirection: TextDirection.ltr,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRevenueColumn(BuildContext context) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-            Text(
-              AppStrings.todayRevenue,
-            style: AppTextStyles.caption(context).copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: AppConstants.spaceXs),
-          Row(
-            children: [
-              Text(
-                _formatRevenue(clinic.monthlyRevenue),
-                style: AppTextStyles.dataNumeric(context).copyWith(
-                  color: AppColors.successText,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(width: AppConstants.spaceXs),
-              Text(
-                AppStrings.sar,
-                style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatNumber(int value) {
-    return value.toString().replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
-  }
-
-  String _formatRevenue(double value) {
-    final str = value.toInt().toString().replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
-    return str;
+  String _formatDate(DateTime date) {
+    return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
   }
 }

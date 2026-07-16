@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import 'prescription_event.dart';
 import 'prescription_state.dart';
@@ -41,12 +42,12 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
         status: PrescriptionStatus.loaded,
         appointmentId: event.appointmentId,
         clinicId: result.appointmentRaw['clinic_id'] as String? ?? '',
-        patientName: result.patientRaw['name'] as String? ?? 'مريض غير معروف',
+        patientName: result.patientRaw['name'] as String? ?? AppStrings.unknownPatient,
         patientAge: '$age سنة',
-        patientGender: (result.patientRaw['gender'] as String? ?? 'male') == 'male' ? 'ذكر' : 'أنثى',
+        patientGender: (result.patientRaw['gender'] as String? ?? 'male') == 'male' ? AppStrings.male : AppStrings.female,
         bloodType: result.patientRaw['blood_type'] as String? ?? 'O+',
         visitType: result.typeName,
-        doctorName: result.doctor['name'] as String? ?? 'طبيب معالج',
+        doctorName: result.doctor['name'] as String? ?? AppStrings.generalPractitioner,
         visitDate: result.appointmentRaw['date'] as String? ??
             DateTime.now().toIso8601String().substring(0, 10),
         selectedDiagnosis: result.selectedDiagnosis,
@@ -57,7 +58,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     } catch (e) {
       emit(state.copyWith(
         status: PrescriptionStatus.error,
-        errorMessage: 'تعذر تحميل بيانات الموعد',
+        errorMessage: AppStrings.loadFailed,
       ));
     }
   }
@@ -156,14 +157,14 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     if (state.selectedDiagnosis.isEmpty && state.finalDiagnosis.trim().isEmpty) {
       emit(state.copyWith(
         status: PrescriptionStatus.error,
-        errorMessage: 'يجب إدخال التشخيص الطبي',
+        errorMessage: '${AppStrings.add} ${AppStrings.medicalDiagnosis}',
       ));
       return;
     }
     if (state.selectedDrugs.isEmpty) {
       emit(state.copyWith(
         status: PrescriptionStatus.error,
-        errorMessage: 'يجب إضافة دواء واحد على الأقل',
+        errorMessage: '${AppStrings.add} ${AppStrings.drug}',
       ));
       return;
     }
@@ -171,14 +172,14 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
       if (!drug.isPrn && (drug.doseFrequency == null || drug.doseDuration == null)) {
         emit(state.copyWith(
           status: PrescriptionStatus.error,
-          errorMessage: 'يجب تحديد التكرار والمدة للدواء ${drug.tradeName}',
+           errorMessage: '${AppStrings.dosage} ${AppStrings.frequency} ${drug.tradeName}',
         ));
         return;
       }
       if (drug.doseTiming == null) {
         emit(state.copyWith(
           status: PrescriptionStatus.error,
-          errorMessage: 'يجب تحديد توقيت الدواء ${drug.tradeName}',
+           errorMessage: '${AppStrings.timing} ${drug.tradeName}',
         ));
         return;
       }
@@ -192,7 +193,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     } catch (_) {
       emit(state.copyWith(
         status: PrescriptionStatus.error,
-        errorMessage: 'حدث خطأ أثناء حفظ الروشتة',
+        errorMessage: AppStrings.error,
       ));
     }
   }
@@ -206,7 +207,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
 
       if (copiedDrugs.isEmpty) {
         emit(state.copyWith(
-          errorMessage: 'لا توجد روشتة سابقة لهذا المريض',
+          errorMessage: '${AppStrings.noData} ${AppStrings.prescription}',
         ));
         return;
       }
@@ -217,7 +218,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
       ));
     } catch (_) {
       emit(state.copyWith(
-        errorMessage: 'لا توجد روشتة سابقة لهذا المريض',
+        errorMessage: '${AppStrings.noData} ${AppStrings.prescription}',
       ));
     }
   }
@@ -248,7 +249,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
       ));
     } catch (_) {
       emit(state.copyWith(
-        errorMessage: 'حدث خطأ أثناء تطبيق القالب',
+        errorMessage: '${AppStrings.error} ${AppStrings.template}',
       ));
     }
   }

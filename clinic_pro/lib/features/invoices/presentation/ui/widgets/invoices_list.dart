@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../manager/invoices_state.dart';
 import 'invoice_list_item.dart';
@@ -22,9 +23,9 @@ class InvoicesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (invoices.isEmpty) {
-      return const EmptyState(
-        title: 'لا توجد فواتير',
-        subtitle: 'لم يتم إنشاء أي فواتير بعد.',
+      return EmptyState(
+        title: AppStrings.invoices,
+        subtitle: AppStrings.noData,
         icon: Icons.receipt_long_outlined,
       );
     }

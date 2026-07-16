@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -31,9 +32,9 @@ class PrescriptionHeaderCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -51,9 +52,9 @@ class PrescriptionHeaderCard extends StatelessWidget {
             bottom: 0,
             width: 6,
             child: Container(
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: context.primary,
+                borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(16),
                   bottomRight: Radius.circular(16),
                 ),
@@ -71,14 +72,14 @@ class PrescriptionHeaderCard extends StatelessWidget {
                     Container(
                       width: 56,
                       height: 56,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryLight,
+                      decoration: BoxDecoration(
+                        color: context.primaryLightColor,
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.person,
-                          color: AppColors.primary,
+                          color: context.primary,
                           size: 28,
                         ),
                       ),
@@ -90,9 +91,10 @@ class PrescriptionHeaderCard extends StatelessWidget {
                         children: [
                           Text(
                             patientName,
-                            style: AppTextStyles.headlineMedium(context).copyWith(
+                            style:
+                                AppTextStyles.headlineMedium(context).copyWith(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                              color: context.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -101,15 +103,15 @@ class PrescriptionHeaderCard extends StatelessWidget {
                               Text(
                                 age,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: context.textSecondary,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Container(
                                 width: 4,
                                 height: 4,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.border,
+                                decoration: BoxDecoration(
+                                  color: context.border,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -117,15 +119,15 @@ class PrescriptionHeaderCard extends StatelessWidget {
                               Text(
                                 gender,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: context.textSecondary,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Container(
                                 width: 4,
                                 height: 4,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.border,
+                                decoration: BoxDecoration(
+                                  color: context.border,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -137,21 +139,22 @@ class PrescriptionHeaderCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.dangerLight,
+                                  color: context.dangerBg,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.water_drop,
                                       size: 12,
-                                      color: AppColors.danger,
+                                      color: context.danger,
                                     ),
                                     const SizedBox(width: 2),
                                     Text(
                                       bloodType,
-                                      style: AppTextStyles.dataNumeric(context).copyWith(
-                                        color: AppColors.danger,
+                                      style: AppTextStyles.dataNumeric(context)
+                                          .copyWith(
+                                        color: context.danger,
                                         fontSize: 11,
                                       ),
                                     ),
@@ -165,18 +168,21 @@ class PrescriptionHeaderCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Divider(color: AppColors.border, height: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  child: Divider(color: context.border, height: 1),
                 ),
                 // بيانات وصفية: نوع الزيارة – الطبيب – التاريخ
                 Wrap(
                   spacing: 16,
                   runSpacing: 8,
                   children: [
-                    _buildMetaItem(context, Icons.medical_services_outlined, 'نوع الزيارة', visitType),
-                    _buildMetaItem(context, Icons.person_outline, 'الطبيب المعالج', doctorName),
-                    _buildMetaItem(context, Icons.calendar_today, 'التاريخ', visitDate),
+                    _buildMetaItem(context, Icons.medical_services_outlined,
+                        AppStrings.visitType, visitType),
+                    _buildMetaItem(context, Icons.person_outline,
+                        AppStrings.doctorLabel, doctorName),
+                    _buildMetaItem(context, Icons.calendar_today,
+                        AppStrings.date, visitDate),
                   ],
                 ),
               ],
@@ -187,11 +193,12 @@ class PrescriptionHeaderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMetaItem(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildMetaItem(
+      BuildContext context, IconData icon, String label, String value) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: AppColors.primary),
+        Icon(icon, size: 16, color: context.primary),
         const SizedBox(width: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +206,7 @@ class PrescriptionHeaderCard extends StatelessWidget {
             Text(
               label,
               style: AppTextStyles.caption(context).copyWith(
-                color: AppColors.textHint,
+                color: context.textHint,
                 fontSize: 10,
               ),
             ),
@@ -207,7 +214,7 @@ class PrescriptionHeaderCard extends StatelessWidget {
               value,
               style: AppTextStyles.bodyMedium(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: context.textPrimary,
               ),
             ),
           ],

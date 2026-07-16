@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/di/injection_container.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/empty_state.dart';
@@ -31,9 +32,9 @@ class PatientPrescriptionsTab extends StatelessWidget {
 
         final records = snapshot.data ?? [];
         if (records.isEmpty) {
-          return const EmptyState(
-            title: 'لا توجد روشتات',
-            subtitle: 'لم تُصدر أي روشتة لهذا المريض بعد.',
+          return EmptyState(
+            title: AppStrings.isArabic ? 'لا توجد روشتات' : 'No Prescriptions',
+            subtitle: AppStrings.isArabic ? 'لم تُصدر أي روشتة لهذا المريض بعد.' : 'No prescriptions have been issued for this patient.',
             icon: Icons.medication_outlined,
           );
         }
@@ -47,17 +48,17 @@ class PatientPrescriptionsTab extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(AppConstants.spaceMd),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.surface,
                 borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.medication_outlined,
-                          color: AppColors.primary),
+                      Icon(Icons.medication_outlined,
+                          color: context.primary),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -73,7 +74,7 @@ class PatientPrescriptionsTab extends StatelessWidget {
                   Text(
                     '${record.displayDate} • ${record.doctorName}',
                     style: AppTextStyles.caption(context).copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -89,9 +90,9 @@ class PatientPrescriptionsTab extends StatelessWidget {
                           );
                         },
                         icon: const Icon(Icons.visibility_outlined, size: 16),
-                        label: const Text('عرض'),
+                        label: Text(AppStrings.viewDetails),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
+                          foregroundColor: context.primary,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
                         ),
@@ -100,9 +101,9 @@ class PatientPrescriptionsTab extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: () {},
                         icon: const Icon(Icons.download_outlined, size: 16),
-                        label: const Text('تحميل'),
+                        label: Text(AppStrings.isArabic ? 'تحميل' : 'Download'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
+                          foregroundColor: context.primary,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
                         ),

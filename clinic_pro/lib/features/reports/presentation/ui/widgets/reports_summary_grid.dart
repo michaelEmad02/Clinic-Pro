@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/reports_state.dart';
@@ -22,27 +23,27 @@ class ReportsSummaryGrid extends StatelessWidget {
             children: [
               Expanded(
                 child: _SummaryCard(
-                  label: 'الإيرادات',
+                  label: AppStrings.revenue,
                   value: summary.revenue.toStringAsFixed(0),
-                  currency: 'ج.م',
+                  currency: AppStrings.egp,
                   change: summary.revenueChange,
-                  changeColor: AppColors.successText,
+                  changeColor: context.successText,
                   icon: Icons.trending_up,
-                  iconBg: AppColors.successBg,
-                  iconColor: AppColors.successText,
+                  iconBg: context.successBg,
+                  iconColor: context.successText,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _SummaryCard(
-                  label: 'المصروفات',
+                  label: AppStrings.expenses,
                   value: summary.expenses.toStringAsFixed(0),
-                  currency: 'ج.م',
+                  currency: AppStrings.egp,
                   change: summary.expensesChange,
-                  changeColor: AppColors.dangerText,
+                  changeColor: context.dangerText,
                   icon: Icons.trending_down,
-                  iconBg: AppColors.dangerBg,
-                  iconColor: AppColors.dangerText,
+                  iconBg: context.dangerBg,
+                  iconColor: context.dangerText,
                 ),
               ),
             ],
@@ -54,7 +55,7 @@ class ReportsSummaryGrid extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: context.primary,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: const [
                       BoxShadow(
@@ -107,9 +108,9 @@ class ReportsSummaryGrid extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'الصافي',
+                            AppStrings.isArabic ? 'الصافي' : 'Net Profit',
                             style: AppTextStyles.bodyMedium(context).copyWith(
-                              color: AppColors.onPrimaryContainer,
+                              color: context.onPrimaryContainer,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -128,10 +129,9 @@ class ReportsSummaryGrid extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'ج.م',
-                                style:
-                                    AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.onPrimaryContainer,
+                                AppStrings.egp,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: context.onPrimaryContainer,
                                 ),
                               ),
                             ],
@@ -145,14 +145,14 @@ class ReportsSummaryGrid extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _SummaryCard(
-                  label: 'إجمالي المرضى',
+                  label: AppStrings.totalPatients,
                   value: summary.totalPatients.toString(),
-                  currency: 'مريض',
-                  change: 'مستقر',
-                  changeColor: AppColors.textSecondary,
+                  currency: AppStrings.patientsCount,
+                  change: AppStrings.active,
+                  changeColor: context.textSecondary,
                   icon: Icons.groups,
-                  iconBg: AppColors.primaryLight,
-                  iconColor: AppColors.primary,
+                  iconBg: context.primaryLightColor,
+                  iconColor: context.primary,
                 ),
               ),
             ],
@@ -189,9 +189,9 @@ class _SummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant),
+        border: Border.all(color: context.outline),
         boxShadow: const [
           BoxShadow(
             color: Color(0x08000000),
@@ -215,8 +215,7 @@ class _SummaryCard extends StatelessWidget {
                 child: Icon(icon, color: iconColor, size: 20),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: changeColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -237,7 +236,7 @@ class _SummaryCard extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.bodyMedium(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
@@ -247,18 +246,18 @@ class _SummaryCard extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimary,
                 ),
               ),
               const SizedBox(width: 4),
               Text(
                 currency,
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                 ),
               ),
             ],

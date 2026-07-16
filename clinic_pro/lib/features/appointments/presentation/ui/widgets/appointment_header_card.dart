@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/appointments_state.dart';
@@ -22,9 +23,9 @@ class AppointmentHeaderCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -42,9 +43,9 @@ class AppointmentHeaderCard extends StatelessWidget {
                   color: AppColors.primaryContainer, size: 20),
               const SizedBox(width: 8),
               Text(
-                'المريض',
+                AppStrings.patient,
                 style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -61,28 +62,28 @@ class AppointmentHeaderCard extends StatelessWidget {
           _infoRow(
             context,
             Icons.medical_services_outlined,
-            'الطبيب',
+            AppStrings.doctorRoleLabel,
             appointment.doctorName,
           ),
           const SizedBox(height: 10),
           _infoRow(
             context,
             Icons.calendar_today_outlined,
-            'التاريخ',
+            AppStrings.date,
             formattedDate,
           ),
           const SizedBox(height: 10),
           _infoRow(
             context,
             Icons.schedule_outlined,
-            'الوقت',
+            AppStrings.isArabic ? 'الوقت' : 'Time',
             appointment.displayTime,
           ),
           const SizedBox(height: 10),
           _infoRow(
             context,
             Icons.category_outlined,
-            'نوع الموعد',
+            AppStrings.appointmentType,
             appointment.typeName,
           ),
           const Divider(height: 28),
@@ -90,17 +91,17 @@ class AppointmentHeaderCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'التكلفة',
+                AppStrings.cost,
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
-                '${appointment.price.toStringAsFixed(0)} ر.س',
+                '${appointment.price.toStringAsFixed(0)} ${AppStrings.sar}',
                 style: AppTextStyles.dataNumeric(context).copyWith(
                   fontSize: 20,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimary,
                 ),
               ),
             ],

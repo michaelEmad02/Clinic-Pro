@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../appointments/presentation/manager/appointments_repository.dart';
 import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../../../patients/presentation/ui/patients_screen.dart';
@@ -15,6 +17,7 @@ import 'widgets/current_patient_card.dart';
 import 'widgets/waiting_queue_list.dart';
 import 'widgets/doctor_stats_row.dart';
 import 'widgets/doctor_quick_actions.dart';
+import '../../../expenses/presentation/ui/expenses_screen.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
   const DoctorDashboardScreen({super.key});
@@ -34,7 +37,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         sl<ICloudService>(),
       )..loadDashboardData(),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
         appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
         body: IndexedStack(
           index: _currentIndex,
@@ -42,10 +45,11 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             _buildMainDashboardTab(),
             const AppointmentsScreen(),
             const PatientsScreen(),
+            const ExpensesScreen(),
             const SettingsScreen(showBottomNav: false),
           ],
         ),
-        bottomNavigationBar: _buildBottomNav(),
+        bottomNavigationBar: _buildBottomNav(context),
       ),
     );
   }
@@ -53,64 +57,72 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       toolbarHeight: 64,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.surfaceColor,
       elevation: 0,
       scrolledUnderElevation: 0,
       title: BlocBuilder<DoctorDashboardCubit, DoctorDashboardState>(
         builder: (context, state) {
-          String clinicName = 'عيادتك المتكاملة';
-          String doctorName = 'أهلاً بك يا دكتور';
+          String clinicName = AppStrings.isArabic
+              ? 'عيادتك المتكاملة'
+              : 'Your Integrated Clinic';
+          String doctorName =
+              '${AppStrings.welcomeBack}${AppStrings.isArabic ? 'دكتور' : 'Doctor'}';
           if (state is DoctorDashboardLoaded) {
             clinicName = state.clinicName;
-            doctorName = 'مرحباً، ${state.doctorName}';
+            doctorName = '${AppStrings.welcomeBack}${state.doctorName}';
           }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                clinicName,
-                style: AppTextStyles.headlineMedium(context).copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+              Center(
+                child: Text(
+                  clinicName,
+                  style: AppTextStyles.headlineMedium(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimary,
+                  ),
                 ),
               ),
-              Text(
-                doctorName,
-                style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.textSecondary,
+              Center(
+                child: Text(
+                  doctorName,
+                  style: AppTextStyles.caption(context).copyWith(
+                    color: context.textSecondary,
+                  ),
                 ),
               ),
             ],
           );
         },
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_none_outlined, color: AppColors.textSecondary),
-          onPressed: () {},
-        ),
-        const SizedBox(width: 8),
-        Container(
-          margin: const EdgeInsets.only(left: 16),
-          width: 36,
-          height: 36,
-          decoration: const BoxDecoration(
-            color: AppColors.primaryLight,
-            shape: BoxShape.circle,
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.healing_outlined,
-              color: AppColors.primary,
-              size: 20,
-            ),
-          ),
-        ),
+      actions: const [
+        // IconButton(
+        //   icon: Icon(Icons.notifications_none_outlined,
+        //       color: context.textSecondary),
+        //   onPressed: () {},
+        // ),
+        // const SizedBox(width: 8),
+        // Container(
+        //   margin: const EdgeInsets.only(left: 16),
+        //   width: 36,
+        //   height: 36,
+        //   decoration: BoxDecoration(
+        //     color: context.primaryLightColor,
+        //     shape: BoxShape.circle,
+        //   ),
+        //   child: Center(
+        //     child: Icon(
+        //       Icons.healing_outlined,
+        //       color: context.primary,
+        //       size: 20,
+        //     ),
+        //   ),
+        // ),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(
-          color: AppColors.border,
+          color: context.borderColor,
           height: 1,
         ),
       ),
@@ -146,9 +158,12 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   patient: state.currentPatient,
                   onStartExamination: () async {
                     if (state.currentPatient != null) {
-                      await context.push('/prescription/${state.currentPatient!.id}');
+                      await context
+                          .push('/prescription/${state.currentPatient!.id}');
                       if (context.mounted) {
-                        context.read<DoctorDashboardCubit>().loadDashboardData(autoCallNext: true);
+                        context
+                            .read<DoctorDashboardCubit>()
+                            .loadDashboardData(autoCallNext: true);
                       }
                     }
                   },
@@ -169,68 +184,106 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(BuildContext context) {
     final tabs = [
-      {'label': 'الرئيسية', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
-      {'label': 'المواعيد', 'icon': Icons.calendar_today_outlined, 'activeIcon': Icons.calendar_today},
-      {'label': 'المرضى', 'icon': Icons.people_alt_outlined, 'activeIcon': Icons.people},
-      {'label': 'الإعدادات', 'icon': Icons.settings_outlined, 'activeIcon': Icons.settings},
+      {
+        'label': AppStrings.home,
+        'icon': TablerIcons.smart_home,
+        'activeIcon': TablerIcons.smart_home
+      },
+      {
+        'label': AppStrings.appointments,
+        'icon': TablerIcons.calendar,
+        'activeIcon': TablerIcons.calendar
+      },
+      {
+        'label': AppStrings.patients,
+        'icon': TablerIcons.users,
+        'activeIcon': TablerIcons.users
+      },
+      {
+        'label': AppStrings.expenses,
+        'icon': TablerIcons.wallet,
+        'activeIcon': TablerIcons.wallet
+      },
+      {
+        'label': AppStrings.settings,
+        'icon': TablerIcons.settings,
+        'activeIcon': TablerIcons.settings
+      },
     ];
 
     return Container(
-      height: 70,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
         border: Border(
-          top: BorderSide(color: AppColors.border, width: 1),
+          top: BorderSide(color: context.borderColor, width: 0.5),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(tabs.length, (index) {
-          final isSelected = _currentIndex == index;
-          final tab = tabs[index];
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(tabs.length, (index) {
+            final isSelected = _currentIndex == index;
+            final tab = tabs[index];
 
-          return InkWell(
-            onTap: () {
-              setState(() {
-                _currentIndex = index;
-              });
-              if (index == 0) {
-                context.read<DoctorDashboardCubit>().loadDashboardData();
-              }
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: isSelected
-                  ? BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(16),
-                    )
-                  : null,
-              child: Row(
-                children: [
-                  Icon(
-                    isSelected ? (tab['activeIcon'] as IconData) : (tab['icon'] as IconData),
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                    size: 22,
-                  ),
-                  if (isSelected) ...[
-                    const SizedBox(width: 8),
+            return InkWell(
+              onTap: () {
+                setState(() {
+                  _currentIndex = index;
+                });
+                if (index == 0) {
+                  context.read<DoctorDashboardCubit>().loadDashboardData();
+                }
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: SizedBox(
+                width: 76,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? context.primaryLightColor
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        isSelected
+                            ? (tab['activeIcon'] as IconData)
+                            : (tab['icon'] as IconData),
+                        color: isSelected
+                            ? context.primary
+                            : context.textSecondary,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     Text(
                       tab['label'] as String,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                       style: AppTextStyles.labelChip(context).copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
+                        color: isSelected
+                            ? context.primary
+                            : context.textSecondary,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontSize: 10,
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

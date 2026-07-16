@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -26,10 +27,10 @@ class TemplateDrugSearchField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'الأدوية',
+          AppStrings.drugs,
           style: AppTextStyles.headlineSmall(context).copyWith(
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: context.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -39,11 +40,12 @@ class TemplateDrugSearchField extends StatelessWidget {
           style: AppTextStyles.bodyMedium(context),
           onChanged: onSearchChanged,
           decoration: InputDecoration(
-            hintText: 'ابحث عن دواء لإضافته...',
-            hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint),
-            prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
+            hintText: AppStrings.searchDrugs,
+            hintStyle: AppTextStyles.bodyMedium(context)
+                .copyWith(color: context.textHint),
+            prefixIcon: Icon(Icons.search, color: context.textHint),
             filled: true,
-            fillColor: AppColors.background,
+            fillColor: context.background,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -54,9 +56,10 @@ class TemplateDrugSearchField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.primary),
+              borderSide: BorderSide(color: context.primary),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
         if (showDropdown && filteredDrugs.isNotEmpty) ...[
@@ -64,8 +67,8 @@ class TemplateDrugSearchField extends StatelessWidget {
           Container(
             constraints: const BoxConstraints(maxHeight: 200),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              border: Border.all(color: AppColors.border),
+              color: context.surface,
+              border: Border.all(color: context.border),
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
@@ -83,13 +86,14 @@ class TemplateDrugSearchField extends StatelessWidget {
                 return ListTile(
                   title: Text(
                     drug['trade_name'] ?? '',
-                    style: AppTextStyles.bodyMedium(context).copyWith(fontWeight: FontWeight.bold),
+                    style: AppTextStyles.bodyMedium(context)
+                        .copyWith(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     drug['generic_name'] ?? '',
                     style: AppTextStyles.caption(context),
                   ),
-                  trailing: const Icon(Icons.add, color: AppColors.primary),
+                  trailing: Icon(Icons.add, color: context.primary),
                   onTap: () => onDrugSelected(drug),
                 );
               },

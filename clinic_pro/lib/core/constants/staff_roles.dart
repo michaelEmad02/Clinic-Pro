@@ -4,6 +4,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../strings/app_strings.dart';
 
 /// أدوار الموظفين المتاحة في العيادة
 enum StaffRoles {
@@ -11,15 +12,15 @@ enum StaffRoles {
   secretary,
   owner;
 
-  /// الاسم المعروض بالعربية
+  /// الاسم المعروض حسب اللغة
   String get label {
     switch (this) {
       case StaffRoles.doctor:
-        return 'طبيب';
+        return AppStrings.roleLabel('doctor');
       case StaffRoles.secretary:
-        return 'سكرتير';
+        return AppStrings.roleLabel('secretary');
       case StaffRoles.owner:
-        return 'مالك';
+        return AppStrings.roleLabel('owner');
     }
   }
 

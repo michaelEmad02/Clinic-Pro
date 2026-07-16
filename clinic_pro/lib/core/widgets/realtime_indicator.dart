@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../themes/app_colors.dart';
 import '../themes/app_text_styles.dart';
 import '../constants/app_constants.dart';
+import '../strings/app_strings.dart';
 
 class RealtimeIndicator extends StatelessWidget {
   final bool isConnected;
@@ -21,11 +22,11 @@ class RealtimeIndicator extends StatelessWidget {
           height: 8,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isConnected ? AppColors.accent : AppColors.danger,
+            color: isConnected ? context.accent : context.danger,
             boxShadow: isConnected
                 ? [
                     BoxShadow(
-                      color: AppColors.accent.withOpacity(0.5),
+                      color: context.accent.withOpacity(0.5),
                       blurRadius: 4,
                       spreadRadius: 1,
                     )
@@ -35,9 +36,9 @@ class RealtimeIndicator extends StatelessWidget {
         ),
         const SizedBox(width: AppConstants.spaceXs),
         Text(
-          isConnected ? 'متصل (مباشر)' : 'غير متصل',
+          isConnected ? AppStrings.availableNow : AppStrings.offline,
           style: AppTextStyles.caption(context).copyWith(
-            color: AppColors.textSecondary,
+            color: context.textSecondary,
           ),
         ),
       ],

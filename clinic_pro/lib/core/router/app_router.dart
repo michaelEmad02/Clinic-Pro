@@ -6,8 +6,8 @@ import '../../features/auth/presentation/ui/login_screen.dart';
 import '../../features/auth/presentation/ui/create_account_screen.dart';
 import '../../features/auth/presentation/ui/accept_invitation_screen.dart';
 import '../../features/onboarding/presentation/ui/plan_screen.dart';
-import '../../features/onboarding/presentation/ui/create_clinic_screen.dart';
-import '../../features/onboarding/presentation/ui/invite_staff_screen.dart';
+import '../../features/clinics/presentation/ui/create_clinic_screen.dart';
+import '../../features/staff/presentation/ui/invite_staff_screen.dart';
 import '../../features/dashboard/presentation/ui/owner_dashboard_screen.dart';
 import '../../features/dashboard/presentation/ui/doctor_dashboard_screen.dart';
 import '../../features/dashboard/presentation/ui/secretary_dashboard_screen.dart';
@@ -37,7 +37,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteConstants.login,
-      builder: (context, state) => const LoginScreen(),
+      builder: (context, state) => LoginScreen(),
     ),
     GoRoute(
       path: RouteConstants.register,

@@ -5,6 +5,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import 'templates_state.dart';
 
@@ -36,7 +37,7 @@ class TemplatesCubit extends Cubit<TemplatesState> {
             table: 'drugs',
             eq: {'id': item['drug_id']},
           );
-          final drug = drugs.isNotEmpty ? drugs.first : {'trade_name': 'دواء غير معروف', 'generic_name': ''};
+          final drug = drugs.isNotEmpty ? drugs.first : {'trade_name': AppStrings.unknownDrug, 'generic_name': ''};
           itemsWithDrugs.add({
             ...item,
             'trade_name': drug['trade_name'],
@@ -49,7 +50,7 @@ class TemplatesCubit extends Cubit<TemplatesState> {
 
       emit(TemplatesLoaded(templates: templates));
     } catch (_) {
-      emit(const TemplatesError('تعذّر تحميل القوالب'));
+      emit(TemplatesError(AppStrings.loadTemplatesFailed));
     }
   }
 
@@ -102,7 +103,7 @@ class TemplatesCubit extends Cubit<TemplatesState> {
 
       emit(loaded.copyWith(templates: [...loaded.templates, newTemplate]));
     } catch (_) {
-      emit(const TemplatesError('تعذّر إضافة القالب'));
+      emit(TemplatesError(AppStrings.loadTemplatesFailed));
     }
   }
 
@@ -129,7 +130,7 @@ class TemplatesCubit extends Cubit<TemplatesState> {
       final updatedList = loaded.templates.where((t) => t['id'] != id).toList();
       emit(loaded.copyWith(templates: updatedList));
     } catch (_) {
-      emit(const TemplatesError('تعذّر حذف القالب'));
+      emit(TemplatesError(AppStrings.loadTemplatesFailed));
     }
   }
 
@@ -172,7 +173,7 @@ class TemplatesCubit extends Cubit<TemplatesState> {
       // إعادة تحميل القوالب لضمان تطابق البيانات
       await loadTemplates();
     } catch (_) {
-      emit(const TemplatesError('تعذّر تعديل القالب'));
+      emit(TemplatesError(AppStrings.loadTemplatesFailed));
     }
   }
 }

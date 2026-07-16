@@ -4,30 +4,32 @@
 // مبنية بنفس نمط StaffRoles
 // ────────────────────────────────────────────────────────
 
+import '../strings/app_strings.dart';
+
 /// تكرار الجرعة — يُحفظ في الـ DB كـ smallint (1-4)
 enum DrugFrequency {
   once(1),
   twice(2),
   thrice(3),
   four(4),
-  on_demand(0);
+  onDemand(0);
 
   final int dbValue;
   const DrugFrequency(this.dbValue);
 
-  /// النص المعروض بالعربية في Chips
+  /// النص المعروض حسب اللغة في Chips
   String get label {
     switch (this) {
       case DrugFrequency.once:
-        return 'مرة يومياً';
+        return AppStrings.frequencyOnce;
       case DrugFrequency.twice:
-        return 'مرتين يومياً';
+        return AppStrings.frequencyTwice;
       case DrugFrequency.thrice:
-        return '٣ مرات يومياً';
+        return AppStrings.frequencyThrice;
       case DrugFrequency.four:
-        return '٤ مرات يومياً';
-      case DrugFrequency.on_demand:
-        return 'عند اللزوم';
+        return AppStrings.frequencyFour;
+      case DrugFrequency.onDemand:
+        return AppStrings.frequencyOnDemand;
     }
   }
 
@@ -42,8 +44,8 @@ enum DrugFrequency {
         return '3×';
       case DrugFrequency.four:
         return '4×';
-      case DrugFrequency.on_demand:
-        return 'عند اللزوم';
+      case DrugFrequency.onDemand:
+        return AppStrings.frequencyOnDemand;
     }
   }
 
@@ -66,21 +68,21 @@ enum DrugDuration {
   final int dbValue;
   const DrugDuration(this.dbValue);
 
-  /// النص المعروض بالعربية في Chips
+  /// النص المعروض حسب اللغة في Chips
   String get label {
     switch (this) {
       case DrugDuration.threeDays:
-        return '٣ أيام';
+        return AppStrings.durationThreeDays;
       case DrugDuration.sevenDays:
-        return '٧ أيام';
+        return AppStrings.durationSevenDays;
       case DrugDuration.tenDays:
-        return '١٠ أيام';
+        return AppStrings.durationTenDays;
       case DrugDuration.fourteenDays:
-        return '١٤ يوم';
+        return AppStrings.durationFourteenDays;
       case DrugDuration.thirtyDays:
-        return '٣٠ يوم';
+        return AppStrings.durationThirtyDays;
       case DrugDuration.continuing:
-        return 'مستمر';
+        return AppStrings.durationContinuing;
     }
   }
 
@@ -98,7 +100,7 @@ enum DrugDuration {
       case DrugDuration.thirtyDays:
         return '30d';
       case DrugDuration.continuing:
-        return 'مستمر';
+        return AppStrings.durationContinuing;
     }
   }
 
@@ -120,17 +122,17 @@ enum DrugTiming {
   final String dbValue;
   const DrugTiming(this.dbValue);
 
-  /// النص المعروض بالعربية في Chips
+  /// النص المعروض حسب اللغة في Chips
   String get label {
     switch (this) {
       case DrugTiming.beforeMeal:
-        return 'قبل الأكل';
+        return AppStrings.timingBeforeMeal;
       case DrugTiming.afterMeal:
-        return 'بعد الأكل';
+        return AppStrings.timingAfterMeal;
       case DrugTiming.throughMeal:
-        return 'مع الأكل';
+        return AppStrings.timingWithMeal;
       case DrugTiming.anyTime:
-        return 'في أي وقت';
+        return AppStrings.timingAnyTime;
     }
   }
 

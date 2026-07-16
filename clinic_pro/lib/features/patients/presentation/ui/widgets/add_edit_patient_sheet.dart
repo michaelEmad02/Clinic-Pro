@@ -5,9 +5,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/constants/staff_roles.dart';
+import '../../../../auth/presentation/manager/auth_cubit.dart';
+import '../../../../auth/presentation/manager/auth_state.dart';
 import '../../manager/patients_cubit.dart';
 import '../../manager/patients_state.dart';
 
@@ -45,10 +49,18 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
   String? _gender;
   String? _bloodType;
   DateTime? _birthDate;
+  String? _selectedDoctorId;
   bool _isEdit = false;
 
   static const _bloodTypes = [
-    'A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-',
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'O+',
+    'O-',
+    'AB+',
+    'AB-',
   ];
 
   @override
@@ -61,13 +73,22 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
       _phoneController.text = p.phone;
       _gender = p.gender;
       _bloodType = p.bloodType;
+      _selectedDoctorId = p.doctorId;
       _chronicController.text =
-          p.chronicConditions == 'لا يوجد' ? '' : p.chronicConditions;
+          p.chronicConditions == AppStrings.none ? '' : p.chronicConditions;
       _allergiesController.text =
-          p.allergies == 'لا يوجد' ? '' : p.allergies;
+          p.allergies == AppStrings.none ? '' : p.allergies;
       _addressController.text = p.address ?? '';
       if (p.birthDate != null) {
         _birthDate = DateTime.tryParse(p.birthDate!);
+      }
+    } else {
+      final authState = context.read<AuthCubit>().state;
+      if (authState is AuthAuthenticated) {
+        final user = authState.user;
+        if (user.role == StaffRoles.doctor) {
+          _selectedDoctorId = user.id;
+        }
       }
     }
   }
@@ -98,7 +119,7 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
         _phoneController.text.trim().isEmpty ||
         _gender == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى ملء الحقول المطلوبة')),
+        SnackBar(content: Text(AppStrings.isArabic ? 'يرجى ملء الحقول المطلوبة' : 'Please fill in the required fields')),
       );
       return;
     }
@@ -108,16 +129,17 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
 
     if (_isEdit) {
       cubit.updatePatient(widget.patient!.copyWith(
+        doctorId: _selectedDoctorId,
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
         gender: _gender!,
         birthDate: birthStr,
         bloodType: _bloodType,
         chronicConditions: _chronicController.text.isEmpty
-            ? 'لا يوجد'
+            ? AppStrings.none
             : _chronicController.text.trim(),
         allergies: _allergiesController.text.isEmpty
-            ? 'لا يوجد'
+            ? AppStrings.none
             : _allergiesController.text.trim(),
         address: _addressController.text.isEmpty
             ? null
@@ -140,13 +162,14 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
         address: _addressController.text.isEmpty
             ? null
             : _addressController.text.trim(),
+        doctorId: _selectedDoctorId,
       );
     }
 
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isEdit ? 'تم تحديث بيانات المريض' : 'تم إضافة المريض'),
+        content: Text(AppStrings.operationSuccessful),
       ),
     );
   }
@@ -163,37 +186,37 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
             children: [
               Expanded(
                 child: Text(
-                  _isEdit ? 'تعديل بيانات المريض' : 'إضافة مريض جديد',
+                  _isEdit ? AppStrings.editPatient : AppStrings.addPatient,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                icon: Icon(Icons.close, color: context.textSecondary),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
           const SizedBox(height: 16),
           _buildField(
-            label: 'الاسم الكامل *',
+            label: AppStrings.patientName,
             icon: Icons.person_outline,
             controller: _nameController,
           ),
           const SizedBox(height: 12),
           _buildField(
-            label: 'رقم الهاتف *',
+            label: AppStrings.phoneNumber,
             icon: Icons.call_outlined,
             controller: _phoneController,
             textDirection: TextDirection.ltr,
           ),
           const SizedBox(height: 12),
           Text(
-            'تاريخ الميلاد',
+            AppStrings.isArabic ? 'تاريخ الميلاد' : 'Birth Date',
             style: AppTextStyles.caption(context).copyWith(
-              color: AppColors.textSecondary,
+              color: context.textSecondary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -204,11 +227,11 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
             label: Text(
               _birthDate != null
                   ? '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}'
-                  : 'اختر التاريخ',
+                  : AppStrings.isArabic ? 'اختر التاريخ' : 'Select Date',
             ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 13),
-              side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+              side: BorderSide(color: context.primary.withOpacity(0.2)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusButton),
               ),
@@ -217,24 +240,41 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             decoration: InputDecoration(
-              labelText: 'الجنس *',
+              labelText: AppStrings.patientGender,
               prefixIcon: const Icon(Icons.wc_outlined),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                borderSide: BorderSide(color: context.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                borderSide: BorderSide(color: context.primary, width: 1.5),
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               ),
             ),
             value: _gender,
-            items: const [
-              DropdownMenuItem(value: 'male', child: Text('ذكر')),
-              DropdownMenuItem(value: 'female', child: Text('أنثى')),
+            items: [
+              DropdownMenuItem(value: 'male', child: Text(AppStrings.male)),
+              DropdownMenuItem(value: 'female', child: Text(AppStrings.female)),
             ],
             onChanged: (v) => setState(() => _gender = v),
           ),
+          ..._buildDoctorSelector(),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             decoration: InputDecoration(
-              labelText: 'فصيلة الدم',
+              labelText: AppStrings.isArabic ? 'فصيلة الدم' : 'Blood Type',
               prefixIcon: const Icon(Icons.bloodtype_outlined),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                borderSide: BorderSide(color: context.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                borderSide: BorderSide(color: context.primary, width: 1.5),
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               ),
@@ -247,21 +287,21 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
           ),
           const SizedBox(height: 12),
           _buildField(
-            label: 'الأمراض المزمنة',
+            label: AppStrings.medicalHistory,
             icon: Icons.medical_information_outlined,
             controller: _chronicController,
             maxLines: 2,
           ),
           const SizedBox(height: 12),
           _buildField(
-            label: 'حساسية الأدوية',
+            label: AppStrings.allergies,
             icon: Icons.medication_liquid_outlined,
             controller: _allergiesController,
             maxLines: 2,
           ),
           const SizedBox(height: 12),
           _buildField(
-            label: 'العنوان',
+            label: AppStrings.isArabic ? 'العنوان' : 'Address',
             icon: Icons.location_on_outlined,
             controller: _addressController,
           ),
@@ -269,10 +309,10 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
           ElevatedButton.icon(
             onPressed: _submit,
             icon: const Icon(Icons.save_outlined),
-            label: const Text('حفظ'),
+            label: Text(AppStrings.save),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimaryContainer,
+              backgroundColor: context.primary,
+              foregroundColor: context.onPrimaryContainer,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusButton),
@@ -298,6 +338,14 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+          borderSide: BorderSide(color: context.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+          borderSide: BorderSide(color: context.primary, width: 1.5),
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.radiusInput),
         ),
@@ -307,5 +355,53 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildDoctorSelector() {
+    final authState = context.read<AuthCubit>().state;
+    final patientsState = context.read<PatientsCubit>().state;
+
+    bool isDoctor = false;
+    if (authState is AuthAuthenticated) {
+      isDoctor = authState.user.role == StaffRoles.doctor;
+    }
+
+    if (isDoctor) return [];
+
+    List<Map<String, dynamic>> doctors = [];
+    if (patientsState is PatientsLoaded) {
+      doctors = patientsState.doctors;
+    }
+
+    if (doctors.isEmpty) return [];
+
+    return [
+      const SizedBox(height: 12),
+      DropdownButtonFormField<String>(
+        decoration: InputDecoration(
+          labelText: AppStrings.isArabic ? 'الطبيب المعالج' : 'Treating Doctor',
+          prefixIcon: const Icon(Icons.person_outline),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+            borderSide: BorderSide(color: context.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+            borderSide: BorderSide(color: context.primary, width: 1.5),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+          ),
+        ),
+        value: _selectedDoctorId,
+        items: doctors.map((doc) {
+          return DropdownMenuItem<String>(
+            value: doc['id'] as String,
+            child: Text(doc['name'] as String),
+          );
+        }).toList(),
+        onChanged: (v) => setState(() => _selectedDoctorId = v),
+      ),
+    ];
   }
 }

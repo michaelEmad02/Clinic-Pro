@@ -5,6 +5,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../appointments/presentation/manager/appointments_repository.dart';
 import '../../../appointments/presentation/manager/appointments_state.dart';
@@ -71,7 +72,7 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
         }
       }
       final avgMinutes = calledCount > 0 ? (totalMinutes / calledCount).round() : 0;
-      final avgWaitingTime = avgMinutes > 0 ? _toArabicNumbers('$avgMinutes دقيقة') : '—';
+      final avgWaitingTime = avgMinutes > 0 ? _toArabicNumbers('$avgMinutes ${AppStrings.isArabic ? 'دقيقة' : 'min'}') : '—';
 
       // 4. جلب المريض الحالي قيد الكشف إن وجد
       final currentRaw = todayAppts.where((a) => a['status'] == 'in_progress').toList();
@@ -104,7 +105,7 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
         avgWaitingTime: avgWaitingTime,
       ));
     } catch (e) {
-      emit(DoctorDashboardError('حدث خطأ أثناء تحميل البيانات: ${e.toString()}'));
+      emit(DoctorDashboardError('${AppStrings.loadFailedMsg}: ${e.toString()}'));
     }
   }
 
@@ -162,12 +163,12 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
       return AppointmentItem(
         id: apptId,
         patientId: raw['patient_id'] as String,
-        patientName: patient['name'] as String? ?? 'مريض',
+        patientName: patient['name'] as String? ?? AppStrings.patient,
         patientPhone: patient['phone'] as String? ?? '',
         doctorId: doctorId,
-        doctorName: 'طبيب معالج',
+        doctorName: AppStrings.generalPractitioner,
         typeId: raw['appointment_type_id'] as String,
-        typeName: type['name'] as String? ?? 'كشف',
+        typeName: type['name'] as String? ?? AppStrings.normalCheckup,
         date: raw['date'] as String,
         displayTime: _formatTime(raw['time'] as String? ?? '00:00:00'),
         rawTime: raw['time'] as String? ?? '00:00:00',

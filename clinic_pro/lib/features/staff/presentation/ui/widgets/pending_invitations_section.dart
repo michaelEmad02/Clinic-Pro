@@ -3,14 +3,15 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/staff_state.dart';
+import 'package:clinic_pro/features/staff/domain/entities/invitation_entity.dart';
 
 class PendingInvitationsSection extends StatelessWidget {
-  final List<StaffInvitationItem> invitations;
-  final ValueChanged<StaffInvitationItem> onResend;
-  final ValueChanged<StaffInvitationItem> onCancel;
+  final List<InvitationEntity> invitations;
+  final ValueChanged<InvitationEntity> onResend;
+  final ValueChanged<InvitationEntity> onCancel;
 
   const PendingInvitationsSection({
     super.key,
@@ -28,13 +29,12 @@ class PendingInvitationsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              const Icon(Icons.pending_actions,
-                  size: 20, color: AppColors.warningText),
+              Icon(Icons.pending_actions, size: 20, color: context.warningText),
               const SizedBox(width: 6),
               Text(
-                'دعوات معلقة',
+                AppStrings.pendingInvitations,
                 style: AppTextStyles.headlineSmall(context).copyWith(
-                  color: AppColors.warningText,
+                  color: context.warningText,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -42,13 +42,13 @@ class PendingInvitationsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainer,
+                  color: context.surface,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   '${invitations.length}',
                   style: AppTextStyles.dataNumeric(context).copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.textPrimary,
                     fontSize: 11,
                   ),
                 ),
@@ -87,7 +87,7 @@ class PendingInvitationsSection extends StatelessWidget {
 }
 
 class _InvitationCard extends StatelessWidget {
-  final StaffInvitationItem invitation;
+  final InvitationEntity invitation;
   final VoidCallback onResend;
   final VoidCallback onCancel;
 
@@ -102,9 +102,9 @@ class _InvitationCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: const [
           BoxShadow(
             color: Color(0x08000000),
@@ -120,11 +120,11 @@ class _InvitationCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.warningBg,
+              color: context.warningBg,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.mail_outline,
-                color: AppColors.warningText, size: 20),
+            child:
+                Icon(Icons.mail_outline, color: context.warningText, size: 20),
           ),
           const SizedBox(width: 12),
           // البريد الإلكتروني + الدور
@@ -137,7 +137,7 @@ class _InvitationCard extends StatelessWidget {
                   invitation.email,
                   style: AppTextStyles.bodyMedium(context).copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -145,9 +145,9 @@ class _InvitationCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  invitation.roleLabel,
+                  invitation.role.label,
                   style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.textSecondary,
                   ),
                 ),
               ],
@@ -162,11 +162,10 @@ class _InvitationCard extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.primaryLightColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.refresh,
-                  size: 18, color: AppColors.primary),
+              child: Icon(Icons.refresh, size: 18, color: context.primary),
             ),
           ),
           const SizedBox(width: 4),
@@ -177,11 +176,11 @@ class _InvitationCard extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: AppColors.dangerBg,
+                color: context.dangerBg,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.close,
-                  size: 18, color: AppColors.dangerText),
+              child:
+                   Icon(Icons.close, size: 18, color: context.dangerText),
             ),
           ),
         ],

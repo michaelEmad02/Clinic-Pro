@@ -1,6 +1,11 @@
+
+import 'package:clinic_pro/core/constants/route_constants.dart';
+import 'package:go_router/go_router.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/settings_cubit.dart';
@@ -14,19 +19,22 @@ class SettingsLogoutSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (inline) {
       return InkWell(
-        onTap: () => context.read<SettingsCubit>().logout(),
+        onTap: () {context.read<AuthCubit>().logout();
+        context.go(RouteConstants.login);
+        },
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: AppConstants.spaceMd),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.spaceMd, vertical: AppConstants.spaceMd),
           child: Row(
             children: [
-              const Icon(Icons.logout, size: 20, color: AppColors.danger),
+              Icon(Icons.logout, size: 20, color: context.danger),
               const SizedBox(width: AppConstants.spaceMd),
               Expanded(
                 child: Text(
-                  'تسجيل الخروج',
+                  AppStrings.logout,
                   style: AppTextStyles.bodyLarge(context).copyWith(
-                    color: AppColors.danger,
+                    color: context.danger,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -40,19 +48,22 @@ class SettingsLogoutSection extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () => context.read<SettingsCubit>().logout(),
+        onPressed: () {context.read<AuthCubit>().logout();
+        context.go(RouteConstants.login);
+        },
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.dangerBg, width: 2),
-          backgroundColor: AppColors.surface,
+          side: BorderSide(color: context.dangerBg, width: 2),
+          backgroundColor: context.surface,
           padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
           ),
         ),
-        icon: const Icon(Icons.logout, color: AppColors.danger, size: 20),
+        icon: Icon(Icons.logout, color: context.danger, size: 20),
         label: Text(
-          'تسجيل الخروج',
-          style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.danger),
+          AppStrings.logout,
+          style: AppTextStyles.headlineSmall(context)
+              .copyWith(color: context.danger),
         ),
       ),
     );

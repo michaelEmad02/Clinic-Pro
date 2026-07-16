@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -29,106 +30,103 @@ class DoctorSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<QueuePatternCubit>()..loadPattern(),
-      child: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_forward, color: AppColors.primary),
-              onPressed: () => Navigator.maybePop(context),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: context.primary),
+            onPressed: () => Navigator.maybePop(context),
+          ),
+          title: Text(AppStrings.settings,
+              style: AppTextStyles.headlineMedium(context)
+                  .copyWith(color: context.primary)),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.notifications_outlined,
+                  color: context.textSecondary),
+              onPressed: () {},
             ),
-            title: Text('الإعدادات',
-                style: AppTextStyles.headlineMedium(context)
-                    .copyWith(color: AppColors.primary)),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined,
-                    color: AppColors.textSecondary),
-                onPressed: () {},
-              ),
-            ],
-          ),
-          body: BlocBuilder<SettingsCubit, SettingsState>(
-            builder: (context, state) {
-              if (state.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (state.error != null) {
-                return Center(
-                    child: Text('خطأ: ${state.error}',
-                        style: AppTextStyles.bodyLarge(context)));
-              }
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.screenEdgeH),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: AppConstants.spaceMd),
-                    SettingsAccountSection(
-                      name: state.userName,
-                      subtitle: state.userSpecialty ?? 'طبيب عام',
-                      avatarUrl: state.userAvatarUrl,
-                      layout: AccountSectionLayout.centered,
-                      roleBadge: 'طبيب',
-                      showSectionTitle: false,
-                      onEdit: () => EditProfileSheet.show(context),
-                    ),
-                    const SizedBox(height: AppConstants.spaceLg),
-                    _buildManagementSection(context),
-                    const SizedBox(height: AppConstants.spaceLg),
-                    SettingsClinicSection(
-                      clinicName: state.clinicName,
-                      clinicAddress: state.clinicAddress,
-                      onChangeClinic: () => ClinicPickerSheet.show(context),
-                    ),
-                    const SizedBox(height: AppConstants.spaceLg),
-                    _buildQueuePatternSection(context),
-                    const SizedBox(height: AppConstants.spaceLg),
-                    _buildOtherSection(context),
-                    const SizedBox(height: AppConstants.spaceLg),
-                    const SettingsFooter(showSystemStatus: true),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              );
-            },
-          ),
-          bottomNavigationBar:
-              showBottomNav ? const SettingsBottomNavBar() : null,
+          ],
         ),
+        body: BlocBuilder<SettingsCubit, SettingsState>(
+          builder: (context, state) {
+            if (state.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.error != null) {
+              return Center(
+                  child: Text('${AppStrings.error}: ${state.error}',
+                      style: AppTextStyles.bodyLarge(context)));
+            }
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.screenEdgeH),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: AppConstants.spaceMd),
+                  SettingsAccountSection(
+                    name: state.userName,
+                    subtitle: state.userSpecialty ?? AppStrings.generalDoctor,
+                    avatarUrl: state.userAvatarUrl,
+                    layout: AccountSectionLayout.centered,
+                    roleBadge: AppStrings.doctorRoleLabel,
+                    showSectionTitle: false,
+                    onEdit: () => EditProfileSheet.show(context),
+                  ),
+                  const SizedBox(height: AppConstants.spaceLg),
+                  _buildManagementSection(context),
+                  const SizedBox(height: AppConstants.spaceLg),
+                  SettingsClinicSection(
+                    clinicName: state.clinicName,
+                    clinicAddress: state.clinicAddress,
+                    onChangeClinic: () => ClinicPickerSheet.show(context),
+                  ),
+                  const SizedBox(height: AppConstants.spaceLg),
+                  _buildQueuePatternSection(context),
+                  const SizedBox(height: AppConstants.spaceLg),
+                  _buildOtherSection(context),
+                  const SizedBox(height: AppConstants.spaceLg),
+                  const SettingsFooter(showSystemStatus: true),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        ),
+        bottomNavigationBar:
+            showBottomNav ? const SettingsBottomNavBar() : null,
       ),
     );
   }
 
   Widget _buildManagementSection(BuildContext context) {
     return SectionCard(
-      title: 'الإدارة',
+      title: AppStrings.management,
       child: Column(
         children: [
           NavSettingsItem(
             icon: Icons.medical_services_outlined,
-            label: 'إدارة الأدوية',
+            label: AppStrings.manageDrugs,
             onTap: () => context.push(RouteConstants.drugs),
           ),
-          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          Divider(height: 1, thickness: 0.5, color: context.border),
           NavSettingsItem(
             icon: Icons.description_outlined,
-            label: 'قوالب الروشتات',
+            label: AppStrings.prescriptionTemplates,
             onTap: () => context.push(RouteConstants.prescriptionTemplates),
           ),
-          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          Divider(height: 1, thickness: 0.5, color: context.border),
           NavSettingsItem(
             icon: Icons.loyalty_outlined,
-            label: 'أنواع الزيارات',
-            subLabel: 'لتحديد أسعار الكشف',
+            label: AppStrings.visitTypes,
+            subLabel: AppStrings.visitTypesDesc,
             onTap: () => EditVisitTypesSheet.show(context),
           ),
-          const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+          Divider(height: 1, thickness: 0.5, color: context.border),
           NavSettingsItem(
             icon: Icons.calendar_month_outlined,
-            label: 'المواعيد',
-            subLabel: 'لتعديل مواعيد الطبيب',
+            label: AppStrings.appointments,
+            subLabel: AppStrings.editDoctorSchedule,
             onTap: () => EditWorkingHoursSheet.show(context),
           ),
         ],
@@ -138,13 +136,13 @@ class DoctorSettingsScreen extends StatelessWidget {
 
   Widget _buildQueuePatternSection(BuildContext context) {
     return SectionCard(
-      title: 'نظام قائمة الانتظار',
+      title: AppStrings.queueSystem,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('النمط الحالي:',
+          Text(AppStrings.currentPattern,
               style: AppTextStyles.bodyMedium(context)
-                  .copyWith(color: AppColors.textSecondary)),
+                  .copyWith(color: context.textSecondary)),
           const SizedBox(height: AppConstants.spaceSm),
           const _QueuePatternChips(),
           const SizedBox(height: AppConstants.spaceMd),
@@ -152,11 +150,10 @@ class DoctorSettingsScreen extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
               onPressed: () => EditQueuePatternSheet.show(context),
-              label: Text('تعديل',
+              label: Text(AppStrings.edit,
                   style: AppTextStyles.bodyLarge(context)
-                      .copyWith(color: AppColors.primary)),
-              icon: const Icon(Icons.chevron_left,
-                  color: AppColors.primary, size: 18),
+                      .copyWith(color: context.textPrimary)),
+              icon: Icon(Icons.chevron_left, color: context.primary, size: 18),
             ),
           ),
         ],
@@ -165,17 +162,23 @@ class DoctorSettingsScreen extends StatelessWidget {
   }
 
   Widget _buildOtherSection(BuildContext context) {
-    return const SectionCard(
-      title: 'أخرى',
+    return SectionCard(
+      title: AppStrings.other,
       child: Column(
         children: [
           ToggleSettingsItem(
             icon: Icons.dark_mode_outlined,
-            label: 'المظهر الداكن',
-            trailing: DarkModeSwitch(),
+            label: AppStrings.darkMode,
+            trailing: const DarkModeSwitch(),
           ),
-          Divider(height: 1, thickness: 0.5, color: AppColors.border),
-          SettingsLogoutSection(inline: true),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          ToggleSettingsItem(
+            icon: Icons.language_outlined,
+            label: AppStrings.language,
+            trailing: const LanguageSwitch(),
+          ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          const SettingsLogoutSection(inline: true),
         ],
       ),
     );
@@ -204,17 +207,16 @@ class _QueuePatternChips extends StatelessWidget {
               const SizedBox(height: AppConstants.spaceSm),
               Row(
                 children: [
-                  const Icon(Icons.sync,
-                      size: 16, color: AppColors.textSecondary),
+                  Icon(Icons.sync, size: 16, color: context.textSecondary),
                   const SizedBox(width: AppConstants.spaceXs),
-                  Text('يتكرر كل ',
+                  Text(AppStrings.repeatsEvery,
                       style: AppTextStyles.bodyMedium(context)
-                          .copyWith(color: AppColors.textSecondary)),
+                          .copyWith(color: context.textSecondary)),
                   Text('${state.cycleLength}',
                       style: AppTextStyles.dataNumeric(context)),
-                  Text(' مرضى',
+                  Text(AppStrings.patientsCount,
                       style: AppTextStyles.bodyMedium(context)
-                          .copyWith(color: AppColors.textSecondary)),
+                          .copyWith(color: context.textSecondary)),
                 ],
               ),
             ],
@@ -225,15 +227,6 @@ class _QueuePatternChips extends StatelessWidget {
   }
 
   static String _mapSlotTypeToLabel(String slotType) {
-    switch (slotType) {
-      case 'urgent':
-        return 'مستعجل';
-      case 'revisit':
-        return 'مراجعة';
-      case 'consult':
-        return 'استشارة';
-      default:
-        return 'عادي';
-    }
+    return AppStrings.mapSlotTypeToLabel(slotType);
   }
 }

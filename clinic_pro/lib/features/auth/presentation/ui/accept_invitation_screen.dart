@@ -5,6 +5,8 @@ import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/strings/app_strings.dart';
+import '../../../../core/constants/staff_roles.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
 
@@ -27,8 +29,16 @@ class _AcceptInvitationScreenState extends State<AcceptInvitationScreen> {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          // محاكاة: توجيه الطبيب إلى لوحته
-          context.go(RouteConstants.doctorDashboard);
+          final role = state.user.role;
+          if (role == StaffRoles.owner) {
+            context.go(RouteConstants.ownerDashboard);
+          } else if (role == StaffRoles.doctor) {
+            context.go(RouteConstants.doctorDashboard);
+          } else if (role == StaffRoles.secretary) {
+            context.go(RouteConstants.secretaryDashboard);
+          } else {
+            context.go(RouteConstants.login);
+          }
         }
       },
       builder: (context, state) {
@@ -57,15 +67,15 @@ class _AcceptInvitationScreenState extends State<AcceptInvitationScreen> {
                     ),
                     const SizedBox(height: AppConstants.spaceLg),
                     Text(
-                      'دعوة انضمام',
+                      AppStrings.joinInvitation,
                       style: AppTextStyles.headlineLarge(context),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppConstants.spaceMd),
                     Text(
-                      'لقد تمت دعوتك للانضمام إلى طاقم عيادة "كليوباترا لطب الأطفال".\nالرجاء قبول الدعوة للبدء.',
+                      AppStrings.invitationDescription,
                       style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.textSecondary,
                         height: 1.6,
                       ),
                       textAlign: TextAlign.center,
@@ -91,7 +101,7 @@ class _AcceptInvitationScreenState extends State<AcceptInvitationScreen> {
                               ),
                             )
                           : Text(
-                              'قبول وتسجيل الدخول',
+                              AppStrings.acceptAndLogin,
                               style: AppTextStyles.headlineSmall(context).copyWith(
                                 color: Colors.white,
                               ),

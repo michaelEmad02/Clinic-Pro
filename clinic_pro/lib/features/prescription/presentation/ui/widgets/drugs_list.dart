@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import 'drug_list_item.dart';
 
@@ -31,12 +32,12 @@ class DrugsList extends StatelessWidget {
     }).toList();
 
     if (filtered.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 40),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
         child: EmptyState(
           icon: Icons.medication_outlined,
-          title: 'لا توجد أدوية مطابقة',
-          subtitle: 'حاول تغيير معايير البحث أو الفلترة أو أضف دواءً جديداً.',
+          title: AppStrings.noDrugs,
+          subtitle: '${AppStrings.search} ${AppStrings.drug}',
         ),
       );
     }

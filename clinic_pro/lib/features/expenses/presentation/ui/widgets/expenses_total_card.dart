@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/expenses_state.dart';
@@ -16,7 +17,7 @@ class ExpensesTotalCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.primary,
+          color: context.primary,
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [
             BoxShadow(
@@ -56,9 +57,9 @@ class ExpensesTotalCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'إجمالي المصروفات (هذا الشهر)',
+                  AppStrings.totalExpenses,
                   style: AppTextStyles.bodyMedium(context).copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: context.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -68,19 +69,19 @@ class ExpensesTotalCard extends StatelessWidget {
                   children: [
                     Text(
                       state.totalAmount.toStringAsFixed(0),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: context.textPrimary,
                         letterSpacing: -0.5,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'ر.س',
+                      AppStrings.sar,
                       style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                        color: context.textSecondary,
                       ),
                     ),
                   ],

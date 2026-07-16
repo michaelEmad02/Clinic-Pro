@@ -4,8 +4,10 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/constants/supabase_constants.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/services/i_cloud_service.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/localization/language_cubit.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
 import '../../manager/queue_pattern_cubit.dart';
 import '../../manager/queue_pattern_state.dart';
@@ -39,10 +41,13 @@ class EditQueuePatternSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<QueuePatternCubit, QueuePatternState>(
-      listenWhen: (prev, curr) => prev.isSaving && !curr.isSaving && curr.error == null,
+      listenWhen: (prev, curr) =>
+          prev.isSaving && !curr.isSaving && curr.error == null,
       listener: (context, state) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم حفظ النمط بنجاح', textAlign: TextAlign.right), behavior: SnackBarBehavior.floating),
+          const SnackBar(
+              content: Text('تم حفظ النمط بنجاح', textAlign: TextAlign.right),
+              behavior: SnackBarBehavior.floating),
         );
         Navigator.pop(context);
       },
@@ -54,7 +59,8 @@ class EditQueuePatternSheet extends StatelessWidget {
           );
         }
         return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -78,15 +84,19 @@ class EditQueuePatternSheet extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
       child: Column(
         children: [
-          Text('نمط قائمة الانتظار', style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary)),
+          Text(AppStrings.queueSystem,
+              style: AppTextStyles.headlineMedium(context)
+                  .copyWith(color: context.primary)),
           const SizedBox(height: 4),
           Text('اسحب لإعادة ترتيب الأنواع',
-              style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary)),
+              style: AppTextStyles.caption(context)
+                  .copyWith(color: context.textSecondary)),
           if (state.isDirty)
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text('(توجد تغييرات غير محفوظة)',
-                  style: AppTextStyles.caption(context).copyWith(color: AppColors.warningText)),
+                  style: AppTextStyles.caption(context)
+                      .copyWith(color: context.warningText)),
             ),
         ],
       ),
@@ -105,14 +115,16 @@ class EditQueuePatternSheet extends StatelessWidget {
             child: state.slots.isEmpty
                 ? Center(
                     child: Text('لم يتم إضافة أنواع بعد، أضف أول نوع',
-                        style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textHint)),
+                        style: AppTextStyles.bodyMedium(context)
+                            .copyWith(color: context.textHint)),
                   )
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: state.slots.length,
                     itemBuilder: (context, index) {
                       final slotType = state.slots[index];
-                      final label = index < state.slotLabels.length && state.slotLabels[index].isNotEmpty
+                      final label = index < state.slotLabels.length &&
+                              state.slotLabels[index].isNotEmpty
                           ? state.slotLabels[index]
                           : mapSlotTypeToLabel(slotType);
                       return Padding(
@@ -130,8 +142,10 @@ class EditQueuePatternSheet extends StatelessWidget {
           const SizedBox(height: AppConstants.spaceSm),
           TextButton.icon(
             onPressed: () => _showAddTypePicker(context, cubit),
-            icon: const Icon(Icons.add, size: 18, color: AppColors.primary),
-            label: Text('أضف نوع', style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.primary)),
+            icon: Icon(Icons.add, size: 18, color: context.primary),
+            label: Text('أضف نوع',
+                style: AppTextStyles.headlineSmall(context)
+                    .copyWith(color: context.primary)),
           ),
         ],
       ),
@@ -143,8 +157,9 @@ class EditQueuePatternSheet extends StatelessWidget {
     final cycleLen = state.cycleLength;
     return Container(
       width: double.infinity,
-      color: AppColors.surfaceBright,
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH, vertical: AppConstants.spaceLg),
+      color: context.surface,
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.screenEdgeH, vertical: AppConstants.spaceLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -153,25 +168,31 @@ class EditQueuePatternSheet extends StatelessWidget {
             children: [
               Text('معاينة', style: AppTextStyles.headlineSmall(context)),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceSm, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spaceSm, vertical: 2),
                 decoration: BoxDecoration(
-                  color: state.isActive ? AppColors.successBg : AppColors.warningBg,
+                  color: state.isActive ? context.successBg : context.warningBg,
                   borderRadius: BorderRadius.circular(AppConstants.radiusChip),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 8, height: 8,
+                      width: 8,
+                      height: 8,
                       decoration: BoxDecoration(
-                        color: state.isActive ? AppColors.successText : AppColors.warningText,
+                        color: state.isActive
+                            ? context.successText
+                            : context.warningText,
                         shape: BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Text(state.isActive ? 'مباشر' : 'غير نشط',
                         style: AppTextStyles.caption(context).copyWith(
-                          color: state.isActive ? AppColors.successText : AppColors.warningText,
+                          color: state.isActive
+                              ? context.successText
+                              : context.warningText,
                         )),
                   ],
                 ),
@@ -181,9 +202,10 @@ class EditQueuePatternSheet extends StatelessWidget {
           const SizedBox(height: AppConstants.spaceMd),
           ...List.generate(state.slots.length, (i) {
             final slotType = state.slots[i];
-            final label = i < state.slotLabels.length && state.slotLabels[i].isNotEmpty
-                ? state.slotLabels[i]
-                : mapSlotTypeToLabel(slotType);
+            final label =
+                i < state.slotLabels.length && state.slotLabels[i].isNotEmpty
+                    ? state.slotLabels[i]
+                    : mapSlotTypeToLabel(slotType);
             return Padding(
               padding: const EdgeInsets.only(bottom: AppConstants.spaceSm),
               child: _PreviewPatient(
@@ -197,9 +219,10 @@ class EditQueuePatternSheet extends StatelessWidget {
           if (cycleLen > 0)
             Padding(
               padding: const EdgeInsets.only(top: AppConstants.spaceSm),
-              child:               _PreviewPatient(
+              child: _PreviewPatient(
                 number: cycleLen + 1,
-                type: state.slotLabels.isNotEmpty && state.slotLabels.first.isNotEmpty
+                type: state.slotLabels.isNotEmpty &&
+                        state.slotLabels.first.isNotEmpty
                     ? state.slotLabels.first
                     : mapSlotTypeToLabel(state.slots.first),
                 isUrgent: isSlotTypeUrgent(state.slots.first),
@@ -214,13 +237,16 @@ class EditQueuePatternSheet extends StatelessWidget {
   Widget _buildCycleDivider(BuildContext context) {
     return Row(
       children: [
-        const Expanded(child: Divider(thickness: 0.5, color: AppColors.outlineVariant)),
+        const Expanded(
+            child: Divider(thickness: 0.5, color: AppColors.outlineVariant)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
           child: Text('── 🔁 دورة جديدة ──',
-              style: AppTextStyles.labelChip(context).copyWith(color: AppColors.textHint)),
+              style: AppTextStyles.labelChip(context)
+                  .copyWith(color: context.textHint)),
         ),
-        const Expanded(child: Divider(thickness: 0.5, color: AppColors.outlineVariant)),
+        const Expanded(
+            child: Divider(thickness: 0.5, color: AppColors.outlineVariant)),
       ],
     );
   }
@@ -228,14 +254,17 @@ class EditQueuePatternSheet extends StatelessWidget {
   Widget _buildSaveButton(BuildContext context, QueuePatternState state) {
     final cubit = context.read<QueuePatternCubit>();
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH, vertical: AppConstants.spaceMd),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.screenEdgeH, vertical: AppConstants.spaceMd),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: state.isDirty && !state.isSaving ? () => cubit.savePattern() : null,
+          onPressed: state.isDirty && !state.isSaving
+              ? () => cubit.savePattern()
+              : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.onPrimary,
+            backgroundColor: context.primary,
+            foregroundColor: context.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusButton),
@@ -243,7 +272,11 @@ class EditQueuePatternSheet extends StatelessWidget {
             elevation: 0,
           ),
           child: state.isSaving
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: context.onPrimary))
               : Text('حفظ النمط', style: AppTextStyles.headlineSmall(context)),
         ),
       ),
@@ -275,7 +308,7 @@ class EditQueuePatternSheet extends StatelessWidget {
           label: name.isNotEmpty ? name : '',
           slotType: slotType,
           icon: mapSlotTypeToIcon(slotType),
-          color: slotType == 'urgent' ? AppColors.warningText : AppColors.primary,
+          color: slotType == 'urgent' ? context.warningText : context.primary,
         ));
       }
     } catch (_) {
@@ -286,7 +319,8 @@ class EditQueuePatternSheet extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('يرجى إضافة أنواع الزيارات أولاً من الإعدادات', textAlign: TextAlign.right),
+          content: Text('يرجى إضافة أنواع الزيارات أولاً من الإعدادات',
+              textAlign: TextAlign.right),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -296,37 +330,45 @@ class EditQueuePatternSheet extends StatelessWidget {
     if (!context.mounted) return;
     showDialog(
       context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-          ),
-          title: Text('اختيار نوع', style: AppTextStyles.headlineSmall(ctx)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: types.map((type) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+      builder: (ctx) => BlocBuilder<LanguageCubit, Locale>(
+        builder: (ctx, locale) => Directionality(
+          textDirection: locale.languageCode == 'ar'
+              ? TextDirection.rtl
+              : TextDirection.ltr,
+          child: AlertDialog(
+            backgroundColor: context.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+            ),
+            title: Text('اختيار نوع', style: AppTextStyles.headlineSmall(ctx)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: types.map((type) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusButton),
+                    ),
+                    leading: Icon(type.icon, color: type.color),
+                    title:
+                        Text(type.label, style: AppTextStyles.bodyLarge(ctx)),
+                    subtitle: Text(
+                      mapSlotTypeToLabel(type.slotType),
+                      style: AppTextStyles.caption(ctx)
+                          .copyWith(color: context.textHint),
+                    ),
+                    trailing:
+                        Icon(Icons.add_circle_outline, color: context.textHint),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      cubit.addSlot(type.slotType, label: type.label);
+                    },
                   ),
-                  leading: Icon(type.icon, color: type.color),
-                  title: Text(type.label, style: AppTextStyles.bodyLarge(ctx)),
-                  subtitle: Text(
-                    mapSlotTypeToLabel(type.slotType),
-                    style: AppTextStyles.caption(ctx).copyWith(color: AppColors.textHint),
-                  ),
-                  trailing: const Icon(Icons.add_circle_outline, color: AppColors.textHint),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    cubit.addSlot(type.slotType, label: type.label);
-                  },
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ),
@@ -335,16 +377,22 @@ class EditQueuePatternSheet extends StatelessWidget {
 
   String _mapAppointmentTypeToSlot(String name) {
     final lower = name.toLowerCase();
-    if (lower.contains('طارئ') || lower.contains('urgent') || lower.contains('مستعجل')) {
+    if (lower.contains('طارئ') ||
+        lower.contains('urgent') ||
+        lower.contains('مستعجل')) {
       return QueueSlotType.urgent;
     }
-    if (lower.contains('إعادة') || lower.contains('revisit') || lower.contains('مراجعة')) {
+    if (lower.contains('إعادة') ||
+        lower.contains('revisit') ||
+        lower.contains('مراجعة')) {
       return QueueSlotType.revisit;
     }
     if (lower.contains('استشارة') || lower.contains('consult')) {
       return QueueSlotType.consult;
     }
-    if (lower.contains('متابعة') || lower.contains('موعد') || lower.contains('فحص')) {
+    if (lower.contains('متابعة') ||
+        lower.contains('موعد') ||
+        lower.contains('فحص')) {
       return QueueSlotType.normal;
     }
     return QueueSlotType.normal;
@@ -360,18 +408,23 @@ class _SlotCard extends StatelessWidget {
   final String slotType;
   final VoidCallback onRemove;
 
-  const _SlotCard({required this.label, required this.isUrgent, required this.slotType, required this.onRemove});
+  const _SlotCard(
+      {required this.label,
+      required this.isUrgent,
+      required this.slotType,
+      required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
-    final bg = isUrgent ? AppColors.warningBg : AppColors.primaryLight;
-    final iconColor = isUrgent ? AppColors.warningText : AppColors.primary;
-    final textColor = isUrgent ? AppColors.warningText : AppColors.primary;
+    final bg = isUrgent ? context.warningBg : context.primaryLightColor;
+    final iconColor = isUrgent ? context.warningText : context.primaryFixedDim;
+    final textColor = isUrgent ? context.warningText : context.textPrimary;
     final icon = mapSlotTypeToIcon(slotType);
     return Stack(
       children: [
         Container(
-          width: 64, height: 64,
+          width: 64,
+          height: 64,
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(AppConstants.radiusButton),
@@ -381,22 +434,26 @@ class _SlotCard extends StatelessWidget {
             children: [
               Icon(icon, color: iconColor, size: 20),
               const SizedBox(height: 4),
-              Text(label, style: AppTextStyles.labelChip(context).copyWith(color: textColor)),
+              Text(label,
+                  style: AppTextStyles.labelChip(context)
+                      .copyWith(color: textColor)),
             ],
           ),
         ),
         Positioned(
-          right: 0, top: 0,
+          right: 0,
+          top: 0,
           child: GestureDetector(
             onTap: onRemove,
             child: Container(
-              width: 20, height: 20,
+              width: 20,
+              height: 20,
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.surface,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.border),
               ),
-              child: const Icon(Icons.close, size: 12, color: AppColors.textSecondary),
+              child: Icon(Icons.close, size: 12, color: context.textSecondary),
             ),
           ),
         ),
@@ -414,17 +471,23 @@ class _PreviewPatient extends StatelessWidget {
   final bool isUrgent;
   final bool faded;
 
-  const _PreviewPatient({required this.number, required this.type, this.isUrgent = false, this.faded = false});
+  const _PreviewPatient(
+      {required this.number,
+      required this.type,
+      this.isUrgent = false,
+      this.faded = false});
 
   @override
   Widget build(BuildContext context) {
-    final bg = isUrgent ? AppColors.warningBg : AppColors.surface;
-    final border = isUrgent ? AppColors.warningText.withAlpha(25) : AppColors.border;
-    final numColor = isUrgent ? AppColors.warningText : AppColors.primary;
-    final chipBg = isUrgent ? AppColors.surface.withAlpha(128) : AppColors.primaryLight;
-    final chipText = isUrgent ? AppColors.warningText : AppColors.primary;
+    final bg = isUrgent ? context.warningBg : context.surface;
+    final border =
+        isUrgent ? context.warningText.withAlpha(25) : context.border;
+    final numColor = isUrgent ? context.warningText : context.primary;
+    // final chipBg = isUrgent ? context.surface.withAlpha(128) : context.surface;
+    final chipText = isUrgent ? context.warningText : context.textSecondary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: AppConstants.spaceSm),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.spaceMd, vertical: AppConstants.spaceSm),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
@@ -436,23 +499,31 @@ class _PreviewPatient extends StatelessWidget {
           children: [
             SizedBox(
               width: 20,
-              child: Text('$number.', style: AppTextStyles.dataNumeric(context).copyWith(color: numColor)),
+              child: Text('$number.',
+                  style: AppTextStyles.dataNumeric(context)
+                      .copyWith(color: numColor)),
             ),
             const SizedBox(width: AppConstants.spaceSm),
             Expanded(
-              child: Text('مريض #$number', style: AppTextStyles.bodyMedium(context).copyWith(
-                color: isUrgent ? AppColors.warningText : AppColors.textPrimary,
-                fontWeight: isUrgent ? FontWeight.bold : FontWeight.normal,
-              )),
+              child: Text('مريض #$number',
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    color: isUrgent ? context.warningText : context.textPrimary,
+                    fontWeight: isUrgent ? FontWeight.bold : FontWeight.normal,
+                  )),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 3),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spaceMd, vertical: 3),
               decoration: BoxDecoration(
-                color: chipBg,
+                
                 borderRadius: BorderRadius.circular(AppConstants.radiusChip),
-                border: isUrgent ? Border.all(color: AppColors.warningText.withAlpha(50)) : null,
+                border: isUrgent
+                    ? Border.all(color: context.warningText.withAlpha(50))
+                    : null,
               ),
-              child: Text(type, style: AppTextStyles.labelChip(context).copyWith(color: chipText)),
+              child: Text(type,
+                  style: AppTextStyles.labelChip(context)
+                      .copyWith(color: chipText)),
             ),
           ],
         ),
@@ -470,27 +541,31 @@ class _SlotTypeOption {
   final IconData icon;
   final Color color;
 
-  const _SlotTypeOption({required this.label, required this.slotType, required this.icon, required this.color});
+  const _SlotTypeOption(
+      {required this.label,
+      required this.slotType,
+      required this.icon,
+      required this.color});
 }
 
 // ────────────────────────────────────────────────────────
 // دوال مساعدة لتحويل QueueSlotType إلى بيانات العرض
 // ────────────────────────────────────────────────────────
 String mapSlotTypeToLabel(String slotType) {
-  switch (slotType) {
-    case 'urgent': return 'مستعجل';
-    case 'revisit': return 'مراجعة';
-    case 'consult': return 'استشارة';
-    case 'normal': default: return 'عادي';
-  }
+  return AppStrings.mapSlotTypeToLabel(slotType);
 }
 
 IconData mapSlotTypeToIcon(String slotType) {
   switch (slotType) {
-    case 'urgent': return Icons.bolt;
-    case 'revisit': return Icons.refresh;
-    case 'consult': return Icons.forum;
-    case 'normal': default: return Icons.person;
+    case 'urgent':
+      return Icons.bolt;
+    case 'revisit':
+      return Icons.refresh;
+    case 'consult':
+      return Icons.forum;
+    case 'normal':
+    default:
+      return Icons.person;
   }
 }
 

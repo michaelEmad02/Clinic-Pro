@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/constants/staff_roles.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../domain/repositories/i_settings_repository.dart';
 import 'settings_state.dart';
 
@@ -34,12 +35,12 @@ class SettingsCubit extends Cubit<SettingsState> {
   String _getRoleLabel(StaffRoles role) {
     switch (role) {
       case StaffRoles.owner:
-        return 'صاحب عيادة';
+        return AppStrings.ownerRoleLabel;
       case StaffRoles.secretary:
-        return 'سكرتيرة';
+        return AppStrings.secretaryRoleLabel;
       case StaffRoles.doctor:
       default:
-        return 'طبيب عام';
+        return AppStrings.generalDoctor;
     }
   }
 
@@ -47,72 +48,76 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> loadSettings(StaffRoles role) async {
     emit(state.copyWith(isLoading: true, error: null));
 
-    final userId = _getUserId(role);
-    final clinicId = _getClinicId(role);
+    try {
+      final userId = _getUserId(role);
+      final clinicId = _getClinicId(role);
 
-    // 1. جلب الملف الشخصي
-    final userResult = await _repository.getUserProfile(userId);
-    // 2. جلب العيادة الحالية
-    final clinicResult = await _repository.getClinicInfo(clinicId);
-    // 3. جلب العيادات المتاحة
-    final clinicsResult = await _repository.getAvailableClinics();
-    // 4. جلب الاشتراك (للمالك)
-    final subResult = role == StaffRoles.owner
-        ? await _repository.getSubscription(userId)
-        : null;
+      // 1. جلب الملف الشخصي
+      final userResult = await _repository.getUserProfile(userId);
+      // 2. جلب العيادة الحالية
+      final clinicResult = await _repository.getClinicInfo(clinicId);
+      // 3. جلب العيادات المتاحة
+      final clinicsResult = await _repository.getAvailableClinics();
+      // 4. جلب الاشتراك (للمالك)
+      final subResult = role == StaffRoles.owner
+          ? await _repository.getSubscription(userId)
+          : null;
 
-    userResult.fold(
-      (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
-      (user) {
-        clinicResult.fold(
-          (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
-          (clinic) {
-            clinicsResult.fold(
-              (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
-              (clinics) async {
-                SettingsState updatedState = state.copyWith(
-                  isLoading: false,
-                  userId: user['id'] as String,
-                  userName: user['name'] as String,
-                  userEmail: user['email'] as String,
-                  userRole: _getRoleLabel(role),
-                  userPhone: user['phone'] as String,
-                  userAvatarUrl: user['avatar_url'] as String?,
-                  userSpecialty: user['specialty'] as String?,
-                  clinicId: clinic['id'] as String,
-                  clinicName: clinic['name'] as String,
-                  clinicAddress: clinic['address'] as String,
-                  clinicPhone: clinic['phone'] as String,
-                  clinicLogoUrl: clinic['logo_url'] as String?,
-                  availableClinics: clinics,
-                );
-
-                if (subResult != null) {
-                  subResult.fold(
-                    (_) {},
-                    (sub) {
-                      updatedState = updatedState.copyWith(
-                        planType: sub['plan_type'] as String? ?? '',
-                        planStatus: sub['status'] as String? ?? '',
-                        trialEndAt: sub['trial_end_at'] as String?,
-                        currentPeriodEnd: sub['current_period_end'] as String?,
-                      );
-                    },
+      userResult.fold(
+        (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+        (user) {
+          clinicResult.fold(
+            (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+            (clinic) {
+              clinicsResult.fold(
+                (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+                (clinics) async {
+                  SettingsState updatedState = state.copyWith(
+                    isLoading: false,
+                    userId: user['id'] as String,
+                    userName: user['name'] as String,
+                    userEmail: user['email'] as String,
+                    userRole: _getRoleLabel(role),
+                    userPhone: user['phone'] as String,
+                    userAvatarUrl: user['avatar_url'] as String?,
+                    userSpecialty: user['specialty'] as String?,
+                    clinicId: clinic['id'] as String,
+                    clinicName: clinic['name'] as String,
+                    clinicAddress: clinic['address'] as String,
+                    clinicPhone: (clinic['phone'] ?? clinic['phone1'] ?? '') as String,
+                    clinicLogoUrl: clinic['logo_url'] as String?,
+                    availableClinics: clinics,
                   );
-                }
 
-                emit(updatedState);
+                  if (subResult != null) {
+                    subResult.fold(
+                      (_) {},
+                      (sub) {
+                        updatedState = updatedState.copyWith(
+                          planType: sub['plan_type'] as String? ?? '',
+                          planStatus: sub['status'] as String? ?? '',
+                          trialEndAt: sub['trial_end_at'] as String?,
+                          currentPeriodEnd: sub['current_period_end'] as String?,
+                        );
+                      },
+                    );
+                  }
 
-                // للسكرتيرة: تحميل الأطباء والجدول النشط
-                if (role == StaffRoles.secretary) {
-                  await loadSecretaryDoctorsList();
-                }
-              },
-            );
-          },
-        );
-      },
-    );
+                  emit(updatedState);
+
+                  // للسكرتيرة: تحميل الأطباء والجدول النشط
+                  if (role == StaffRoles.secretary) {
+                    await loadSecretaryDoctorsList();
+                  }
+                },
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, error: e.toString()));
+    }
   }
 
   /// تحميل الأطباء المقترنين بالسكرتيرة
@@ -198,7 +203,7 @@ class SettingsCubit extends Cubit<SettingsState> {
         ));
 
         // إذا كانت سكرتيرة، أعد تحميل قائمة الأطباء التابعة للعيادة الجديدة
-        if (state.userRole == 'سكرتيرة') {
+        if (state.userRole == AppStrings.secretaryRoleLabel) {
           await loadSecretaryDoctorsList();
         }
       },

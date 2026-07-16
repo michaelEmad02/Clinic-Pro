@@ -5,7 +5,8 @@ import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/i_cloud_service.dart';
-import 'widgets/progress_indicator_bar.dart';
+import '../../../../core/strings/app_strings.dart';
+import '../../../clinics/presentation/ui/widgets/progress_indicator_bar.dart';
 import 'widgets/plan_card.dart';
 
 class PlanScreen extends StatefulWidget {
@@ -33,12 +34,13 @@ class _PlanScreenState extends State<PlanScreen> {
       final cloudService = sl<ICloudService>();
       final plans = await cloudService.select(table: 'plans');
       final features = await cloudService.select(table: 'plans_features');
-      
+
       setState(() {
         _plans = plans;
         _plansFeatures = features;
         // Default select 'pro' plan if present, else basic
-        _selectedPlan = plans.firstWhere((p) => p['name'] == 'pro', orElse: () => plans.first);
+        _selectedPlan = plans.firstWhere((p) => p['name'] == 'pro',
+            orElse: () => plans.first);
         _isLoading = false;
       });
     } catch (_) {
@@ -55,40 +57,41 @@ class _PlanScreenState extends State<PlanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.background,
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 1024),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // Progress Indicator
-                        const SizedBox(
+                        SizedBox(
                           width: 896,
                           child: ProgressIndicatorBar(
                             step: 1,
                             totalSteps: 3,
-                            title: 'اختيار الخطة',
+                            title: AppStrings.choosePlan,
                           ),
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // Header
                         Text(
-                          'اختر خطتك',
+                          AppStrings.chooseYourPlan,
                           style: AppTextStyles.headlineLarge(context),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'اكتشف الباقة التي تناسب حجم عيادتك وتطلعاتك.',
+                          AppStrings.planSubtitle,
                           style: AppTextStyles.bodyLarge(context).copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -98,38 +101,54 @@ class _PlanScreenState extends State<PlanScreen> {
                         Center(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceVariant.withOpacity(0.5),
+                              color:
+                                  context.surfaceContainerLow.withOpacity(0.5),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             padding: const EdgeInsets.all(4),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _buildCycleButton('monthly', 'شهري'),
-                                _buildCycleButton('yearly', 'سنوي'),
-                                _buildCycleButton('lifetime', 'مدى الحياة'),
+                                _buildCycleButton(
+                                    'monthly', AppStrings.monthlyLabel),
+                                _buildCycleButton(
+                                    'yearly', AppStrings.yearlyLabel),
+                                _buildCycleButton(
+                                    'lifetime', AppStrings.lifetimeLabel),
                               ],
                             ),
                           ),
                         ),
                         const SizedBox(height: 40),
-                        
+
                         // Pricing Cards Container
                         LayoutBuilder(
                           builder: (context, constraints) {
-                            final basicPlan = _plans.firstWhere((p) => p['name'] == 'basic', orElse: () => {});
-                            final proPlan = _plans.firstWhere((p) => p['name'] == 'pro', orElse: () => {});
-                            final entPlan = _plans.firstWhere((p) => p['name'] == 'enterprise', orElse: () => {});
+                            final basicPlan = _plans.firstWhere(
+                                (p) => p['name'] == 'basic',
+                                orElse: () => {});
+                            final proPlan = _plans.firstWhere(
+                                (p) => p['name'] == 'pro',
+                                orElse: () => {});
+                            final entPlan = _plans.firstWhere(
+                                (p) => p['name'] == 'enterprise',
+                                orElse: () => {});
 
                             if (constraints.maxWidth > 800) {
                               return Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  if (basicPlan.isNotEmpty) Expanded(child: _buildPlanCardWidget(basicPlan)),
+                                  if (basicPlan.isNotEmpty)
+                                    Expanded(
+                                        child: _buildPlanCardWidget(basicPlan)),
                                   const SizedBox(width: 24),
-                                  if (proPlan.isNotEmpty) Expanded(child: _buildPlanCardWidget(proPlan)),
+                                  if (proPlan.isNotEmpty)
+                                    Expanded(
+                                        child: _buildPlanCardWidget(proPlan)),
                                   const SizedBox(width: 24),
-                                  if (entPlan.isNotEmpty) Expanded(child: _buildPlanCardWidget(entPlan)),
+                                  if (entPlan.isNotEmpty)
+                                    Expanded(
+                                        child: _buildPlanCardWidget(entPlan)),
                                 ],
                               );
                             } else {
@@ -143,15 +162,16 @@ class _PlanScreenState extends State<PlanScreen> {
                                     _buildPlanCardWidget(proPlan),
                                     const SizedBox(height: 24),
                                   ],
-                                  if (entPlan.isNotEmpty) _buildPlanCardWidget(entPlan),
+                                  if (entPlan.isNotEmpty)
+                                    _buildPlanCardWidget(entPlan),
                                 ],
                               );
                             }
                           },
                         ),
-                        
+
                         const SizedBox(height: 48),
-                        
+
                         // Main Action Button
                         Center(
                           child: ConstrainedBox(
@@ -162,38 +182,44 @@ class _PlanScreenState extends State<PlanScreen> {
                                 context.go(RouteConstants.onboardingClinic);
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.onPrimary,
-                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                                backgroundColor: context.primary,
+                                foregroundColor: context.onPrimary,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16, horizontal: 24),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 elevation: 4,
-                                shadowColor: AppColors.primaryContainer.withOpacity(0.4),
+                                shadowColor:
+                                    context.primaryContainer.withOpacity(0.4),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   RichText(
                                     text: TextSpan(
-                                      style: AppTextStyles.headlineMedium(context).copyWith(
-                                        color: AppColors.onPrimary,
+                                      style:
+                                          AppTextStyles.headlineMedium(context)
+                                              .copyWith(
+                                        color: context.onPrimary,
                                       ),
-                                      children: const [
-                                        TextSpan(text: 'ابدأ التجربة المجانية '),
+                                      children: [
                                         TextSpan(
+                                            text: AppStrings.startFreeTrial),
+                                        const TextSpan(
                                           text: '14',
                                           style: TextStyle(
                                             fontFamily: 'Inter',
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
-                                        TextSpan(text: ' يوم'),
+                                        TextSpan(text: AppStrings.daysUnit),
                                       ],
                                     ),
                                   ),
                                   const Spacer(),
-                                  const Icon(Icons.arrow_back), // Arrow pointing left in RTL
+                                  const Icon(Icons
+                                      .arrow_back), // Arrow pointing left in RTL
                                 ],
                               ),
                             ),
@@ -216,14 +242,14 @@ class _PlanScreenState extends State<PlanScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: active ? AppColors.surface : Colors.transparent,
+          color: active ? context.surface : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Text(
           label,
           style: AppTextStyles.bodyMedium(context).copyWith(
-            color: active ? AppColors.primary : AppColors.textSecondary,
+            color: active ? context.primary : context.textSecondary,
             fontWeight: active ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -234,25 +260,25 @@ class _PlanScreenState extends State<PlanScreen> {
   Widget _buildPlanCardWidget(Map<String, dynamic> plan) {
     final planId = plan['id'] as String;
     final planName = plan['name'] as String;
-    
+
     // Title mapping
-    String displayTitle = 'الأساسية';
-    if (planName == 'pro') displayTitle = 'الاحترافية';
-    if (planName == 'enterprise') displayTitle = 'المؤسسات';
+    String displayTitle = AppStrings.basicPlan;
+    if (planName == 'pro') displayTitle = AppStrings.professionalPlan;
+    if (planName == 'enterprise') displayTitle = AppStrings.enterprisePlan;
 
     // Price depending on cycle
     double rawPrice = 7.0;
-    String subText = '/ شهرياً';
+    String subText = AppStrings.perMonth;
     if (_selectedBillingCycle == 'yearly') {
       rawPrice = (plan['yearly_price'] ?? 70.0) as double;
-      subText = '/ سنوياً';
+      subText = AppStrings.perYear;
     } else if (_selectedBillingCycle == 'lifetime') {
       rawPrice = (plan['lifetime_price'] ?? 155.0) as double;
-      subText = ' مدى الحياة';
+      subText = AppStrings.lifetimeSuffix;
     } else {
       rawPrice = (plan['monthly_price'] ?? 7.0) as double;
     }
-    
+
     final displayPrice = '\$${rawPrice.toString().replaceAll('.0', '')}';
     final isSelected = _selectedPlan?['id'] == planId;
 
@@ -264,9 +290,12 @@ class _PlanScreenState extends State<PlanScreen> {
       final maxStaff = featuresMap['max_staff'];
       final maxPatients = featuresMap['max_patients'];
 
-      planFeaturesList.add(PlanFeature(text: 'دعم حتى $maxClinics عيادات نشطة'));
-      planFeaturesList.add(PlanFeature(text: 'دعم حتى $maxStaff من طاقم العمل'));
-      planFeaturesList.add(PlanFeature(text: 'دعم حتى $maxPatients مريض مسجل'));
+      planFeaturesList
+          .add(PlanFeature(text: AppStrings.supportClinics(maxClinics ?? 0)));
+      planFeaturesList
+          .add(PlanFeature(text: AppStrings.supportStaff(maxStaff ?? 0)));
+      planFeaturesList
+          .add(PlanFeature(text: AppStrings.supportPatients(maxPatients ?? 0)));
 
       final jsonFeatures = featuresMap['features'];
       if (jsonFeatures is Map<String, dynamic>) {
@@ -278,7 +307,8 @@ class _PlanScreenState extends State<PlanScreen> {
               final active = valMap['value'] == true;
               final title = titleMap['title'] as String?;
               if (title != null) {
-                planFeaturesList.add(PlanFeature(text: title, included: active));
+                planFeaturesList
+                    .add(PlanFeature(text: title, included: active));
               }
             }
           }
@@ -291,9 +321,9 @@ class _PlanScreenState extends State<PlanScreen> {
       price: displayPrice,
       priceSubtext: subText,
       isFeatured: planName == 'pro',
-      badgeText: planName == 'pro' ? 'الأكثر طلباً' : null,
+      badgeText: planName == 'pro' ? AppStrings.mostPopular : null,
       features: planFeaturesList,
-      buttonText: isSelected ? 'تم تحديد الباقة' : 'اختيار الخطة',
+      buttonText: isSelected ? AppStrings.planSelected : AppStrings.selectPlan,
       onSelect: () {
         setState(() {
           _selectedPlan = plan;

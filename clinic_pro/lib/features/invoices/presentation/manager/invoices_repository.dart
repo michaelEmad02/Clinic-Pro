@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../../core/services/i_cloud_service.dart';
+import '../../../../core/strings/app_strings.dart';
 
 @injectable
 class InvoicesRepository {
@@ -23,10 +24,10 @@ class InvoicesRepository {
       );
       final patientName = patients.isNotEmpty
           ? patients.first['name']
-          : (inv['patient_name'] ?? 'مريض غير معروف');
+          : (inv['patient_name'] ?? AppStrings.unknownPatient);
 
       // جلب نوع الموعد من جدول المواعيد وجدول أنواع المواعيد
-      String apptTypeName = 'كشف';
+      String apptTypeName = AppStrings.normalCheckup;
       if (appointmentId != null) {
         final appointments = await _cloud.select(
           table: 'appointments',
@@ -78,7 +79,7 @@ class InvoicesRepository {
         eq: {'id': typeId},
       );
       final type =
-          types.isNotEmpty ? types.first : {'name': 'كشف', 'price': 0.0};
+          types.isNotEmpty ? types.first : {'name': AppStrings.normalCheckup, 'price': 0.0};
 
       // جلب بيانات الطبيب
       final doctors = await _cloud.select(
@@ -86,7 +87,7 @@ class InvoicesRepository {
         eq: {'id': doctorId},
       );
       final doctorName =
-          doctors.isNotEmpty ? doctors.first['name'] : 'طبيب معالج';
+          doctors.isNotEmpty ? doctors.first['name'] : AppStrings.generalPractitioner;
 
       enriched.add({
         ...raw,
@@ -113,11 +114,11 @@ class InvoicesRepository {
 
     final types =
         await _cloud.select(table: 'appointment_types', eq: {'id': typeId});
-    final type = types.isNotEmpty ? types.first : {'name': 'كشف', 'price': 0.0};
+    final type = types.isNotEmpty ? types.first : {'name': AppStrings.normalCheckup, 'price': 0.0};
 
     final doctors = await _cloud.select(table: 'users', eq: {'id': doctorId});
     final doctorName =
-        doctors.isNotEmpty ? doctors.first['name'] : 'طبيب معالج';
+        doctors.isNotEmpty ? doctors.first['name'] : AppStrings.generalPractitioner;
 
     return {
       ...appt,

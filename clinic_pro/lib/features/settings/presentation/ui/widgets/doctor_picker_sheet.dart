@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -48,7 +49,7 @@ class DoctorPickerSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
             child: Row(
               children: [
-                Text('اختر الطبيب الحالي', style: AppTextStyles.headlineSmall(context)),
+                Text(AppStrings.selectDoctor, style: AppTextStyles.headlineSmall(context)),
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
@@ -65,8 +66,8 @@ class DoctorPickerSheet extends StatelessWidget {
                   padding: const EdgeInsets.all(AppConstants.spaceLg),
                   child: Center(
                     child: Text(
-                      'لا يوجد أطباء مسجلين في جدولك لهذه العيادة.',
-                      style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary),
+                      AppStrings.noDoctorsAvailable,
+                      style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -94,10 +95,10 @@ class DoctorPickerSheet extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(AppConstants.spaceMd),
                           decoration: BoxDecoration(
-                            color: isActive ? AppColors.primaryLight : AppColors.surface,
+                            color: isActive ? context.primaryLightColor : context.surface,
                             borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                             border: Border.all(
-                              color: isActive ? AppColors.primary : AppColors.border,
+                              color: isActive ? context.primary : context.border,
                               width: isActive ? 1.5 : 0.5,
                             ),
                           ),
@@ -105,13 +106,13 @@ class DoctorPickerSheet extends StatelessWidget {
                             children: [
                               CircleAvatar(
                                 radius: 20,
-                                backgroundColor: isActive ? AppColors.surface : AppColors.primaryLight,
+                                backgroundColor: isActive ? context.surface : context.primaryLightColor,
                                 backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
                                 child: avatarUrl == null
                                     ? Text(
                                         name.isNotEmpty ? name[0] : '?',
                                         style: AppTextStyles.headlineSmall(context).copyWith(
-                                          color: AppColors.primary,
+                                          color: context.textSecondary,
                                           fontSize: 14,
                                         ),
                                       )
@@ -125,7 +126,7 @@ class DoctorPickerSheet extends StatelessWidget {
                                     Text(
                                       name,
                                       style: AppTextStyles.headlineSmall(context).copyWith(
-                                        color: isActive ? AppColors.primary : AppColors.onSurface,
+                                        color: isActive ? context.textPrimary : context.textSecondary,
                                       ),
                                     ),
                                     Text(
@@ -141,11 +142,11 @@ class DoctorPickerSheet extends StatelessWidget {
                                 Container(
                                   width: 24,
                                   height: 24,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.successBg,
+                                  decoration:  BoxDecoration(
+                                    color: context.successBg,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.check, color: AppColors.successText, size: 16),
+                                  child:  Icon(Icons.check, color: context.successText, size: 16),
                                 ),
                             ],
                           ),

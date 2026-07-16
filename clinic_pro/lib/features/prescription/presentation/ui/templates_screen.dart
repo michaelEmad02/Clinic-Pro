@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -25,22 +26,22 @@ class TemplatesScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => sl<TemplatesCubit>()..loadTemplates(),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.background,
         appBar: AppBar(
           toolbarHeight: 64,
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.surface,
           elevation: 0,
           scrolledUnderElevation: 0,
           title: Text(
-            'قوالب الروشتات',
+            AppStrings.prescriptionTemplates,
             style: AppTextStyles.headlineMedium(context).copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: context.primary,
             ),
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(color: AppColors.border, height: 1),
+            child: Container(color: context.border, height: 1),
           ),
         ),
         body: BlocBuilder<TemplatesCubit, TemplatesState>(
@@ -63,8 +64,9 @@ class TemplatesScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton(
-                      onPressed: () => context.read<TemplatesCubit>().loadTemplates(),
-                      child: const Text('إعادة المحاولة'),
+                      onPressed: () =>
+                          context.read<TemplatesCubit>().loadTemplates(),
+                      child: Text(AppStrings.retry),
                     ),
                   ],
                 ),
@@ -79,20 +81,24 @@ class TemplatesScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 8),
                     DrugsSearchBar(
-                      onChanged: (q) => context.read<TemplatesCubit>().search(q),
+                      onChanged: (q) =>
+                          context.read<TemplatesCubit>().search(q),
                     ),
                     const SizedBox(height: 8),
                     DrugsCategoryChips(
                       selectedCategory: state.selectedCategory,
-                      onCategorySelected: (cat) => context.read<TemplatesCubit>().filterByCategory(cat),
+                      onCategorySelected: (cat) =>
+                          context.read<TemplatesCubit>().filterByCategory(cat),
                     ),
                     const SizedBox(height: 12),
                     TemplatesList(
                       templates: state.templates,
                       searchQuery: state.searchQuery,
                       selectedCategory: state.selectedCategory,
-                      onPreview: (template) => _showPreviewDialog(context, template),
-                      onAction: (template) => _showTemplateActions(context, template),
+                      onPreview: (template) =>
+                          _showPreviewDialog(context, template),
+                      onAction: (template) =>
+                          _showTemplateActions(context, template),
                     ),
                     const SizedBox(height: 80),
                   ],
@@ -107,8 +113,8 @@ class TemplatesScreen extends StatelessWidget {
           builder: (context) {
             return FloatingActionButton(
               onPressed: () => _showAddTemplateSheet(context),
-              backgroundColor: AppColors.primary,
-              child: const Icon(Icons.add, color: Colors.white),
+              backgroundColor: context.primary,
+              child: Icon(Icons.add, color: context.surfaceBright),
             );
           },
         ),
@@ -126,7 +132,8 @@ class TemplatesScreen extends StatelessWidget {
       ),
       builder: (_) => SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: AddEditTemplateSheet(
             onSave: (name, drugs) {
               templatesCubit.addTemplate(name, drugs);
@@ -144,7 +151,8 @@ class TemplatesScreen extends StatelessWidget {
     );
   }
 
-  void _showTemplateActions(BuildContext context, Map<String, dynamic> template) {
+  void _showTemplateActions(
+      BuildContext context, Map<String, dynamic> template) {
     final templatesCubit = context.read<TemplatesCubit>();
     TemplateActionSheet.show(
       context: context,
@@ -159,7 +167,8 @@ class TemplatesScreen extends StatelessWidget {
   }
 
   // عرض ورقة تعديل قالب الروشتة وتطبيق الحفظ
-  void _showEditTemplateSheet(BuildContext context, Map<String, dynamic> template) {
+  void _showEditTemplateSheet(
+      BuildContext context, Map<String, dynamic> template) {
     final templatesCubit = context.read<TemplatesCubit>();
     showModalBottomSheet(
       context: context,
@@ -169,7 +178,8 @@ class TemplatesScreen extends StatelessWidget {
       ),
       builder: (_) => SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: AddEditTemplateSheet(
             template: template,
             onSave: (name, drugs) {

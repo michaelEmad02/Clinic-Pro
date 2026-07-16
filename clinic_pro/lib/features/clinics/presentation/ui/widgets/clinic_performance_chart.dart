@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/enities/performance_statistics.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
@@ -5,26 +6,28 @@ import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
 class ClinicPerformanceChart extends StatelessWidget {
-  const ClinicPerformanceChart({super.key});
+  const ClinicPerformanceChart(
+      {super.key, required this.performanceStatistics});
 
+  final List<PerformanceStatistics> performanceStatistics;
   @override
   Widget build(BuildContext context) {
     // شهور المحاكاة وقيم الأداء المقابلة لها
-    final monthValues = <double>[15000, 22000, 18000, 31000, 28000];
-    final performanceData = List.generate(
-      monthValues.length,
-      (i) => (AppStrings.shortMonths[i], monthValues[i]),
-    );
+    // final monthValues = <double>[15000, 22000, 18000, 31000, 28000];
+    // final performanceData = List.generate(
+    //   monthValues.length,
+    //   (i) => (AppStrings.shortMonths[i], monthValues[i]),
+    // );
 
-    final maxVal = performanceData.fold<double>(
-        0.0, (max, item) => item.$2 > max ? item.$2 : max);
+    final maxVal = performanceStatistics.fold<double>(
+        0.0, (max, item) => item.amount > max ? item.amount : max);
 
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.border),
         boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
@@ -39,8 +42,8 @@ class ClinicPerformanceChart extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Icon(Icons.bar_chart_outlined,
-                  color: AppColors.primary, size: AppConstants.iconSizeXl),
+              Icon(Icons.bar_chart_outlined,
+                  color: context.primary, size: AppConstants.iconSizeXl),
             ],
           ),
           const SizedBox(height: AppConstants.spaceLg),
@@ -49,9 +52,9 @@ class ClinicPerformanceChart extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: performanceData.map((data) {
-                final monthName = data.$1;
-                final value = data.$2;
+              children: performanceStatistics.map((data) {
+                final monthName = AppStrings.fullMonths[data.month.month];
+                final value = data.amount;
                 final percentage = maxVal > 0 ? value / maxVal : 0.0;
                 final barHeight =
                     percentage * 120; // الحد الأقصى لطول العمود 120 بكسل
@@ -62,7 +65,7 @@ class ClinicPerformanceChart extends StatelessWidget {
                     Text(
                       '${(value / 1000).toStringAsFixed(0)}k',
                       style: AppTextStyles.caption(context).copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.textSecondary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -70,16 +73,13 @@ class ClinicPerformanceChart extends StatelessWidget {
                     Container(
                       width: 32,
                       height: barHeight,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary,
-                            AppColors.darkPrimaryLight
-                          ],
+                          colors: [context.primary, AppColors.darkPrimaryLight],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
-                        borderRadius: BorderRadius.vertical(
+                        borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(6),
                         ),
                       ),
@@ -88,7 +88,7 @@ class ClinicPerformanceChart extends StatelessWidget {
                     Text(
                       monthName,
                       style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.textPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

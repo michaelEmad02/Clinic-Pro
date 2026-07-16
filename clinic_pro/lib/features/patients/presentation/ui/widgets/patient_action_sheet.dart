@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
@@ -29,21 +30,21 @@ class PatientActionSheet {
               patient.name,
               style: AppTextStyles.headlineSmall(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             Text(
               patient.phone,
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
               textDirection: TextDirection.ltr,
             ),
             const SizedBox(height: 16),
             _ActionTile(
               icon: Icons.person_outline,
-              label: 'عرض الملف',
-              color: AppColors.primary,
+              label: AppStrings.viewProfile,
+              color: context.primary,
               onTap: () {
                 Navigator.pop(context);
                 onViewDetails();
@@ -51,8 +52,8 @@ class PatientActionSheet {
             ),
             _ActionTile(
               icon: Icons.edit_document,
-              label: 'تعديل البيانات',
-              color: AppColors.primaryContainer,
+              label: AppStrings.editData,
+              color: context.primaryContainer,
               onTap: () {
                 Navigator.pop(context);
                 onEdit();
@@ -60,8 +61,8 @@ class PatientActionSheet {
             ),
             _ActionTile(
               icon: Icons.calendar_today_outlined,
-              label: 'حجز موعد',
-              color: AppColors.accent,
+              label: AppStrings.bookAppointment,
+              color: context.accent,
               onTap: () {
                 Navigator.pop(context);
                 onBookAppointment();
@@ -69,8 +70,8 @@ class PatientActionSheet {
             ),
             _ActionTile(
               icon: Icons.delete,
-              label: 'حذف المريض',
-              color: Colors.red,
+              label: AppStrings.deletePatient,
+              color: context.danger,
               onTap: () {
                 Navigator.pop(context);
                 onDeletePatient();

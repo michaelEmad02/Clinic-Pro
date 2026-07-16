@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -22,18 +23,18 @@ class TemplatePreviewDialog extends StatelessWidget {
 
     return AlertDialog(
       title: Text(
-        'معاينة: ${template['name'] ?? ''}',
+        '${AppStrings.prescription}: ${template['name'] ?? ''}',
         style: AppTextStyles.headlineSmall(context).copyWith(
           fontWeight: FontWeight.bold,
-          color: AppColors.primary,
+          color: context.primary,
         ),
       ),
       content: SizedBox(
         width: double.maxFinite,
         child: drugsInTemplate.isEmpty
-            ? const Padding(
-                padding: EdgeInsets.symmetric(vertical: 20),
-                child: Text('لا توجد أدوية مضافة في هذا القالب بعد.'),
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Text(AppStrings.noDrugs),
               )
             : ListView.builder(
                 shrinkWrap: true,
@@ -49,9 +50,9 @@ class TemplatePreviewDialog extends StatelessWidget {
                       ),
                     ),
                     subtitle: Text(
-                      '${item['frequency'] ?? ''} - ${item['duration'] ?? ''} أيام - ${item['timing'] ?? ''}',
+                      '${item['frequency'] ?? ''} - ${item['duration'] ?? ''} - ${item['timing'] ?? ''}',
                       style: AppTextStyles.caption(context).copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.textSecondary,
                       ),
                     ),
                   );
@@ -61,7 +62,7 @@ class TemplatePreviewDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('إغلاق'),
+          child: Text(AppStrings.close),
         ),
         if (onApply != null && drugsInTemplate.isNotEmpty)
           ElevatedButton(
@@ -69,8 +70,8 @@ class TemplatePreviewDialog extends StatelessWidget {
               Navigator.pop(context);
               onApply!(drugsInTemplate.cast<Map<String, dynamic>>());
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('تطبيق القالب'),
+            style: ElevatedButton.styleFrom(backgroundColor: context.primary),
+            child: Text(AppStrings.addTemplate),
           ),
       ],
     );

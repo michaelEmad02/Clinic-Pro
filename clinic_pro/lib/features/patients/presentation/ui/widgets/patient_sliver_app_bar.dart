@@ -17,15 +17,15 @@ class PatientSliverAppBar extends StatelessWidget {
     return SliverAppBar(
       expandedHeight: 160,
       pinned: true,
-      backgroundColor: AppColors.surface,
-      foregroundColor: AppColors.primary,
+      backgroundColor: context.surface,
+      foregroundColor: context.primary,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [AppColors.primaryLight, AppColors.surface],
+              colors: [context.primaryLightColor, context.surface],
             ),
           ),
           child: SafeArea(
@@ -35,11 +35,11 @@ class PatientSliverAppBar extends StatelessWidget {
                 const SizedBox(height: 32),
                 CircleAvatar(
                   radius: 36,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: context.primary,
                   child: Text(
                     patient.initials,
                     style: AppTextStyles.headlineMedium(context).copyWith(
-                      color: Colors.white,
+                      color: context.onPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -55,7 +55,7 @@ class PatientSliverAppBar extends StatelessWidget {
                   Text(
                     patient.bloodType!,
                     style: AppTextStyles.dataNumeric(context).copyWith(
-                      color: AppColors.primary,
+                      color: context.primary,
                     ),
                   ),
               ],

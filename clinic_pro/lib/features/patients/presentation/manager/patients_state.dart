@@ -10,6 +10,7 @@ enum PatientsFilter { all, today, thisWeek, chronic }
 /// نموذج مريض للعرض (UI Phase — Mock)
 class PatientItem extends Equatable {
   final String id;
+  final String? doctorId;
   final String name;
   final String phone;
   final String gender;
@@ -27,6 +28,7 @@ class PatientItem extends Equatable {
 
   const PatientItem({
     required this.id,
+    this.doctorId,
     required this.name,
     required this.phone,
     required this.gender,
@@ -51,9 +53,13 @@ class PatientItem extends Equatable {
   }
 
   bool get hasAllergies =>
-      allergies.isNotEmpty && allergies != 'لا يوجد';
+      allergies.isNotEmpty &&
+          allergies != 'لا يوجد' &&
+          allergies != 'None' &&
+          allergies != 'no';
 
   PatientItem copyWith({
+    String? doctorId,
     String? name,
     String? phone,
     String? gender,
@@ -68,6 +74,7 @@ class PatientItem extends Equatable {
   }) {
     return PatientItem(
       id: id,
+      doctorId: doctorId ?? this.doctorId,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       gender: gender ?? this.gender,
@@ -86,7 +93,7 @@ class PatientItem extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, phone];
+  List<Object?> get props => [id, doctorId, name, phone];
 }
 
 class PatientVisitItem extends Equatable {
@@ -138,11 +145,13 @@ class PatientsLoading extends PatientsState {}
 
 class PatientsLoaded extends PatientsState {
   final List<PatientItem> allPatients;
+  final List<Map<String, dynamic>> doctors;
   final String searchQuery;
   final PatientsFilter activeFilter;
 
   const PatientsLoaded({
     required this.allPatients,
+    this.doctors = const [],
     this.searchQuery = '',
     this.activeFilter = PatientsFilter.all,
   });
@@ -179,18 +188,20 @@ class PatientsLoaded extends PatientsState {
 
   PatientsLoaded copyWith({
     List<PatientItem>? allPatients,
+    List<Map<String, dynamic>>? doctors,
     String? searchQuery,
     PatientsFilter? activeFilter,
   }) {
     return PatientsLoaded(
       allPatients: allPatients ?? this.allPatients,
+      doctors: doctors ?? this.doctors,
       searchQuery: searchQuery ?? this.searchQuery,
       activeFilter: activeFilter ?? this.activeFilter,
     );
   }
 
   @override
-  List<Object?> get props => [allPatients, searchQuery, activeFilter];
+  List<Object?> get props => [allPatients, doctors, searchQuery, activeFilter];
 }
 
 class PatientsError extends PatientsState {

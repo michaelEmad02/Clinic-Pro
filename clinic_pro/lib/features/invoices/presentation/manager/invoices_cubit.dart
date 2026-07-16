@@ -2,6 +2,7 @@
 // Cubit شاشة الفواتير — تحميل وإضافة وتعديل عبر المستودع
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'invoices_state.dart';
@@ -19,7 +20,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
       final items = await _repository.loadInvoices();
       emit(InvoicesLoaded(allInvoices: _mapInvoices(items)));
     } catch (_) {
-      emit(const InvoicesError('تعذّر تحميل الفواتير'));
+      emit(InvoicesError(AppStrings.loadFailedMsg));
     }
   }
 
@@ -29,7 +30,8 @@ class InvoicesCubit extends Cubit<InvoicesState> {
     }
   }
 
-  void changeDateRange(InvoicesDateRange range, {DateTime? start, DateTime? end}) {
+  void changeDateRange(InvoicesDateRange range,
+      {DateTime? start, DateTime? end}) {
     if (state is InvoicesLoaded) {
       emit((state as InvoicesLoaded).copyWith(
         activeRange: range,
@@ -65,7 +67,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
       final items = await _repository.loadInvoices();
       emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
     } catch (_) {
-      emit(const InvoicesError('تعذّر إنشاء الفاتورة'));
+      emit(InvoicesError(AppStrings.loadFailedMsg));
     }
   }
 
@@ -87,7 +89,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
       final items = await _repository.loadInvoices();
       emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
     } catch (_) {
-      emit(const InvoicesError('تعذّر تحديث مبلغ الفاتورة'));
+      emit(InvoicesError(AppStrings.loadFailedMsg));
     }
   }
 
@@ -112,7 +114,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
       final items = await _repository.loadInvoices();
       emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
     } catch (_) {
-      emit(const InvoicesError('تعذّر تحديث الفاتورة'));
+      emit(InvoicesError(AppStrings.loadFailedMsg));
     }
   }
 
@@ -133,7 +135,8 @@ class InvoicesCubit extends Cubit<InvoicesState> {
   }
 
   /// تحميل مواعيد المريض المنتهية وغير المفوترة بعد
-  Future<List<Map<String, dynamic>>> loadPatientAppointments(String patientId) async {
+  Future<List<Map<String, dynamic>>> loadPatientAppointments(
+      String patientId) async {
     try {
       return await _repository.loadAppointmentsForPatient(patientId);
     } catch (_) {
@@ -142,7 +145,8 @@ class InvoicesCubit extends Cubit<InvoicesState> {
   }
 
   /// جلب تفاصيل موعد محدد
-  Future<Map<String, dynamic>?> getAppointmentDetails(String appointmentId) async {
+  Future<Map<String, dynamic>?> getAppointmentDetails(
+      String appointmentId) async {
     try {
       return await _repository.getAppointment(appointmentId);
     } catch (_) {
@@ -168,7 +172,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
       final items = await _repository.loadInvoices();
       emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
     } catch (_) {
-      emit(const InvoicesError('تعذّر حذف الفاتورة'));
+      emit(InvoicesError(AppStrings.loadFailedMsg));
     }
   }
 

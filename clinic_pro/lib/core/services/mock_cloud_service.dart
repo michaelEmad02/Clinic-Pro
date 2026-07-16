@@ -2,7 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'i_cloud_service.dart';
 import '../mocks/mock_data.dart';
 
-@LazySingleton(as: ICloudService)
+ @LazySingleton(as: ICloudService)
 class MockCloudService implements ICloudService {
   @override
   Future<List<Map<String, dynamic>>> select({
@@ -15,7 +15,7 @@ class MockCloudService implements ICloudService {
     bool ascending = true,
   }) async {
     List<Map<String, dynamic>> data = List.from(_getTableData(table));
-    
+
     // Filtering (eq)
     if (eq != null) {
       data = data.where((item) {
@@ -27,7 +27,8 @@ class MockCloudService implements ICloudService {
     final neqFilter = neq;
     if (neqFilter != null) {
       data = data.where((item) {
-        return neqFilter.entries.every((entry) => item[entry.key] != entry.value);
+        return neqFilter.entries
+            .every((entry) => item[entry.key] != entry.value);
       }).toList();
     }
 
@@ -36,7 +37,7 @@ class MockCloudService implements ICloudService {
     if (nullCheckColumn != null) {
       data = data.where((item) => item[nullCheckColumn] != null).toList();
     }
-    
+
     // Sorting (order)
     if (order != null) {
       data.sort((a, b) {
@@ -71,7 +72,7 @@ class MockCloudService implements ICloudService {
   }) async {
     final tableData = _getTableData(table);
     final results = <Map<String, dynamic>>[];
-    
+
     for (int i = 0; i < tableData.length; i++) {
       if (tableData[i][matchColumn] == matchValue) {
         final updatedItem = Map<String, dynamic>.from(tableData[i]);
@@ -82,18 +83,32 @@ class MockCloudService implements ICloudService {
         results.add(updatedItem);
       }
     }
-    
+
     return results;
   }
 
   @override
   Future<void> delete({
     required String table,
-    required String matchColumn,
-    required dynamic matchValue,
+    String? matchColumn,
+    dynamic matchValue,
+    Map<String, dynamic>? matchMap,
   }) async {
     final tableData = _getTableData(table);
-    tableData.removeWhere((item) => item[matchColumn] == matchValue);
+    tableData.removeWhere((item) {
+      bool isMatch = true;
+
+      if (matchColumn != null) {
+        isMatch = isMatch && (item[matchColumn] == matchValue);
+      }
+
+      if (matchMap != null) {
+        isMatch = isMatch &&
+            matchMap.entries.every((entry) => item[entry.key] == entry.value);
+      }
+
+      return isMatch;
+    });
   }
 
   @override
@@ -115,36 +130,68 @@ class MockCloudService implements ICloudService {
   // دالة مساعدة للحصول على بيانات الجدول من MockData
   List<Map<String, dynamic>> _getTableData(String table) {
     switch (table) {
-      case 'users': return MockData.users;
-      case 'clinics': return MockData.clinics;
-      case 'clinic_staff': return MockData.clinicStaff;
-      case 'invitations': return MockData.invitations;
-      case 'patients': return MockData.patients;
-      case 'patient_visits': return MockData.patientVisits;
-      case 'patient_prescription_records': return MockData.patientPrescriptionRecords;
-      case 'appointment_types': return MockData.appointmentTypes;
-      case 'doctor_appointment_types': return MockData.doctorAppointmentTypes;
-      case 'appointments': return MockData.appointments;
-      case 'doctor_queue_rules': return MockData.doctorQueueRules;
-      case 'drugs': return MockData.drugs;
-      case 'prescription_templates': return MockData.prescriptionTemplates;
-      case 'prescription_template_items': return MockData.prescriptionTemplateItems;
-      case 'prescriptions': return MockData.prescriptions;
-      case 'prescription_items': return MockData.prescriptionItems;
-      case 'expenses': return MockData.expenses;
-      case 'expense_categories': return MockData.expenseCategories;
-      case 'invoices': return MockData.invoices;
-      case 'subscriptions': return MockData.subscriptions;
-      case 'weekly_revenue': return MockData.weeklyRevenue;
-      case 'top_services': return MockData.topServices;
-      case 'doctor_performance': return MockData.doctorPerformance;
-      case 'doctor_secretary_schedule': return MockData.doctorSecretarySchedule;
-      case 'clinic_working_hours': return MockData.clinicWorkingHours;
-      case 'clinic_stats': return MockData.clinicStats;
-      case 'diagnosis_templates': return MockData.diagnosisTemplates;
-      case 'plans': return MockData.plans;
-      case 'plans_features': return MockData.plansFeatures;
-      default: return [];
+      case 'owners':
+        return MockData.owners;
+      case 'users':
+        return MockData.users;
+      case 'clinics':
+        return MockData.clinics;
+      case 'clinic_staff':
+        return MockData.clinicStaff;
+      case 'invitations':
+        return MockData.invitations;
+      case 'patients':
+        return MockData.patients;
+      case 'patient_visits':
+        return MockData.patientVisits;
+      case 'patient_prescription_records':
+        return MockData.patientPrescriptionRecords;
+      case 'appointment_types':
+        return MockData.appointmentTypes;
+      case 'doctor_appointment_types':
+        return MockData.doctorAppointmentTypes;
+      case 'appointments':
+        return MockData.appointments;
+      case 'doctor_queue_rules':
+        return MockData.doctorQueueRules;
+      case 'drugs':
+        return MockData.drugs;
+      case 'prescription_templates':
+        return MockData.prescriptionTemplates;
+      case 'prescription_template_items':
+        return MockData.prescriptionTemplateItems;
+      case 'prescriptions':
+        return MockData.prescriptions;
+      case 'prescription_items':
+        return MockData.prescriptionItems;
+      case 'expenses':
+        return MockData.expenses;
+      case 'expense_categories':
+        return MockData.expenseCategories;
+      case 'invoices':
+        return MockData.invoices;
+      case 'subscriptions':
+        return MockData.subscriptions;
+      case 'weekly_revenue':
+        return MockData.weeklyRevenue;
+      case 'top_services':
+        return MockData.topServices;
+      case 'doctor_performance':
+        return MockData.doctorPerformance;
+      case 'doctor_secretary_schedule':
+        return MockData.doctorSecretarySchedule;
+      case 'clinic_working_hours':
+        return MockData.clinicWorkingHours;
+      case 'clinic_stats':
+        return MockData.clinicStats;
+      case 'diagnosis_templates':
+        return MockData.diagnosisTemplates;
+      case 'plans':
+        return MockData.plans;
+      case 'plans_features':
+        return MockData.plansFeatures;
+      default:
+        return [];
     }
   }
 }

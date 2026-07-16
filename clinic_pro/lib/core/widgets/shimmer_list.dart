@@ -18,12 +18,12 @@ class ShimmerList extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: AppConstants.spaceMd),
           child: Shimmer.fromColors(
-            baseColor: AppColors.border,
-            highlightColor: AppColors.surface,
+            baseColor: context.border,
+            highlightColor: context.surface,
             child: Container(
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.surface,
                 borderRadius: BorderRadius.circular(AppConstants.radiusCard),
               ),
             ),

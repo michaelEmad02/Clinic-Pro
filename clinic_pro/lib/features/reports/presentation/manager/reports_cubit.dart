@@ -4,6 +4,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/strings/app_strings.dart';
 import 'reports_repository.dart';
 import 'reports_state.dart';
 
@@ -26,7 +27,7 @@ class ReportsCubit extends Cubit<ReportsState> {
       _allExpenses = await _repository.loadExpenses();
       await _emitForRange(ReportsDateRange.thisMonth);
     } catch (_) {
-      emit(const ReportsError('تعذّر تحميل التقارير'));
+      emit(ReportsError(AppStrings.loadReportsFailed));
     }
   }
 
@@ -165,10 +166,7 @@ class ReportsCubit extends Cubit<ReportsState> {
 
   String _weekKey(DateTime date) {
     final monday = date.subtract(Duration(days: date.weekday - 1));
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-    ];
+    final months = AppStrings.fullMonths;
     return '${monday.day} ${months[monday.month - 1]}';
   }
 }

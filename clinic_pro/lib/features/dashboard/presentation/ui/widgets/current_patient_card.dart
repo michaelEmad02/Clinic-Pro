@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../appointments/presentation/manager/appointments_state.dart';
 
 class CurrentPatientCard extends StatelessWidget {
@@ -20,23 +21,23 @@ class CurrentPatientCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.borderColor),
         ),
         child: Column(
           children: [
             const Icon(Icons.person_off_outlined, size: 48, color: AppColors.textHint),
             const SizedBox(height: 12),
             Text(
-              'لا يوجد مريض في غرفة الكشف حالياً',
+              AppStrings.isArabic ? 'لا يوجد مريض في غرفة الكشف حالياً' : 'No patient in the exam room',
               style: AppTextStyles.headlineSmall(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'اضغط على "استدعاء التالي" للبدء',
+              AppStrings.pressCallNext,
               style: AppTextStyles.caption(context).copyWith(
                 color: AppColors.textHint,
               ),
@@ -50,7 +51,7 @@ class CurrentPatientCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.primaryContainer, width: 1.5),
         boxShadow: [
@@ -70,7 +71,7 @@ class CurrentPatientCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.primaryLightColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -78,7 +79,7 @@ class CurrentPatientCard extends StatelessWidget {
                     const Icon(Icons.meeting_room_outlined, size: 14, color: AppColors.primary),
                     const SizedBox(width: 4),
                     Text(
-                      'غرفة الكشف الحالية',
+                      AppStrings.isArabic ? 'غرفة الكشف الحالية' : 'Current Exam Room',
                       style: AppTextStyles.labelChip(context).copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -94,7 +95,7 @@ class CurrentPatientCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  patient!.isUrgent ? 'مستعجل' : 'كشف عادي',
+                  patient!.isUrgent ? AppStrings.urgent : AppStrings.normalCheckup,
                   style: AppTextStyles.caption(context).copyWith(
                     color: patient!.isUrgent ? AppColors.dangerText : AppColors.successText,
                     fontWeight: FontWeight.bold,
@@ -109,8 +110,8 @@ class CurrentPatientCard extends StatelessWidget {
               Container(
                 width: 48,
                 height: 48,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryLight,
+                decoration: BoxDecoration(
+                  color: context.primaryLightColor,
                   shape: BoxShape.circle,
                 ),
                 child: const Center(
@@ -126,7 +127,7 @@ class CurrentPatientCard extends StatelessWidget {
                       patient!.patientName,
                       style: AppTextStyles.headlineSmall(context).copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: context.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -135,17 +136,17 @@ class CurrentPatientCard extends StatelessWidget {
                         Text(
                           patient!.patientPhone,
                           style: AppTextStyles.caption(context).copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.textSecondary,
                             fontFamily: 'Inter',
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Container(width: 1, height: 12, color: AppColors.border),
+                        Container(width: 1, height: 12, color: context.borderColor),
                         const SizedBox(width: 8),
                         Text(
                           patient!.displayTime,
                           style: AppTextStyles.caption(context).copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.textSecondary,
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
                           ),
@@ -161,16 +162,16 @@ class CurrentPatientCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: context.backgroundColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
-                const Icon(Icons.description_outlined, size: 16, color: AppColors.textSecondary),
+                Icon(Icons.description_outlined, size: 16, color: context.textSecondary),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    patient!.notes ?? 'لا توجد ملاحظات إضافية للموعد',
+                    patient!.notes ?? (AppStrings.isArabic ? 'لا توجد ملاحظات إضافية للموعد' : 'No additional notes'),
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: AppColors.onSurfaceVariant,
                     ),
@@ -198,7 +199,7 @@ class CurrentPatientCard extends StatelessWidget {
                 const Icon(Icons.edit_note, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  'بدء الكشف وكتابة الروشتة',
+                  AppStrings.isArabic ? 'بدء الكشف وكتابة الروشتة' : 'Start Examination & Prescription',
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     color: AppColors.onPrimary,
                   ),

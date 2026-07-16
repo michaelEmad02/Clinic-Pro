@@ -4,13 +4,19 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/strings/app_strings.dart';
+import '../../../../core/constants/staff_roles.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
-import 'widgets/social_login_button.dart';
 import 'widgets/magic_link_form.dart';
+import 'widgets/email_password_form.dart';
+import 'widgets/auth_tab_selector.dart';
+import 'widgets/social_login_row.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  LoginScreen({super.key});
+
+  final ValueNotifier<int> _selectedTab = ValueNotifier<int>(0);
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +24,12 @@ class LoginScreen extends StatelessWidget {
       listener: (context, state) {
         // عند نجاح تسجيل الدخول — التوجيه حسب الدور
         if (state is AuthAuthenticated) {
-          final role = state.user['role'];
-          if (role == 'owner') {
+          final role = state.user.role;
+          if (role == StaffRoles.owner) {
             context.go(RouteConstants.ownerDashboard);
-          } else if (role == 'doctor') {
+          } else if (role == StaffRoles.doctor) {
             context.go(RouteConstants.doctorDashboard);
-          } else if (role == 'secretary') {
+          } else if (role == StaffRoles.secretary) {
             context.go(RouteConstants.secretaryDashboard);
           }
         } else if (state is AuthError) {
@@ -33,7 +39,7 @@ class LoginScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
         body: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -42,7 +48,7 @@ class LoginScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -67,7 +73,7 @@ class LoginScreen extends StatelessWidget {
                               width: 64,
                               height: 64,
                               decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
+                                color: context.primaryLightColor,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
@@ -85,17 +91,17 @@ class LoginScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'أهلاً بك',
+                              AppStrings.welcomeGreeting,
                               style: AppTextStyles.headlineLarge(context),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'سجّل الدخول للوصول إلى لوحة تحكم عيادتك المتقدمة.',
-                              style: AppTextStyles.bodyLarge(context).copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
+                            // const SizedBox(height: 8),
+                            // Text(
+                            //   AppStrings.loginSubtitle,
+                            //   style: AppTextStyles.bodyLarge(context).copyWith(
+                            //     color: context.textSecondary,
+                            //   ),
+                            //   textAlign: TextAlign.center,
+                            // ),
                           ],
                         ),
                         const SizedBox(height: 32),
@@ -106,55 +112,88 @@ class LoginScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                         ],
 
-                        // Social Login — يسجل دخول مباشرة كمالك (Mock)
-                        SocialLoginButton(
-                          type: SocialLoginType.google,
-                          text: 'المتابعة باستخدام Google',
-                          onPressed: isLoading
+                        // أزرار تسجيل الدخول الاجتماعي
+                        SocialLoginRow(
+                          onGooglePressed: isLoading
                               ? () {}
                               : () {
-                                  context.read<AuthCubit>().login('owner@clinicpro.com', 'mock');
+                                  // context.read<AuthCubit>().login('sara@clinicpro.com', 'mock');
+                                  context.read<AuthCubit>().loginWithGoogle();
                                 },
-                        ),
-                        const SizedBox(height: 16),
-                        SocialLoginButton(
-                          type: SocialLoginType.apple,
-                          text: 'المتابعة باستخدام Apple',
-                          onPressed: isLoading
+                          onApplePressed: isLoading
                               ? () {}
                               : () {
-                                  context.read<AuthCubit>().login('owner@clinicpro.com', 'mock');
+                                  // context
+                                  //     .read<AuthCubit>()
+                                  //     .login('owner@clinicpro.com', 'mock');
+                                  context.read<AuthCubit>().loginWithApple();
                                 },
                         ),
-
                         const SizedBox(height: 24),
 
                         // Divider
                         Row(
                           children: [
-                            const Expanded(child: Divider(color: AppColors.border)),
+                            Expanded(
+                                child: Divider(color: context.borderColor)),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
-                                'أو',
+                                AppStrings.orText,
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: AppColors.textHint,
                                 ),
                               ),
                             ),
-                            const Expanded(child: Divider(color: AppColors.border)),
+                            Expanded(
+                                child: Divider(color: context.borderColor)),
                           ],
                         ),
 
                         const SizedBox(height: 24),
 
-                        // Magic Link Form — يسجل دخول بالإيميل المدخل (Mock)
-                        MagicLinkForm(
-                          onSubmit: isLoading
-                              ? (_) {}
-                              : (email) {
-                                  context.read<AuthCubit>().login(email, 'mock');
-                                },
+                        // شريط التبديل بين البريد الإلكتروني والرابط السحري
+                        ValueListenableBuilder<int>(
+                          valueListenable: _selectedTab,
+                          builder: (context, activeTab, child) {
+                            return AuthTabSelector(
+                              activeTab: activeTab,
+                              onTabSelected: (index) {
+                                _selectedTab.value = index;
+                              },
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // محتوى النموذج بناءً على التبويب النشط
+                        ValueListenableBuilder<int>(
+                          valueListenable: _selectedTab,
+                          builder: (context, activeTab, child) {
+                            if (activeTab == 0) {
+                              return EmailPasswordForm(
+                                onSubmit: isLoading
+                                    ? (_, __) {}
+                                    : (email, password) {
+                                        context
+                                            .read<AuthCubit>()
+                                            .login(email, password);
+                                      },
+                              );
+                            } else {
+                              return MagicLinkForm(
+                                onSubmit: isLoading
+                                    ? (_) {}
+                                    : (email) {
+                                        context
+                                            .read<AuthCubit>()
+                                            .login(email, 'mock');
+                                      },
+                              );
+                            }
+                          },
                         ),
 
                         const SizedBox(height: 16),
@@ -167,29 +206,34 @@ class LoginScreen extends StatelessWidget {
                               onPressed: isLoading
                                   ? null
                                   : () {
-                                      context.read<AuthCubit>().loginAsRole('doctor');
+                                      context
+                                          .read<AuthCubit>()
+                                          .loginAsRole(StaffRoles.doctor);
                                     },
                               child: Text(
-                                'دخول كطبيب',
+                                AppStrings.loginAsDoctor,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: context.textSecondary,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Text('|', style: TextStyle(color: AppColors.border)),
+                            Text('|',
+                                style: TextStyle(color: context.borderColor)),
                             const SizedBox(width: 8),
                             TextButton(
                               onPressed: isLoading
                                   ? null
                                   : () {
-                                      context.read<AuthCubit>().loginAsRole('secretary');
+                                      context
+                                          .read<AuthCubit>()
+                                          .loginAsRole(StaffRoles.secretary);
                                     },
                               child: Text(
-                                'دخول كسكرتارية',
+                                AppStrings.loginAsSecretary,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: context.textSecondary,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
@@ -212,8 +256,9 @@ class LoginScreen extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'صاحب عيادة جديد؟ أنشئ حساباً',
-                                  style: AppTextStyles.headlineSmall(context).copyWith(
+                                  AppStrings.newClinicOwner,
+                                  style: AppTextStyles.headlineSmall(context)
+                                      .copyWith(
                                     color: AppColors.primary,
                                   ),
                                 ),
@@ -235,4 +280,3 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
-

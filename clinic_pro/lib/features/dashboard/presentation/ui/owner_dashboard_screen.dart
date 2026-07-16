@@ -1,8 +1,10 @@
 import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../clinics/presentation/ui/clinics_screen.dart';
@@ -10,7 +12,6 @@ import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/owner_dashboard_cubit.dart';
 import '../manager/owner_dashboard_state.dart';
 import 'widgets/dashboard_summary_row.dart';
-import 'widgets/clinics_horizontal_scroll.dart';
 import 'widgets/alerts_section.dart';
 import 'widgets/revenue_bar_chart.dart';
 import 'widgets/quick_actions_row.dart';
@@ -30,9 +31,10 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => OwnerDashboardCubit(sl<ICloudService>())..loadDashboardData(),
+      create: (context) =>
+          OwnerDashboardCubit(sl<ICloudService>())..loadDashboardData(),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
         appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
         body: IndexedStack(
           index: _currentIndex,
@@ -44,7 +46,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             const SettingsScreen(role: StaffRoles.owner, showBottomNav: false),
           ],
         ),
-        bottomNavigationBar: buildBottomNav(),
+        bottomNavigationBar: _buildBottomNav(),
       ),
     );
   }
@@ -52,62 +54,63 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       toolbarHeight: 64,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.surfaceColor,
       elevation: 0,
       scrolledUnderElevation: 0,
       title: BlocBuilder<OwnerDashboardCubit, OwnerDashboardState>(
         builder: (context, state) {
-          String subtitle = 'لوحة التحكم';
+          String subtitle = AppStrings.isArabic ? 'لوحة التحكم' : 'Dashboard';
           if (state is OwnerDashboardLoaded) {
-            subtitle = 'مرحباً، ${state.dashboard.ownerName}';
+            subtitle = '${AppStrings.welcomeBack}${state.dashboard.ownerName}';
           }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'كلينك برو',
+                AppStrings.isArabic ? 'كلينك برو' : 'Clinic Pro',
                 style: AppTextStyles.headlineMedium(context).copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: context.textPrimary,
                 ),
               ),
               Text(
                 subtitle,
                 style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                 ),
               ),
             ],
           );
         },
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_none_outlined, color: AppColors.textSecondary),
-          onPressed: () {},
-        ),
-        const SizedBox(width: 8),
-        Container(
-          margin: const EdgeInsets.only(left: 16),
-          width: 36,
-          height: 36,
-          decoration: const BoxDecoration(
-            color: AppColors.primaryLight,
-            shape: BoxShape.circle,
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.person,
-              color: AppColors.primary,
-              size: 20,
-            ),
-          ),
-        ),
+      actions: const [
+        // IconButton(
+        //   icon:  Icon(Icons.notifications_none_outlined,
+        //       color: context.textSecondary),
+        //   onPressed: () {},
+        // ),
+        // const SizedBox(width: 8),
+        // Container(
+        //   margin: const EdgeInsets.only(left: 16),
+        //   width: 36,
+        //   height: 36,
+        //   decoration:  BoxDecoration(
+        //     color: context.primaryLightColor,
+        //     shape: BoxShape.circle,
+        //   ),
+        //   child: const Center(
+        //     child: Icon(
+        //       Icons.person,
+        //       color: context.primary,
+        //       size: 20,
+        //     ),
+        //   ),
+        // ),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(
-          color: AppColors.border,
+          color: context.border,
           height: 1,
         ),
       ),
@@ -154,66 +157,103 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  Widget buildBottomNav() {
+  Widget _buildBottomNav() {
     final tabs = [
-      {'label': 'الرئيسية', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
-      {'label': 'العيادات', 'icon': Icons.business_outlined, 'activeIcon': Icons.business},
-      {'label': 'المصاريف', 'icon': Icons.money_off_outlined, 'activeIcon': Icons.money_off},
-      {'label': 'التقارير', 'icon': Icons.analytics_outlined, 'activeIcon': Icons.analytics},
-      {'label': 'الإعدادات', 'icon': Icons.settings_outlined, 'activeIcon': Icons.settings},
+      {
+        'label': AppStrings.home,
+        'icon': TablerIcons.smart_home,
+        'activeIcon': TablerIcons.smart_home
+      },
+      {
+        'label': AppStrings.clinics,
+        'icon': TablerIcons.building_hospital,
+        'activeIcon': TablerIcons.building_hospital
+      },
+      {
+        'label': AppStrings.expenses,
+        'icon': TablerIcons.wallet,
+        'activeIcon': TablerIcons.wallet
+      },
+      {
+        'label': AppStrings.reports,
+        'icon': TablerIcons.chart_pie,
+        'activeIcon': TablerIcons.chart_pie
+      },
+      {
+        'label': AppStrings.settings,
+        'icon': TablerIcons.settings,
+        'activeIcon': TablerIcons.settings
+      },
     ];
 
     return Container(
-      height: 70,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
         border: Border(
-          top: BorderSide(color: AppColors.border, width: 1),
+          top: BorderSide(color: context.borderColor, width: 0.5),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(tabs.length, (index) {
-          final isSelected = _currentIndex == index;
-          final tab = tabs[index];
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(tabs.length, (index) {
+            final isSelected = _currentIndex == index;
+            final tab = tabs[index];
 
-          return InkWell(
-            onTap: () {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: isSelected
-                  ? BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(16),
-                    )
-                  : null,
-              child: Row(
-                children: [
-                  Icon(
-                    isSelected ? (tab['activeIcon'] as IconData) : (tab['icon'] as IconData),
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                    size: 22,
-                  ),
-                  if (isSelected) ...[
-                    const SizedBox(width: 8),
+            return InkWell(
+              onTap: () {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: SizedBox(
+                width: 68,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? context.primaryLightColor
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        isSelected
+                            ? (tab['activeIcon'] as IconData)
+                            : (tab['icon'] as IconData),
+                        color: isSelected
+                            ? context.primary
+                            : context.textSecondary,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     Text(
                       tab['label'] as String,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                       style: AppTextStyles.labelChip(context).copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
+                        color: isSelected
+                            ? context.primary
+                            : context.textSecondary,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontSize: 10,
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

@@ -39,12 +39,14 @@ class PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: isFeatured ? const EdgeInsets.only(top: 0) : const EdgeInsets.only(top: 16),
+      margin: isFeatured
+          ? const EdgeInsets.only(top: 0)
+          : const EdgeInsets.only(top: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isFeatured ? AppColors.primary : AppColors.border,
+          color: isFeatured ? context.primary : context.border,
           width: isFeatured ? 2 : 1,
         ),
         boxShadow: [
@@ -73,7 +75,7 @@ class PlanCard extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.headlineMedium(context).copyWith(
-                    color: AppColors.textPrimary,
+                    color: context.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -83,7 +85,7 @@ class PlanCard extends StatelessWidget {
                     Text(
                       price,
                       style: AppTextStyles.headlineLarge(context).copyWith(
-                        color: AppColors.primary,
+                        color: context.primary,
                         fontFamily: title == 'Enterprise' ? 'Cairo' : 'Inter',
                       ),
                       textDirection: TextDirection.ltr,
@@ -94,23 +96,28 @@ class PlanCard extends StatelessWidget {
                       child: Text(
                         priceSubtext,
                         style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.textSecondary,
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                ...features.map(_buildFeature),
+                ...features
+                    .map(_buildFeature as Widget Function(PlanFeature e)),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: onSelect,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isFeatured ? AppColors.primary : AppColors.surface,
-                    foregroundColor: isFeatured ? AppColors.onPrimary : AppColors.primary,
+                    backgroundColor:
+                        isFeatured ? context.primary : context.surface,
+                    foregroundColor:
+                        isFeatured ? context.onPrimary : context.primary,
                     elevation: isFeatured ? 4 : 0,
-                    shadowColor: isFeatured ? AppColors.primaryContainer.withOpacity(0.4) : null,
-                    side: isFeatured ? null : const BorderSide(color: AppColors.border),
+                    shadowColor: isFeatured
+                        ? context.primaryContainer.withOpacity(0.4)
+                        : null,
+                    side: isFeatured ? null : BorderSide(color: context.border),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -119,7 +126,7 @@ class PlanCard extends StatelessWidget {
                   child: Text(
                     buttonText,
                     style: AppTextStyles.headlineSmall(context).copyWith(
-                      color: isFeatured ? AppColors.onPrimary : AppColors.primary,
+                      color: isFeatured ? context.onPrimary : context.primary,
                     ),
                   ),
                 ),
@@ -133,16 +140,17 @@ class PlanCard extends StatelessWidget {
               right: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
+                    color: context.primaryLightColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                    border: Border.all(color: context.primary.withOpacity(0.2)),
                   ),
                   child: Text(
                     badgeText!,
                     style: AppTextStyles.labelChip(context).copyWith(
-                      color: AppColors.primary,
+                      color: context.primary,
                     ),
                   ),
                 ),
@@ -153,25 +161,24 @@ class PlanCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFeature(PlanFeature feature) {
+  Widget _buildFeature(PlanFeature feature, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
           Icon(
             feature.included ? Icons.check_circle : Icons.cancel,
-            color: feature.included ? AppColors.successText : AppColors.textHint,
+            color: feature.included ? context.successText : context.textHint,
             size: 20,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: const TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 14,
-                  color: AppColors.onSurfaceVariant,
-                ),
+                style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 14,
+                    color: context.textPrimary),
                 children: [
                   if (feature.numericValue != null)
                     TextSpan(
@@ -185,8 +192,8 @@ class PlanCard extends StatelessWidget {
                     text: feature.text,
                     style: TextStyle(
                       color: feature.included
-                          ? AppColors.onSurfaceVariant
-                          : AppColors.onSurfaceVariant.withOpacity(0.5),
+                          ? context.textPrimary
+                          : context.textSecondary,
                     ),
                   ),
                 ],

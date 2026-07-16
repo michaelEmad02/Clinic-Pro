@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
-import '../../manager/clinics_state.dart';
+import '../../../domain/entities/clinic_entity.dart';
 import 'clinic_card_header.dart';
 import 'clinic_card_stats.dart';
 
 class ClinicCard extends StatelessWidget {
-  final ClinicItem clinic;
+  final ClinicEntity clinic;
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
@@ -23,12 +23,12 @@ class ClinicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final opacity = clinic.isActive ? 1.0 : 0.5;
+    final opacity = clinic.isActive ? 1.0 : 0.7;
 
     return Opacity(
       opacity: opacity,
       child: Material(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
         child: InkWell(
           onTap: onTap,
@@ -39,8 +39,8 @@ class ClinicCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppConstants.radiusCard),
               border: Border.all(
                 color: clinic.isActive
-                    ? AppColors.border
-                    : AppColors.danger.withOpacity(0.3),
+                    ? context.border
+                    : context.danger.withOpacity(0.3),
               ),
               boxShadow: AppConstants.cardShadow,
             ),
@@ -54,7 +54,7 @@ class ClinicCard extends StatelessWidget {
                   onDelete: onDelete,
                 ),
                 const SizedBox(height: 12),
-                const Divider(height: 1, color: AppColors.border),
+                 Divider(height: 1, color: context.border),
                 const SizedBox(height: 12),
                 ClinicCardStats(clinic: clinic),
               ],

@@ -2,13 +2,15 @@
 // بطاقة موظف في Grid — مطابقة لتصميم phase8_ui/staff_screen
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/features/staff/domain/entities/staff_entity.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/staff_state.dart';
 
 class StaffListItem extends StatelessWidget {
-  final StaffItem staff;
+  final StaffEntity staff;
   final VoidCallback onTap;
   final VoidCallback onMore;
 
@@ -21,10 +23,10 @@ class StaffListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final specialtyLabel = staff.specialty ?? staff.roleLabel;
+    final specialtyLabel = staff.specialty ?? staff.role.label;
 
     return Material(
-      color: AppColors.surface,
+      color: context.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -33,7 +35,7 @@ class StaffListItem extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.border),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x08000000),
@@ -54,27 +56,20 @@ class StaffListItem extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: AppColors.primaryLight,
+                        backgroundColor: context.primaryLightColor,
                         backgroundImage: staff.avatarUrl != null
                             ? NetworkImage(staff.avatarUrl!)
                             : null,
                         child: staff.avatarUrl == null
                             ? Text(
                                 staff.initials,
-                                style: AppTextStyles
-                                    .headlineSmall(context)
+                                style: AppTextStyles.headlineSmall(context)
                                     .copyWith(
-                                  color: AppColors.primary,
+                                  color: context.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               )
                             : null,
-                      ),
-                      // نقطة الحالة الخضراء (pulsing anim)
-                      Positioned(
-                        bottom: 1,
-                        right: 1,
-                        child: _StatusDot(isOnline: staff.isOnline),
                       ),
                     ],
                   ),
@@ -86,11 +81,9 @@ class StaffListItem extends StatelessWidget {
                       children: [
                         Text(
                           staff.name,
-                          style: AppTextStyles
-                              .headlineSmall(context)
-                              .copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppTextStyles.headlineSmall(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: context.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -98,7 +91,7 @@ class StaffListItem extends StatelessWidget {
                         Text(
                           specialtyLabel,
                           style: AppTextStyles.caption(context).copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -112,8 +105,8 @@ class StaffListItem extends StatelessWidget {
                     height: 24,
                     child: IconButton(
                       padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.more_vert,
-                          size: 18, color: AppColors.textSecondary),
+                      icon: Icon(Icons.more_vert,
+                          size: 18, color: context.textSecondary),
                       onPressed: onMore,
                     ),
                   ),
@@ -124,45 +117,15 @@ class StaffListItem extends StatelessWidget {
               _buildRoleBadge(context),
               const SizedBox(height: 12),
               // خط فاصل
-              Divider(height: 1, color: AppColors.border),
+              Divider(height: 1, color: context.border),
               const SizedBox(height: 8),
               // صف الحالة + رابط عرض الملف
               Row(
                 children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Icon(
-                          staff.isOnline
-                              ? Icons.schedule
-                              : Icons.history,
-                          size: 14,
-                          color: staff.isOnline
-                              ? AppColors.successText
-                              : AppColors.textSecondary,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            staff.isOnline
-                                ? 'متاح الآن'
-                                : (staff.lastSeen ?? 'غير متصل'),
-                            style:
-                                AppTextStyles.labelChip(context).copyWith(
-                              color: staff.isOnline
-                                  ? AppColors.successText
-                                  : AppColors.textSecondary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   Text(
-                    'عرض الملف',
+                    AppStrings.viewProfile,
                     style: AppTextStyles.labelChip(context).copyWith(
-                      color: AppColors.primary,
+                      color: context.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -181,32 +144,21 @@ class StaffListItem extends StatelessWidget {
     IconData icon;
     String label;
 
-    switch (staff.role) {
-      case 'doctor':
-        bg = AppColors.primaryLight;
-        text = AppColors.primary;
-        icon = Icons.medical_services;
-        label = 'دكتور';
-      case 'nurse':
-        bg = AppColors.successBg;
-        text = AppColors.successText;
-        icon = Icons.vaccines;
-        label = 'تمريض';
-      case 'accountant':
-        bg = AppColors.warningBg;
-        text = AppColors.warningText;
-        icon = Icons.account_balance;
-        label = 'محاسب';
-      case 'secretary':
-        bg = AppColors.surfaceContainerHigh;
-        text = AppColors.onSurfaceVariant;
-        icon = Icons.admin_panel_settings;
-        label = 'إدارة';
-      default:
-        bg = AppColors.surfaceContainerLow;
-        text = AppColors.textSecondary;
-        icon = Icons.person;
-        label = staff.roleLabel;
+    if (staff.role == StaffRoles.secretary) {
+      bg = context.primaryLightColor;
+      text = context.primary;
+      icon = Icons.medical_services;
+      label = StaffRoles.secretary.label;
+    } else if (staff.role == StaffRoles.doctor) {
+      bg = context.successBg;
+      text = context.successText;
+      icon = Icons.vaccines;
+      label = StaffRoles.doctor.label;
+    } else {
+      bg = context.surfaceContainerLow;
+      text = context.textSecondary;
+      icon = Icons.person;
+      label = staff.role.label;
     }
 
     return Container(
@@ -234,9 +186,9 @@ class StaffListItem extends StatelessWidget {
 }
 
 // ── نقطة الحالة مع تأثير النبض الأخضر ──
-class _StatusDot extends StatelessWidget {
+class StatusDot extends StatelessWidget {
   final bool isOnline;
-  const _StatusDot({required this.isOnline});
+  const StatusDot({super.key, required this.isOnline});
 
   @override
   Widget build(BuildContext context) {
@@ -244,13 +196,13 @@ class _StatusDot extends StatelessWidget {
       width: 12,
       height: 12,
       decoration: BoxDecoration(
-        color: isOnline ? AppColors.successText : AppColors.outline,
+        color: isOnline ? context.successText : context.outline,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.surface, width: 2),
+        border: Border.all(color: context.surface, width: 2),
         boxShadow: isOnline
             ? [
                 BoxShadow(
-                  color: AppColors.successText.withOpacity(0.4),
+                  color: context.successText.withOpacity(0.4),
                   blurRadius: 4,
                   spreadRadius: 1,
                 ),

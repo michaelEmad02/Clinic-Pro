@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/services/i_cloud_service.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/localization/language_cubit.dart';
 import '../../manager/settings_cubit.dart';
 
 class WorkingHoursDay {
@@ -71,6 +73,11 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
     _DayConfig('friday', 'الجمعة', 'F'),
   ];
 
+  String _dayName(String dayKey) {
+    final index = AppStrings.dayKeys.indexOf(dayKey);
+    return index >= 0 ? AppStrings.dayNames[index] : dayKey;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -89,10 +96,10 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
 
       final schedule = _dayConfigs.map((cfg) {
         final raw = data?[cfg.key] as String?;
-        if (raw == null || raw == 'مغلق') {
+        if (raw == null || raw == AppStrings.closed) {
           return WorkingHoursDay(
             dayKey: cfg.key,
-            dayName: cfg.name,
+            dayName: _dayName(cfg.key),
             keyChar: cfg.char,
             isOpen: false,
             periods: [],
@@ -100,7 +107,7 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
         }
         return WorkingHoursDay(
           dayKey: cfg.key,
-          dayName: cfg.name,
+          dayName: _dayName(cfg.key),
           keyChar: cfg.char,
           isOpen: true,
           periods: _parsePeriods(raw),
@@ -149,7 +156,7 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
   }
 
   String _formatPeriods(List<WorkingPeriod> periods) {
-    if (periods.isEmpty) return 'مغلق';
+    if (periods.isEmpty) return AppStrings.closed;
     final start = _formatTime(periods.first.start);
     final end = _formatTime(periods.first.end);
     return '$start - $end';
@@ -206,14 +213,18 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.watch<LanguageCubit>().state;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection:
+          locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
       child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppConstants.radiusSheet)),
+        decoration: BoxDecoration(
+          color: context.surface,
+          borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppConstants.radiusSheet)),
         ),
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
@@ -231,35 +242,40 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
                       width: 48,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: AppColors.border,
+                        color: context.border,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
                   const SizedBox(height: AppConstants.spaceMd),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.screenEdgeH),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.calendar_month, color: AppColors.primary, size: 24),
+                            Icon(Icons.calendar_month,
+                                color: context.primary, size: 24),
                             const SizedBox(width: AppConstants.spaceSm),
                             Text(
-                              'ساعات العمل',
-                              style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
+                              AppStrings.workingHours,
+                              style: AppTextStyles.headlineSmall(context)
+                                  .copyWith(
+                                      color: context.primary,
+                                      fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                          icon: Icon(Icons.close, color: context.textSecondary),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
                   ),
-                  const Divider(height: 1, color: AppColors.border),
+                  Divider(height: 1, color: context.border),
                   Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(AppConstants.screenEdgeH),
@@ -272,22 +288,27 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
                   ),
                   Container(
                     padding: const EdgeInsets.all(AppConstants.spaceLg),
-                    decoration: const BoxDecoration(
-                      border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+                    decoration: BoxDecoration(
+                      border: Border(
+                          top: BorderSide(color: context.border, width: 1)),
                     ),
                     child: ElevatedButton.icon(
                       onPressed: _saveWorkingHours,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: context.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: AppConstants.spaceMd),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                         minimumSize: const Size(double.infinity, 50),
                       ),
                       icon: const Icon(Icons.save_outlined),
-                      label: Text('حفظ المواعيد', style: AppTextStyles.bodyLarge(context).copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
+                      label: Text(AppStrings.save,
+                          style: AppTextStyles.bodyLarge(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: context.surfaceBright)),
                     ),
                   ),
                 ],
@@ -302,9 +323,10 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
       margin: const EdgeInsets.only(bottom: AppConstants.spaceMd),
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: day.isOpen ? AppColors.surface : AppColors.background.withOpacity(0.6),
+        color:
+            day.isOpen ? context.surface : context.background.withOpacity(0.6),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: context.border, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,14 +340,18 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: day.isOpen ? AppColors.primaryLight : AppColors.border,
+                      color: day.isOpen
+                          ? context.primaryLightColor
+                          : context.border,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
                       child: Text(
                         day.keyChar,
                         style: TextStyle(
-                          color: day.isOpen ? AppColors.primary : AppColors.textSecondary,
+                          color: day.isOpen
+                              ? context.textPrimary
+                              : context.textSecondary,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -336,7 +362,9 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
                   Text(
                     day.dayName,
                     style: AppTextStyles.headlineSmall(context).copyWith(
-                      color: day.isOpen ? AppColors.textPrimary : AppColors.textSecondary,
+                      color: day.isOpen
+                          ? context.textPrimary
+                          : context.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -344,7 +372,7 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
               ),
               Switch(
                 value: day.isOpen,
-                activeColor: AppColors.primary,
+                activeColor: context.primary,
                 onChanged: (val) {
                   setState(() {
                     day.isOpen = val;
@@ -367,7 +395,8 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
             const SizedBox(height: AppConstants.spaceSm),
             Text(
               'يوم مغلق - لا يوجد مواعيد',
-              style: AppTextStyles.caption(context).copyWith(color: AppColors.textHint),
+              style: AppTextStyles.caption(context)
+                  .copyWith(color: context.textHint),
             ),
           ],
           if (day.isOpen) ...[
@@ -383,9 +412,10 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
                   child: Column(
                     children: [
                       if (pIndex > 0)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: Divider(height: 1, thickness: 0.5, color: AppColors.border),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Divider(
+                              height: 1, thickness: 0.5, color: context.border),
                         ),
                       Row(
                         children: [
@@ -393,7 +423,9 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('من', style: AppTextStyles.caption(context).copyWith(color: AppColors.textHint)),
+                                Text('من',
+                                    style: AppTextStyles.caption(context)
+                                        .copyWith(color: context.textHint)),
                                 const SizedBox(height: 4),
                                 _buildTimeSelector(period.start, (newTime) {
                                   setState(() => period.start = newTime);
@@ -406,7 +438,9 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('إلى', style: AppTextStyles.caption(context).copyWith(color: AppColors.textHint)),
+                                Text('إلى',
+                                    style: AppTextStyles.caption(context)
+                                        .copyWith(color: context.textHint)),
                                 const SizedBox(height: 4),
                                 _buildTimeSelector(period.end, (newTime) {
                                   setState(() => period.end = newTime);
@@ -422,7 +456,8 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
                                   day.periods.removeAt(pIndex);
                                 });
                               },
-                              icon: const Icon(Icons.delete, color: AppColors.danger, size: 20),
+                              icon: Icon(Icons.delete,
+                                  color: context.danger, size: 20),
                             ),
                           ],
                         ],
@@ -433,27 +468,29 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
               },
             ),
             const SizedBox(height: 4),
-            TextButton.icon(
-              onPressed: () {
-                setState(() {
-                  day.periods.add(
-                    WorkingPeriod(
-                      start: const TimeOfDay(hour: 17, minute: 0),
-                      end: const TimeOfDay(hour: 20, minute: 0),
-                    ),
-                  );
-                });
-              },
-              icon: const Icon(Icons.add_circle_outline, size: 18, color: AppColors.primary),
-              label: Text(
-                day.periods.isEmpty
-                    ? 'إضافة فترة'
-                    : day.periods.length == 1
-                        ? 'إضافة فترة ثانية'
-                        : 'إضافة فترة ثالثة',
-                style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
-              ),
-            ),
+            // TextButton.icon(
+            //   onPressed: () {
+            //     setState(() {
+            //       day.periods.add(
+            //         WorkingPeriod(
+            //           start: const TimeOfDay(hour: 17, minute: 0),
+            //           end: const TimeOfDay(hour: 20, minute: 0),
+            //         ),
+            //       );
+            //     });
+            //   },
+            //   icon:  Icon(Icons.add_circle_outline,
+            //       size: 18, color: context.primary),
+            //   label: Text(
+            //     day.periods.isEmpty
+            //         ? 'إضافة فترة'
+            //         : day.periods.length == 1
+            //             ? 'إضافة فترة ثانية'
+            //             : 'إضافة فترة ثالثة',
+            //     style: AppTextStyles.bodyMedium(context).copyWith(
+            //         color: context.primary, fontWeight: FontWeight.bold),
+            //   ),
+            //  ),
           ],
         ],
       ),
@@ -472,9 +509,10 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.spaceMd, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: context.background,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -483,11 +521,11 @@ class _EditWorkingHoursSheetState extends State<EditWorkingHoursSheet> {
             Text(
               time.format(context),
               style: AppTextStyles.bodyLarge(context).copyWith(
-                color: AppColors.primary,
+                color: context.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Icon(Icons.schedule, size: 16, color: AppColors.textHint),
+            Icon(Icons.schedule, size: 16, color: context.textHint),
           ],
         ),
       ),

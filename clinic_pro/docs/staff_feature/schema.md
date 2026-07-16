@@ -1,7 +1,5 @@
 # schema.md — Clinics & Staff Feature
 
-> ✅ Verified against live Supabase project `sybsvobonipnmvymauvc` on 2025
-
 ---
 
 ## Tables
@@ -10,7 +8,7 @@
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
-| `id` | uuid | NO | `gen_random_uuid()` | |
+| `id` | uuid | NO | `gen_random_uuid()` |   |
 | `created_at` | timestamptz | NO | `now()` | |
 | `owner_id` | uuid | NO | — | FK → Owners.id |
 | `name` | text | NO | — | |
@@ -44,6 +42,8 @@ Comment: *"يحتوي علي موظفين كل عياده"*
 
 ---
 
+
+
 ### `staff_role` (enum)
 
 ```sql
@@ -71,6 +71,7 @@ CREATE TABLE invitations (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   clinic_id   uuid REFERENCES clinics(id),
   owner_id    uuid REFERENCES "Owners"(id),
+  doctor_id?   uuid REFERENCES users(id), // if the user is secretary
   email       text NOT NULL,
   name        text,
   role        staff_role NOT NULL,
@@ -119,6 +120,8 @@ CREATE TABLE invitations (
 > One secretary can serve multiple doctors (in different clinics or on different days).
 > One doctor can have multiple secretaries.
 > A secretary serves only ONE doctor at a time (never concurrent).
+
+comment : *"يتم في هذا الجدول ربط السكرتير بالطبيب , و قد يتم ربط سكريتير واحد باكثر من طبيب لذلك قمنا بعمل جدول منفصل"*
 
 ## Constants
 

@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -21,9 +22,9 @@ class AlertsSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'تنبيهات هامة',
+            AppStrings.isArabic ? 'تنبيهات هامة' : 'Important Alerts',
             style: AppTextStyles.headlineSmall(context).copyWith(
-              color: AppColors.primary,
+              color: context.primary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -37,11 +38,11 @@ class AlertsSection extends StatelessWidget {
           itemBuilder: (context, index) {
             final alert = alerts[index];
             final isWarning = alert.type == DashboardAlertType.warning;
-            final bg = isWarning ? AppColors.warningBg : AppColors.primaryLight;
-            final textCol = isWarning ? AppColors.warningText : AppColors.primary;
+            final bg = isWarning ? context.warningBg : context.primaryLightColor;
+            final textCol = isWarning ? context.warningText : context.textSecondary;
             final borderCol = isWarning
-                ? AppColors.warningText.withOpacity(0.1)
-                : AppColors.primaryContainer.withOpacity(0.1);
+                ? context.warningText.withOpacity(0.1)
+                : context.primaryContainer.withOpacity(0.1);
 
             return Container(
               margin: const EdgeInsets.only(bottom: 8),

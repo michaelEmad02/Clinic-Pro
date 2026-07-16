@@ -5,6 +5,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import 'drugs_state.dart';
 
@@ -22,7 +23,7 @@ class DrugsCubit extends Cubit<DrugsState> {
       final drugs = await _cloudService.select(table: 'drugs');
       emit(DrugsLoaded(drugs: drugs));
     } catch (_) {
-      emit(const DrugsError('تعذّر تحميل الأدوية'));
+      emit(DrugsError(AppStrings.loadDrugsFailed));
     }
   }
 
@@ -63,7 +64,7 @@ class DrugsCubit extends Cubit<DrugsState> {
 
       emit(loaded.copyWith(drugs: [...loaded.drugs, newDrug]));
     } catch (_) {
-      emit(const DrugsError('تعذّر إضافة الدواء'));
+      emit(DrugsError(AppStrings.loadDrugsFailed));
     }
   }
 
@@ -104,7 +105,7 @@ class DrugsCubit extends Cubit<DrugsState> {
 
       emit(loaded.copyWith(drugs: updatedList));
     } catch (_) {
-      emit(const DrugsError('تعذّر تعديل الدواء'));
+      emit(DrugsError(AppStrings.loadDrugsFailed));
     }
   }
 
@@ -123,7 +124,7 @@ class DrugsCubit extends Cubit<DrugsState> {
       final updatedList = loaded.drugs.where((d) => d['id'] != id).toList();
       emit(loaded.copyWith(drugs: updatedList));
     } catch (_) {
-      emit(const DrugsError('تعذّر حذف الدواء'));
+      emit(DrugsError(AppStrings.loadDrugsFailed));
     }
   }
 }

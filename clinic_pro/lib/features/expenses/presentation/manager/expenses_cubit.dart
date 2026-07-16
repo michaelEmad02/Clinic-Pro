@@ -2,6 +2,7 @@
 // Cubit شاشة المصروفات — تحميل وإضافة وتعديل وحذف (Repository)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'expenses_repository.dart';
@@ -24,7 +25,7 @@ class ExpensesCubit extends Cubit<ExpensesState> {
         categories: categories,
       ));
     } catch (_) {
-      emit(const ExpensesError('تعذّر تحميل المصروفات'));
+      emit(ExpensesError(AppStrings.loadFailedMsg));
     }
   }
 
@@ -57,10 +58,9 @@ class ExpensesCubit extends Cubit<ExpensesState> {
         categoryLabel: categoryLabel,
         notes: notes,
       );
-      emit(loaded.copyWith(
-          allExpenses: [newExpense, ...loaded.allExpenses]));
+      emit(loaded.copyWith(allExpenses: [newExpense, ...loaded.allExpenses]));
     } catch (_) {
-      emit(const ExpensesError('تعذّر إضافة المصروف'));
+      emit(ExpensesError(AppStrings.loadFailedMsg));
     }
   }
 
@@ -89,7 +89,7 @@ class ExpensesCubit extends Cubit<ExpensesState> {
       }).toList();
       emit(loaded.copyWith(allExpenses: list));
     } catch (_) {
-      emit(const ExpensesError('تعذّر تعديل المصروف'));
+      emit(ExpensesError(AppStrings.loadFailedMsg));
     }
   }
 
@@ -99,12 +99,10 @@ class ExpensesCubit extends Cubit<ExpensesState> {
 
     try {
       await _repository.deleteExpense(expenseId);
-      final list = loaded.allExpenses
-          .where((e) => e.id != expenseId)
-          .toList();
+      final list = loaded.allExpenses.where((e) => e.id != expenseId).toList();
       emit(loaded.copyWith(allExpenses: list));
     } catch (_) {
-      emit(const ExpensesError('تعذّر حذف المصروف'));
+      emit(ExpensesError(AppStrings.loadFailedMsg));
     }
   }
 }

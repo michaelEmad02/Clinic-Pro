@@ -23,6 +23,9 @@ class SupabaseTables {
   static const String invoices = 'invoices';
   static const String expenses = 'expenses';
   static const String subscriptions = 'subscriptions';
+  static const String invitations = 'invitations';
+  static const String doctorSecretaries = 'doctor_secretary_schedule';
+  static const String doctorSchedules = 'doctor_schedules';
 }
 
 class AppointmentStatus {
@@ -33,6 +36,13 @@ class AppointmentStatus {
       'in_progress'; // الكشف جارٍ حالياً عند الطبيب
   static const String done = 'done'; // تم الانتهاء من الكشف وحفظ الروشتة
   static const String cancelled = 'cancelled'; // حجز ملغى
+}
+
+class InvitationStatus {
+  static const String pending = 'pending';
+  static const String accepted = 'accepted';
+  static const String cancelled = 'cancelled';
+  static const String expired = 'expired';
 }
 
 class QueueSlotType {

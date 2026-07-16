@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -28,7 +29,7 @@ class PatientDetailsScreen extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            appBar: AppBar(title: const Text('تفاصيل المريض')),
+            appBar: AppBar(title: Text(AppStrings.patientDetails)),
             body: const Padding(
               padding: EdgeInsets.all(16),
               child: ShimmerList(itemCount: 4),
@@ -39,15 +40,15 @@ class PatientDetailsScreen extends StatelessWidget {
         final patient = snapshot.data;
         if (patient == null || snapshot.hasError) {
           return Scaffold(
-            appBar: AppBar(title: const Text('تفاصيل المريض')),
-            body: const Center(child: Text('المريض غير موجود')),
+            appBar: AppBar(title: Text(AppStrings.patientDetails)),
+            body: Center(child: Text(AppStrings.isArabic ? 'المريض غير موجود' : 'Patient not found')),
           );
         }
 
         return DefaultTabController(
           length: 3,
           child: Scaffold(
-            backgroundColor: AppColors.background,
+            backgroundColor: context.background,
             body: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 PatientSliverAppBar(patient: patient),
@@ -55,16 +56,16 @@ class PatientDetailsScreen extends StatelessWidget {
                   pinned: true,
                   delegate: _TabBarDelegate(
                     TabBar(
-                      labelColor: AppColors.primary,
-                      unselectedLabelColor: AppColors.textSecondary,
-                      indicatorColor: AppColors.primary,
+                      labelColor: context.primary,
+                      unselectedLabelColor: context.textSecondary,
+                      indicatorColor: context.primary,
                       labelStyle: AppTextStyles.bodyMedium(context).copyWith(
                         fontWeight: FontWeight.bold,
                       ),
-                      tabs: const [
-                        Tab(text: 'المعلومات'),
-                        Tab(text: 'الزيارات'),
-                        Tab(text: 'الروشتات'),
+                      tabs: [
+                        Tab(text: AppStrings.isArabic ? 'المعلومات' : 'Info'),
+                        Tab(text: AppStrings.isArabic ? 'الزيارات' : 'Visits'),
+                        Tab(text: AppStrings.isArabic ? 'الروشتات' : 'Prescriptions'),
                       ],
                     ),
                   ),
@@ -103,7 +104,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     return Container(
-      color: AppColors.surface,
+      color: context.surface,
       child: tabBar,
     );
   }

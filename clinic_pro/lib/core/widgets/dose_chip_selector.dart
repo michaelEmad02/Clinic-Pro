@@ -31,15 +31,15 @@ class DoseChipSelector extends StatelessWidget {
             }
           },
           labelStyle: AppTextStyles.bodyMedium(context).copyWith(
-            color: isSelected ? Colors.white : AppColors.textPrimary,
+            color: isSelected ? context.textPrimary: context.textSecondary,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
-          selectedColor: AppColors.primary,
-          backgroundColor: AppColors.surface,
+          selectedColor: context.primary,
+          backgroundColor: context.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusChip),
             side: BorderSide(
-              color: isSelected ? AppColors.primary : AppColors.border,
+              color: isSelected ? context.primary : context.border,
             ),
           ),
         );

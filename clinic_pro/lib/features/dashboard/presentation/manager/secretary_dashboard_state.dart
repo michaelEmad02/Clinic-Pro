@@ -1,25 +1,9 @@
+// ─────────────────────────────────────────
+// هذا الملف يحتوي على حالات لوحة تحكم السكرتير
+// ─────────────────────────────────────────
+
 import 'package:equatable/equatable.dart';
-
-class AppointmentMock extends Equatable {
-  final String id;
-  final String patientName;
-  final String doctorName;
-  final String time;
-  final String type; // 'normal', 'urgent'
-  final String status; // 'scheduled', 'confirmed', 'in_progress', 'done', 'cancelled'
-
-  const AppointmentMock({
-    required this.id,
-    required this.patientName,
-    required this.doctorName,
-    required this.time,
-    required this.type,
-    required this.status,
-  });
-
-  @override
-  List<Object?> get props => [id, patientName, doctorName, time, type, status];
-}
+import '../../../appointments/presentation/manager/appointments_state.dart';
 
 abstract class SecretaryDashboardState extends Equatable {
   const SecretaryDashboardState();
@@ -34,16 +18,18 @@ class SecretaryDashboardLoading extends SecretaryDashboardState {}
 
 class SecretaryDashboardLoaded extends SecretaryDashboardState {
   final String secretaryName;
-  final List<AppointmentMock> liveQueue;
-  final List<AppointmentMock> todayAppointments;
+  final String clinicName;
+  final String doctorName;
+  final List<AppointmentItem> liveQueue;
   final String totalInvoiced;
   final String totalCollected;
   final int totalAppointmentsCount;
 
   const SecretaryDashboardLoaded({
     required this.secretaryName,
+    required this.clinicName,
+    required this.doctorName,
     required this.liveQueue,
-    required this.todayAppointments,
     required this.totalInvoiced,
     required this.totalCollected,
     required this.totalAppointmentsCount,
@@ -52,8 +38,9 @@ class SecretaryDashboardLoaded extends SecretaryDashboardState {
   @override
   List<Object?> get props => [
         secretaryName,
+        clinicName,
+        doctorName,
         liveQueue,
-        todayAppointments,
         totalInvoiced,
         totalCollected,
         totalAppointmentsCount,

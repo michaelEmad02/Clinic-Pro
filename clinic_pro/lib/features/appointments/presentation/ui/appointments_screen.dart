@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/route_constants.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -37,13 +38,13 @@ class _AppointmentsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          'المواعيد',
+          AppStrings.appointments,
           style: AppTextStyles.headlineMedium(context).copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.primary,
@@ -52,13 +53,13 @@ class _AppointmentsBody extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.queue_outlined, color: AppColors.primary),
-            tooltip: 'طابور الانتظار',
+            tooltip: AppStrings.queueTooltip,
             onPressed: () => context.push(RouteConstants.waitingQueue),
           ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
+          child: Container(color: context.borderColor, height: 1),
         ),
       ),
       body: BlocBuilder<AppointmentsBloc, AppointmentsState>(
@@ -79,7 +80,7 @@ class _AppointmentsBody extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () =>
                         context.read<AppointmentsBloc>().add(LoadAppointmentsEvent()),
-                    child: const Text('إعادة المحاولة'),
+                    child: Text(AppStrings.retry),
                   ),
                 ],
               ),
@@ -123,7 +124,7 @@ class _AppointmentsBody extends StatelessWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('موعد جديد'),
+        label: Text(AppStrings.newAppointment),
       ),
     );
   }
@@ -162,16 +163,16 @@ class _AppointmentsBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('إلغاء الموعد'),
+        title: Text('${AppStrings.cancel} ${AppStrings.appointment}'),
         content: Text(
           item.hasInvoice
-              ? 'هذا الموعد لديه فاتورة مسجلة. هل أنت متأكد من إلغاء الموعد؟ سيتم حذف الفاتورة المرتبطة به نهائياً واسترجاع المبلغ.'
-              : 'هل أنت متأكد من إلغاء هذا الموعد؟',
+              ? AppStrings.isArabic ? 'هذا الموعد لديه فاتورة مسجلة. هل أنت متأكد من إلغاء الموعد؟ سيتم حذف الفاتورة المرتبطة به نهائياً واسترجاع المبلغ.' : 'This appointment has a registered invoice. Are you sure you want to cancel? The associated invoice will be permanently deleted and the amount refunded.'
+              : AppStrings.isArabic ? 'هل أنت متأكد من إلغاء هذا الموعد؟' : 'Are you sure you want to cancel this appointment?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('تراجع'),
+            child: Text(AppStrings.isArabic ? 'تراجع' : 'Back'),
           ),
           TextButton(
             onPressed: () {
@@ -179,7 +180,7 @@ class _AppointmentsBody extends StatelessWidget {
               bloc.add(CancelAppointmentEvent(item.id));
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('تأكيد الإلغاء'),
+            child: Text(AppStrings.isArabic ? 'تأكيد الإلغاء' : 'Confirm Cancel'),
           ),
         ],
       ),
@@ -190,14 +191,14 @@ class _AppointmentsBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('حذف الموعد نهائياً'),
-        content: const Text(
-          'هل أنت متأكد من حذف هذا الموعد نهائياً؟ لا يمكن التراجع عن هذا الإجراء.',
+        title: Text(AppStrings.isArabic ? 'حذف الموعد نهائياً' : 'Delete Appointment Permanently'),
+        content: Text(
+          AppStrings.isArabic ? 'هل أنت متأكد من حذف هذا الموعد نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this appointment? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('تراجع'),
+            child: Text(AppStrings.isArabic ? 'تراجع' : 'Back'),
           ),
           TextButton(
             onPressed: () {
@@ -205,7 +206,7 @@ class _AppointmentsBody extends StatelessWidget {
               bloc.add(DeleteAppointmentEvent(item.id));
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('تأكيد الحذف'),
+            child: Text(AppStrings.confirmDelete),
           ),
         ],
       ),

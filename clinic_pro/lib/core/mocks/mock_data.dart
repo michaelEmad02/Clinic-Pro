@@ -4,12 +4,29 @@
 // ────────────────────────────────────────────────────────
 
 class MockData {
+  static final List<Map<String, dynamic>> owners = [
+    {
+      'id': "6410f855-5e71-4d6f-ac8c-2df0d31020a0",
+      'name': 'Michael Emad',
+      'phone': "01157805417",
+      'country': 'Egypt',
+      'address': 'Minya'
+    },
+  ];
   // بيانات المستخدمين (الأطباء، السكرتارية، المالكين)
   static final List<Map<String, dynamic>> users = [
     {
       'id': 'u-owner-1',
       'name': 'د. محمد عبد الرحمن',
       'email': 'owner@clinicpro.com',
+      'role': 'owner',
+      'phone': '+201011111111',
+      'avatar_url': 'https://randomuser.me/api/portraits/men/32.jpg',
+    },
+    {
+      'id': '74239bbe-1cf4-4a10-a446-095d543a6ca7',
+      'name': 'Michael Emad',
+      'email': 'micheal1444gm@gmail.com',
       'role': 'owner',
       'phone': '+201011111111',
       'avatar_url': 'https://randomuser.me/api/portraits/men/32.jpg',
@@ -45,23 +62,13 @@ class MockData {
       'avatar_url': 'https://randomuser.me/api/portraits/men/75.jpg',
     },
     {
-      'id': 'u-nurse-1',
-      'name': 'م. ياسر محمود',
-      'email': 'yasser.nurse@clinicpro.com',
-      'role': 'nurse',
+      'id': 'c844c040-0a73-462c-99f5-b889adb99445',
+      'name': 'تجريبي',
+      'email': 'test1@gmail.com',
+      'role': 'secretary',
       'phone': '+201055555555',
-      'specialty': 'رئيس تمريض',
+      'specialty': 'سكرتير',
       'rating': 4.5,
-      'avatar_url': null,
-    },
-    {
-      'id': 'u-nurse-2',
-      'name': 'م. نور محمد',
-      'email': 'noor.nurse@clinicpro.com',
-      'role': 'nurse',
-      'phone': '+201099999999',
-      'specialty': 'تمريض أطفال',
-      'rating': 4.3,
       'avatar_url': null,
     },
     {
@@ -128,28 +135,34 @@ class MockData {
       'id': 'c-1',
       'owner_id': 'u-owner-1',
       'name': 'عيادة كليوباترا لطب الأطفال',
-      'phone': '+20223456789',
+      'phone1': '+20223456789',
       'address': '١٢ شارع الميرغني، مصر الجديدة، القاهرة',
       'logo_url': 'https://logo.clearbit.com/cleopatrahospitals.com',
-      'created_at': DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
+      'is_active': true,
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
     },
     {
       'id': 'c-2',
       'owner_id': 'u-owner-1',
       'name': 'عيادة النيل لجلدية وتجميل',
-      'phone': '+20229876543',
+      'phone1': '+20229876543',
       'address': '٤٥ برج النيل، المعادي، القاهرة',
       'logo_url': null,
-      'created_at': DateTime.now().subtract(const Duration(days: 15)).toIso8601String(),
+      'is_active': true,
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 15)).toIso8601String(),
     },
     {
       'id': 'c-3',
       'owner_id': 'u-owner-1',
       'name': 'عيادة الأمل الطبية',
-      'phone': '+966501234567',
+      'phone1': '+966501234567',
       'address': 'الرياض، حي الملقا، شارع الملك فهد',
       'logo_url': null,
-      'created_at': DateTime.now().subtract(const Duration(days: 60)).toIso8601String(),
+      'is_active': false,
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 60)).toIso8601String(),
     }
   ];
 
@@ -267,6 +280,7 @@ class MockData {
     {
       'id': 'p-1',
       'clinic_id': 'c-1',
+      'doctor_id': 'u-doc-1',
       'name': 'يوسف خالد منصور',
       'phone': '01123456789',
       'gender': 'male',
@@ -274,11 +288,13 @@ class MockData {
       'blood_type': 'O+',
       'allergies': 'حساسية من البنسلين والغبار',
       'chronic_conditions': 'ربو شعبي خفيف',
-      'created_at': DateTime.now().subtract(const Duration(days: 20)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 20)).toIso8601String(),
     },
     {
       'id': 'p-2',
       'clinic_id': 'c-1',
+      'doctor_id': 'u-doc-2',
       'name': 'فاطمة عمر الشريف',
       'phone': '01298765432',
       'gender': 'female',
@@ -286,11 +302,13 @@ class MockData {
       'blood_type': 'A+',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 10)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 10)).toIso8601String(),
     },
     {
       'id': 'p-3',
       'clinic_id': 'c-1',
+      'doctor_id': 'u-doc-1',
       'name': 'كريم هشام عادل',
       'phone': '01533445566',
       'gender': 'male',
@@ -298,11 +316,13 @@ class MockData {
       'blood_type': 'B+',
       'allergies': 'حساسية لاكتوز',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
     },
     {
       'id': 'p-4',
       'clinic_id': 'c-1',
+      'doctor_id': 'u-doc-1',
       'name': 'محمد عبدالله صالح',
       'phone': '0501234567',
       'gender': 'male',
@@ -317,11 +337,13 @@ class MockData {
       'last_visit_date': '2023-10-12',
       'last_visit_label': '12 أكتوبر 2023',
       'status_tag': 'follow_up',
-      'created_at': DateTime.now().subtract(const Duration(days: 300)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 300)).toIso8601String(),
     },
     {
       'id': 'p-5',
       'clinic_id': 'c-1',
+      'doctor_id': 'u-doc-2',
       'name': 'سارة اليوسف',
       'phone': '0559876543',
       'gender': 'female',
@@ -336,7 +358,8 @@ class MockData {
       'last_visit_date': DateTime.now().toIso8601String().substring(0, 10),
       'last_visit_label': 'اليوم، 10:30 ص',
       'status_tag': 'completed',
-      'created_at': DateTime.now().subtract(const Duration(days: 10)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 10)).toIso8601String(),
     },
     {
       'id': 'p-6',
@@ -355,7 +378,8 @@ class MockData {
       'last_visit_date': '2023-09-05',
       'last_visit_label': '05 سبتمبر 2023',
       'status_tag': 'chronic',
-      'created_at': DateTime.now().subtract(const Duration(days: 200)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 200)).toIso8601String(),
     },
     {
       'id': 'p-7',
@@ -367,7 +391,8 @@ class MockData {
       'blood_type': 'A+',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 15)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 15)).toIso8601String(),
     },
     {
       'id': 'p-8',
@@ -379,7 +404,8 @@ class MockData {
       'blood_type': 'B+',
       'allergies': 'حساسية صدرية',
       'chronic_conditions': 'ربو',
-      'created_at': DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
     },
     {
       'id': 'p-9',
@@ -391,7 +417,8 @@ class MockData {
       'blood_type': 'O+',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'سكري نوع 2',
-      'created_at': DateTime.now().subtract(const Duration(days: 45)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 45)).toIso8601String(),
     },
     {
       'id': 'p-10',
@@ -403,7 +430,8 @@ class MockData {
       'blood_type': 'A-',
       'allergies': 'بنسلين',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 7)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 7)).toIso8601String(),
     },
     {
       'id': 'p-11',
@@ -415,7 +443,8 @@ class MockData {
       'blood_type': 'AB+',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'ضغط مرتفع، دهون',
-      'created_at': DateTime.now().subtract(const Duration(days: 90)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 90)).toIso8601String(),
     },
     {
       'id': 'p-12',
@@ -427,7 +456,8 @@ class MockData {
       'blood_type': 'O-',
       'allergies': 'لاكتوز',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
     },
     {
       'id': 'p-13',
@@ -439,7 +469,8 @@ class MockData {
       'blood_type': 'B-',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 60)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 60)).toIso8601String(),
     },
     {
       'id': 'p-14',
@@ -451,7 +482,8 @@ class MockData {
       'blood_type': 'A+',
       'allergies': 'مكسرات',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 25)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 25)).toIso8601String(),
     },
     {
       'id': 'p-15',
@@ -463,7 +495,8 @@ class MockData {
       'blood_type': 'O+',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'قلب، سكري',
-      'created_at': DateTime.now().subtract(const Duration(days: 120)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 120)).toIso8601String(),
     },
     {
       'id': 'p-16',
@@ -475,7 +508,8 @@ class MockData {
       'blood_type': 'B+',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
     },
     {
       'id': 'p-17',
@@ -487,7 +521,8 @@ class MockData {
       'blood_type': 'A+',
       'allergies': 'غبار',
       'chronic_conditions': 'حساسية صدرية',
-      'created_at': DateTime.now().subtract(const Duration(days: 18)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 18)).toIso8601String(),
     },
     {
       'id': 'p-18',
@@ -499,7 +534,8 @@ class MockData {
       'blood_type': 'AB-',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'غدة درقية',
-      'created_at': DateTime.now().subtract(const Duration(days: 55)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 55)).toIso8601String(),
     },
     {
       'id': 'p-19',
@@ -511,7 +547,8 @@ class MockData {
       'blood_type': 'O+',
       'allergies': 'لا يوجد',
       'chronic_conditions': 'لا يوجد',
-      'created_at': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
     },
     {
       'id': 'p-20',
@@ -523,7 +560,8 @@ class MockData {
       'blood_type': 'A+',
       'allergies': 'ايبوبروفين',
       'chronic_conditions': 'ضغط مرتفع',
-      'created_at': DateTime.now().subtract(const Duration(days: 80)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 80)).toIso8601String(),
     },
   ];
 
@@ -671,8 +709,11 @@ class MockData {
       'status': 'done',
       'price': 250.0,
       'is_urgent': false,
-      'arrived_at': DateTime.now().subtract(const Duration(hours: 3)).toIso8601String(),
-      'called_at': DateTime.now().subtract(const Duration(hours: 2, minutes: 40)).toIso8601String(),
+      'arrived_at':
+          DateTime.now().subtract(const Duration(hours: 3)).toIso8601String(),
+      'called_at': DateTime.now()
+          .subtract(const Duration(hours: 2, minutes: 40))
+          .toIso8601String(),
       'notes': 'متابعة دورية لحالة الصدر والربو',
       'patients': {'name': 'يوسف خالد منصور', 'phone': '01123456789'},
       'appointment_types': {'name': 'كشف عادي', 'price': 250.0}
@@ -688,8 +729,11 @@ class MockData {
       'status': 'in_progress',
       'price': 250.0,
       'is_urgent': false,
-      'arrived_at': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
-      'called_at': DateTime.now().subtract(const Duration(minutes: 15)).toIso8601String(),
+      'arrived_at':
+          DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+      'called_at': DateTime.now()
+          .subtract(const Duration(minutes: 15))
+          .toIso8601String(),
       'notes': 'سخونة ورشح مستمر منذ يومين',
       'patients': {'name': 'فاطمة عمر الشريف', 'phone': '01298765432'},
       'appointment_types': {'name': 'كشف عادي', 'price': 250.0}
@@ -705,7 +749,9 @@ class MockData {
       'status': 'confirmed',
       'price': 400.0,
       'is_urgent': true,
-      'arrived_at': DateTime.now().subtract(const Duration(minutes: 40)).toIso8601String(),
+      'arrived_at': DateTime.now()
+          .subtract(const Duration(minutes: 40))
+          .toIso8601String(),
       'called_at': null,
       'notes': 'ضيق تنفس شديد وحالة طارئة جداً',
       'patients': {'name': 'كريم هشام عادل', 'phone': '01533445566'},
@@ -734,7 +780,10 @@ class MockData {
       'patient_id': 'p-2',
       'doctor_id': 'u-doc-1',
       'appointment_type_id': 'at-2',
-      'date': DateTime.now().add(const Duration(days: 1)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .add(const Duration(days: 1))
+          .toIso8601String()
+          .substring(0, 10),
       'time': '10:00:00',
       'status': 'scheduled',
       'price': 0.0,
@@ -751,7 +800,10 @@ class MockData {
       'patient_id': 'p-3',
       'doctor_id': 'u-doc-1',
       'appointment_type_id': 'at-1',
-      'date': DateTime.now().add(const Duration(days: 3)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .add(const Duration(days: 3))
+          .toIso8601String()
+          .substring(0, 10),
       'time': '11:30:00',
       'status': 'scheduled',
       'price': 250.0,
@@ -768,13 +820,20 @@ class MockData {
       'patient_id': 'p-2',
       'doctor_id': 'u-doc-1',
       'appointment_type_id': 'at-1',
-      'date': DateTime.now().subtract(const Duration(days: 2)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(days: 2))
+          .toIso8601String()
+          .substring(0, 10),
       'time': '14:00:00',
       'status': 'done',
       'price': 250.0,
       'is_urgent': false,
-      'arrived_at': DateTime.now().subtract(const Duration(days: 2, hours: 1)).toIso8601String(),
-      'called_at': DateTime.now().subtract(const Duration(days: 2, minutes: 45)).toIso8601String(),
+      'arrived_at': DateTime.now()
+          .subtract(const Duration(days: 2, hours: 1))
+          .toIso8601String(),
+      'called_at': DateTime.now()
+          .subtract(const Duration(days: 2, minutes: 45))
+          .toIso8601String(),
       'notes': 'كشف دوري — حالة مستقرة',
       'patients': {'name': 'فاطمة عمر الشريف', 'phone': '01298765432'},
       'appointment_types': {'name': 'كشف عادي', 'price': 250.0}
@@ -785,7 +844,10 @@ class MockData {
       'patient_id': 'p-1',
       'doctor_id': 'u-doc-1',
       'appointment_type_id': 'at-1',
-      'date': DateTime.now().subtract(const Duration(days: 1)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(days: 1))
+          .toIso8601String()
+          .substring(0, 10),
       'time': '09:00:00',
       'status': 'cancelled',
       'price': 250.0,
@@ -802,13 +864,19 @@ class MockData {
       'patient_id': 'p-1',
       'doctor_id': 'u-doc-1',
       'appointment_type_id': 'at-1',
-      'date': DateTime.now().subtract(const Duration(hours: 1)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(hours: 1))
+          .toIso8601String()
+          .substring(0, 10),
       'time': '12:00:00',
       'status': 'done',
       'price': 250.0,
       'is_urgent': false,
-      'arrived_at': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
-      'called_at': DateTime.now().subtract(const Duration(hours: 1, minutes: 30)).toIso8601String(),
+      'arrived_at':
+          DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+      'called_at': DateTime.now()
+          .subtract(const Duration(hours: 1, minutes: 30))
+          .toIso8601String(),
       'notes': 'كشف جديد للاختبار',
       'patients': {'name': 'يوسف خالد منصور', 'phone': '01123456789'},
       'appointment_types': {'name': 'كشف عادي', 'price': 250.0}
@@ -819,13 +887,19 @@ class MockData {
       'patient_id': 'p-3',
       'doctor_id': 'u-doc-1',
       'appointment_type_id': 'at-4',
-      'date': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(hours: 2))
+          .toIso8601String()
+          .substring(0, 10),
       'time': '10:00:00',
       'status': 'done',
       'price': 400.0,
       'is_urgent': true,
-      'arrived_at': DateTime.now().subtract(const Duration(hours: 3)).toIso8601String(),
-      'called_at': DateTime.now().subtract(const Duration(hours: 2, minutes: 30)).toIso8601String(),
+      'arrived_at':
+          DateTime.now().subtract(const Duration(hours: 3)).toIso8601String(),
+      'called_at': DateTime.now()
+          .subtract(const Duration(hours: 2, minutes: 30))
+          .toIso8601String(),
       'notes': 'متابعة عاجلة',
       'patients': {'name': 'كريم هشام عادل', 'phone': '01533445566'},
       'appointment_types': {'name': 'كشف مستعجل طوارئ', 'price': 400.0}
@@ -989,7 +1063,9 @@ class MockData {
       'patient_id': 'p-1',
       'diagnosis': 'نزلة معوية حادة ونقص سوائل',
       'notes': 'الالتزام التام بجرعات السوائل والراحة التامة للطفل',
-      'created_at': DateTime.now().subtract(const Duration(hours: 2, minutes: 40)).toIso8601String(),
+      'created_at': DateTime.now()
+          .subtract(const Duration(hours: 2, minutes: 40))
+          .toIso8601String(),
     },
     {
       'id': 'presc-2',
@@ -999,7 +1075,8 @@ class MockData {
       'patient_id': 'p-2',
       'diagnosis': 'نزلة برد وسخونية',
       'notes': 'الإكثار من السوائل والراحة المنزلية',
-      'created_at': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
     }
   ];
 
@@ -1052,7 +1129,10 @@ class MockData {
       'title': 'شراء مستلزمات طبية ومعقمات',
       'amount': 1500.0,
       'category_id': 'ec-3',
-      'date': DateTime.now().subtract(const Duration(days: 2)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(days: 2))
+          .toIso8601String()
+          .substring(0, 10),
       'notes': 'فاتورة شركة النصر الطبية',
       'created_by': 'u-owner-1',
     },
@@ -1062,7 +1142,10 @@ class MockData {
       'title': 'فاتورة كهرباء شهر مايو',
       'amount': 850.0,
       'category_id': 'ec-2',
-      'date': DateTime.now().subtract(const Duration(days: 8)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(days: 8))
+          .toIso8601String()
+          .substring(0, 10),
       'notes': 'عداد تجاري للعيادة الرئيسي',
       'created_by': 'u-owner-1',
     },
@@ -1072,7 +1155,10 @@ class MockData {
       'title': 'إيجار العيادة - يونيو',
       'amount': 5000.0,
       'category_id': 'ec-1',
-      'date': DateTime.now().subtract(const Duration(days: 1)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(days: 1))
+          .toIso8601String()
+          .substring(0, 10),
       'notes': 'إيجار الشهر الحالي',
       'created_by': 'u-owner-1',
     },
@@ -1082,7 +1168,10 @@ class MockData {
       'title': 'راتب ممرضة مايو',
       'amount': 3200.0,
       'category_id': 'ec-4',
-      'date': DateTime.now().subtract(const Duration(days: 5)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(days: 5))
+          .toIso8601String()
+          .substring(0, 10),
       'notes': 'راتب شهر كامل',
       'created_by': 'u-owner-1',
     },
@@ -1092,7 +1181,10 @@ class MockData {
       'title': 'صيانة جهاز أشعة',
       'amount': 1200.0,
       'category_id': 'ec-5',
-      'date': DateTime.now().subtract(const Duration(days: 12)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(days: 12))
+          .toIso8601String()
+          .substring(0, 10),
       'notes': 'صيانة دورية',
       'created_by': 'u-owner-1',
     },
@@ -1102,7 +1194,10 @@ class MockData {
       'title': 'قرطاسية ومطبوعات',
       'amount': 350.0,
       'category_id': 'ec-6',
-      'date': DateTime.now().subtract(const Duration(days: 3)).toIso8601String().substring(0, 10),
+      'date': DateTime.now()
+          .subtract(const Duration(days: 3))
+          .toIso8601String()
+          .substring(0, 10),
       'notes': 'فاتورة مكتبية',
       'created_by': 'u-sec-1',
     },
@@ -1121,7 +1216,9 @@ class MockData {
       'total_amount': 250.0,
       'paid_amount': 250.0,
       'payment_method': 'cash',
-      'created_at': DateTime.now().subtract(const Duration(hours: 2, minutes: 40)).toIso8601String(),
+      'created_at': DateTime.now()
+          .subtract(const Duration(hours: 2, minutes: 40))
+          .toIso8601String(),
       'created_by': 'u-sec-1',
     },
     {
@@ -1135,7 +1232,9 @@ class MockData {
       'total_amount': 850.0,
       'paid_amount': 850.0,
       'payment_method': 'cash',
-      'created_at': DateTime.now().subtract(const Duration(days: 0, hours: 1)).toIso8601String(),
+      'created_at': DateTime.now()
+          .subtract(const Duration(days: 0, hours: 1))
+          .toIso8601String(),
       'created_by': 'u-sec-1',
     },
     {
@@ -1149,7 +1248,9 @@ class MockData {
       'total_amount': 1200.0,
       'paid_amount': 0.0,
       'payment_method': null,
-      'created_at': DateTime.now().subtract(const Duration(minutes: 30)).toIso8601String(),
+      'created_at': DateTime.now()
+          .subtract(const Duration(minutes: 30))
+          .toIso8601String(),
       'created_by': 'u-sec-1',
     },
     {
@@ -1163,7 +1264,8 @@ class MockData {
       'total_amount': 3500.0,
       'paid_amount': 1000.0,
       'payment_method': 'card',
-      'created_at': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
       'created_by': 'u-sec-1',
     },
     {
@@ -1177,7 +1279,8 @@ class MockData {
       'total_amount': 400.0,
       'paid_amount': 400.0,
       'payment_method': 'cash',
-      'created_at': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
       'created_by': 'u-sec-1',
     },
     {
@@ -1191,7 +1294,8 @@ class MockData {
       'total_amount': 850.0,
       'paid_amount': 850.0,
       'payment_method': 'card',
-      'created_at': DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
       'created_by': 'u-sec-1',
     },
   ];
@@ -1261,7 +1365,8 @@ class MockData {
       'plan_type': 'growth',
       'status': 'active',
       'trial_end_at': null,
-      'current_period_end': DateTime.now().add(const Duration(days: 340)).toIso8601String(),
+      'current_period_end':
+          DateTime.now().add(const Duration(days: 340)).toIso8601String(),
     }
   ];
 
@@ -1275,8 +1380,10 @@ class MockData {
       'name': 'سارة عبدالله',
       'role': 'secretary',
       'status': 'pending',
-      'created_at': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
-      'expires_at': DateTime.now().add(const Duration(days: 5)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
+      'expires_at':
+          DateTime.now().add(const Duration(days: 5)).toIso8601String(),
     },
     {
       'id': 'inv-2',
@@ -1286,8 +1393,10 @@ class MockData {
       'name': 'د. أحمد العبدالله',
       'role': 'doctor',
       'status': 'pending',
-      'created_at': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
-      'expires_at': DateTime.now().add(const Duration(days: 2)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
+      'expires_at':
+          DateTime.now().add(const Duration(days: 2)).toIso8601String(),
     },
     {
       'id': 'inv-3',
@@ -1297,8 +1406,10 @@ class MockData {
       'name': 'نور محمد',
       'role': 'nurse',
       'status': 'expired',
-      'created_at': DateTime.now().subtract(const Duration(days: 20)).toIso8601String(),
-      'expires_at': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 20)).toIso8601String(),
+      'expires_at':
+          DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
     },
     {
       'id': 'inv-4',
@@ -1308,8 +1419,10 @@ class MockData {
       'name': 'د. حسن النمر',
       'role': 'doctor',
       'status': 'pending',
-      'created_at': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
-      'expires_at': DateTime.now().add(const Duration(days: 6)).toIso8601String(),
+      'created_at':
+          DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+      'expires_at':
+          DateTime.now().add(const Duration(days: 6)).toIso8601String(),
     },
   ];
 

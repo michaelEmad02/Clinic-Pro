@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -13,15 +14,15 @@ class RevenueBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final weekdays = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    final weekdays = AppStrings.dayNames;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -34,7 +35,7 @@ class RevenueBarChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'الإيرادات الأسبوعية (دولار)',
+            AppStrings.isArabic ? 'الإيرادات الأسبوعية (دولار)' : 'Weekly Revenue (USD)',
             style: AppTextStyles.headlineSmall(context).copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
@@ -79,7 +80,7 @@ class RevenueBarChart extends StatelessWidget {
                               weekdays[idx].substring(0, 3), // e.g. "الأح" or similar, let's just use first 3 chars
                               style: AppTextStyles.caption(context).copyWith(
                                 fontSize: 10,
-                                color: AppColors.textSecondary,
+                                color: context.textSecondary,
                               ),
                             ),
                           );
@@ -96,10 +97,10 @@ class RevenueBarChart extends StatelessWidget {
                         if (value % 1000 == 0 && value > 0) {
                           return Text(
                             '${(value / 1000).toInt()}k',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 10,
-                              color: AppColors.textSecondary,
+                              color: context.textSecondary,
                             ),
                           );
                         }
@@ -115,7 +116,7 @@ class RevenueBarChart extends StatelessWidget {
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: AppColors.border,
+                      color: context.borderColor,
                       strokeWidth: 1,
                     );
                   },
@@ -136,7 +137,7 @@ class RevenueBarChart extends StatelessWidget {
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: 4000,
-                          color: AppColors.surfaceContainerLow,
+                          color: context.isDarkMode ? AppColors.darkBackground : AppColors.surfaceContainerLow,
                         ),
                       ),
                     ],

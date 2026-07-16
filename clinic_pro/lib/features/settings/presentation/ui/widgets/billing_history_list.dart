@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -14,10 +15,10 @@ class BillingHistoryList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('سجل الفواتير', style: AppTextStyles.headlineSmall(context)),
+            Text(AppStrings.billingHistory, style: AppTextStyles.headlineSmall(context)),
             TextButton(
               onPressed: () {},
-              child: Text('عرض الكل', style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.primary)),
+              child: Text(AppStrings.viewAll, style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.primary)),
             ),
           ],
         ),
@@ -39,7 +40,7 @@ class BillingHistoryList extends StatelessWidget {
                 date: '24 سبتمبر، 2023',
                 amount: '0 ريال',
                 invoice: '#INV-2309',
-                status: 'تجريبي',
+                status: AppStrings.trial,
               ),
               const Divider(height: 1, thickness: 0.5, color: AppColors.border, indent: AppConstants.spaceMd, endIndent: AppConstants.spaceMd),
               _buildEmptyState(context),
@@ -114,7 +115,7 @@ class BillingHistoryList extends StatelessWidget {
         children: [
           const Icon(Icons.history, size: 48, color: AppColors.border),
           const SizedBox(height: AppConstants.spaceSm),
-          Text('لا توجد فواتير سابقة.',
+          Text(AppStrings.noBillingHistory,
               style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
         ],
       ),

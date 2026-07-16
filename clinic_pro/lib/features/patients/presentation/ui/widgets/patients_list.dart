@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../manager/patients_state.dart';
 import 'patient_list_item.dart';
@@ -22,9 +23,9 @@ class PatientsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (patients.isEmpty) {
-      return const EmptyState(
-        title: 'لا يوجد مرضى',
-        subtitle: 'لا يوجد مرضى يطابقون البحث أو الفلتر الحالي.',
+      return EmptyState(
+        title: AppStrings.noPatients,
+        subtitle: AppStrings.noPatients,
         icon: Icons.people_outline,
       );
     }

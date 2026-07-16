@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../manager/invoices_state.dart';
 
@@ -12,13 +13,13 @@ class InvoicesDateRangeChips extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const _ranges = [
-    (InvoicesDateRange.today, 'اليوم'),
-    (InvoicesDateRange.thisWeek, 'هذا الأسبوع'),
-    (InvoicesDateRange.thisMonth, 'هذا الشهر'),
-    (InvoicesDateRange.threeMonths, '3 أشهر'),
-    (InvoicesDateRange.all, 'الكل'),
-    (InvoicesDateRange.custom, 'مخصص'),
+  List<(InvoicesDateRange, String)> get _ranges => [
+    (InvoicesDateRange.today, AppStrings.isArabic ? 'اليوم' : 'Today'),
+    (InvoicesDateRange.thisWeek, AppStrings.isArabic ? 'هذا الأسبوع' : 'This Week'),
+    (InvoicesDateRange.thisMonth, AppStrings.isArabic ? 'هذا الشهر' : 'This Month'),
+    (InvoicesDateRange.threeMonths, AppStrings.isArabic ? '3 أشهر' : '3 Months'),
+    (InvoicesDateRange.all, AppStrings.isArabic ? 'الكل' : 'All'),
+    (InvoicesDateRange.custom, AppStrings.isArabic ? 'مخصص' : 'Custom'),
   ];
 
   @override
@@ -44,14 +45,14 @@ class InvoicesDateRangeChips extends StatelessWidget {
               ),
               selected: isSelected,
               onSelected: (_) => onChanged(r.$1),
-              selectedColor: AppColors.primaryLight,
-              backgroundColor: AppColors.surface,
+              selectedColor: context.primaryLightColor,
+              backgroundColor: context.surface,
               labelStyle: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 12,
                 color: isSelected
-                    ? AppColors.primary
-                    : AppColors.textSecondary,
+                    ? context.primary
+                    : context.textSecondary,
                 fontWeight:
                     isSelected ? FontWeight.bold : FontWeight.normal,
               ),
@@ -59,7 +60,7 @@ class InvoicesDateRangeChips extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
                   color:
-                      isSelected ? AppColors.primary : AppColors.outline,
+                      isSelected ? context.primary : context.outline,
                 ),
               ),
               showCheckmark: false,

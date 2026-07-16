@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/constants/staff_roles.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../manager/staff_state.dart';
 
@@ -17,9 +17,9 @@ class StaffFilterChips extends StatelessWidget {
   Widget build(BuildContext context) {
     // بناء قائمة الفلاتر ديناميكياً بناءً على الأدوار الحقيقية للنظام
     final filters = [
-      (StaffFilter.all, 'الكل'),
-      (StaffFilter.doctor, StaffRoles.doctor.label),
-      (StaffFilter.secretary, StaffRoles.secretary.label),
+      (StaffFilter.all, AppStrings.all),
+      (StaffFilter.doctor, AppStrings.roleLabel('doctor')),
+      (StaffFilter.secretary, AppStrings.roleLabel('secretary')),
     ];
 
     return SingleChildScrollView(
@@ -34,18 +34,18 @@ class StaffFilterChips extends StatelessWidget {
               label: Text(f.$2),
               selected: isSelected,
               onSelected: (_) => onChanged(f.$1),
-              selectedColor: AppColors.primary,
-              backgroundColor: AppColors.surface,
+              selectedColor: context.primary,
+              backgroundColor: context.surface,
               labelStyle: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 12,
-                color: isSelected ? Colors.white : AppColors.textSecondary,
+                color: isSelected ? context.textPrimary : context.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? AppColors.primary : AppColors.border,
+                  color: isSelected ? context.primary : context.border,
                 ),
               ),
               showCheckmark: false,

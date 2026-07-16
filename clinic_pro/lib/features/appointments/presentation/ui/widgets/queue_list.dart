@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/empty_state.dart';
@@ -33,9 +34,9 @@ class QueueList extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'المرضى في الطابور',
+                AppStrings.patientsInQueue,
                 style: AppTextStyles.headlineSmall(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -43,9 +44,9 @@ class QueueList extends StatelessWidget {
               const RealtimeIndicator(),
               const Spacer(),
               Text(
-                '${waiting.length} مريض',
+                '${waiting.length} ${AppStrings.patient}',
                 style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondary,
                 ),
               ),
             ],
@@ -53,9 +54,9 @@ class QueueList extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         if (waiting.isEmpty)
-          const EmptyState(
-            title: 'الطابور فارغ',
-            subtitle: 'لا يوجد مرضى في طابور الانتظار حالياً.',
+          EmptyState(
+            title: AppStrings.queueEmpty,
+            subtitle: AppStrings.queueEmptyDesc,
             icon: Icons.people_outline,
           )
         else

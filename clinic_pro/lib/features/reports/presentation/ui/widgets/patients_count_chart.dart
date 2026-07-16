@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/reports_state.dart';
@@ -20,7 +21,7 @@ class PatientsCountChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.outlineVariant),
         boxShadow: const [
@@ -35,16 +36,15 @@ class PatientsCountChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'عدد المرضى لكل طبيب',
+            AppStrings.patientsPerDoctor,
             style: AppTextStyles.headlineSmall(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
           ...doctors.map((doctor) {
-            final ratio = maxPatients > 0
-                ? doctor.patientCount / maxPatients
-                : 0.0;
+            final ratio =
+                maxPatients > 0 ? doctor.patientCount / maxPatients : 0.0;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Column(
@@ -62,7 +62,7 @@ class PatientsCountChart extends StatelessWidget {
                       Text(
                         '${doctor.patientCount}',
                         style: AppTextStyles.dataNumeric(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                         ),
                       ),
                     ],
@@ -72,9 +72,9 @@ class PatientsCountChart extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: ratio,
-                      backgroundColor: AppColors.primaryLight,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.primary,
+                      backgroundColor: context.primaryLightColor,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        context.primary,
                       ),
                       minHeight: 8,
                     ),
