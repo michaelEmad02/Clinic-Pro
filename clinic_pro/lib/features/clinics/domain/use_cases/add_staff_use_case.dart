@@ -10,7 +10,7 @@ class AddStaffUseCase {
 
   AddStaffUseCase({required this.clinicsRepository});
   Future<Either<Failure, void>> call(
-      String clinicId, String staffId, String doctorId, StaffRoles role) {
+      String clinicId, String staffId, String? doctorId, StaffRoles role) {
     return clinicsRepository.addStaff(clinicId, staffId, doctorId, role);
   }
 }

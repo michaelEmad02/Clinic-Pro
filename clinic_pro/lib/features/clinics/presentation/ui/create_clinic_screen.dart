@@ -22,18 +22,34 @@ class CreateClinicScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: isOnboarding
-          ? null
-          : AppBar(
-              toolbarHeight: 56,
-              backgroundColor: context.surface,
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              leading: IconButton(
-                icon:  Icon(Icons.close, color: context.textSecondary),
+      appBar: AppBar(
+        toolbarHeight: 56,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        automaticallyImplyLeading: false,
+        leading: isOnboarding
+            ? null
+            : IconButton(
+                icon: Icon(Icons.close, color: context.textSecondary),
                 onPressed: () => Navigator.pop(context),
               ),
-            ),
+        actions: isOnboarding
+            ? [
+                TextButton(
+                  onPressed: () => context.go(RouteConstants.ownerDashboard),
+                  child: Text(
+                    AppStrings.skip,
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      color: context.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ]
+            : null,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

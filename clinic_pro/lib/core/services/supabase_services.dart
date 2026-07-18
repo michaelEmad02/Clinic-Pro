@@ -30,7 +30,8 @@ class SupabaseServices extends ICloudService {
   @override
   Future<Map<String, dynamic>> insert(
       {required String table, required Map<String, dynamic> data}) async {
-    return await supabase.from(table).insert(data).select().single();
+     var result = await supabase.from(table).insert(data).select().single();
+     return result;
   }
 
   @override

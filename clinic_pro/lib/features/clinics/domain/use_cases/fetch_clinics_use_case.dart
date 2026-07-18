@@ -11,7 +11,7 @@ class FetchClinicsUseCase {
 
   FetchClinicsUseCase({required this.clinicsRepository});
 
-  Future<Either<Failure, List<ClinicEntity>>> call() {
-    return clinicsRepository.fetchClinics();
+  Future<Either<Failure, List<ClinicEntity>>> call(String ownerId) {
+    return clinicsRepository.fetchClinics(ownerId);
   }
 }

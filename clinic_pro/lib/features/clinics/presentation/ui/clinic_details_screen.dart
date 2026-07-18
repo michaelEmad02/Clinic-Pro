@@ -117,12 +117,11 @@ class _DetailsContent extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
-        context.read<FetchClinicByIdCubit>().fetchClinicById(clinic.id);
         context
             .read<FetchClinicStatisticsCubit>()
             .fetchClinicStatistics(clinic.id);
-
         context.read<FetchClinicStaffCubit>().fetchClinicStaff(clinic.id);
+        context.read<FetchClinicByIdCubit>().fetchClinicById(clinic.id);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -163,7 +162,7 @@ class _DetailsContent extends StatelessWidget {
                     children: [
                       Expanded(
                         flex: 2,
-                        child: _MainColumn(clinicId: clinic.id),
+                        child: ClinicStaffSection(clinicId: clinic.id),
                       ),
                       const SizedBox(width: 16),
                       // Expanded(
@@ -175,7 +174,7 @@ class _DetailsContent extends StatelessWidget {
                 else
                   Column(
                     children: [
-                      _MainColumn(clinicId: clinic.id),
+                      ClinicStaffSection(clinicId: clinic.id),
                       const SizedBox(height: AppConstants.spaceMd),
                       // _SidebarColumn(clinicId: clinic.id),
                     ],
@@ -190,20 +189,6 @@ class _DetailsContent extends StatelessWidget {
   }
 }
 
-class _MainColumn extends StatelessWidget {
-  final String clinicId;
-
-  const _MainColumn({required this.clinicId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ClinicStaffSection(clinicId: clinicId),
-      ],
-    );
-  }
-}
 
 // class _SidebarColumn extends StatelessWidget {
 //   final String clinicId;

@@ -18,14 +18,16 @@ class SupabaseAuthServices extends IAuthServices {
   }
 
   @override
-  Future<bool> isEmailVerified(String email) {
-    throw UnimplementedError();
+  Future<bool> isEmailVerified(String email) async {
+    return supabase.auth.currentUser?.emailConfirmedAt != null;
   }
 
   @override
   Future<void> signUp(
       String email, String password, String phone, String country) async {
-    var user = await supabase.auth.signUp(email: email, password: password);
+    await supabase.auth.signUp(email: email, password: password);
+    await supabase.auth
+        .resend(type: OtpType.signup, email: email); // send verfication mail
   }
 
   @override

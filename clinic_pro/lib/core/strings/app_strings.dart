@@ -138,6 +138,10 @@ class AppStrings {
       : 'No members with this role in other clinics.';
   static String get addToClinicSameRole =>
       isArabic ? 'إضافة للعيادة بنفس الدور' : 'Add to clinic with same role';
+  static String get selectAssociatedDoctor =>
+      isArabic ? 'اختر الطبيب المرتبط:' : 'Select associated doctor:';
+  static String get noDoctorsAvailable =>
+      isArabic ? 'لا يوجد أطباء متاحين في هذه العيادة.' : 'No doctors available in this clinic.';
   static String get inviteStaff => isArabic ? 'دعوة موظف' : 'Invite Staff';
   static String get pendingInvitations =>
       isArabic ? 'دعوات معلقة' : 'Pending Invitations';
@@ -567,8 +571,8 @@ class AppStrings {
   static String get selectClinic => isArabic ? 'اختر العيادة' : 'Select Clinic';
   static String get selectDoctor =>
       isArabic ? 'اختر الطبيب الحالي' : 'Select Current Doctor';
-  static String get noDoctorsAvailable =>
-      isArabic ? 'لا يوجد أطباء مسجلين...' : 'No registered doctors...';
+  // static String get noDoctorsAvailable =>
+  //     isArabic ? 'لا يوجد أطباء مسجلين...' : 'No registered doctors...';
   static String get addToClinic => isArabic ? 'إضافة للعيادة' : 'Add to Clinic';
   static String get currentPlan => isArabic ? 'الباقة الحالية' : 'Current Plan';
   static String get planUsage =>
@@ -631,6 +635,12 @@ class AppStrings {
   static String get inviteDoctors =>
       isArabic ? 'دعوة الأطباء' : 'Invite Doctors';
   static String get skip => isArabic ? 'تخطي' : 'Skip';
+
+  static String get accountVerification => isArabic ? 'تأكيد الحساب' : 'Account Verification';
+  static String get verificationEmailSent => isArabic
+      ? 'تم إرسال رابط التفعيل إلى بريدك الإلكتروني بنجاح. يرجى الضغط على الرابط في رسالة البريد الإلكتروني لتفعيل حسابك ثم المتابعة.'
+      : 'A verification link has been successfully sent to your email. Please click the link in the email to activate your account and then click continue.';
+  static String get continueLabel => isArabic ? 'متابعة' : 'Continue';
   static String get next => isArabic ? 'التالي' : 'Next';
   static String get getStarted => isArabic ? 'ابدأ الآن' : 'Get Started';
   static String get clinicData => isArabic ? 'بيانات العيادة' : 'Clinic Data';

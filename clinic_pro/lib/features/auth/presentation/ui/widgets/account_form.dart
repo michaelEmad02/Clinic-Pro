@@ -1,5 +1,4 @@
 import 'package:clinic_pro/core/constants/route_constants.dart';
-import 'package:clinic_pro/core/mocks/mock_data.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_state.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +48,7 @@ class _AccountFormState extends State<AccountForm> {
           phone: _mobileController.text,
           country: "",
           address: "");
-      // context.go(RouteConstants.onboardingPlan);
+
     }
   }
 
@@ -58,8 +57,26 @@ class _AccountFormState extends State<AccountForm> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          context.go(RouteConstants.onboardingPlan);
-          
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => AlertDialog(
+              title: Text(AppStrings.accountVerification, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+              content: Text(
+                AppStrings.verificationEmailSent,
+                style: const TextStyle(fontFamily: 'Cairo'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                    context.go(RouteConstants.onboardingPlan);
+                  },
+                  child: Text(AppStrings.continueLabel, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          );
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
@@ -74,7 +91,7 @@ class _AccountFormState extends State<AccountForm> {
             AppStrings.fullName,
             style: AppTextStyles.bodyMedium(context).copyWith(
               fontWeight: FontWeight.w500,
-              color: AppColors.onSurfaceVariant,
+              color: context.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -94,14 +111,13 @@ class _AccountFormState extends State<AccountForm> {
             child: TextField(
               controller: _nameController,
               style: AppTextStyles.bodyMedium(context),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'د. أحمد العلي',
-                hintStyle: TextStyle(color: AppColors.textHint),
-                suffixIcon:
-                    Icon(Icons.person_outline, color: AppColors.textHint),
+                hintStyle: TextStyle(color: context.textHint),
+                suffixIcon: Icon(Icons.person_outline, color: context.textHint),
                 border: InputBorder.none,
                 contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
           ),
@@ -112,7 +128,7 @@ class _AccountFormState extends State<AccountForm> {
             AppStrings.email,
             style: AppTextStyles.bodyMedium(context).copyWith(
               fontWeight: FontWeight.w500,
-              color: AppColors.onSurfaceVariant,
+              color: context.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -160,7 +176,7 @@ class _AccountFormState extends State<AccountForm> {
             AppStrings.password,
             style: AppTextStyles.bodyMedium(context).copyWith(
               fontWeight: FontWeight.w500,
-              color: AppColors.onSurfaceVariant,
+              color: context.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -187,10 +203,10 @@ class _AccountFormState extends State<AccountForm> {
               ),
               decoration: InputDecoration(
                 hintText: '••••••••',
-                hintStyle: const TextStyle(
+                hintStyle: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 14,
-                  color: AppColors.textHint,
+                  color: context.textHint,
                 ),
                 // زر إظهار/إخفاء كلمة المرور
                 suffixIcon: IconButton(
@@ -198,7 +214,7 @@ class _AccountFormState extends State<AccountForm> {
                     _obscurePassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textHint,
+                    color: context.textHint,
                   ),
                   onPressed: () {
                     setState(() {
@@ -219,7 +235,7 @@ class _AccountFormState extends State<AccountForm> {
             AppStrings.phoneNumber,
             style: AppTextStyles.bodyMedium(context).copyWith(
               fontWeight: FontWeight.w500,
-              color: AppColors.onSurfaceVariant,
+              color: context.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -253,7 +269,7 @@ class _AccountFormState extends State<AccountForm> {
                             color: context.borderColor)), // because of LTR
                   ),
                   child: Text(
-                    '+966',
+                    '+20',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
@@ -274,16 +290,17 @@ class _AccountFormState extends State<AccountForm> {
                       fontWeight: FontWeight.w700,
                       color: context.textPrimary,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: '5X XXX XXXX',
                       hintStyle: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textHint,
+                        color: context.textHint,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 16),
                     ),
                   ),
                 ),
@@ -302,7 +319,7 @@ class _AccountFormState extends State<AccountForm> {
                     _agreedToTerms = val ?? false;
                   });
                 },
-                activeColor: AppColors.primaryContainer,
+                activeColor: context.primaryContainer,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4)),
               ),
@@ -322,14 +339,14 @@ class _AccountFormState extends State<AccountForm> {
           ElevatedButton(
             onPressed: _submit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryContainer,
-              foregroundColor: AppColors.onPrimary,
+              backgroundColor: context.primaryContainer,
+              foregroundColor: context.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
               elevation: 4,
-              shadowColor: AppColors.primaryContainer.withOpacity(0.4),
+              shadowColor: context.primaryContainer.withOpacity(0.4),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -337,7 +354,7 @@ class _AccountFormState extends State<AccountForm> {
                 Text(
                   AppStrings.createAccount,
                   style: AppTextStyles.headlineSmall(context).copyWith(
-                    color: AppColors.onPrimary,
+                    color: context.onPrimary,
                   ),
                 ),
                 const SizedBox(width: 8),

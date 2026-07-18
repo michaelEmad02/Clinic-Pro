@@ -1,21 +1,21 @@
 
  ## clinics
-- [ ] create fetchAllStaffUseCase  that will use `Staff repo` and will show all staff to select one of theme , to add him to the clinic.
+- [X] create fetchAllStaffUseCase  that will use `Staff repo` and will show all staff to select one of theme , to add him to the clinic.
         - will do it after create fetchAllStaff function in `staff feature`
-- [ ] create Future<Either<Failure, List<StaffEntity>>> fecthClinicStaff  in `Clinics repo` .
+- [X] create Future<Either<Failure, List<StaffEntity>>> fecthClinicStaff  in `Clinics repo` .
         - will do this after create `StaffEntity`
 
 - [X] implement addStaff in `clinics_remote_data_source` 
         - will do that after build `staff model`.
 
-- [ ] create `FetchClinicStaffUseCas` , `FetchClinicStaffCubit` , and refactor `ClinicStaffSection`.
+- [X] create `FetchClinicStaffUseCas` , `FetchClinicStaffCubit` , and refactor `ClinicStaffSection`.
 
-- [ ] when add staff from existing users , if the user select secretary will show widget for select the doctor.
+- [X] when add staff from existing users , if the user select secretary will show widget for select the doctor.
 
 
 ## staff
 - [ ] create staff details screen.
-- [ ] add deleteStaffFromClinic method , and use it in clinic feature 
+- [X] add deleteStaffFromClinic method , and use it in clinic feature 
 
 
 ## auth

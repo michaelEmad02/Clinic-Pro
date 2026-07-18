@@ -7,7 +7,6 @@ class DoctorSecretariesModel extends DoctorSecretariesEntity {
     required super.doctorId,
     required super.secretaryId,
     required super.isActive,
-    required super.createdAt,
   });
 
   factory DoctorSecretariesModel.fromJson(Map<String, dynamic> json) {
@@ -17,9 +16,6 @@ class DoctorSecretariesModel extends DoctorSecretariesEntity {
       doctorId: json['doctor_id'] as String,
       secretaryId: json['secretary_id'] as String,
       isActive: json['is_active'] as bool,
-      createdAt: DateTime.parse(
-        json['created_at'] as String,
-      ),
     );
   }
 
@@ -29,7 +25,6 @@ class DoctorSecretariesModel extends DoctorSecretariesEntity {
       "doctor_id": doctorId,
       "secretary_id": secretaryId,
       "is_active": isActive,
-      "created_at": createdAt.toIso8601String(),
     };
   }
 }

@@ -36,10 +36,10 @@ class ClinicsCubit extends Cubit<ClinicsState> {
   }) : super(ClinicsInitial());
 
   // جلب جميع العيادات
-  Future<void> fetchClinics() async {
+  Future<void> fetchClinics(String ownerId) async {
     emit(ClinicsLoading());
 
-    final result = await fetchClinicsUseCase.call();
+    final result = await fetchClinicsUseCase.call(ownerId);
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),
@@ -53,7 +53,7 @@ class ClinicsCubit extends Cubit<ClinicsState> {
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),
-      (_) => fetchClinics(), // إعادة تحميل القائمة بعد الإضافة
+      (_) => fetchClinics(clinic.ownerId), // إعادة تحميل القائمة بعد الإضافة
     );
   }
 
@@ -63,17 +63,17 @@ class ClinicsCubit extends Cubit<ClinicsState> {
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),
-      (_) => fetchClinics(), // إعادة تحميل القائمة بعد التعديل
+      (_) => fetchClinics(clinic.ownerId), // إعادة تحميل القائمة بعد التعديل
     );
   }
 
   // حذف عيادة
-  Future<void> deleteClinic(String clinicId) async {
-    final result = await deleteClinicUseCase.call(clinicId);
+  Future<void> deleteClinic(ClinicEntity clinic) async {
+    final result = await deleteClinicUseCase.call(clinic.id);
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),
-      (_) => fetchClinics(), // إعادة تحميل القائمة بعد الحذف
+      (_) => fetchClinics(clinic.ownerId), // إعادة تحميل القائمة بعد الحذف
     );
   }
 
@@ -81,44 +81,45 @@ class ClinicsCubit extends Cubit<ClinicsState> {
   Future<void> toggleActive(String clinicId) async {
     if (state is! ClinicsLoaded) return;
     final loaded = state as ClinicsLoaded;
-
     // البحث عن العيادة الحالية للحصول على حالتها
     final clinic = loaded.clinics.firstWhere((c) => c.id == clinicId);
     final newStatus = !clinic.isActive;
-
-    final result = await toggleIsActiveUseCase.call(clinicId, newStatus);
+    final result = await toggleIsActiveUseCase.call(clinic.id, newStatus);
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),
-      (_) => fetchClinics(), // إعادة تحميل القائمة بعد التبديل
+      (_) => fetchClinics(clinic.ownerId), // إعادة تحميل القائمة بعد التبديل
     );
   }
 
   // إضافة عضو إلى طاقم العيادة
   Future<void> addStaffMember({
     required String clinicId,
+    required String ownerId,
     required String userId,
-    required String doctorId,
+    required String? doctorId,
     required StaffRoles role,
   }) async {
     final result = await addStaffUseCase.call(clinicId, userId, doctorId, role);
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),
-      (_) => fetchClinics(), // إعادة تحميل القائمة بعد الإضافة
+      (_) => fetchClinics(ownerId), // إعادة تحميل القائمة بعد الإضافة
     );
   }
 
   // إزالة عضو من طاقم العيادة
   Future<void> removeStaffMember({
     required String clinicId,
+    required String ownerId,
     required String staffId,
+    String? doctorId,
   }) async {
-    final result = await deleteStaffUseCase.call(clinicId, staffId);
+    final result = await deleteStaffUseCase.call(clinicId, staffId, doctorId);
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),
-      (_) => fetchClinics(), // إعادة تحميل القائمة بعد الإزالة
+      (_) => fetchClinics(ownerId), // إعادة تحميل القائمة بعد الإزالة
     );
   }
 }

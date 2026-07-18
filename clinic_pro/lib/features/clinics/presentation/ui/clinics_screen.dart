@@ -25,16 +25,18 @@ class ClinicsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var ownerId =
+        (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
     return BlocProvider(
-      create: (_) => sl<ClinicsCubit>()..fetchClinics(),
-      child: const _ClinicsBody(),
+      create: (_) => sl<ClinicsCubit>()..fetchClinics(ownerId),
+      child: _ClinicsBody(ownerId: ownerId),
     );
   }
 }
 
 class _ClinicsBody extends StatelessWidget {
-  const _ClinicsBody();
-
+  const _ClinicsBody({required this.ownerId});
+  final String ownerId;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,7 +86,7 @@ class _ClinicsBody extends StatelessWidget {
                   const SizedBox(height: AppConstants.spaceMd),
                   ElevatedButton(
                     onPressed: () =>
-                        context.read<ClinicsCubit>().fetchClinics(),
+                        context.read<ClinicsCubit>().fetchClinics(ownerId),
                     child: Text(AppStrings.retry),
                   ),
                 ],
@@ -94,7 +96,7 @@ class _ClinicsBody extends StatelessWidget {
           if (state is ClinicsLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<ClinicsCubit>().fetchClinics();
+                context.read<ClinicsCubit>().fetchClinics(ownerId);
                 await Future.delayed(const Duration(milliseconds: 600));
               },
               child: ClinicsList(
@@ -148,7 +150,7 @@ class _ClinicsBody extends StatelessWidget {
       ),
     );
     if (confirmed != true) return;
-    await cubit.deleteClinic(clinic.id);
+    await cubit.deleteClinic(clinic);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${AppStrings.deletedSuccess}"${clinic.name}"')),

@@ -9,7 +9,7 @@ class DeleteStaffUseCase {
 
   DeleteStaffUseCase({required this.clinicsRepository});
 
-  Future<Either<Failure, void>> call(String clinicId, String staffId) {
-    return clinicsRepository.deleteStaff(clinicId, staffId);
+  Future<Either<Failure, void>> call(String clinicId, String staffId, [String? doctorId]) {
+    return clinicsRepository.deleteStaff(clinicId, staffId, doctorId);
   }
 }

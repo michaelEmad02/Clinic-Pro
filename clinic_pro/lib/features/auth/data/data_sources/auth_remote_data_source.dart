@@ -43,7 +43,7 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
   Future<AuthUserModel?> getCurrentUser() async {
     // 1. التحقق من وجود معرف الجلسة الفعالة
     final userId = await _authServices.getCurrentUserId();
-    if (userId == null) return null;
+    if (userId == null || userId.isEmpty) return null;
 
     final email = await _authServices.getCurrentUserEmail();
 

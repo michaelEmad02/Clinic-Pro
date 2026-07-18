@@ -35,7 +35,7 @@ class StaffScreen extends StatelessWidget {
           create: (_) => sl<StaffCubit>()..fetchAllStaff(ownerId),
         ),
         BlocProvider(
-          create: (_) => sl<ClinicsCubit>()..fetchClinics(),
+          create: (_) => sl<ClinicsCubit>()..fetchClinics(ownerId),
         ),
       ],
       child: _StaffBody(
@@ -114,7 +114,7 @@ class _StaffBody extends StatelessWidget {
             return RefreshIndicator(
               onRefresh: () async {
                 context.read<StaffCubit>().fetchAllStaff(ownerId);
-                context.read<ClinicsCubit>().fetchClinics();
+                context.read<ClinicsCubit>().fetchClinics(ownerId);
                 await Future.delayed(const Duration(milliseconds: 600));
               },
               child: ListView(
@@ -158,6 +158,9 @@ class _StaffBody extends StatelessWidget {
                     staffList: state.filteredStaff,
                     onItemTap: (s) => _showActions(context, s),
                     onItemMore: (s) => _showActions(context, s),
+                    clinicNames: {
+                      for (final c in clinicsList) c.id: c.name,
+                    },
                   ),
                 ],
               ),
@@ -207,7 +210,9 @@ class _StaffBody extends StatelessWidget {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppStrings.isArabic ? 'تم حذف الموظف بنجاح' : 'Staff deleted successfully'),
+            content: Text(AppStrings.isArabic
+                ? 'تم حذف الموظف بنجاح'
+                : 'Staff deleted successfully'),
           ),
         );
       },

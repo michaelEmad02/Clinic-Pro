@@ -4,13 +4,12 @@ class DoctorSecretariesEntity {
   final String doctorId; // = user_id
   final String secretaryId;
   final bool isActive;
-  final DateTime createdAt;
 
-  DoctorSecretariesEntity(
-      {required this.id,
-      required this.clinicId,
-      required this.doctorId,
-      required this.secretaryId,
-      required this.isActive,
-      required this.createdAt});
+  DoctorSecretariesEntity({
+    required this.id,
+    required this.clinicId,
+    required this.doctorId,
+    required this.secretaryId,
+    required this.isActive,
+  });
 }

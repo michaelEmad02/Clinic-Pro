@@ -1,3 +1,5 @@
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_state.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/fetch_clinic_staff_cubit.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
@@ -10,6 +12,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/route_constants.dart';
 import 'staff_member_card.dart';
 import 'add_existing_staff_sheet.dart';
+import '../../../../../core/constants/staff_roles.dart';
+import '../../../../staff/domain/entities/staff_entity.dart';
 
 class ClinicStaffSection extends StatelessWidget {
   final String clinicId;
@@ -50,6 +54,8 @@ class ClinicStaffSection extends StatelessWidget {
         } else if (state is FetchClinicStaffFailure) {
           return Center(child: Text(AppStrings.loadFailed));
         } else if (state is FetchClinicStaffLoaded) {
+          var ownerId =
+              (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
           return Container(
             padding: const EdgeInsets.all(AppConstants.spaceMd),
             decoration: BoxDecoration(
@@ -84,7 +90,7 @@ class ClinicStaffSection extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      onPressed: () => _showAddMemberOptions(context),
+                      onPressed: () => _showAddMemberOptions(context, ownerId),
                     ),
                     const SizedBox(width: AppConstants.spaceSm),
                     Text(
@@ -124,17 +130,29 @@ class ClinicStaffSection extends StatelessWidget {
                             .take(2)
                             .join();
 
-                        final roleLabel = staff.role.label;
+                        final displaySpecialty = staff.specialty != null && staff.specialty!.isNotEmpty
+                            ? staff.specialty!
+                            : staff.role.label;
+
+                        final doctorId = (staff.doctorSecretaries != null &&
+                                staff.doctorSecretaries!.isNotEmpty)
+                            ? staff.doctorSecretaries!.first.doctorId
+                            : null;
 
                         final staffEntryId = staff.id;
 
                         return StaffMemberCard(
                           name: staff.name,
-                          displaySpecialty: roleLabel,
+                          displaySpecialty: displaySpecialty,
                           initials: initials,
                           staffEntryId: staffEntryId,
-                          onRemove: () => _confirmRemoveStaff(context,
-                              staff.name, staff.userId, staff.role.name),
+                          onRemove: () => _confirmRemoveStaff(
+                              context: context,
+                              staffName: staff.name,
+                              staffEntryId: staff.userId,
+                              role: staff.role.name,
+                              ownerId: ownerId,
+                              doctorId: doctorId),
                         );
                       },
                     ),
@@ -148,8 +166,14 @@ class ClinicStaffSection extends StatelessWidget {
     );
   }
 
-  void _confirmRemoveStaff(BuildContext context, String staffName,
-      String staffEntryId, String role) {
+  void _confirmRemoveStaff({
+    required BuildContext context,
+    required String staffName,
+    required String staffEntryId,
+    required String role,
+    required String ownerId,
+    String? doctorId,
+  }) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -166,12 +190,22 @@ class ClinicStaffSection extends StatelessWidget {
                     .copyWith(color: context.textSecondary)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              context.read<ClinicsCubit>().removeStaffMember(
+              await context.read<ClinicsCubit>().removeStaffMember(
                     clinicId: clinicId,
                     staffId: staffEntryId,
+                    ownerId: ownerId,
+                    doctorId: doctorId,
                   );
+              if (!context.mounted) return;
+              context.read<FetchClinicStaffCubit>().fetchClinicStaff(clinicId);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${AppStrings.deletedSuccess} $staffName'),
+                  backgroundColor: context.successText,
+                ),
+              );
             },
             child: Text(AppStrings.remove,
                 style: AppTextStyles.bodyMedium(ctx).copyWith(
@@ -182,7 +216,7 @@ class ClinicStaffSection extends StatelessWidget {
     );
   }
 
-  void _showAddMemberOptions(BuildContext context) {
+  void _showAddMemberOptions(BuildContext context, String ownerId) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -229,6 +263,16 @@ class ClinicStaffSection extends StatelessWidget {
                       .copyWith(color: context.textSecondary)),
               onTap: () {
                 Navigator.pop(ctx);
+                // جلب أطباء العيادة الحالية لتمريرها للـ sheet
+                final clinicStaffState =
+                    context.read<FetchClinicStaffCubit>().state;
+                final clinicDoctors =
+                    clinicStaffState is FetchClinicStaffLoaded
+                        ? clinicStaffState.clinicStaff
+                            .where((s) => s.role == StaffRoles.doctor)
+                            .toList()
+                        : <StaffEntity>[];
+
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -238,13 +282,25 @@ class ClinicStaffSection extends StatelessWidget {
                   ),
                   builder: (sheetCtx) => AddExistingStaffSheet(
                     clinicId: clinicId,
-                    onAdd: (userId, role) {
-                      context.read<ClinicsCubit>().addStaffMember(
-                            clinicId: clinicId,
-                            userId: userId,
-                            doctorId: "",
-                            role: role,
-                          );
+                    clinicDoctors: clinicDoctors,
+                    onAdd: (userId, role, doctorId) async {
+                      await context.read<ClinicsCubit>().addStaffMember(
+                          clinicId: clinicId,
+                          userId: userId,
+                          doctorId: doctorId,
+                          role: role,
+                          ownerId: ownerId);
+                      if (!context.mounted) return;
+                      context
+                          .read<FetchClinicStaffCubit>()
+                          .fetchClinicStaff(clinicId);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              '${AppStrings.addedSuccess} $userId'),
+                          backgroundColor: context.successText,
+                        ),
+                      );
                     },
                   ),
                 );

@@ -38,7 +38,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
 
   @override
   Future<Either<Failure, void>> addStaff(
-      String clinicId, String staffId, String doctorId, StaffRoles role) async {
+      String clinicId, String staffId, String? doctorId, StaffRoles role) async {
     try {
       await iClinicsRemoteDataSource.addStaff(
           clinicId, staffId, doctorId, role);
@@ -60,9 +60,9 @@ class ClinicsRepoImplementation extends ClinicsRepository {
 
   @override
   Future<Either<Failure, void>> deleteStaff(
-      String clinicId, String staffId) async {
+      String clinicId, String staffId, [String? doctorId]) async {
     try {
-      await iClinicsRemoteDataSource.deleteStaff(clinicId, staffId);
+      await iClinicsRemoteDataSource.deleteStaff(clinicId, staffId, doctorId);
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
@@ -113,9 +113,10 @@ class ClinicsRepoImplementation extends ClinicsRepository {
   }
 
   @override
-  Future<Either<Failure, List<ClinicEntity>>> fetchClinics() async {
+  Future<Either<Failure, List<ClinicEntity>>> fetchClinics(
+      String ownerId) async {
     try {
-      final clinics = await iClinicsRemoteDataSource.fetchClinics();
+      final clinics = await iClinicsRemoteDataSource.fetchClinics(ownerId);
       return Right(clinics);
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));

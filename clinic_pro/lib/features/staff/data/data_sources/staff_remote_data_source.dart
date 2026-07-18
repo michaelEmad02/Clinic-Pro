@@ -50,25 +50,41 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
 
   @override
   Future<List<StaffModel>> fetchAllStaff(String ownerId) async {
-    // جلب بيانات الموظفين والمستخدمين
-    final staffRows =
-        await iCloudService.select(table: table);
-    final userRows =
-        await iCloudService.select(table: 'users', eq: {"owner_id": ownerId});
+    // جلب الموظفين التابعين لهذا المالك عبر owner_id في جدول users
+    final userRows = await iCloudService.select(
+      table: 'users',
+      eq: {'owner_id': ownerId},
+    );
 
-    return staffRows.map((cs) {
+    // جلب صفوف clinic_staff لربط بيانات العيادة بالموظف
+    final staffRows = await iCloudService.select(table: table);
+
+    final Set<String> processedKeys = {}; // يحفظ مفاتيح مدمجة: userId_clinicId
+    final List<StaffModel> uniqueStaff = [];
+
+    for (final cs in staffRows) {
       final userId = cs['user_id'] as String;
-      final userData = userRows.firstWhere(
-        (u) => u['id'] == userId,
-        orElse: () => <String, dynamic>{},
-      );
+      final clinicId = cs['clinic_id'] as String;
+      final key = '${userId}_$clinicId';
+      
+      // التحقق من أن المستخدم يتبع هذا المالك ولم يسبق إضافته لنفس العيادة
+      if (userRows.any((u) => u['id'] == userId) && !processedKeys.contains(key)) {
+        processedKeys.add(key);
+        
+        final userData = userRows.firstWhere(
+          (u) => u['id'] == userId,
+          orElse: () => <String, dynamic>{},
+        );
 
-      final mergedJson = {
-        ...cs,
-        'users': userData,
-      };
-      return StaffModel.fromJson(mergedJson);
-    }).toList();
+        final mergedJson = {
+          ...cs,
+          'users': userData,
+        };
+        uniqueStaff.add(StaffModel.fromJson(mergedJson));
+      }
+    }
+
+    return uniqueStaff;
   }
 
   @override

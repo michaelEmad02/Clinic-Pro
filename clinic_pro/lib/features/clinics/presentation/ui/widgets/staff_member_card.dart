@@ -71,6 +71,8 @@ class StaffMemberCard extends StatelessWidget {
                   style: AppTextStyles.labelChip(context).copyWith(
                     color: context.primary,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(height: AppConstants.spaceXs),

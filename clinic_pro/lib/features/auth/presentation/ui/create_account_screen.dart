@@ -1,10 +1,6 @@
-import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
-import '../../../../core/constants/route_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import 'widgets/account_form.dart';
 import 'widgets/social_login_row.dart';
@@ -24,13 +20,13 @@ class CreateAccountScreen extends StatelessWidget {
             top: -40,
             right: -20,
             child: _buildBlurCircle(
-                AppColors.primaryContainer.withOpacity(0.1), 384),
+                context.primaryContainer.withOpacity(0.1), 384),
           ),
           Positioned(
             bottom: -40,
             left: -20,
             child: _buildBlurCircle(
-                AppColors.accent.withOpacity(0.1), 288), // secondary-fixed
+                context.accent.withOpacity(0.1), 288), // secondary-fixed
           ),
 
           Center(
@@ -67,10 +63,10 @@ class CreateAccountScreen extends StatelessWidget {
                           color: context.primaryLightColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons
                               .monitor_heart_outlined, // vital_signs approximate
-                          color: AppColors.primaryContainer,
+                          color: context.primaryContainer,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -99,8 +95,7 @@ class CreateAccountScreen extends StatelessWidget {
                       const SizedBox(height: 32),
 
                       // Form Section
-                      const AccountForm(
-                      ),
+                      const AccountForm(),
 
                       const SizedBox(height: 24),
 
@@ -113,7 +108,7 @@ class CreateAccountScreen extends StatelessWidget {
                             child: Text(
                               AppStrings.orRegisterWith,
                               style: AppTextStyles.caption(context).copyWith(
-                                color: AppColors.textHint,
+                                color: context.textHint,
                               ),
                             ),
                           ),

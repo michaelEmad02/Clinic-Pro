@@ -12,11 +12,19 @@ class MockData {
       'country': 'Egypt',
       'address': 'Minya'
     },
+    {
+      'id': "0621e0fa-5854-496f-8628-3746a15386a4",
+      'name': 'Test Owner',
+      'phone': "010000000",
+      'country': 'Egypt',
+      'address': 'Cairo'
+    },
   ];
   // بيانات المستخدمين (الأطباء، السكرتارية، المالكين)
   static final List<Map<String, dynamic>> users = [
     {
       'id': 'u-owner-1',
+      'owner_id': 'u-owner-1',
       'name': 'د. محمد عبد الرحمن',
       'email': 'owner@clinicpro.com',
       'role': 'owner',
@@ -25,6 +33,7 @@ class MockData {
     },
     {
       'id': '74239bbe-1cf4-4a10-a446-095d543a6ca7',
+      'owner_id': '74239bbe-1cf4-4a10-a446-095d543a6ca7',
       'name': 'Michael Emad',
       'email': 'micheal1444gm@gmail.com',
       'role': 'owner',
@@ -32,9 +41,10 @@ class MockData {
       'avatar_url': 'https://randomuser.me/api/portraits/men/32.jpg',
     },
     {
-      'id': 'u-doc-1',
-      'name': 'د. ياسر مصطفى',
-      'email': 'yasser@clinicpro.com',
+      'id': '803df198-5339-490e-8373-e67b89edafe5',
+      'owner_id': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
+      'name': 'test doctor',
+      'email': 'test2@gmail.com',
       'role': 'doctor',
       'phone': '+201022222222',
       'specialty': 'طب عام',
@@ -43,6 +53,7 @@ class MockData {
     },
     {
       'id': 'u-doc-2',
+      'owner_id': 'u-owner-1',
       'name': 'د. نورة السالم',
       'email': 'nora@clinicpro.com',
       'role': 'doctor',
@@ -53,6 +64,7 @@ class MockData {
     },
     {
       'id': 'u-doc-3',
+      'owner_id': 'u-owner-1',
       'name': 'د. خالد عبدالله القحطاني',
       'email': 'khaled@clinicpro.com',
       'role': 'doctor',
@@ -63,6 +75,7 @@ class MockData {
     },
     {
       'id': 'c844c040-0a73-462c-99f5-b889adb99445',
+      'owner_id': 'u-owner-1',
       'name': 'تجريبي',
       'email': 'test1@gmail.com',
       'role': 'secretary',
@@ -73,6 +86,7 @@ class MockData {
     },
     {
       'id': 'u-acc-1',
+      'owner_id': 'u-owner-1',
       'name': 'أ. عبدالله العمري',
       'email': 'abdullah@clinicpro.com',
       'role': 'accountant',
@@ -82,6 +96,7 @@ class MockData {
     },
     {
       'id': 'u-sec-1',
+      'owner_id': 'u-owner-1',
       'name': 'أ. سارة أحمد',
       'email': 'sara@clinicpro.com',
       'role': 'secretary',
@@ -91,6 +106,7 @@ class MockData {
     },
     {
       'id': 'u-sec-2',
+      'owner_id': 'u-owner-1',
       'name': 'أ. فاطمة الزهراء',
       'email': 'fatima@clinicpro.com',
       'role': 'secretary',
@@ -100,6 +116,7 @@ class MockData {
     },
     {
       'id': 'u-sec-3',
+      'owner_id': 'u-owner-1',
       'name': 'أ. سارة عبدالله',
       'email': 'sara.admin@clinic.com',
       'role': 'secretary',
@@ -109,6 +126,7 @@ class MockData {
     },
     {
       'id': 'u-doc-4',
+      'owner_id': 'u-owner-1',
       'name': 'د. أحمد صالح',
       'email': 'ahmed.saleh@clinicpro.com',
       'role': 'doctor',
@@ -119,6 +137,7 @@ class MockData {
     },
     {
       'id': 'u-doc-5',
+      'owner_id': 'u-owner-1',
       'name': 'د. أحمد العبدالله',
       'email': 'dr.ahmed@example.com',
       'role': 'doctor',
@@ -192,7 +211,7 @@ class MockData {
     {
       'id': 'cs-4',
       'clinic_id': 'c-1',
-      'user_id': 'u-doc-2',
+      'user_id': '803df198-5339-490e-8373-e67b89edafe5',
       'role': 'doctor',
       'is_active': true,
     },
@@ -1500,31 +1519,6 @@ class MockData {
     },
   ];
 
-  // علاقة سكرتيرة بطبيب لعيادة معينة
-  static final List<Map<String, dynamic>> doctorSecretarySchedule = [
-    {
-      'id': 'dss-1',
-      'secretary_id': 'u-sec-1',
-      'doctor_id': 'u-doc-1',
-      'clinic_id': 'c-1',
-      'is_active': true,
-    },
-    {
-      'id': 'dss-2',
-      'secretary_id': 'u-sec-1',
-      'doctor_id': 'u-doc-2',
-      'clinic_id': 'c-1',
-      'is_active': false,
-    },
-    {
-      'id': 'dss-3',
-      'secretary_id': 'u-sec-1',
-      'doctor_id': 'u-doc-3',
-      'clinic_id': 'c-1',
-      'is_active': false,
-    },
-  ];
-
   // خطط الأسعار
   static final List<Map<String, dynamic>> plans = [
     {
@@ -1607,5 +1601,32 @@ class MockData {
         ]
       }
     }
+  ];
+
+  static final List<Map<String, dynamic>> doctorSecretarySchedule = [
+    {
+      'id': 'dss-1',
+      'clinic_id': 'c-1',
+      'doctor_id': '74239bbe-1cf4-4a10-a446-095d543a6ca7', // Michael Emad
+      'secretary_id': 'c844c040-0a73-462c-99f5-b889adb99445', // تجريبي
+      'is_active': true,
+      'created_at': '2023-10-15T10:00:00.000Z',
+    },
+    {
+      'id': 'dss-2',
+      'clinic_id': 'c-1',
+      'doctor_id': 'u-doc-2', // د. نورة السالم
+      'secretary_id': 'c844c040-0a73-462c-99f5-b889adb99445', // تجريبي
+      'is_active': true,
+      'created_at': '2023-10-15T11:00:00.000Z',
+    },
+    {
+      'id': 'dss-3',
+      'clinic_id': 'c-2',
+      'doctor_id': 'u-doc-1', // د. ياسر مصطفى
+      'secretary_id': 'u-sec-2', // أ. فاطمة الزهراء
+      'is_active': true,
+      'created_at': '2023-10-15T12:00:00.000Z',
+    },
   ];
 }

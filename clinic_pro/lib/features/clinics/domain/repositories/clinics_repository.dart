@@ -6,7 +6,7 @@ import 'package:clinic_pro/features/staff/domain/entities/staff_entity.dart';
 import 'package:dartz/dartz.dart';
 
 abstract class ClinicsRepository {
-  Future<Either<Failure, List<ClinicEntity>>> fetchClinics();
+  Future<Either<Failure, List<ClinicEntity>>> fetchClinics(String ownerId);
   Future<Either<Failure, ClinicEntity>> fetchClinicById(String id);
 
   Future<Either<Failure, List<StaffEntity>>> fetchClinicStaff(String clinicId);
@@ -17,10 +17,10 @@ abstract class ClinicsRepository {
   Future<Either<Failure, void>> addStaff(
       String clinicId,
       String staffId,
-      String doctorId,
+      String? doctorId,
       StaffRoles
           role); // if the staff is new , will create it by use staff feature
-  Future<Either<Failure, void>> deleteStaff(String clinicId, String staffId);
+  Future<Either<Failure, void>> deleteStaff(String clinicId, String staffId, [String? doctorId]);
   Future<Either<Failure, ClinicStatisticsEntity>> fetchClinicStatistics(
       String clinicId);
 }

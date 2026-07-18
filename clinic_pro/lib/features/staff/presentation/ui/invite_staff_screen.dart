@@ -45,12 +45,13 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ownerId = (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
+    final ownerId =
+        (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
 
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => sl<ClinicsCubit>()..fetchClinics(),
+          create: (_) => sl<ClinicsCubit>()..fetchClinics(ownerId),
         ),
         BlocProvider(
           create: (_) => sl<InviteStaffCubit>(),
@@ -58,13 +59,15 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
       ],
       child: BlocListener<OnboardingCubit, OnboardingState>(
         listener: (context, onboardingState) {
-          if (onboardingState is OnboardingStaffInvited && widget.isOnboarding) {
+          if (onboardingState is OnboardingStaffInvited &&
+              widget.isOnboarding) {
             context.go(RouteConstants.ownerDashboard);
           }
         },
         child: BlocListener<ClinicsCubit, ClinicsState>(
           listener: (context, clinicsState) {
-            if (clinicsState is ClinicsLoaded && clinicsState.clinics.isNotEmpty) {
+            if (clinicsState is ClinicsLoaded &&
+                clinicsState.clinics.isNotEmpty) {
               context.read<InviteStaffCubit>().loadInitialData(
                     ownerId,
                     clinicsState.clinics.first.id,
@@ -136,12 +139,14 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                                 )
                               else if (state is InviteStaffError)
                                 Padding(
-                                  padding: const EdgeInsets.all(AppConstants.spaceLg),
+                                  padding: const EdgeInsets.all(
+                                      AppConstants.spaceLg),
                                   child: Column(
                                     children: [
                                       Text(
                                         state.message,
-                                        style: AppTextStyles.bodyMedium(context).copyWith(
+                                        style: AppTextStyles.bodyMedium(context)
+                                            .copyWith(
                                           color: context.danger,
                                         ),
                                         textAlign: TextAlign.center,
@@ -149,14 +154,21 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                                       const SizedBox(height: 16),
                                       ElevatedButton(
                                         onPressed: () {
-                                          final clinicsState = context.read<ClinicsCubit>().state;
-                                          if (clinicsState is ClinicsLoaded && clinicsState.clinics.isNotEmpty) {
-                                            context.read<InviteStaffCubit>().loadInitialData(
+                                          final clinicsState = context
+                                              .read<ClinicsCubit>()
+                                              .state;
+                                          if (clinicsState is ClinicsLoaded &&
+                                              clinicsState.clinics.isNotEmpty) {
+                                            context
+                                                .read<InviteStaffCubit>()
+                                                .loadInitialData(
                                                   ownerId,
                                                   clinicsState.clinics.first.id,
                                                 );
                                           } else {
-                                            context.read<ClinicsCubit>().fetchClinics();
+                                            context
+                                                .read<ClinicsCubit>()
+                                                .fetchClinics(ownerId);
                                           }
                                         },
                                         child: Text(AppStrings.retry),
@@ -244,7 +256,9 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
       BuildContext context, InviteStaffLoaded state, String ownerId) {
     final inviteStaffCubit = context.read<InviteStaffCubit>();
     final clinicsState = context.watch<ClinicsCubit>().state;
-    final clinicsList = clinicsState is ClinicsLoaded ? clinicsState.clinics : const <ClinicEntity>[];
+    final clinicsList = clinicsState is ClinicsLoaded
+        ? clinicsState.clinics
+        : const <ClinicEntity>[];
 
     return Padding(
       padding: const EdgeInsets.all(AppConstants.spaceLg),
@@ -283,7 +297,8 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                 _showError(context, AppStrings.enterValidEmail);
                 return;
               }
-              final selectedClinic = clinicsList.firstWhere((c) => c.id == state.selectedClinicId);
+              final selectedClinic =
+                  clinicsList.firstWhere((c) => c.id == state.selectedClinicId);
               inviteStaffCubit.addInvitee(
                 name: name,
                 email: email,
@@ -306,7 +321,8 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
 
   Widget _buildFooter(BuildContext context, InviteStaffState state,
       bool isLoading, String ownerId) {
-    final invitedListEmpty = state is InviteStaffLoaded ? state.invitedStaff.isEmpty : true;
+    final invitedListEmpty =
+        state is InviteStaffLoaded ? state.invitedStaff.isEmpty : true;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(

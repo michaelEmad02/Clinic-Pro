@@ -5,7 +5,6 @@
 import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/features/staff/domain/entities/staff_entity.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -13,12 +12,14 @@ class StaffListItem extends StatelessWidget {
   final StaffEntity staff;
   final VoidCallback onTap;
   final VoidCallback onMore;
+  final String? clinicName;
 
   const StaffListItem({
     super.key,
     required this.staff,
     required this.onTap,
     required this.onMore,
+    this.clinicName,
   });
 
   @override
@@ -114,23 +115,48 @@ class StaffListItem extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               // شارة الدور
-              _buildRoleBadge(context),
-              const SizedBox(height: 12),
-              // خط فاصل
-              Divider(height: 1, color: context.border),
-              const SizedBox(height: 8),
-              // صف الحالة + رابط عرض الملف
               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(
-                    AppStrings.viewProfile,
-                    style: AppTextStyles.labelChip(context).copyWith(
-                      color: context.primary,
-                      fontWeight: FontWeight.bold,
+                  _buildRoleBadge(context),
+                  const SizedBox(width: 15),
+                  if (clinicName != null) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.business,
+                            size: 14, color: context.textSecondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          clinicName!,
+                          style: AppTextStyles.caption(context).copyWith(
+                            color: context.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                  ),
+                  ],
                 ],
               ),
+
+              // const SizedBox(height: 12),
+              // // خط فاصل
+              // Divider(height: 1, color: context.border),
+              // const SizedBox(height: 8),
+              // // صف الحالة + رابط عرض الملف
+              // Row(
+              //   children: [
+              //     Text(
+              //       AppStrings.viewProfile,
+              //       style: AppTextStyles.labelChip(context).copyWith(
+              //         color: context.primary,
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

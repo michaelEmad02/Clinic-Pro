@@ -14,12 +14,14 @@ class StaffList extends StatelessWidget {
   final List<StaffEntity> staffList;
   final ValueChanged<StaffEntity> onItemTap;
   final ValueChanged<StaffEntity> onItemMore;
+  final Map<String, String>? clinicNames;
 
   const StaffList({
     super.key,
     required this.staffList,
     required this.onItemTap,
     required this.onItemMore,
+    this.clinicNames,
   });
 
   @override
@@ -53,6 +55,7 @@ class StaffList extends StatelessWidget {
                 staff: staff,
                 onTap: () => onItemTap(staff),
                 onMore: () => onItemMore(staff),
+                clinicName: clinicNames?[staff.clinicId],
               );
             },
           );

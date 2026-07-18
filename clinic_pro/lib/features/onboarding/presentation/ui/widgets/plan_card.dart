@@ -103,8 +103,7 @@ class PlanCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
-                ...features
-                    .map(_buildFeature as Widget Function(PlanFeature e)),
+                ...features.map((e) => _buildFeature(e, context)),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: onSelect,
