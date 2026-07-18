@@ -56,7 +56,7 @@ class _AccountFormState extends State<AccountForm> {
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
+        if (state is AuthRegistrationSuccess) {
           showDialog(
             context: context,
             barrierDismissible: false,

@@ -25,6 +25,7 @@ class LoginScreen extends StatelessWidget {
         // عند نجاح تسجيل الدخول — التوجيه حسب الدور
         if (state is AuthAuthenticated) {
           final role = state.user.role;
+
           if (role == StaffRoles.owner) {
             context.go(RouteConstants.ownerDashboard);
           } else if (role == StaffRoles.doctor) {

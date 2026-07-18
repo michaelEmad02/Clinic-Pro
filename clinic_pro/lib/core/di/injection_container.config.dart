@@ -164,6 +164,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.prefs,
       preResolve: true,
     );
+
     gh.lazySingleton<_i454.SupabaseClient>(() => registerModule.supabase);
     gh.lazySingleton<_i170.LanguageCubit>(
         () => _i170.LanguageCubit(gh<_i460.SharedPreferences>()));
@@ -207,7 +208,7 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i562.WaitingQueueCubit(gh<_i1070.AppointmentsRepository>()));
     gh.lazySingleton<_i25.IAuthRemoteDataSource>(
         () => _i25.AuthRemoteDataSourceImpl(
-              gh<_i239.ICloudService>(),
+              SupabaseServices(supabase: gh<_i454.SupabaseClient>()),
               gh<_i662.IAuthServices>(),
             ));
     gh.factory<_i560.ExpensesCubit>(

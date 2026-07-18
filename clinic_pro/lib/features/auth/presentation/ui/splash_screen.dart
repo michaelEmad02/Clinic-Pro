@@ -17,7 +17,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _dotController;
   late Animation<double> _pulseAnimation;
@@ -25,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -63,8 +64,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       builder: (context, child) {
         final double delay = index * 0.16;
         final double progress = (_dotController.value - delay) % 1.0;
-        final double effectiveProgress = progress < 0 ? 1.0 + progress : progress;
-        
+        final double effectiveProgress =
+            progress < 0 ? 1.0 + progress : progress;
+
         double scale = 0.0;
         if (effectiveProgress < 0.4) {
           scale = effectiveProgress / 0.4; // 0 to 1
@@ -122,7 +124,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               left: -128,
               child: _buildBlurCircle(context),
             ),
-            
+
             // Central Content Area
             Center(
               child: Column(
@@ -160,7 +162,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       );
                     },
                   ),
-                  
+
                   // Typography
                   Text(
                     'ClinicPro',
@@ -179,7 +181,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 ],
               ),
             ),
-            
+
             // Bottom Loading Indicator
             Align(
               alignment: Alignment.bottomCenter,

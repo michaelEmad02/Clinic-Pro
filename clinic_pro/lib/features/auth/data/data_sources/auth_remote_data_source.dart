@@ -159,8 +159,8 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
 
     final fullData = Map<String, dynamic>.from(inserted);
     fullData['email'] = email;
-
-    return AuthUserModel.fromJson(fullData, StaffRoles.owner);
+    var user = AuthUserModel.fromJson(fullData, StaffRoles.owner);
+    return user;
   }
 
   @override

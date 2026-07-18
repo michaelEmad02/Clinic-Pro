@@ -6,7 +6,7 @@
 import 'package:clinic_pro/core/constants/staff_roles.dart';
 
 class SupabaseTables {
-  static const String owners = 'owners';
+  static const String owners = 'Owners';
   static const String clinics = 'clinics';
   static const String users = 'users';
   static const String clinicStaff = 'clinic_staff';

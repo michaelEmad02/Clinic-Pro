@@ -1153,7 +1153,7 @@ class MockData {
           .toIso8601String()
           .substring(0, 10),
       'notes': 'فاتورة شركة النصر الطبية',
-      'created_by': 'u-owner-1',
+      'created_by': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
     },
     {
       'id': 'exp-2',
@@ -1166,7 +1166,7 @@ class MockData {
           .toIso8601String()
           .substring(0, 10),
       'notes': 'عداد تجاري للعيادة الرئيسي',
-      'created_by': 'u-owner-1',
+      'created_by': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
     },
     {
       'id': 'exp-3',
@@ -1179,7 +1179,7 @@ class MockData {
           .toIso8601String()
           .substring(0, 10),
       'notes': 'إيجار الشهر الحالي',
-      'created_by': 'u-owner-1',
+      'created_by': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
     },
     {
       'id': 'exp-4',
@@ -1192,7 +1192,7 @@ class MockData {
           .toIso8601String()
           .substring(0, 10),
       'notes': 'راتب شهر كامل',
-      'created_by': 'u-owner-1',
+      'created_by': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
     },
     {
       'id': 'exp-5',
@@ -1205,7 +1205,7 @@ class MockData {
           .toIso8601String()
           .substring(0, 10),
       'notes': 'صيانة دورية',
-      'created_by': 'u-owner-1',
+      'created_by': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
     },
     {
       'id': 'exp-6',
@@ -1380,7 +1380,7 @@ class MockData {
   static final List<Map<String, dynamic>> subscriptions = [
     {
       'id': 'sub-1',
-      'owner_id': 'u-owner-1',
+      'owner_id': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
       'plan_type': 'growth',
       'status': 'active',
       'trial_end_at': null,
@@ -1394,7 +1394,7 @@ class MockData {
     {
       'id': 'inv-1',
       'clinic_id': 'c-1',
-      'owner_id': 'u-owner-1',
+      'owner_id': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
       'email': 'sara.admin@clinic.com',
       'name': 'سارة عبدالله',
       'role': 'secretary',
@@ -1407,7 +1407,7 @@ class MockData {
     {
       'id': 'inv-2',
       'clinic_id': 'c-2',
-      'owner_id': 'u-owner-1',
+      'owner_id': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
       'email': 'dr.ahmed@example.com',
       'name': 'د. أحمد العبدالله',
       'role': 'doctor',
@@ -1420,7 +1420,7 @@ class MockData {
     {
       'id': 'inv-3',
       'clinic_id': 'c-1',
-      'owner_id': 'u-owner-1',
+      'owner_id': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
       'email': 'noor.nurse@example.com',
       'name': 'نور محمد',
       'role': 'nurse',
@@ -1433,7 +1433,7 @@ class MockData {
     {
       'id': 'inv-4',
       'clinic_id': 'c-3',
-      'owner_id': 'u-owner-1',
+      'owner_id': '6410f855-5e71-4d6f-ac8c-2df0d31020a0',
       'email': 'hassan.dr@example.com',
       'name': 'د. حسن النمر',
       'role': 'doctor',
