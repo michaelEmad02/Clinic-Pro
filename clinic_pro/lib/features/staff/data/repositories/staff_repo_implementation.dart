@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/staff/data/data_sources/staff_remote_data_source.dart';
 import 'package:clinic_pro/features/staff/data/models/invitation_model.dart';
 import 'package:clinic_pro/features/staff/data/models/staff_model.dart';
@@ -19,7 +20,7 @@ class StaffRepoImplementation extends StaffRepository {
       await staffRemoteDataSource.deleteStaff(staffId);
       return right(null);
     } catch (e) {
-      return left(ServerFailure(message: e.toString()));
+      return left(QueryFailure.fromException(e));
     }
   }
 
@@ -40,7 +41,7 @@ class StaffRepoImplementation extends StaffRepository {
           joinedAt: staff.joinedAt));
       return right(null);
     } catch (e) {
-      return left(ServerFailure(message: e.toString()));
+      return left(QueryFailure.fromException(e));
     }
   }
 
@@ -51,7 +52,7 @@ class StaffRepoImplementation extends StaffRepository {
       var result = await staffRemoteDataSource.fetchAllStaff(ownerId);
       return right(result);
     } catch (e) {
-      return left(ServerFailure(message: e.toString()));
+      return left(QueryFailure.fromException(e));
     }
   }
 
@@ -62,7 +63,7 @@ class StaffRepoImplementation extends StaffRepository {
       var result = await staffRemoteDataSource.fetchPendingInvitations(ownerId);
       return right(result);
     } catch (e) {
-      return left(ServerFailure(message: e.toString()));
+      return left(QueryFailure.fromException(e));
     }
   }
 
@@ -72,7 +73,7 @@ class StaffRepoImplementation extends StaffRepository {
       var result = await staffRemoteDataSource.fetchStaffById(id);
       return right(result);
     } catch (e) {
-      return left(ServerFailure(message: e.toString()));
+      return left(QueryFailure.fromException(e));
     }
   }
 
@@ -92,7 +93,7 @@ class StaffRepoImplementation extends StaffRepository {
           createdAt: staff.createdAt));
       return right(null);
     } catch (e) {
-      return left(ServerFailure(message: e.toString()));
+      return left(QueryFailure.fromException(e));
     }
   }
 
@@ -102,7 +103,7 @@ class StaffRepoImplementation extends StaffRepository {
       await staffRemoteDataSource.cancelInvitation(invitationId);
       return right(null);
     } catch (e) {
-      return left(ServerFailure(message: e.toString()));
+      return left(QueryFailure.fromException(e));
     }
   }
 }

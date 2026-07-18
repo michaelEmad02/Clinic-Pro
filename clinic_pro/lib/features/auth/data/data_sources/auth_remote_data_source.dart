@@ -151,10 +151,25 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
       'country': country,
       'address': address,
     };
-
     final inserted = await _cloudService.insert(
       table: SupabaseTables.owners,
       data: ownerData,
+    );
+    
+
+    final userData = {
+      'id': userId,
+      'owner_id': userId,
+      'name': name,
+      'phone': phone,
+      'address': address,
+      'specialty': 'طبيب - مالك',
+      'is_active': true,
+    };
+
+    await _cloudService.insert(
+      table: SupabaseTables.users,
+      data: userData,
     );
 
     final fullData = Map<String, dynamic>.from(inserted);

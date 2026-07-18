@@ -48,12 +48,27 @@ class ClinicsCubit extends Cubit<ClinicsState> {
   }
 
   // إضافة عيادة جديدة
-  Future<void> addClinic(ClinicEntity clinic) async {
+  Future<void> addClinic(ClinicEntity clinic, {bool isDoctor = false}) async {
     final result = await addClinicUseCase.call(clinic);
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),
-      (_) => fetchClinics(clinic.ownerId), // إعادة تحميل القائمة بعد الإضافة
+      (newClinicId) async {
+        if (isDoctor) {
+          final staffResult = await addStaffUseCase.call(
+            newClinicId,
+            clinic.ownerId,
+            null,
+            StaffRoles.doctor,
+          );
+          staffResult.fold(
+            (failure) => emit(ClinicsError(failure.message)),
+            (_) => fetchClinics(clinic.ownerId),
+          );
+        } else {
+          fetchClinics(clinic.ownerId);
+        }
+      },
     );
   }
 

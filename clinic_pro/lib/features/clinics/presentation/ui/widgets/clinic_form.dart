@@ -11,6 +11,7 @@ class ClinicForm extends StatefulWidget {
     required String name,
     required String phone,
     required String address,
+    bool isDoctor,
     String? logoUrl,
   }) onSubmit;
   final VoidCallback onBack;
@@ -34,7 +35,7 @@ class _ClinicFormState extends State<ClinicForm> {
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   String? _selectedSpecialty;
-  bool _isDoctor = true;
+  bool _isDoctor = false;
 
   /// الصورة المختارة من المعرض
   File? _selectedImage;
@@ -63,6 +64,7 @@ class _ClinicFormState extends State<ClinicForm> {
       name: _nameController.text.trim(),
       phone: _phoneController.text.trim(),
       address: _addressController.text.trim(),
+      isDoctor: _isDoctor,
     );
   }
 
@@ -244,7 +246,8 @@ class _ClinicFormState extends State<ClinicForm> {
         const SizedBox(height: 16),
 
         // Toggle Card (only for onboarding)
-        if (widget.isOnboarding) ...[
+        // if (widget.isOnboarding) ...[
+        ...[
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -281,10 +284,10 @@ class _ClinicFormState extends State<ClinicForm> {
                       _isDoctor = val;
                     });
                   },
-                  activeColor: context.surface,
-                  activeTrackColor: context.primary,
-                  inactiveThumbColor: context.surface,
-                  inactiveTrackColor: context.surfaceContainerLow,
+                  activeColor: context.success,
+                  activeTrackColor: context.successBg,
+                  inactiveThumbColor: context.danger,
+                  inactiveTrackColor: context.dangerBg,
                 ),
               ],
             ),

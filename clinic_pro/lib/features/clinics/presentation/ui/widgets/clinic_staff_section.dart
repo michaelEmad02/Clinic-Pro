@@ -54,8 +54,7 @@ class ClinicStaffSection extends StatelessWidget {
         } else if (state is FetchClinicStaffFailure) {
           return Center(child: Text(AppStrings.loadFailed));
         } else if (state is FetchClinicStaffLoaded) {
-          var ownerId =
-              (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
+          var ownerId = context.read<AuthCubit>().state.user?.id ?? '';
           return Container(
             padding: const EdgeInsets.all(AppConstants.spaceMd),
             decoration: BoxDecoration(

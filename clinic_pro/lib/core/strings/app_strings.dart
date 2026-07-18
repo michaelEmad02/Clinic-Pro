@@ -140,8 +140,9 @@ class AppStrings {
       isArabic ? 'إضافة للعيادة بنفس الدور' : 'Add to clinic with same role';
   static String get selectAssociatedDoctor =>
       isArabic ? 'اختر الطبيب المرتبط:' : 'Select associated doctor:';
-  static String get noDoctorsAvailable =>
-      isArabic ? 'لا يوجد أطباء متاحين في هذه العيادة.' : 'No doctors available in this clinic.';
+  static String get noDoctorsAvailable => isArabic
+      ? 'لا يوجد أطباء متاحين في هذه العيادة.'
+      : 'No doctors available in this clinic.';
   static String get inviteStaff => isArabic ? 'دعوة موظف' : 'Invite Staff';
   static String get pendingInvitations =>
       isArabic ? 'دعوات معلقة' : 'Pending Invitations';
@@ -636,7 +637,8 @@ class AppStrings {
       isArabic ? 'دعوة الأطباء' : 'Invite Doctors';
   static String get skip => isArabic ? 'تخطي' : 'Skip';
 
-  static String get accountVerification => isArabic ? 'تأكيد الحساب' : 'Account Verification';
+  static String get accountVerification =>
+      isArabic ? 'تأكيد الحساب' : 'Account Verification';
   static String get verificationEmailSent => isArabic
       ? 'تم إرسال رابط التفعيل إلى بريدك الإلكتروني بنجاح. يرجى الضغط على الرابط في رسالة البريد الإلكتروني لتفعيل حسابك ثم المتابعة.'
       : 'A verification link has been successfully sent to your email. Please click the link in the email to activate your account and then click continue.';
@@ -702,9 +704,6 @@ class AppStrings {
   static String get enterEmployeeName => isArabic
       ? 'الرجاء إدخال اسم الموظف الكامل'
       : 'Please enter the full employee name';
-  static String get enterValidEmail => isArabic
-      ? 'الرجاء إدخال بريد إلكتروني صحيح'
-      : 'Please enter a valid email';
   static String get emailAlreadyAdded => isArabic
       ? 'هذا البريد مضاف مسبقاً في القائمة'
       : 'This email is already in the list';
@@ -818,4 +817,24 @@ class AppStrings {
   static String get respiratory => isArabic ? 'أمراض صدر' : 'Respiratory';
   static String get chronic => isArabic ? 'أدوية مزمنة' : 'Chronic';
   static String get otherCategory => isArabic ? 'أخرى' : 'Other';
+
+  // Validation
+  static String get enterFullName =>
+      isArabic ? 'الرجاء إدخال الاسم بالكامل' : 'Please enter your full name';
+  static String get enterEmail => isArabic
+      ? 'الرجاء إدخال البريد الإلكتروني'
+      : 'Please enter email address';
+  static String get enterValidEmail => isArabic
+      ? 'الرجاء إدخال بريد إلكتروني صالح'
+      : 'Please enter a valid email address';
+  static String get enterPassword =>
+      isArabic ? 'الرجاء إدخال كلمة المرور' : 'Please enter password';
+  static String get passwordLengthError => isArabic
+      ? 'يجب أن لا تقل كلمة المرور عن 6 أحرف'
+      : 'Password must be at least 6 characters';
+  static String get enterPhone =>
+      isArabic ? 'الرجاء إدخال رقم الهاتف' : 'Please enter phone number';
+  static String get agreeToTermsError => isArabic
+      ? 'يجب الموافقة على الشروط والأحكام للاستمرار'
+      : 'You must agree to the terms and conditions to continue';
 }

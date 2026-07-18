@@ -45,8 +45,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ownerId =
-        (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
+    final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
 
     return MultiBlocProvider(
       providers: [

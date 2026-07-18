@@ -8,6 +8,8 @@ import '../../domain/entities/auth_user_entity.dart';
 abstract class AuthState extends Equatable {
   const AuthState();
 
+  AuthUserEntity? get user => null;
+
   @override
   List<Object?> get props => [];
 }
@@ -17,6 +19,7 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
+  @override
   final AuthUserEntity user;
 
   const AuthAuthenticated({required this.user});
@@ -26,6 +29,7 @@ class AuthAuthenticated extends AuthState {
 }
 
 class AuthRegistrationSuccess extends AuthState {
+  @override
   final AuthUserEntity user;
 
   const AuthRegistrationSuccess({required this.user});

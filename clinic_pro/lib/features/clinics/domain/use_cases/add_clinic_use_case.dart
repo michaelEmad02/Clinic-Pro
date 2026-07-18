@@ -9,7 +9,7 @@ class AddClinicUseCase {
   final ClinicsRepository clinicsRepository;
 
   AddClinicUseCase({required this.clinicsRepository});
-  Future<Either<Failure, void>> call(ClinicEntity clinic) {
+  Future<Either<Failure, String>> call(ClinicEntity clinic) {
     return clinicsRepository.addClinic(clinic);
   }
 }

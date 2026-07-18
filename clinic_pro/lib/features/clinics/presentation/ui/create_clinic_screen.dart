@@ -8,6 +8,13 @@ import '../../domain/entities/clinic_entity.dart';
 import 'widgets/progress_indicator_bar.dart';
 import 'widgets/clinic_form.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../auth/presentation/manager/auth_cubit.dart';
+import '../../../auth/presentation/manager/auth_state.dart';
+import '../../presentation/manager/cubit/clinics_cubit.dart';
+import '../../presentation/manager/cubit/clinics_state.dart';
+
 class CreateClinicScreen extends StatelessWidget {
   final ClinicEntity? clinic;
   final bool isOnboarding;
@@ -20,113 +27,149 @@ class CreateClinicScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.backgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 56,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-        leading: isOnboarding
-            ? null
-            : IconButton(
-                icon: Icon(Icons.close, color: context.textSecondary),
-                onPressed: () => Navigator.pop(context),
-              ),
-        actions: isOnboarding
-            ? [
-                TextButton(
-                  onPressed: () => context.go(RouteConstants.ownerDashboard),
-                  child: Text(
-                    AppStrings.skip,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: context.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
+    return BlocProvider(
+      create: (_) => sl<ClinicsCubit>(),
+      child: BlocListener<ClinicsCubit, ClinicsState>(
+        listener: (context, state) {
+          if (state is ClinicsLoaded && isOnboarding) {
+            context.go(RouteConstants.ownerDashboard);
+          } else if (state is ClinicsError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+        child: Scaffold(
+          backgroundColor: context.backgroundColor,
+          appBar: AppBar(
+            toolbarHeight: 56,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            automaticallyImplyLeading: false,
+            leading: isOnboarding
+                ? null
+                : IconButton(
+                    icon: Icon(Icons.close, color: context.textSecondary),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ),
-                const SizedBox(width: 16),
-              ]
-            : null,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: context.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: context.surface,
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header
-                    Column(
-                      children: [
-                        Text(
-                          isOnboarding
-                              ? AppStrings.clinicData
-                              : (clinic != null
-                                  ? AppStrings.editClinicData
-                                  : AppStrings.addNewClinic),
-                          style: AppTextStyles.headlineLarge(context).copyWith(
-                            color: context.primary,
-                          ),
+            actions: isOnboarding
+                ? [
+                    TextButton(
+                      onPressed: () => context.go(RouteConstants.ownerDashboard),
+                      child: Text(
+                        AppStrings.skip,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          color: context.primary,
+                          fontWeight: FontWeight.bold,
                         ),
-                        if (isOnboarding) ...[
-                          const SizedBox(height: 8),
-                          const ProgressIndicatorBar(
-                            step: 2,
-                            totalSteps: 3,
-                            title: '',
-                          ),
-                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                  ]
+                : null,
+          ),
+          body: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: context.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: context.surface,
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Header
+                        Column(
+                          children: [
+                            Text(
+                              isOnboarding
+                                  ? AppStrings.clinicData
+                                  : (clinic != null
+                                      ? AppStrings.editClinicData
+                                      : AppStrings.addNewClinic),
+                              style: AppTextStyles.headlineLarge(context).copyWith(
+                                color: context.primary,
+                              ),
+                            ),
+                            if (isOnboarding) ...[
+                              const SizedBox(height: 8),
+                              const ProgressIndicatorBar(
+                                step: 2,
+                                totalSteps: 3,
+                                title: '',
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 32),
 
-                    // Form
-                    ClinicForm(
-                      clinic: clinic,
-                      isOnboarding: isOnboarding,
-                      onSubmit: ({
-                        required String name,
-                        required String phone,
-                        required String address,
-                        String? logoUrl,
-                      }) {
-                        if (isOnboarding) {
-                          context.go(RouteConstants.ownerDashboard);
-                        } else {
-                          Navigator.pop(context, {
-                            'name': name,
-                            'phone': phone,
-                            'address': address,
-                          });
-                        }
-                      },
-                      onBack: () {
-                        if (isOnboarding) {
-                          context.go(RouteConstants.onboardingPlan);
-                        } else {
-                          Navigator.pop(context);
-                        }
-                      },
+                        // Form
+                        Builder(
+                          builder: (context) {
+                            return ClinicForm(
+                              clinic: clinic,
+                              isOnboarding: isOnboarding,
+                              onSubmit: ({
+                                required String name,
+                                required String phone,
+                                required String address,
+                                bool? isDoctor,
+                                String? logoUrl,
+                              }) {
+                                if (isOnboarding) {
+                                  final authState = context.read<AuthCubit>().state;
+                                  final ownerId = authState.user?.id ?? '';
+                                  context.read<ClinicsCubit>().addClinic(
+                                    ClinicEntity(
+                                      id: '',
+                                      ownerId: ownerId,
+                                      name: name,
+                                      phone1: phone,
+                                      phone2: '',
+                                      address: address,
+                                      logoUrl: logoUrl ?? '',
+                                      isActive: true,
+                                      createdAt: DateTime.now(),
+                                    ),
+                                    isDoctor: isDoctor ?? false,
+                                  );
+                                  context.go(RouteConstants.onboardingInvite);
+                                } else {
+                                  Navigator.pop(context, {
+                                    'name': name,
+                                    'phone': phone,
+                                    'address': address,
+                                    'isDoctor': isDoctor ?? false,
+                                  });
+                                }
+                              },
+                              onBack: () {
+                                if (isOnboarding) {
+                                  context.go(RouteConstants.onboardingPlan);
+                                } else {
+                                  Navigator.pop(context);
+                                }
+                              },
+                            );
+                          }
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

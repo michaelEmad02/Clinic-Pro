@@ -10,7 +10,7 @@ abstract class ClinicsRepository {
   Future<Either<Failure, ClinicEntity>> fetchClinicById(String id);
 
   Future<Either<Failure, List<StaffEntity>>> fetchClinicStaff(String clinicId);
-  Future<Either<Failure, void>> addClinic(ClinicEntity clinic);
+  Future<Either<Failure, String>> addClinic(ClinicEntity clinic);
   Future<Either<Failure, void>> editClinic(ClinicEntity clinic);
   Future<Either<Failure, void>> deleteClinic(String id);
   Future<Either<Failure, void>> toggleIsActive(String id, bool isActive);

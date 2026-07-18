@@ -2,6 +2,7 @@
 // تنفيذ مستودع التحقق من الهوية (AuthRepositoryImpl)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/error/auth_failure.dart';
 import 'package:clinic_pro/features/staff/domain/entities/invitation_entity.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart';
@@ -22,7 +23,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       final user = await _remoteDataSource.getCurrentUser();
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -32,7 +33,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       final user = await _remoteDataSource.loginWithGoogle();
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -42,7 +43,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       final user = await _remoteDataSource.loginWithApple();
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -56,7 +57,7 @@ class AuthRepositoryImpl implements IAuthRepository {
           await _remoteDataSource.loginWithEmailAndPassword(email, password);
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -66,7 +67,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _remoteDataSource.sendMagicLink(email);
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -90,7 +91,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -101,7 +102,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       final invitation = await _remoteDataSource.getInvitationByToken(token);
       return Right(invitation);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -111,7 +112,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _remoteDataSource.acceptInvitation(token);
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -124,12 +125,11 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _remoteDataSource.verifyEmail(email, token);
       final user = await _remoteDataSource.getCurrentUser();
       if (user == null) {
-        return const Left(
-            ServerFailure(message: 'فشل التحقق من البريد الإلكتروني.'));
+        return const Left(EmailNotVerifiedFailure());
       }
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -139,7 +139,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       final isVerified = await _remoteDataSource.isEmailVerified(email);
       return Right(isVerified);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 
@@ -149,7 +149,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _remoteDataSource.logout();
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(AuthFailure.fromException(e));
     }
   }
 }

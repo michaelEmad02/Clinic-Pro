@@ -1,5 +1,6 @@
 import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/clinics/data/data_sources/clinics_remote_data_source.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_statistics_entity.dart';
@@ -16,7 +17,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
 
   ClinicsRepoImplementation({required this.iClinicsRemoteDataSource});
   @override
-  Future<Either<Failure, void>> addClinic(ClinicEntity clinic) async {
+  Future<Either<Failure, String>> addClinic(ClinicEntity clinic) async {
     try {
       final model = ClinicModel(
         id: clinic.id,
@@ -29,10 +30,10 @@ class ClinicsRepoImplementation extends ClinicsRepository {
         isActive: clinic.isActive,
         createdAt: clinic.createdAt,
       );
-      await iClinicsRemoteDataSource.addClinic(model);
-      return const Right(null);
+      final id = await iClinicsRemoteDataSource.addClinic(model);
+      return Right(id);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -44,7 +45,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
           clinicId, staffId, doctorId, role);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -54,7 +55,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
       await iClinicsRemoteDataSource.deleteClinic(id);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -65,7 +66,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
       await iClinicsRemoteDataSource.deleteStaff(clinicId, staffId, doctorId);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -86,7 +87,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
       await iClinicsRemoteDataSource.editClinic(model);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -96,7 +97,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
       final clinic = await iClinicsRemoteDataSource.fetchClinicById(id);
       return Right(clinic);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -108,7 +109,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
           await iClinicsRemoteDataSource.fetchClinicStatistics(clinicId);
       return Right(stats);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -119,7 +120,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
       final clinics = await iClinicsRemoteDataSource.fetchClinics(ownerId);
       return Right(clinics);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -129,7 +130,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
       await iClinicsRemoteDataSource.toggleIsActive(id, isActive);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -140,7 +141,7 @@ class ClinicsRepoImplementation extends ClinicsRepository {
       var result = await iClinicsRemoteDataSource.fetchClinicStaff(clinicId);
       return right(result);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 }

@@ -25,8 +25,7 @@ class ClinicsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var ownerId =
-        (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
+    var ownerId = context.read<AuthCubit>().state.user?.id ?? '';
     return BlocProvider(
       create: (_) => sl<ClinicsCubit>()..fetchClinics(ownerId),
       child: _ClinicsBody(ownerId: ownerId),
@@ -178,7 +177,7 @@ class _ClinicsBody extends StatelessWidget {
     ClinicEntity? clinic,
   }) async {
     final cubit = context.read<ClinicsCubit>();
-    final result = await Navigator.push<Map<String, String>>(
+    final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
         builder: (_) => CreateClinicScreen(
@@ -191,28 +190,31 @@ class _ClinicsBody extends StatelessWidget {
     if (!context.mounted) return;
     if (clinic != null) {
       cubit.updateClinic(clinic.copyWith(
-        name: result['name']!,
-        phone1: result['phone']!,
-        address: result['address']!,
+        name: result['name'] as String,
+        phone1: result['phone'] as String,
+        address: result['address'] as String,
       ));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppStrings.updatedSuccess)),
       );
     } else {
-      var userId =
-          (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
+      var userId = context.read<AuthCubit>().state.user?.id ?? '';
+      final isDoctor = result['isDoctor'] as bool? ?? false;
       // إنشاء entity جديد لإضافته
-      cubit.addClinic(ClinicEntity(
-        id: '', // سيتم توليده من الخادم
-        ownerId: userId, // سيتم تحديده من الجلسة
-        name: result['name']!,
-        phone1: result['phone']!,
-        phone2: '',
-        address: result['address']!,
-        logoUrl: '',
-        isActive: true,
-        createdAt: DateTime.now(),
-      ));
+      cubit.addClinic(
+        ClinicEntity(
+          id: '', // سيتم توليده من الخادم
+          ownerId: userId, // سيتم تحديده من الجلسة
+          name: result['name'] as String,
+          phone1: result['phone'] as String,
+          phone2: '',
+          address: result['address'] as String,
+          logoUrl: '',
+          isActive: true,
+          createdAt: DateTime.now(),
+        ),
+        isDoctor: isDoctor,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppStrings.addedSuccess)),
       );

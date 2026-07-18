@@ -5,6 +5,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/error/query_failure.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/strings/app_strings.dart';
 import 'package:clinic_pro/features/settings/domain/repositories/i_settings_repository.dart';
@@ -23,11 +24,11 @@ class SettingsRepositoryImpl implements ISettingsRepository {
         eq: {'id': userId},
       );
       if (results.isEmpty) {
-        return Left(ServerFailure(message: AppStrings.loadFailed));
+        return Left(QueryFailure.fromException(Exception(AppStrings.loadFailed)));
       }
       return Right(results.first);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -39,11 +40,11 @@ class SettingsRepositoryImpl implements ISettingsRepository {
         eq: {'id': clinicId},
       );
       if (results.isEmpty) {
-        return Left(ServerFailure(message: AppStrings.clinicNotFound));
+        return Left(QueryFailure.fromException(Exception(AppStrings.clinicNotFound)));
       }
       return Right(results.first);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -53,7 +54,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
       final results = await _cloudService.select(table: 'clinics');
       return Right(results);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -69,7 +70,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
       }
       return Right(results.first);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -97,7 +98,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
       );
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -132,7 +133,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
       }
       return Right(results);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -157,7 +158,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
       }
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 }

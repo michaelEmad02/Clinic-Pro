@@ -14,7 +14,7 @@ abstract class IClinicsRemoteDataSource {
   Future<List<ClinicModel>> fetchClinics(String ownerId);
   Future<ClinicModel> fetchClinicById(String id);
   Future<List<StaffEntity>> fetchClinicStaff(String clinicId);
-  Future<void> addClinic(ClinicModel clinic);
+  Future<String> addClinic(ClinicModel clinic);
   Future<void> editClinic(ClinicModel clinic);
   Future<void> deleteClinic(String id);
   Future<void> toggleIsActive(String id, bool isActive);
@@ -34,9 +34,10 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
 
   ClinicsRemoteDataSource({required this.iCloudService});
   @override
-  Future<void> addClinic(ClinicModel clinic) async {
-    await iCloudService.insert(
+  Future<String> addClinic(ClinicModel clinic) async {
+    final inserted = await iCloudService.insert(
         table: SupabaseTables.clinics, data: clinic.toJson());
+    return inserted['id'] as String;
   }
 
   @override

@@ -27,8 +27,7 @@ class StaffScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var ownerId =
-        (context.read<AuthCubit>().state as AuthAuthenticated).user.id;
+    var ownerId = context.read<AuthCubit>().state.user?.id ?? '';
     return MultiBlocProvider(
       providers: [
         BlocProvider(
