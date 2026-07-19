@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
-import 'package:uuid/uuid.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/core/services/i_auth_services.dart';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
 import 'package:clinic_pro/features/staff/data/models/invitation_model.dart';
@@ -27,8 +27,62 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
   final table = SupabaseTables.clinicStaff;
   @override
   Future<void> deleteStaff(String staffId) async {
-    await iCloudService.delete(
-        table: table, matchColumn: "id", matchValue: staffId);
+    // 1. جلب سجل الموظف لمعرفة الـ user_id والـ clinic_id والدور
+    final staffRows = await iCloudService.select(
+      table: table,
+      eq: {'id': staffId},
+    );
+    if (staffRows.isEmpty) return;
+
+    final userId = staffRows.first['user_id'] as String;
+    final roleStr = staffRows.first['role'] as String;
+
+    // 2. جلب جميع ارتباطات السكرتير بالأطباء
+    final doctorPairings = roleStr == StaffRoles.secretary.name
+        ? await iCloudService.select(
+            table: SupabaseTables.doctorSecretaries,
+            eq: {'secretary_id': userId},
+          )
+        : const <Map<String, dynamic>>[];
+
+    // 3. التحقق من وجود أي سجلات عيادات للموظف في جدول clinic_staff
+    final staffClinics = await iCloudService.select(
+      table: table,
+      eq: {'user_id': userId},
+    );
+
+    // 4. الحذف النهائي من جدول users والـ Auth فقط إذا كان مسجلاً في عيادة واحدة ولديه ارتباط بطبيب واحد على الأكثر
+    if (staffClinics.length <= 1 && doctorPairings.length <= 1) {
+      // أ. حذفه من جدول users (سيقوم السيرفر بحذف باقي بياناته تلقائياً بفضل الـ ON DELETE CASCADE)
+      await iCloudService.delete(
+        table: SupabaseTables.users,
+        matchColumn: 'id',
+        matchValue: userId,
+      );
+
+      // ب. حذفه من الـ Auth سحابياً
+      try {
+        await iAuthServices.deleteUserFromAuth(userId);
+      } catch (e) {
+        print('⚠️ فشل حذف حساب الموظف من الـ Auth: $e');
+      }
+    } else {
+      // 5. إذا كان مسجلاً في عيادات أو مع أطباء آخرين، نكتفي بحذف السجل الحالي فقط من العيادة
+      if (roleStr == StaffRoles.secretary.name) {
+        await iCloudService.delete(
+          table: SupabaseTables.doctorSecretaries,
+          matchColumn: 'secretary_id',
+          matchValue: userId,
+          // هنا يفضل تحديد الطبيب أو العيادة الحالية إن أمكن لتجنب حذف ارتباطاته بالأطباء في العيادات الأخرى
+        );
+      }
+
+      await iCloudService.delete(
+        table: table,
+        matchColumn: "id",
+        matchValue: staffId,
+      );
+    }
   }
 
   @override

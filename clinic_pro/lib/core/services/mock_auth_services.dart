@@ -102,4 +102,10 @@ class MockAuthServices implements IAuthServices {
     // TODO: implement sendInvitation
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> deleteUserFromAuth(String userId) async {
+    // محاكاة ناجحة للحذف محلياً
+    return;
+  }
 }

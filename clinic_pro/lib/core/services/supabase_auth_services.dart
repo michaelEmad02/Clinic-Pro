@@ -123,23 +123,36 @@ class SupabaseAuthServices extends IAuthServices {
 
   @override
   Future<void> sendInvitation(Map<String, dynamic> metadata) async {
+    final res = await supabase.functions.invoke(
+      'invite_staff',
+      body: metadata,
+    );
+
+    if (res.status != 200) {
+      throw Exception(res.data);
+    }
+  }
+
+  @override
+  Future<void> deleteUserFromAuth(String userId) async {
     try {
       final res = await supabase.functions.invoke(
-        'invite_staff',
-        body: metadata,
+        'delete_user',
+        body: {'user_id': userId},
       );
 
-      debugPrint("Status: ${res.status}");
-      debugPrint("Data: ${res.data}");
+      debugPrint("Delete Status: ${res.status}");
+      debugPrint("Delete Data: ${res.data}");
 
       if (res.status != 200) {
         throw Exception(res.data);
       }
 
-      print("Invitation sent successfully");
+      print("User deleted from Auth successfully");
     } catch (e, stackTrace) {
-      debugPrint("Error: $e");
+      debugPrint("Error deleting user: $e");
       debugPrintStack(stackTrace: stackTrace);
+      rethrow;
     }
   }
 }

@@ -42,4 +42,7 @@ abstract class IAuthServices {
   Future<void> signOut();
 
   Future<void> sendInvitation(Map<String, dynamic> metadata);
+
+  /// حذف حساب مستخدم نهائياً من الـ Auth عبر Edge Function
+  Future<void> deleteUserFromAuth(String userId);
 }

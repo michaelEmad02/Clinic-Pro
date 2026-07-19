@@ -8,15 +8,11 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/constants/staff_roles.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
-import 'widgets/magic_link_form.dart';
 import 'widgets/email_password_form.dart';
-import 'widgets/auth_tab_selector.dart';
 import 'widgets/social_login_row.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
-
-  final ValueNotifier<int> _selectedTab = ValueNotifier<int>(0);
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -154,92 +150,15 @@ class LoginScreen extends StatelessWidget {
 
                         const SizedBox(height: 24),
 
-                        // شريط التبديل بين البريد الإلكتروني والرابط السحري
-                        ValueListenableBuilder<int>(
-                          valueListenable: _selectedTab,
-                          builder: (context, activeTab, child) {
-                            return AuthTabSelector(
-                              activeTab: activeTab,
-                              onTabSelected: (index) {
-                                _selectedTab.value = index;
-                              },
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // محتوى النموذج بناءً على التبويب النشط
-                        ValueListenableBuilder<int>(
-                          valueListenable: _selectedTab,
-                          builder: (context, activeTab, child) {
-                            if (activeTab == 0) {
-                              return EmailPasswordForm(
-                                onSubmit: isLoading
-                                    ? (_, __) {}
-                                    : (email, password) {
-                                        context
-                                            .read<AuthCubit>()
-                                            .login(email, password);
-                                      },
-                              );
-                            } else {
-                              return MagicLinkForm(
-                                onSubmit: isLoading
-                                    ? (_) {}
-                                    : (email) {
-                                        context
-                                            .read<AuthCubit>()
-                                            .login(email, 'mock');
-                                      },
-                              );
-                            }
-                          },
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // اختبار سريع: دخول كطبيب أو سكرتارية
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TextButton(
-                              onPressed: isLoading
-                                  ? null
-                                  : () {
-                                      context
-                                          .read<AuthCubit>()
-                                          .loginAsRole(StaffRoles.doctor);
-                                    },
-                              child: Text(
-                                AppStrings.loginAsDoctor,
-                                style: AppTextStyles.caption(context).copyWith(
-                                  color: context.textSecondary,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text('|',
-                                style: TextStyle(color: context.borderColor)),
-                            const SizedBox(width: 8),
-                            TextButton(
-                              onPressed: isLoading
-                                  ? null
-                                  : () {
-                                      context
-                                          .read<AuthCubit>()
-                                          .loginAsRole(StaffRoles.secretary);
-                                    },
-                              child: Text(
-                                AppStrings.loginAsSecretary,
-                                style: AppTextStyles.caption(context).copyWith(
-                                  color: context.textSecondary,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                          ],
+                        // نموذج تسجيل الدخول بالبريد الإلكتروني وكلمة المرور
+                        EmailPasswordForm(
+                          onSubmit: isLoading
+                              ? (_, __) {}
+                              : (email, password) {
+                                  context
+                                      .read<AuthCubit>()
+                                      .login(email, password);
+                                },
                         ),
 
                         const SizedBox(height: 16),
