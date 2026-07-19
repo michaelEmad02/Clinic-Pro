@@ -1,3 +1,4 @@
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
@@ -11,12 +12,14 @@ class SettingsScreen extends StatelessWidget {
   final StaffRoles role;
   final bool showBottomNav;
 
-  const SettingsScreen({super.key, this.role = StaffRoles.doctor, this.showBottomNav = false});
+  const SettingsScreen(
+      {super.key, this.role = StaffRoles.doctor, this.showBottomNav = false});
 
   @override
   Widget build(BuildContext context) {
+    var userId = context.read<AuthCubit>().state.user?.id ?? '';
     return BlocProvider(
-      create: (_) => sl<SettingsCubit>()..loadSettings(role),
+      create: (_) => sl<SettingsCubit>()..loadSettings(role, userId),
       child: _buildScreen(),
     );
   }

@@ -45,57 +45,162 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
     final userId = await _authServices.getCurrentUserId();
     if (userId == null || userId.isEmpty) return null;
 
-    final email = await _authServices.getCurrentUserEmail();
+    final email = await _authServices.getCurrentUserEmail() ?? '';
 
     // 2. البحث في جدول المالكين Owners
-    final ownerResults = await _cloudService.select(
+    var ownerResults = await _cloudService.select(
       table: SupabaseTables.owners,
       eq: {'id': userId},
     );
 
+    // 3. البحث في جدول الموظفين users
+    var userResults = await _cloudService.select(
+      table: SupabaseTables.users,
+      eq: {'id': userId},
+    );
+
+    // 4. إذا لم يكن للمستخدم أي سجلات في قاعدة البيانات ولكن لديه جلسة Auth (حالة تسجيل دخول خارجي جديدة)
+    if (ownerResults.isEmpty && userResults.isEmpty && email.isNotEmpty) {
+      // أ. التحقق من وجود دعوة معلقة (Pending Invitation) مقترنة بهذا البريد الإلكتروني
+      final invitationResults = await _cloudService.select(
+        table: SupabaseTables.invitations,
+        eq: {'email': email, 'status': InvitationStatus.pending},
+      );
+
+      if (invitationResults.isNotEmpty) {
+        // تم العثور على دعوة معلقة لهذا البريد الإلكتروني
+        final invitationData = Map<String, dynamic>.from(invitationResults.first);
+        final ownerId = invitationData['owner_id'] as String;
+        final clinicId = invitationData['clinic_id'] as String;
+        final roleStr = invitationData['role'] as String;
+        final displayName = invitationData['name'] as String? ?? (email.split('@').first);
+
+        // إنشاء حساب الموظف في جدول users
+        await _cloudService.insert(
+          table: SupabaseTables.users,
+          data: {
+            'id': userId,
+            'owner_id': ownerId,
+            'name': displayName,
+            'phone': '',
+            'address': '',
+            'is_active': true,
+          },
+        );
+
+        // إضافته لطاقم العيادة clinic_staff
+        await _cloudService.insert(
+          table: SupabaseTables.clinicStaff,
+          data: {
+            'clinic_id': clinicId,
+            'user_id': userId,
+            'role': roleStr,
+            'is_active': true,
+          },
+        );
+
+        // إذا كان الموظف سكرتير، يتم ربطه بالطبيب
+        final doctorId = invitationData['doctor_id'] as String?;
+        if (roleStr == StaffRoles.secretary.name && doctorId != null) {
+          await _cloudService.insert(
+            table: SupabaseTables.doctorSecretaries,
+            data: {
+              'clinic_id': clinicId,
+              'doctor_id': doctorId,
+              'secretary_id': userId,
+            },
+          );
+        }
+
+        // تحديث حالة الدعوة إلى مقبولة (accepted)
+        await _cloudService.update(
+          table: SupabaseTables.invitations,
+          data: {'status': InvitationStatus.accepted},
+          matchColumn: 'id',
+          matchValue: invitationData['id'],
+        );
+
+        // إعادة جلب السجلات المحدثة
+        userResults = await _cloudService.select(
+          table: SupabaseTables.users,
+          eq: {'id': userId},
+        );
+      } else {
+        // لا توجد دعوات معلقة، يتم تسجيله كـ مالك جديد
+        final googleName = await _authServices.getCurrentUserName();
+        final displayName = (googleName != null && googleName.isNotEmpty) 
+            ? googleName 
+            : (email.isNotEmpty ? email.split('@').first : 'Google User');
+
+        // إدراج المالك الجديد
+        await _cloudService.insert(
+          table: SupabaseTables.owners,
+          data: {
+            'id': userId,
+            'name': displayName,
+            'phone': '',
+            'country': '',
+            'address': '',
+          },
+        );
+
+        // إدراج الموظف المرتبط به كطبيب - مالك
+        await _cloudService.insert(
+          table: SupabaseTables.users,
+          data: {
+            'id': userId,
+            'owner_id': userId,
+            'name': displayName,
+            'phone': '',
+            'address': '',
+            'specialty': 'طبيب - مالك',
+            'is_active': true,
+          },
+        );
+
+        // إعادة جلب السجلات المحدثة
+        ownerResults = await _cloudService.select(
+          table: SupabaseTables.owners,
+          eq: {'id': userId},
+        );
+      }
+    }
+
+    // 5. بناء كائن المستخدم المرجّع بناءً على نوع الحساب
     if (ownerResults.isNotEmpty) {
       final ownerData = Map<String, dynamic>.from(ownerResults.first);
       ownerData['email'] = email;
       return AuthUserModel.fromJson(ownerData, StaffRoles.owner);
     }
 
-    // 3. البحث في جدول الموظفين users
-    final userResults = await _cloudService.select(
-      table: SupabaseTables.users,
-      eq: {'id': userId},
-    );
+    if (userResults.isNotEmpty) {
+      final userData = Map<String, dynamic>.from(userResults.first);
+      userData['email'] = email;
 
-    if (userResults.isEmpty) {
-      // إذا لم يوجد في أي جدول نقوم بعمل تسجيل خروج لإنهاء الجلسة المعلقة
-      await logout();
-      return null;
+      final staffResults = await _cloudService.select(
+        table: SupabaseTables.clinicStaff,
+        eq: {'user_id': userId},
+      );
+
+      StaffRoles staffRole = StaffRoles.doctor;
+      if (staffResults.isNotEmpty) {
+        staffRole = StaffRoles.fromString(staffResults.first['role'] as String?);
+      }
+
+      return AuthUserModel.fromJson(userData, staffRole);
     }
 
-    final userData = Map<String, dynamic>.from(userResults.first);
-    userData['email'] = email;
-
-    // 4. جلب دور الموظف من جدول clinic_staff
-    final staffResults = await _cloudService.select(
-      table: 'clinic_staff',
-      eq: {'user_id': userId},
-    );
-
-    StaffRoles staffRole =
-        StaffRoles.doctor; // الافتراضي طبيب في حال عدم التحديد
-    if (staffResults.isNotEmpty) {
-      final roleStr = staffResults.first['role'] as String?;
-      staffRole = StaffRoles.values.firstWhere((r) => r.name == roleStr);
-      // if (roleStr == 'secretary') {
-      //   staffRole = StaffRoles.secretary;
-      // }
-    }
-
-    return AuthUserModel.fromJson(userData, staffRole);
+    // إذا لم يوجد في أي جدول نقوم بعمل تسجيل خروج لإنهاء الجلسة المعلقة
+    await logout();
+    return null;
   }
 
   @override
   Future<AuthUserModel> loginWithGoogle() async {
+    // 1. تسجيل الدخول عبر الخدمات السحابية لمصادقة جوجل (تنتظر اختيار الحساب محلياً)
     await _authServices.signInWithGoogle();
+
+    // 2. استدعاء تهيئة البيانات والحساب فوراً بعد اكتمال تسجيل الدخول
     final user = await getCurrentUser();
     if (user == null) {
       throw Exception('فشل تسجيل الدخول: لم يتم العثور على بيانات المستخدم.');
@@ -181,7 +286,7 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
   @override
   Future<InvitationModel> getInvitationByToken(String token) async {
     final results = await _cloudService.select(
-      table: 'invitations',
+      table: SupabaseTables.invitations,
       eq: {'token': token},
     );
 
@@ -194,7 +299,7 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
     // جلب اسم العيادة للعرض في الواجهة
     final clinicId = invitationData['clinic_id'] as String;
     final clinicResults = await _cloudService.select(
-      table: 'clinics',
+      table: SupabaseTables.clinics,
       eq: {'id': clinicId},
     );
     if (clinicResults.isNotEmpty) {
@@ -232,13 +337,13 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
 
     // 2. إضافته لطاقم العيادة clinic_staff
     final staffResults = await _cloudService.select(
-      table: 'clinic_staff',
+      table: SupabaseTables.clinicStaff,
       eq: {'clinic_id': invitation.clinicId, 'user_id': userId},
     );
 
     if (staffResults.isEmpty) {
       await _cloudService.insert(
-        table: 'clinic_staff',
+        table: SupabaseTables.clinicStaff,
         data: {
           'clinic_id': invitation.clinicId,
           'user_id': userId,
@@ -248,10 +353,33 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
       );
     }
 
+    // إذا كان الموظف سكرتير، يتم ربطه بالطبيب
+    if (invitation.role == StaffRoles.secretary && invitation.doctorId != null) {
+      final docSecCheck = await _cloudService.select(
+        table: SupabaseTables.doctorSecretaries,
+        eq: {
+          'clinic_id': invitation.clinicId,
+          'doctor_id': invitation.doctorId,
+          'secretary_id': userId,
+        },
+      );
+
+      if (docSecCheck.isEmpty) {
+        await _cloudService.insert(
+          table: SupabaseTables.doctorSecretaries,
+          data: {
+            'clinic_id': invitation.clinicId,
+            'doctor_id': invitation.doctorId,
+            'secretary_id': userId,
+          },
+        );
+      }
+    }
+
     // 3. تحديث حالة الدعوة إلى مقبولة accepted
     await _cloudService.update(
-      table: 'invitations',
-      data: {'status': 'accepted'},
+      table: SupabaseTables.invitations,
+      data: {'status': InvitationStatus.accepted},
       matchColumn: 'id',
       matchValue: invitation.id,
     );

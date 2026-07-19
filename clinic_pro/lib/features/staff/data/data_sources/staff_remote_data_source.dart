@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:uuid/uuid.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/core/services/i_auth_services.dart';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
@@ -52,7 +53,7 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
   Future<List<StaffModel>> fetchAllStaff(String ownerId) async {
     // جلب الموظفين التابعين لهذا المالك عبر owner_id في جدول users
     final userRows = await iCloudService.select(
-      table: 'users',
+      table: SupabaseTables.users,
       eq: {'owner_id': ownerId},
     );
 
@@ -66,11 +67,12 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
       final userId = cs['user_id'] as String;
       final clinicId = cs['clinic_id'] as String;
       final key = '${userId}_$clinicId';
-      
+
       // التحقق من أن المستخدم يتبع هذا المالك ولم يسبق إضافته لنفس العيادة
-      if (userRows.any((u) => u['id'] == userId) && !processedKeys.contains(key)) {
+      if (userRows.any((u) => u['id'] == userId) &&
+          !processedKeys.contains(key)) {
         processedKeys.add(key);
-        
+
         final userData = userRows.firstWhere(
           (u) => u['id'] == userId,
           orElse: () => <String, dynamic>{},
@@ -103,7 +105,8 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
     }
     final cs = staffRows.first;
 
-    final userRows = await iCloudService.select(table: 'users', eq: {"id": id});
+    final userRows =
+        await iCloudService.select(table: SupabaseTables.users, eq: {"id": id});
     final userData = userRows.isNotEmpty ? userRows.first : <String, dynamic>{};
 
     final mergedJson = {
@@ -115,11 +118,15 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
 
   @override
   Future<void> inviteStaff(InvitationModel staff) async {
-    // send invitation
-    await iAuthServices.sendInvitation(staff.email);
+    // 1. إرسال بريد الدعوة عبر Supabase
+    await iAuthServices.sendInvitation(staff.toJson());
 
-    // save invitation data
-    await iCloudService.insert(
-        table: SupabaseTables.invitations, data: staff.toJson());
+    // // 2. توليد توكن آمن وموثوق لربطه بالدعوة
+    // final secureToken = const Uuid().v4();
+    // final invitationData = staff.copyWith(token: secureToken).toJson();
+
+    // // 3. حفظ بيانات الدعوة في قاعدة البيانات
+    // await iCloudService.insert(
+    //     table: SupabaseTables.invitations, data: invitationData);
   }
 }

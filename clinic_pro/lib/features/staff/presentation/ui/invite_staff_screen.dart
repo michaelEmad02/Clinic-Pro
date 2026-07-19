@@ -1,3 +1,6 @@
+import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/features/staff/domain/entities/invitation_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +11,6 @@ import '../../../../core/constants/route_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../auth/presentation/manager/auth_cubit.dart';
-import '../../../auth/presentation/manager/auth_state.dart';
 import '../../../onboarding/presentation/manager/onboarding_cubit.dart';
 import '../../../onboarding/presentation/manager/onboarding_state.dart';
 import '../../../clinics/presentation/ui/widgets/progress_indicator_bar.dart';
@@ -56,139 +58,144 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
           create: (_) => sl<InviteStaffCubit>(),
         ),
       ],
-      child: BlocListener<OnboardingCubit, OnboardingState>(
-        listener: (context, onboardingState) {
-          if (onboardingState is OnboardingStaffInvited &&
-              widget.isOnboarding) {
-            context.go(RouteConstants.ownerDashboard);
-          }
-        },
-        child: BlocListener<ClinicsCubit, ClinicsState>(
-          listener: (context, clinicsState) {
-            if (clinicsState is ClinicsLoaded &&
-                clinicsState.clinics.isNotEmpty) {
-              context.read<InviteStaffCubit>().loadInitialData(
-                    ownerId,
-                    clinicsState.clinics.first.id,
-                  );
-            }
-          },
-          child: BlocConsumer<InviteStaffCubit, InviteStaffState>(
-            listener: (context, state) {
-              if (state is InviteStaffLoaded) {
-                if (state.submitErrorMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.submitErrorMessage!),
-                      backgroundColor: context.danger,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                  context.read<InviteStaffCubit>().clearSubmitError();
-                }
-                if (state.isSuccess) {
-                  if (widget.isOnboarding) {
-                    context.read<OnboardingCubit>().inviteStaff(
-                          state.invitedStaff.map((e) => e.email).toList(),
-                        );
-                  } else {
-                    context.pop();
-                  }
-                }
+      child: Builder(
+        builder: (context) {
+          return BlocListener<OnboardingCubit, OnboardingState>(
+            listener: (context, onboardingState) {
+              if (onboardingState is OnboardingStaffInvited &&
+                  widget.isOnboarding) {
+                context.go(RouteConstants.ownerDashboard);
               }
             },
-            builder: (context, state) {
-              final isLoading = state is InviteStaffLoading ||
-                  (state is InviteStaffLoaded && state.isSubmitting);
+            child: BlocListener<ClinicsCubit, ClinicsState>(
+              listener: (context, clinicsState) {
+                if (clinicsState is ClinicsLoaded &&
+                    clinicsState.clinics.isNotEmpty) {
+                  context.read<InviteStaffCubit>().loadInitialData(
+                        ownerId,
+                        clinicsState.clinics.first.id,
+                      );
+                }
+              },
+              child: BlocConsumer<InviteStaffCubit, InviteStaffState>(
+                listener: (context, state) {
+                  if (state is InviteStaffLoaded) {
+                    if (state.submitErrorMessage != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.submitErrorMessage!),
+                          backgroundColor: context.danger,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      context.read<InviteStaffCubit>().clearSubmitError();
+                    }
+                    if (state.isSuccess) {
+                      if (widget.isOnboarding) {
+                        // context.read<OnboardingCubit>().inviteStaff(
+                        //       state.invitedStaff.map((e) => e.email).toList(),
+                        //     );
+                        context.go(RouteConstants.ownerDashboard);
+                      } else {
+                        context.pop();
+                      }
+                    }
+                  }
+                },
+                builder: (context, state) {
+                  final isLoading = state is InviteStaffLoading ||
+                      (state is InviteStaffLoaded && state.isSubmitting);
 
-              return Scaffold(
-                backgroundColor: context.background,
-                body: SafeArea(
-                  child: Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppConstants.screenEdgeH,
-                        vertical: AppConstants.spaceXl,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 480),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: context.surface,
-                            borderRadius:
-                                BorderRadius.circular(AppConstants.radiusCard),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 3,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
+                  return Scaffold(
+                    backgroundColor: context.background,
+                    body: SafeArea(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.screenEdgeH,
+                            vertical: AppConstants.spaceXl,
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildHeader(context),
-                              if (state is InviteStaffLoading)
-                                const Padding(
-                                  padding: EdgeInsets.all(AppConstants.spaceLg),
-                                  child: Center(
-                                      child: CircularProgressIndicator()),
-                                )
-                              else if (state is InviteStaffError)
-                                Padding(
-                                  padding: const EdgeInsets.all(
-                                      AppConstants.spaceLg),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        state.message,
-                                        style: AppTextStyles.bodyMedium(context)
-                                            .copyWith(
-                                          color: context.danger,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          final clinicsState = context
-                                              .read<ClinicsCubit>()
-                                              .state;
-                                          if (clinicsState is ClinicsLoaded &&
-                                              clinicsState.clinics.isNotEmpty) {
-                                            context
-                                                .read<InviteStaffCubit>()
-                                                .loadInitialData(
-                                                  ownerId,
-                                                  clinicsState.clinics.first.id,
-                                                );
-                                          } else {
-                                            context
-                                                .read<ClinicsCubit>()
-                                                .fetchClinics(ownerId);
-                                          }
-                                        },
-                                        child: Text(AppStrings.retry),
-                                      ),
-                                    ],
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 480),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: context.surface,
+                                borderRadius:
+                                    BorderRadius.circular(AppConstants.radiusCard),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 3,
+                                    offset: const Offset(0, 1),
                                   ),
-                                )
-                              else if (state is InviteStaffLoaded)
-                                _buildContent(context, state, ownerId),
-                              _buildFooter(context, state, isLoading, ownerId),
-                            ],
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildHeader(context),
+                                  if (state is InviteStaffLoading)
+                                    const Padding(
+                                      padding: EdgeInsets.all(AppConstants.spaceLg),
+                                      child: Center(
+                                          child: CircularProgressIndicator()),
+                                    )
+                                  else if (state is InviteStaffError)
+                                    Padding(
+                                      padding: const EdgeInsets.all(
+                                          AppConstants.spaceLg),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            state.message,
+                                            style: AppTextStyles.bodyMedium(context)
+                                                .copyWith(
+                                              color: context.danger,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(height: 16),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              final clinicsState = context
+                                                  .read<ClinicsCubit>()
+                                                  .state;
+                                              if (clinicsState is ClinicsLoaded &&
+                                                  clinicsState.clinics.isNotEmpty) {
+                                                context
+                                                    .read<InviteStaffCubit>()
+                                                    .loadInitialData(
+                                                      ownerId,
+                                                      clinicsState.clinics.first.id,
+                                                    );
+                                              } else {
+                                                context
+                                                    .read<ClinicsCubit>()
+                                                    .fetchClinics(ownerId);
+                                              }
+                                            },
+                                            child: Text(AppStrings.retry),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  else if (state is InviteStaffLoaded)
+                                    _buildContent(context, state, ownerId),
+                                  _buildFooter(context, state, isLoading, ownerId),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -296,16 +303,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                 _showError(context, AppStrings.enterValidEmail);
                 return;
               }
-              final selectedClinic =
-                  clinicsList.firstWhere((c) => c.id == state.selectedClinicId);
-              inviteStaffCubit.addInvitee(
-                name: name,
-                email: email,
-                clinicName: selectedClinic.name,
-                ownerId: ownerId,
-              );
-              _nameController.clear();
-              _emailController.clear();
+              _addCurrentInvitee(context, state, ownerId);
             },
           ),
           const SizedBox(height: AppConstants.spaceLg),
@@ -320,9 +318,6 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
 
   Widget _buildFooter(BuildContext context, InviteStaffState state,
       bool isLoading, String ownerId) {
-    final invitedListEmpty =
-        state is InviteStaffLoaded ? state.invitedStaff.isEmpty : true;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppConstants.spaceLg,
@@ -337,11 +332,8 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
             onPressed: isLoading || state is! InviteStaffLoaded
                 ? null
                 : () {
-                    if (invitedListEmpty) {
-                      _onSkip(context);
-                    } else {
-                      context.read<InviteStaffCubit>().sendInvitations(ownerId);
-                    }
+                    _addCurrentInvitee(context, state, ownerId);
+                    context.read<InviteStaffCubit>().sendInvitations(ownerId);
                   },
             style: ElevatedButton.styleFrom(
               backgroundColor: context.primary,
@@ -411,5 +403,46 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  /// دالة مساعدة لتجميع بيانات الواجهة وإنشاء كائن الدعوة وإضافته للقائمة
+  void _addCurrentInvitee(BuildContext context, InviteStaffLoaded state, String ownerId) {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    if (name.isEmpty || email.isEmpty || !email.contains('@')) return;
+
+    // نقرأ حالة ClinicsCubit من الـ context التابع لـ Builder في شجرة الوجت
+    final clinicsState = BlocProvider.of<ClinicsCubit>(context).state;
+    final clinicsList = clinicsState is ClinicsLoaded ? clinicsState.clinics : const <ClinicEntity>[];
+    if (state.selectedClinicId == null || clinicsList.isEmpty) return;
+
+    final selectedClinic = clinicsList.firstWhere((c) => c.id == state.selectedClinicId);
+    
+    String? doctorName;
+    if (state.selectedRole == StaffRoles.secretary && state.selectedDoctorId != null) {
+      final doc = state.doctors.firstWhere((d) => d.id == state.selectedDoctorId);
+      doctorName = doc.name;
+    }
+
+    final now = DateTime.now();
+    final invitation = InvitationEntity(
+      id: '',
+      clinicId: state.selectedClinicId!,
+      clinicName: selectedClinic.name,
+      ownerId: ownerId,
+      doctorId: state.selectedRole == StaffRoles.secretary ? state.selectedDoctorId : null,
+      doctorName: doctorName,
+      email: email,
+      name: name,
+      role: state.selectedRole,
+      token: 'token-${now.millisecondsSinceEpoch}',
+      status: InvitationStatus.pending,
+      expiredAt: now.add(const Duration(days: 7)),
+      createdAt: now,
+    );
+
+    context.read<InviteStaffCubit>().addInvitee(invitation);
+    _nameController.clear();
+    _emailController.clear();
   }
 }

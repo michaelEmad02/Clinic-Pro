@@ -289,7 +289,7 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
 
     for (final cs in staffRows) {
       final userId = cs['user_id'] as String;
-      final roleStr = cs['role'] as String;
+        final roleType = StaffRoles.fromString(cs['role'] as String?);
 
       final userData = userRows.firstWhere(
         (u) => u['id'] == userId,
@@ -301,7 +301,7 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
         'users': userData,
       };
 
-      if (roleStr == 'secretary') {
+      if (roleType == StaffRoles.secretary) {
         // إذا تمت معالجة هذا السكرتير مسبقاً، نتجاهل تكراره في clinic_staff
         if (processedSecretaries.contains(userId)) {
           continue;

@@ -31,10 +31,9 @@ class StaffModel extends StaffEntity {
     final specialty = json['specialty'] as String? ?? userMap?['specialty'] as String?;
 
     // Parse role enum safely
-    final roleStr = json['role'] as String;
-    final role = StaffRoles.values.firstWhere(
-      (r) => r.name == roleStr,
-      orElse: () => StaffRoles.secretary,
+    final role = StaffRoles.fromString(
+      json['role'] as String?,
+      defaultRole: StaffRoles.secretary,
     );
 
     return StaffModel(

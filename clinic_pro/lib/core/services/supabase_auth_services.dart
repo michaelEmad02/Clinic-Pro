@@ -1,6 +1,8 @@
 import 'package:clinic_pro/core/services/i_auth_services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart';
 
 @LazySingleton(as: IAuthServices)
 class SupabaseAuthServices extends IAuthServices {
@@ -10,6 +12,13 @@ class SupabaseAuthServices extends IAuthServices {
   @override
   Future<String?> getCurrentUserEmail() async {
     return supabase.auth.currentUser?.email ?? "";
+  }
+
+  @override
+  Future<String?> getCurrentUserName() async {
+    // جلب الاسم الكامل من البيانات التعريفية المرجعة من مزود الخدمة (مثل جوجل)
+    final metadata = supabase.auth.currentUser?.userMetadata;
+    return metadata?['full_name'] as String? ?? metadata?['name'] as String?;
   }
 
   @override
@@ -48,13 +57,51 @@ class SupabaseAuthServices extends IAuthServices {
 
   @override
   Future<void> signInWithGoogle() async {
-    // TODO: implement signInWithGoogle
-    throw UnimplementedError();
+    // ────────────────────────────────────────────────────────
+    // تسجيل دخول محلي باستخدام Google SDK داخل الهاتف
+    // ────────────────────────────────────────────────────────
+
+    // 1. تهيئة مكامل تسجيل الدخول بجوجل
+    // ملاحظة: الـ webClientId مطلوب لـ Supabase للتحقق من هوية الـ ID Token
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile'],
+      clientId:
+          '403194501930-ikd9bkqd8nsqllo1fkvj1lclcj3cteug.apps.googleusercontent.com', // يتم استبداله بالـ Web Client ID المعتمد من جوجل عند الرفع
+    );
+
+    // 2. فتح نافذة اختيار الحسابات الرسمية
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+    if (googleUser == null) {
+      // ألغى المستخدم العملية
+      throw Exception('تم إلغاء عملية تسجيل الدخول بواسطة المستخدم.');
+    }
+
+    // 3. جلب الـ Tokens للمصادقة
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+    final String? idToken = googleAuth.idToken;
+    final String? accessToken = googleAuth.accessToken;
+
+    if (idToken == null) {
+      throw Exception('فشل الحصول على رمز الهوية (ID Token) من جوجل.');
+    }
+
+    // 4. إرسال الـ Tokens إلى Supabase لتوثيق الجلسة
+    await supabase.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: accessToken,
+    );
   }
 
   @override
   Future<void> signOut() async {
     await supabase.auth.signOut();
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {
+      // نتجنب حدوث أخطاء إذا لم يكن مسجلاً بجوجل أصلاً
+    }
   }
 
   @override
@@ -75,7 +122,24 @@ class SupabaseAuthServices extends IAuthServices {
   }
 
   @override
-  Future<void> sendInvitation(String email) async {
-    await supabase.auth.admin.inviteUserByEmail(email);
+  Future<void> sendInvitation(Map<String, dynamic> metadata) async {
+    try {
+      final res = await supabase.functions.invoke(
+        'invite_staff',
+        body: metadata,
+      );
+
+      debugPrint("Status: ${res.status}");
+      debugPrint("Data: ${res.data}");
+
+      if (res.status != 200) {
+        throw Exception(res.data);
+      }
+
+      print("Invitation sent successfully");
+    } catch (e, stackTrace) {
+      debugPrint("Error: $e");
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 }

@@ -23,6 +23,11 @@ class MockAuthServices implements IAuthServices {
   }
 
   @override
+  Future<String?> getCurrentUserName() async {
+    return 'Mock User';
+  }
+
+  @override
   Future<void> signInWithGoogle() async {
     _currentUserId = 'u-owner-1';
     _currentUserEmail = 'owner@clinicpro.com';
@@ -93,7 +98,7 @@ class MockAuthServices implements IAuthServices {
   }
 
   @override
-  Future<void> sendInvitation(String email) {
+  Future<void> sendInvitation(Map<String, dynamic> metadata) {
     // TODO: implement sendInvitation
     throw UnimplementedError();
   }

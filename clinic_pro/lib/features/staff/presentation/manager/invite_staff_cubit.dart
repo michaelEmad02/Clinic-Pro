@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/constants/staff_roles.dart';
-import '../../../../core/constants/supabase_constants.dart';
 import '../../domain/entities/invitation_entity.dart';
 import '../../domain/use_cases/fetch_all_staff_use_case.dart';
 import '../../domain/use_cases/invite_staff_use_case.dart';
@@ -81,45 +80,19 @@ class InviteStaffCubit extends Cubit<InviteStaffState> {
     emit(loaded.copyWith(selectedRole: role));
   }
 
-  void addInvitee({
-    required String name,
-    required String email,
-    required String clinicName,
-    required String ownerId,
-  }) {
+  /// إضافة موظف إلى قائمة الدعوات المقترحة للتحقق منها قبل الإرسال
+  void addInvitee(InvitationEntity invitee) {
     if (state is! InviteStaffLoaded) return;
     final loaded = state as InviteStaffLoaded;
 
-    if (loaded.invitedStaff.any((s) => s.email == email)) {
+    // التحقق من أن هذا البريد لم يتم إضافته في القائمة الحالية بالفعل
+    if (loaded.invitedStaff.any((s) => s.email == invitee.email)) {
       emit(loaded.copyWith(submitErrorMessage: 'هذا البريد الإلكتروني مضاف مسبقاً'));
       return;
     }
 
-    String? doctorName;
-    if (loaded.selectedRole == StaffRoles.secretary && loaded.selectedDoctorId != null) {
-      final doc = loaded.doctors.firstWhere((d) => d.id == loaded.selectedDoctorId);
-      doctorName = doc.name;
-    }
-
-    final now = DateTime.now();
-    final newItem = InvitationEntity(
-      id: '',
-      clinicId: loaded.selectedClinicId!,
-      clinicName: clinicName,
-      ownerId: ownerId,
-      doctorId: loaded.selectedRole == StaffRoles.secretary ? loaded.selectedDoctorId : null,
-      doctorName: doctorName,
-      email: email,
-      name: name,
-      role: loaded.selectedRole,
-      token: 'token-${now.millisecondsSinceEpoch}',
-      status: InvitationStatus.pending,
-      expiredAt: now.add(const Duration(days: 7)),
-      createdAt: now,
-    );
-
     emit(loaded.copyWith(
-      invitedStaff: [...loaded.invitedStaff, newItem],
+      invitedStaff: [...loaded.invitedStaff, invitee],
     ));
   }
 
@@ -134,8 +107,11 @@ class InviteStaffCubit extends Cubit<InviteStaffState> {
     if (state is! InviteStaffLoaded) return;
     final loaded = state as InviteStaffLoaded;
 
+    // إذا كانت القائمة فارغة، نعرض رسالة خطأ بدلاً من النجاح الزائف
     if (loaded.invitedStaff.isEmpty) {
-      emit(loaded.copyWith(isSuccess: true));
+      emit(loaded.copyWith(
+        submitErrorMessage: 'يرجى إضافة موظف واحد على الأقل لإرسال الدعوات',
+      ));
       return;
     }
 

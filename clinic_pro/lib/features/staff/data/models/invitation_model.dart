@@ -4,6 +4,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/features/staff/domain/entities/invitation_entity.dart';
 
 class InvitationModel extends InvitationEntity {
@@ -25,16 +26,8 @@ class InvitationModel extends InvitationEntity {
 
   /// إنشاء نموذج من البيانات السحابية
   factory InvitationModel.fromJson(Map<String, dynamic> json) {
-    StaffRoles roleType;
-    final roleStr = json['role'] as String? ?? 'doctor';
-    if (roleStr == 'secretary') {
-      roleType = StaffRoles.secretary;
-    } else if (roleStr == 'owner') {
-      roleType = StaffRoles.owner;
-    } else {
-      roleType = StaffRoles.doctor;
-    }
-    var statusStr = json['status'] as String? ?? 'pending';
+    final roleType = StaffRoles.fromString(json['role'] as String?);
+    var statusStr = json['status'] as String? ?? InvitationStatus.pending;
 
     return InvitationModel(
       id: json['id'] as String,
@@ -56,7 +49,6 @@ class InvitationModel extends InvitationEntity {
   /// تحويل النموذج إلى Map لحفظه
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'clinic_id': clinicId,
       'owner_id': ownerId,
       'doctor_id': doctorId,
@@ -67,5 +59,38 @@ class InvitationModel extends InvitationEntity {
       'status': status,
       'expires_at': expiredAt.toIso8601String(),
     };
+  }
+
+  /// دالة copyWith لنسخ الكائن مع إمكانية تعديل بعض الحقول
+  InvitationModel copyWith({
+    String? id,
+    String? ownerId,
+    String? clinicId,
+    String? clinicName,
+    String? doctorId,
+    String? doctorName,
+    String? email,
+    String? name,
+    StaffRoles? role,
+    String? token,
+    String? status,
+    DateTime? expiredAt,
+    DateTime? createdAt,
+  }) {
+    return InvitationModel(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      clinicId: clinicId ?? this.clinicId,
+      clinicName: clinicName ?? this.clinicName,
+      doctorId: doctorId ?? this.doctorId,
+      doctorName: doctorName ?? this.doctorName,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      role: role ?? this.role,
+      token: token ?? this.token,
+      status: status ?? this.status,
+      expiredAt: expiredAt ?? this.expiredAt,
+      createdAt: createdAt ?? this.createdAt,
+    );
   }
 }

@@ -35,4 +35,13 @@ enum StaffRoles {
         return Icons.admin_panel_settings_outlined;
     }
   }
+
+  /// تحويل النص إلى الدور الوظيفي المقابل بشكل آمن
+  static StaffRoles fromString(String? roleStr, {StaffRoles defaultRole = StaffRoles.doctor}) {
+    if (roleStr == null) return defaultRole;
+    return StaffRoles.values.firstWhere(
+      (r) => r.name == roleStr,
+      orElse: () => defaultRole,
+    );
+  }
 }

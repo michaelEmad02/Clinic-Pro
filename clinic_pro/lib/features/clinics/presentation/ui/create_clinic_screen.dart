@@ -7,11 +7,9 @@ import '../../../../core/strings/app_strings.dart';
 import '../../domain/entities/clinic_entity.dart';
 import 'widgets/progress_indicator_bar.dart';
 import 'widgets/clinic_form.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../auth/presentation/manager/auth_cubit.dart';
-import '../../../auth/presentation/manager/auth_state.dart';
 import '../../presentation/manager/cubit/clinics_cubit.dart';
 import '../../presentation/manager/cubit/clinics_state.dart';
 
@@ -56,7 +54,8 @@ class CreateClinicScreen extends StatelessWidget {
             actions: isOnboarding
                 ? [
                     TextButton(
-                      onPressed: () => context.go(RouteConstants.ownerDashboard),
+                      onPressed: () =>
+                          context.go(RouteConstants.ownerDashboard),
                       child: Text(
                         AppStrings.skip,
                         style: AppTextStyles.bodyMedium(context).copyWith(
@@ -72,7 +71,8 @@ class CreateClinicScreen extends StatelessWidget {
           body: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 480),
                   child: Container(
@@ -101,7 +101,8 @@ class CreateClinicScreen extends StatelessWidget {
                                   : (clinic != null
                                       ? AppStrings.editClinicData
                                       : AppStrings.addNewClinic),
-                              style: AppTextStyles.headlineLarge(context).copyWith(
+                              style:
+                                  AppTextStyles.headlineLarge(context).copyWith(
                                 color: context.primary,
                               ),
                             ),
@@ -118,55 +119,54 @@ class CreateClinicScreen extends StatelessWidget {
                         const SizedBox(height: 32),
 
                         // Form
-                        Builder(
-                          builder: (context) {
-                            return ClinicForm(
-                              clinic: clinic,
-                              isOnboarding: isOnboarding,
-                              onSubmit: ({
-                                required String name,
-                                required String phone,
-                                required String address,
-                                bool? isDoctor,
-                                String? logoUrl,
-                              }) {
-                                if (isOnboarding) {
-                                  final authState = context.read<AuthCubit>().state;
-                                  final ownerId = authState.user?.id ?? '';
-                                  context.read<ClinicsCubit>().addClinic(
-                                    ClinicEntity(
-                                      id: '',
-                                      ownerId: ownerId,
-                                      name: name,
-                                      phone1: phone,
-                                      phone2: '',
-                                      address: address,
-                                      logoUrl: logoUrl ?? '',
-                                      isActive: true,
-                                      createdAt: DateTime.now(),
-                                    ),
-                                    isDoctor: isDoctor ?? false,
-                                  );
-                                  context.go(RouteConstants.onboardingInvite);
-                                } else {
-                                  Navigator.pop(context, {
-                                    'name': name,
-                                    'phone': phone,
-                                    'address': address,
-                                    'isDoctor': isDoctor ?? false,
-                                  });
-                                }
-                              },
-                              onBack: () {
-                                if (isOnboarding) {
-                                  context.go(RouteConstants.onboardingPlan);
-                                } else {
-                                  Navigator.pop(context);
-                                }
-                              },
-                            );
-                          }
-                        ),
+                        Builder(builder: (context) {
+                          return ClinicForm(
+                            clinic: clinic,
+                            isOnboarding: isOnboarding,
+                            onSubmit: ({
+                              required String name,
+                              required String phone,
+                              required String address,
+                              bool? isDoctor,
+                              String? logoUrl,
+                            }) {
+                              if (isOnboarding) {
+                                final authState =
+                                    context.read<AuthCubit>().state;
+                                final ownerId = authState.user?.id ?? '';
+                                context.read<ClinicsCubit>().addClinic(
+                                      ClinicEntity(
+                                        id: '',
+                                        ownerId: ownerId,
+                                        name: name,
+                                        phone1: phone,
+                                        phone2: '',
+                                        address: address,
+                                        logoUrl: logoUrl ?? '',
+                                        isActive: true,
+                                        createdAt: DateTime.now(),
+                                      ),
+                                      isDoctor: isDoctor ?? false,
+                                    );
+                                context.go(RouteConstants.onboardingInvite);
+                              } else {
+                                Navigator.pop(context, {
+                                  'name': name,
+                                  'phone': phone,
+                                  'address': address,
+                                  'isDoctor': isDoctor ?? false,
+                                });
+                              }
+                            },
+                            onBack: () {
+                              if (isOnboarding) {
+                                context.go(RouteConstants.onboardingPlan);
+                              } else {
+                                Navigator.pop(context);
+                              }
+                            },
+                          );
+                        }),
                       ],
                     ),
                   ),

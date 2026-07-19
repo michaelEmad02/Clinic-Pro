@@ -2,7 +2,6 @@ import 'package:clinic_pro/core/constants/route_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_constants.dart';
-import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -15,8 +14,8 @@ class UpgradeCtaButton extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.spaceLg),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primaryContainer, AppColors.primary],
+        gradient: LinearGradient(
+          colors: [context.primaryContainer, context.primary],
           begin: Alignment.centerRight,
           end: Alignment.centerLeft,
         ),
@@ -31,12 +30,12 @@ class UpgradeCtaButton extends StatelessWidget {
         children: [
           Text('ارتقِ بعيادتك إلى المستوى التالي',
               style: AppTextStyles.headlineMedium(context)
-                  .copyWith(color: AppColors.onPrimary)),
+                  .copyWith(color: context.onPrimary)),
           const SizedBox(height: AppConstants.spaceSm),
           Text(
               'احصل على مساحة تخزين غير محدودة، فروع متعددة، وميزات الذكاء الاصطناعي المتقدمة.',
               style: AppTextStyles.bodyMedium(context)
-                  .copyWith(color: AppColors.onPrimaryContainer)),
+                  .copyWith(color: context.onPrimaryContainer)),
           const SizedBox(height: AppConstants.spaceMd),
           SizedBox(
             width: double.infinity,
@@ -47,8 +46,8 @@ class UpgradeCtaButton extends StatelessWidget {
               icon: const Icon(Icons.rocket_launch, size: 18),
               label: const Text('ترقية الخطة الآن'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.surface,
-                foregroundColor: AppColors.primary,
+                backgroundColor: context.surface,
+                foregroundColor: context.primary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius:

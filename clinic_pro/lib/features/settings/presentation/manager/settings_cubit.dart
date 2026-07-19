@@ -45,11 +45,10 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// تحميل الإعدادات من المستودع حسب دور المستخدم
-  Future<void> loadSettings(StaffRoles role) async {
+  Future<void> loadSettings(StaffRoles role, String userId) async {
     emit(state.copyWith(isLoading: true, error: null));
 
     try {
-      final userId = _getUserId(role);
       final clinicId = _getClinicId(role);
 
       // 1. جلب الملف الشخصي
@@ -64,13 +63,16 @@ class SettingsCubit extends Cubit<SettingsState> {
           : null;
 
       userResult.fold(
-        (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+        (failure) =>
+            emit(state.copyWith(isLoading: false, error: failure.message)),
         (user) {
           clinicResult.fold(
-            (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+            (failure) =>
+                emit(state.copyWith(isLoading: false, error: failure.message)),
             (clinic) {
               clinicsResult.fold(
-                (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+                (failure) => emit(
+                    state.copyWith(isLoading: false, error: failure.message)),
                 (clinics) async {
                   SettingsState updatedState = state.copyWith(
                     isLoading: false,
@@ -84,7 +86,8 @@ class SettingsCubit extends Cubit<SettingsState> {
                     clinicId: clinic['id'] as String,
                     clinicName: clinic['name'] as String,
                     clinicAddress: clinic['address'] as String,
-                    clinicPhone: (clinic['phone'] ?? clinic['phone1'] ?? '') as String,
+                    clinicPhone:
+                        (clinic['phone'] ?? clinic['phone1'] ?? '') as String,
                     clinicLogoUrl: clinic['logo_url'] as String?,
                     availableClinics: clinics,
                   );
@@ -97,7 +100,8 @@ class SettingsCubit extends Cubit<SettingsState> {
                           planType: sub['plan_type'] as String? ?? '',
                           planStatus: sub['status'] as String? ?? '',
                           trialEndAt: sub['trial_end_at'] as String?,
-                          currentPeriodEnd: sub['current_period_end'] as String?,
+                          currentPeriodEnd:
+                              sub['current_period_end'] as String?,
                         );
                       },
                     );
@@ -123,8 +127,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   /// تحميل الأطباء المقترنين بالسكرتيرة
   Future<void> loadSecretaryDoctorsList() async {
     if (state.userId.isEmpty || state.clinicId.isEmpty) return;
-    
-    final doctorsResult = await _repository.getSecretaryDoctors(state.userId, state.clinicId);
+
+    final doctorsResult =
+        await _repository.getSecretaryDoctors(state.userId, state.clinicId);
     doctorsResult.fold(
       (failure) => emit(state.copyWith(error: failure.message)),
       (doctors) {
@@ -144,7 +149,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// تحديث الملف الشخصي في المستودع
-  Future<void> updateProfile({required String name, required String phone}) async {
+  Future<void> updateProfile(
+      {required String name, required String phone}) async {
     if (state.userId.isEmpty) return;
     emit(state.copyWith(isLoading: true));
 
@@ -155,7 +161,8 @@ class SettingsCubit extends Cubit<SettingsState> {
     );
 
     result.fold(
-      (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+      (failure) =>
+          emit(state.copyWith(isLoading: false, error: failure.message)),
       (_) {
         emit(state.copyWith(
           isLoading: false,
@@ -190,7 +197,8 @@ class SettingsCubit extends Cubit<SettingsState> {
     final clinicResult = await _repository.getClinicInfo(clinicId);
 
     clinicResult.fold(
-      (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+      (failure) =>
+          emit(state.copyWith(isLoading: false, error: failure.message)),
       (clinic) async {
         AppConstants.activeClinicId = clinicId; // تحديث العيادة النشطة عالمياً
         emit(state.copyWith(

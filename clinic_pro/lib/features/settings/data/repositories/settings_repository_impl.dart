@@ -2,6 +2,7 @@
 // تنفيذ مستودع الإعدادات (SettingsRepositoryImpl)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
@@ -23,9 +24,9 @@ class SettingsRepositoryImpl implements ISettingsRepository {
         table: 'users',
         eq: {'id': userId},
       );
-      if (results.isEmpty) {
-        return Left(QueryFailure.fromException(Exception(AppStrings.loadFailed)));
-      }
+      // if (results.isEmpty) {
+      //   return Left(QueryFailure.fromException(Exception(AppStrings.loadFailed)));
+      // }
       return Right(results.first);
     } catch (e) {
       return Left(QueryFailure.fromException(e));
@@ -36,7 +37,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
   Future<Either<Failure, Map<String, dynamic>>> getClinicInfo(String clinicId) async {
     try {
       final results = await _cloudService.select(
-        table: 'clinics',
+        table: SupabaseTables.clinics,
         eq: {'id': clinicId},
       );
       if (results.isEmpty) {
@@ -51,7 +52,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>> getAvailableClinics() async {
     try {
-      final results = await _cloudService.select(table: 'clinics');
+      final results = await _cloudService.select(table: SupabaseTables.clinics);
       return Right(results);
     } catch (e) {
       return Left(QueryFailure.fromException(e));
@@ -66,7 +67,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
         eq: {'owner_id': ownerId},
       );
       if (results.isEmpty) {
-        return Right(const <String, dynamic>{});
+        return const Right(<String, dynamic>{});
       }
       return Right(results.first);
     } catch (e) {

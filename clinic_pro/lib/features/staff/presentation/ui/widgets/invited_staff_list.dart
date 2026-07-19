@@ -45,7 +45,7 @@ class InvitedStaffList extends StatelessWidget {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: context.surfaceContainerLow,
+                color: context.surface,
                 borderRadius: BorderRadius.circular(AppConstants.radiusCard - 4),
                 border: Border.all(color: context.border),
               ),

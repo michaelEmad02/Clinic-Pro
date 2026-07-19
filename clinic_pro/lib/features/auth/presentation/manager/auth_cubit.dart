@@ -47,6 +47,7 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
+
   /// تسجيل دخول بالبريد الإلكتروني وكلمة المرور
   Future<void> login(String email, String password) async {
     emit(AuthLoading());

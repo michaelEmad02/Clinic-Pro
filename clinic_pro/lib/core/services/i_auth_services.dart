@@ -10,6 +10,9 @@ abstract class IAuthServices {
   /// جلب البريد الإلكتروني للمستخدم الحالي
   Future<String?> getCurrentUserEmail();
 
+  /// جلب الاسم الكامل للمستخدم الحالي (من بيانات Google/Apple)
+  Future<String?> getCurrentUserName();
+
   Future<void> signUp(
       String email, String password, String phone, String country);
 
@@ -38,7 +41,5 @@ abstract class IAuthServices {
   /// تسجيل الخروج
   Future<void> signOut();
 
-  Future<void> sendInvitation(String email);
-
-  
+  Future<void> sendInvitation(Map<String, dynamic> metadata);
 }

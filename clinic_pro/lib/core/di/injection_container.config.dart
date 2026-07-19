@@ -9,8 +9,6 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:clinic_pro/core/services/supabase_services.dart';
-import 'package:clinic_pro/features/clinics/domain/use_cases/fetch_clinic_staff_use_case.dart';
-import 'package:clinic_pro/features/clinics/presentation/manager/cubit/fetch_clinic_staff_cubit.dart';
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
@@ -49,6 +47,8 @@ import '../../features/auth/domain/use_cases/send_magic_link_use_case.dart'
     as _i695;
 import '../../features/auth/domain/use_cases/verify_email_use_case.dart'
     as _i421;
+import '../../features/auth/presentation/manager/accept_invitation_cubit.dart'
+    as _i189;
 import '../../features/auth/presentation/manager/auth_cubit.dart' as _i888;
 import '../../features/clinics/data/data_sources/clinics_remote_data_source.dart'
     as _i256;
@@ -68,6 +68,8 @@ import '../../features/clinics/domain/use_cases/edit_clinic_use_case.dart'
     as _i240;
 import '../../features/clinics/domain/use_cases/fetch_clinic_by_id_use_case.dart'
     as _i665;
+import '../../features/clinics/domain/use_cases/fetch_clinic_staff_use_case.dart'
+    as _i468;
 import '../../features/clinics/domain/use_cases/fetch_clinic_statistics_use_case.dart'
     as _i143;
 import '../../features/clinics/domain/use_cases/fetch_clinics_use_case.dart'
@@ -78,6 +80,8 @@ import '../../features/clinics/presentation/manager/cubit/clinics_cubit.dart'
     as _i169;
 import '../../features/clinics/presentation/manager/cubit/fetch_clinic_by_id_cubit.dart'
     as _i317;
+import '../../features/clinics/presentation/manager/cubit/fetch_clinic_staff_cubit.dart'
+    as _i750;
 import '../../features/clinics/presentation/manager/cubit/fetch_clinic_statistics_cubit.dart'
     as _i728;
 import '../../features/dashboard/presentation/manager/owner_dashboard_cubit.dart'
@@ -164,7 +168,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.prefs,
       preResolve: true,
     );
-
     gh.lazySingleton<_i454.SupabaseClient>(() => registerModule.supabase);
     gh.lazySingleton<_i170.LanguageCubit>(
         () => _i170.LanguageCubit(gh<_i460.SharedPreferences>()));
@@ -175,8 +178,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i693.SupabaseAuthServices(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i256.IClinicsRemoteDataSource>(() =>
         _i256.ClinicsRemoteDataSource(
-            iCloudService:
-                SupabaseServices(supabase: gh<_i454.SupabaseClient>())));
+          iCloudService: SupabaseServices(supabase: gh<_i454.SupabaseClient>()),
+        ));
     gh.lazySingleton<_i322.StaffRemoteDataSource>(() =>
         _i322.StaffRemoteDataSourceImplementation(
           iAuthServices: gh<_i662.IAuthServices>(),
@@ -240,13 +243,16 @@ extension GetItInjectableX on _i174.GetIt {
         clinicsRepository: gh<_i359.ClinicsRepository>()));
     gh.factory<_i665.FetchClinicByIdUseCase>(() => _i665.FetchClinicByIdUseCase(
         clinicsRepository: gh<_i359.ClinicsRepository>()));
-    gh.factory<FetchClinicStaffUseCase>(() => FetchClinicStaffUseCase(
-        clinicsRepository: gh<_i359.ClinicsRepository>()));
+    gh.factory<_i468.FetchClinicStaffUseCase>(() =>
+        _i468.FetchClinicStaffUseCase(
+            clinicsRepository: gh<_i359.ClinicsRepository>()));
     gh.factory<_i143.FetchClinicStatisticsUseCase>(() =>
         _i143.FetchClinicStatisticsUseCase(
             clinicsRepository: gh<_i359.ClinicsRepository>()));
     gh.factory<_i444.ToggleIsActiveUseCase>(() => _i444.ToggleIsActiveUseCase(
         clinicsRepository: gh<_i359.ClinicsRepository>()));
+    gh.factory<_i750.FetchClinicStaffCubit>(
+        () => _i750.FetchClinicStaffCubit(gh<_i468.FetchClinicStaffUseCase>()));
     gh.factory<_i158.SecretaryDashboardCubit>(
         () => _i158.SecretaryDashboardCubit(
               gh<_i1070.AppointmentsRepository>(),
@@ -292,8 +298,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i421.VerifyEmailUseCase(gh<_i589.IAuthRepository>()));
     gh.factory<_i317.FetchClinicByIdCubit>(
         () => _i317.FetchClinicByIdCubit(gh<_i665.FetchClinicByIdUseCase>()));
-    gh.factory<FetchClinicStaffCubit>(
-        () => FetchClinicStaffCubit(gh<FetchClinicStaffUseCase>()));
     gh.factory<_i929.CancelInvitationUseCase>(() =>
         _i929.CancelInvitationUseCase(
             staffRepository: gh<_i841.StaffRepository>()));
@@ -331,6 +335,13 @@ extension GetItInjectableX on _i174.GetIt {
           editStaffEntityUseCase: gh<_i787.EditStaffEntityUseCase>(),
           inviteStaffUseCase: gh<_i358.InviteStaffUseCase>(),
           cancelInvitationUseCase: gh<_i929.CancelInvitationUseCase>(),
+        ));
+    gh.factory<_i189.AcceptInvitationCubit>(() => _i189.AcceptInvitationCubit(
+          gh<_i1051.GetInvitationByTokenUseCase>(),
+          gh<_i730.AcceptInvitationUseCase>(),
+          gh<_i490.LoginWithGoogleUseCase>(),
+          gh<_i652.LoginWithAppleUseCase>(),
+          gh<_i698.LogoutUseCase>(),
         ));
     return this;
   }

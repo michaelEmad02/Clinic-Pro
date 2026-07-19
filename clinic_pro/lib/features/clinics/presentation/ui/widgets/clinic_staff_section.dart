@@ -1,5 +1,4 @@
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
-import 'package:clinic_pro/features/auth/presentation/manager/auth_state.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/fetch_clinic_staff_cubit.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/di/injection_container.dart';
 import 'core/router/app_router.dart';
 import 'core/themes/app_theme.dart';
+import 'core/services/deep_link_service.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/presentation/manager/auth_cubit.dart';
@@ -22,6 +23,10 @@ void main() async {
   // تهيئة حقن الاعتماديات (Dependency Injection)
   await configureDependencies();
   await sl.allReady();
+
+  // تهيئة خدمة الروابط العميقة (Deep Links) لالتقاط روابط الدعوات
+  final deepLinkService = DeepLinkService(appRouter);
+  deepLinkService.init();
 
   runApp(const ClinicPro());
 }
