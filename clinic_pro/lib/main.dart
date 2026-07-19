@@ -1,10 +1,9 @@
+import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'core/di/injection_container.dart';
 import 'core/router/app_router.dart';
 import 'core/themes/app_theme.dart';
-import 'core/services/deep_link_service.dart';
+import 'core/services/app_initializer.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/presentation/manager/auth_cubit.dart';
@@ -14,19 +13,8 @@ import 'core/themes/theme_cubit.dart';
 import 'core/localization/language_cubit.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-// تهئية supabase
-  await Supabase.initialize(
-    url: "https://sybsvobonipnmvymauvc.supabase.co",
-    publishableKey: "sb_publishable_PHmN-KnBgnhDYISy7wBNPA_U4mfPLba",
-  );
-  // تهيئة حقن الاعتماديات (Dependency Injection)
-  await configureDependencies();
-  await sl.allReady();
-
-  // تهيئة خدمة الروابط العميقة (Deep Links) لالتقاط روابط الدعوات
-  final deepLinkService = DeepLinkService(appRouter);
-  deepLinkService.init();
+  // تهيئة جميع خدمات التطبيق قبل الإقلاع
+  await AppInitializer.init();
 
   runApp(const ClinicPro());
 }
