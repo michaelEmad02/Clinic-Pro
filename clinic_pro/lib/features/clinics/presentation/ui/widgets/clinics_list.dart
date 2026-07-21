@@ -40,16 +40,15 @@ class ClinicsList extends StatelessWidget {
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final isMobile = ResponsiveHelper.isMobile(context);
           final crossAxisCount = ResponsiveHelper.gridColumns(context);
           return GridView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
-              crossAxisSpacing:
-                  AppConstants.spaceSm + AppConstants.spaceXs,
-              mainAxisSpacing:
-                  AppConstants.spaceSm + AppConstants.spaceXs,
-              childAspectRatio: 1.7,
+              crossAxisSpacing: AppConstants.spaceSm + AppConstants.spaceXs,
+              mainAxisSpacing: AppConstants.spaceSm + AppConstants.spaceXs,
+              childAspectRatio: isMobile ? 1.5 : 1.6,
             ),
             itemCount: clinics.length,
             itemBuilder: (context, index) {

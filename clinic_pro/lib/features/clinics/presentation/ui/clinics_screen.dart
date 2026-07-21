@@ -13,6 +13,7 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import 'create_clinic_screen.dart';
 import '../../domain/entities/clinic_entity.dart';
 import '../manager/cubit/clinics_cubit.dart';
@@ -97,13 +98,16 @@ class _ClinicsBody extends StatelessWidget {
                 context.read<ClinicsCubit>().fetchClinics(ownerId);
                 await Future.delayed(const Duration(milliseconds: 600));
               },
-              child: ClinicsList(
-                clinics: state.clinics,
-                onItemTap: (c) =>
-                    context.push('${RouteConstants.clinics}/${c.id}'),
-                onItemEdit: (c) => _openClinicForm(context, clinic: c),
-                onItemToggleActive: (c) => _toggleClinicActive(context, c),
-                onItemDelete: (c) => _deleteClinic(context, c),
+              child: ResponsiveHelper.responsiveCenter(
+                maxWidth: 1100,
+                child: ClinicsList(
+                  clinics: state.clinics,
+                  onItemTap: (c) =>
+                      context.push('${RouteConstants.clinics}/${c.id}'),
+                  onItemEdit: (c) => _openClinicForm(context, clinic: c),
+                  onItemToggleActive: (c) => _toggleClinicActive(context, c),
+                  onItemDelete: (c) => _deleteClinic(context, c),
+                ),
               ),
             );
           }

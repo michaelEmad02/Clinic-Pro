@@ -123,65 +123,63 @@ class _DetailsContent extends StatelessWidget {
         context.read<FetchClinicStaffCubit>().fetchClinicStaff(clinic.id);
         context.read<FetchClinicByIdCubit>().fetchClinicById(clinic.id);
       },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppConstants.spaceMd),
-        child: Center(
-          child: SizedBox(
-            width: isDesktop ? 1000 : double.infinity,
-            child: Column(
-              children: [
-                ClinicDetailsHeader(clinic: clinic),
-                const SizedBox(height: AppConstants.spaceMd),
-                BlocBuilder<FetchClinicStatisticsCubit,
-                    FetchClinicStatisticsState>(
-                  builder: (context, state) {
-                    if (state is FetchClinicStatisticsLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is FetchClinicStatisticsLoaded) {
-                      performanceStatistics =
-                          state.clinicStatistics.clinicMonthlyPerformance;
-                      return ClinicSummaryCards(
-                          statistics: state.clinicStatistics);
-                    } else if (state is FetchClinicStatisticsFailure) {
-                      return Center(
-                          child: Text(
-                              '${AppStrings.loadFailed} \n ${state.message}'));
-                    }
-                    return const Center();
-                  },
-                ),
-                const SizedBox(height: AppConstants.spaceMd),
-                ClinicPerformanceChart(
-                    performanceStatistics: performanceStatistics),
-                const SizedBox(height: AppConstants.spaceMd),
-                // تخطيط عمودين في سطح المكتب، عمود واحد في الجوال
-                if (isDesktop)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: ClinicStaffSection(clinicId: clinic.id),
+      child: ResponsiveHelper.responsiveCenter(
+        maxWidth: 1200,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(AppConstants.spaceMd),
+          child: Column(
+            children: [
+              ClinicDetailsHeader(clinic: clinic),
+              const SizedBox(height: AppConstants.spaceMd),
+              BlocBuilder<FetchClinicStatisticsCubit,
+                  FetchClinicStatisticsState>(
+                builder: (context, state) {
+                  if (state is FetchClinicStatisticsLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is FetchClinicStatisticsLoaded) {
+                    performanceStatistics =
+                        state.clinicStatistics.clinicMonthlyPerformance;
+                    return Column(
+                      children: [
+                        ClinicSummaryCards(statistics: state.clinicStatistics),
+                        const SizedBox(height: AppConstants.spaceMd),
+                        ClinicPerformanceChart(
+                          performanceStatistics: performanceStatistics,
+                        ),
+                      ],
+                    );
+                  } else if (state is FetchClinicStatisticsFailure) {
+                    return Center(
+                      child: Text(
+                        '${AppStrings.loadFailed}\n${state.message}',
                       ),
-                      const SizedBox(width: 16),
-                      // Expanded(
-                      //   flex: 1,
-                      //   child: _SidebarColumn(clinicId: clinic.id),
-                      // ),
-                    ],
-                  )
-                else
-                  Column(
-                    children: [
-                      ClinicStaffSection(clinicId: clinic.id),
-                      const SizedBox(height: AppConstants.spaceMd),
-                      // _SidebarColumn(clinicId: clinic.id),
-                    ],
-                  ),
-                const SizedBox(height: AppConstants.spaceLg),
-              ],
-            ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              const SizedBox(height: AppConstants.spaceMd),
+              if (isDesktop)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: ClinicStaffSection(clinicId: clinic.id),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    ClinicStaffSection(clinicId: clinic.id),
+                    const SizedBox(height: AppConstants.spaceMd),
+                  ],
+                ),
+              const SizedBox(height: AppConstants.spaceLg),
+            ],
           ),
         ),
       ),

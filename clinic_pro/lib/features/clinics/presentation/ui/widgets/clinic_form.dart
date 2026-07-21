@@ -309,17 +309,21 @@ class _ClinicFormState extends State<ClinicForm> {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                widget.clinic != null
-                    ? AppStrings.saveChanges
-                    : AppStrings.createClinicAndContinue,
-                style: AppTextStyles.headlineSmall(context).copyWith(
-                  color: context.onPrimary,
+              Flexible(
+                child: Text(
+                  widget.clinic != null
+                      ? AppStrings.saveChanges
+                      : AppStrings.createClinicAndContinue,
+                  style: AppTextStyles.headlineSmall(context).copyWith(
+                    color: context.onPrimary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.arrow_back),
+              const Icon(Icons.arrow_forward),
             ],
           ),
         ),

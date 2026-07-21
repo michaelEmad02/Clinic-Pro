@@ -253,12 +253,25 @@ class MockData {
 ```
 // Treat it as real data—meaning you must fully simulate the data usage—because the design is indifferent to the data's source. This is an advantage of clean arch , solid principles . for example : in patients list screen , if user click on add patient , and save , should add the new user to the list , update the list , and update the total number of patients . and if user search for a patient , should return the search results . and so on . so the mock data should implement the same interface of the real data source , so we can switch between mock and real data source without affecting the UI or business logic .
 
-### 4.5 Responsive Rules
+### 4.5 Responsive & Adaptive UI Rules
 ```dart
-// ✅ Always use ResponsiveHelper for layout decisions
-// ✅ Use LayoutBuilder for widget-level responsiveness
-// ✅ Use MediaQuery only for screen dimensions
-// ❌ Never hardcode pixel sizes for layout (padding/margin ok with constants)
+// ✅ Always use ResponsiveHelper for screen classification and responsive layouts
+// ✅ Mobile (< 600px):
+//    - Centered card containers (maxWidth: 440–480px)
+//    - Single-column vertical lists with touch-friendly spacing
+//    - Standard Modal BottomSheet for dialogs/forms
+//    - BottomNavigationBar for main navigation
+
+// ✅ Tablet & Desktop (>= 600px):
+//    - ResponsiveCenter container (maxWidth: 720px for settings/forms, 1100–1200px for dashboards/lists)
+//    - Multi-column grid layouts (Grid 2/3 Columns) for lists and Bento cards
+//    - Navigation Rail (Sidebar) replacing BottomNavigationBar
+//    - Centered Dialogs (maxDialogWidth: 560px) replacing Modal BottomSheet
+//    - Auth Split-Screen: Branding panel on the right (flex: 5) + Form on the left (flex: 6)
+
+// ❌ Never hardcode dimensions, padding, or fixed screen offsets
+// ❌ Never use raw pixel values without AppConstants
+// ❌ Always secure buttons and text in Rows/Grids with Flexible and TextOverflow.ellipsis to prevent Red Overflow
 ```
 
 ### 4.6 Colors & Styles

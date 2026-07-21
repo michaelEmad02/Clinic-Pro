@@ -46,6 +46,7 @@ class ClinicCard extends StatelessWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 ClinicCardHeader(
                   clinic: clinic,
@@ -53,9 +54,9 @@ class ClinicCard extends StatelessWidget {
                   onToggleActive: onToggleActive,
                   onDelete: onDelete,
                 ),
-                const SizedBox(height: 12),
-                 Divider(height: 1, color: context.border),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                Divider(height: 1, color: context.border),
+                const SizedBox(height: 8),
                 ClinicCardStats(clinic: clinic),
               ],
             ),
