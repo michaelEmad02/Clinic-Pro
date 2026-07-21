@@ -112,7 +112,7 @@ class InviteFormRow extends StatelessWidget {
         ],
         const SizedBox(height: AppConstants.spaceLg),
 
-        ElevatedButton.icon(
+        ElevatedButton(
           onPressed: onAdd,
           style: ElevatedButton.styleFrom(
             backgroundColor: context.primaryLightColor,
@@ -124,13 +124,23 @@ class InviteFormRow extends StatelessWidget {
             ),
             elevation: 0,
           ),
-          icon: const Icon(Icons.add, size: 20),
-          label: Text(
-            AppStrings.isArabic ? 'إضافة موظف' : 'Add Employee',
-            style: AppTextStyles.bodyMedium(context).copyWith(
-              fontWeight: FontWeight.bold,
-              color: context.primary,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.add, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  AppStrings.isArabic ? 'إضافة موظف' : 'Add Employee',
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.primary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ),
       ],

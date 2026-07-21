@@ -116,7 +116,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                             vertical: AppConstants.spaceXl,
                           ),
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 480),
+                            constraints: const BoxConstraints(maxWidth: 560),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: context.surface,
@@ -353,14 +353,18 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.send, size: 20),
                       const SizedBox(width: AppConstants.spaceSm),
-                      Text(
-                        AppStrings.sendInvitations,
-                        style: AppTextStyles.headlineSmall(context).copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      Flexible(
+                        child: Text(
+                          AppStrings.sendInvitations,
+                          style: AppTextStyles.bodyLarge(context).copyWith(
+                            color: context.surfaceBright,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

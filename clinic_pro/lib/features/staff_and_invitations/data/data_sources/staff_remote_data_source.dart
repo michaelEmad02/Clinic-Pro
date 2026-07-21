@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:flutter/foundation.dart';
 import 'package:clinic_pro/core/services/i_auth_services.dart';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
 import 'package:clinic_pro/features/staff_and_invitations/data/models/invitation_model.dart';
@@ -64,7 +65,7 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
       try {
         await iAuthServices.deleteUserFromAuth(userId);
       } catch (e) {
-        print('⚠️ فشل حذف حساب الموظف من الـ Auth: $e');
+        debugPrint('⚠️ فشل حذف حساب الموظف من الـ Auth: $e');
       }
     } else {
       // 5. إذا كان مسجلاً في عيادات أو مع أطباء آخرين، نكتفي بحذف السجل الحالي فقط من العيادة

@@ -58,19 +58,23 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
       return;
     }
 
-    await context.read<StaffCubit>().inviteStaff(
-          email: _emailController.text.trim(),
+    final cubit = context.read<StaffCubit>();
+    final nav = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final emailText = _emailController.text.trim();
+
+    await cubit.inviteStaff(
+          email: emailText,
           name: _nameController.text.trim(),
           role: _role,
         );
 
-    if (!context.mounted) return;
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
+    nav.pop();
+    messenger.showSnackBar(
       SnackBar(
         content: Text(AppStrings.isArabic
-            ? 'تم إرسال دعوة إلى ${_emailController.text.trim()}'
-            : 'Invitation sent to ${_emailController.text.trim()}'),
+            ? 'تم إرسال دعوة إلى $emailText'
+            : 'Invitation sent to $emailText'),
       ),
     );
   }

@@ -122,20 +122,24 @@ class StaffListItem extends StatelessWidget {
                   const SizedBox(width: 15),
                   if (clinicName != null) ...[
                     const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(Icons.business,
-                            size: 14, color: context.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          clinicName!,
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: context.textSecondary,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.business,
+                              size: 14, color: context.textSecondary),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              clinicName!,
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ],

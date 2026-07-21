@@ -297,25 +297,36 @@ class _AddExistingStaffSheetState extends State<AddExistingStaffSheet> {
 
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
-        onPressed: isEnabled
-            ? () async {
-                await widget.onAdd(
-                  _selectedUserId!,
-                  _selectedRoleFilter,
-                  _needsDoctorSelection ? _selectedDoctorId : null,
-                );
-                if (!context.mounted) return;
-                Navigator.pop(context);
-              }
-            : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: context.primary,
-          foregroundColor: context.onPrimary,
+        child: ElevatedButton(
+          onPressed: isEnabled
+              ? () async {
+                  await widget.onAdd(
+                    _selectedUserId!,
+                    _selectedRoleFilter,
+                    _needsDoctorSelection ? _selectedDoctorId : null,
+                  );
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                }
+              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: context.primary,
+            foregroundColor: context.onPrimary,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  AppStrings.addToClinicSameRole,
+                  style: AppTextStyles.bodyMedium(context),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
-        child: Text(AppStrings.addToClinicSameRole,
-            style: AppTextStyles.bodyMedium(context)),
-      ),
     );
   }
 

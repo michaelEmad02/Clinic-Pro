@@ -38,6 +38,7 @@ class StaffList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final isMobile = ResponsiveHelper.isMobile(context);
           final crossAxisCount = ResponsiveHelper.gridColumns(context);
           return GridView.builder(
             shrinkWrap: true,
@@ -46,7 +47,7 @@ class StaffList extends StatelessWidget {
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 2,
+              childAspectRatio: isMobile ? 1.55 : 1.85,
             ),
             itemCount: staffList.length,
             itemBuilder: (context, index) {

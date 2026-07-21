@@ -5,8 +5,10 @@
 
 import 'dart:async';
 import 'package:app_links/app_links.dart';
+import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DeepLinkService {
   final AppLinks _appLinks = AppLinks();
@@ -42,6 +44,10 @@ class DeepLinkService {
 
   /// معالجة الرابط العميق الوارد واستخراج التوكن
   void _handleDeepLink(Uri uri) {
+    // تجاهل روابط تسجيل الدخول الخاصة بـ Supabase لأن الحزمة تعالجها تلقائياً
+    if (uri.host == 'login-callback') {
+      return;
+    }
     // الصيغة المتوقعة: clinicpro://join/{token}
     if (uri.scheme == 'clinicpro' && uri.host == 'join') {
       // استخراج التوكن من المسار

@@ -21,6 +21,8 @@ import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
 
+import '../../../../core/utils/responsive_helper.dart';
+
 class StaffScreen extends StatelessWidget {
   const StaffScreen({super.key});
 
@@ -115,8 +117,10 @@ class _StaffBody extends StatelessWidget {
                 context.read<ClinicsCubit>().fetchClinics(ownerId);
                 await Future.delayed(const Duration(milliseconds: 600));
               },
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+              child: ResponsiveHelper.responsiveCenter(
+                maxWidth: 1100,
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 children: [
                   ClinicFilterChips(
                     clinics: clinicsList,
@@ -162,7 +166,7 @@ class _StaffBody extends StatelessWidget {
                   ),
                 ],
               ),
-            );
+            ));
           }
           return const SizedBox.shrink();
         },
