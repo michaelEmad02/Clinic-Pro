@@ -14,6 +14,8 @@ import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/di/injection_container.dart';
 import '../manager/accept_invitation_cubit.dart';
 import '../manager/accept_invitation_state.dart';
+import '../../../../core/utils/responsive_helper.dart';
+import 'widgets/auth_branding_panel.dart';
 import 'widgets/invitation_details_card.dart';
 import 'widgets/invitation_expired_view.dart';
 
@@ -136,55 +138,75 @@ class _AcceptInvitationBody extends StatelessWidget {
     BuildContext context,
     AcceptInvitationLoaded state,
   ) {
-    return Scaffold(
-      backgroundColor: context.backgroundColor,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppConstants.spaceLg),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // كارت تفاصيل الدعوة
-                  InvitationDetailsCard(invitation: state.invitation),
-                  const SizedBox(height: AppConstants.spaceXl),
+    final isMobile = ResponsiveHelper.isMobile(context);
 
-                  // عنوان "سجّل الدخول للقبول"
-                  Text(
-                    'سجّل الدخول لقبول الدعوة',
+    final formContent = SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppConstants.spaceLg),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // كارت تفاصيل الدعوة
+                InvitationDetailsCard(invitation: state.invitation),
+                const SizedBox(height: AppConstants.spaceXl),
+
+                // عنوان "سجّل الدخول للقبول"
+                Text(
+                  'سجّل الدخول لقبول الدعوة',
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    color: context.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppConstants.spaceMd),
+
+                // زر تسجيل الدخول بجوجل
+                _buildGoogleButton(context),
+                const SizedBox(height: AppConstants.spaceSm),
+
+                // زر تسجيل الدخول بـ Apple
+                _buildAppleButton(context),
+                const SizedBox(height: AppConstants.spaceLg),
+
+                // رابط العودة لتسجيل الدخول العادي
+                TextButton(
+                  onPressed: () => context.go(RouteConstants.login),
+                  child: Text(
+                    'لديّ حساب بالفعل',
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: context.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppConstants.spaceMd),
-
-                  // زر تسجيل الدخول بجوجل
-                  _buildGoogleButton(context),
-                  const SizedBox(height: AppConstants.spaceSm),
-
-                  // زر تسجيل الدخول بـ Apple
-                  _buildAppleButton(context),
-                  const SizedBox(height: AppConstants.spaceLg),
-
-                  // رابط العودة لتسجيل الدخول العادي
-                  TextButton(
-                    onPressed: () => context.go(RouteConstants.login),
-                    child: Text(
-                      'لديّ حساب بالفعل',
-                      style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: AppColors.primary,
-                      ),
+                      color: AppColors.primary,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
+    );
+
+    return Scaffold(
+      backgroundColor: context.backgroundColor,
+      body: isMobile
+          ? formContent
+          : Row(
+              children: [
+                const Expanded(
+                  flex: 5,
+                  child: AuthBrandingPanel(
+                    title: 'دعوة انضمام للطاقم الطبي',
+                    subtitle: 'يسعدنا انضمامك لبرنامج إدارة العيادات ClinicPro',
+                  ),
+                ),
+                Expanded(
+                  flex: 6,
+                  child: formContent,
+                ),
+              ],
+            ),
     );
   }
 

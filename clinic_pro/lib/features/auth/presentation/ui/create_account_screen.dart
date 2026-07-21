@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../../../core/utils/responsive_helper.dart';
+import 'widgets/auth_branding_panel.dart';
 import 'widgets/account_form.dart';
 import 'widgets/social_login_row.dart';
 import 'dart:ui' as ui;
@@ -11,47 +13,68 @@ class CreateAccountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      body: Stack(
-        children: [
-          // Ambient Background Elements
-          Positioned(
-            top: -40,
-            right: -20,
-            child: _buildBlurCircle(
-                context.primaryContainer.withOpacity(0.1), 384),
-          ),
-          Positioned(
-            bottom: -40,
-            left: -20,
-            child: _buildBlurCircle(
-                context.accent.withOpacity(0.1), 288), // secondary-fixed
-          ),
-
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 24,
-                        offset: const Offset(0, 4),
-                      ),
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
+      body: isMobile
+          ? _buildFormCard(context)
+          : Row(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: AuthBrandingPanel(
+                    title: AppStrings.createAccount,
+                    subtitle: AppStrings.teamViaInvite,
                   ),
+                ),
+                Expanded(
+                  flex: 6,
+                  child: _buildFormCard(context),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildFormCard(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned(
+          top: -40,
+          right: -20,
+          child: _buildBlurCircle(
+              context.primaryContainer.withOpacity(0.1), 384),
+        ),
+        Positioned(
+          bottom: -40,
+          left: -20,
+          child: _buildBlurCircle(
+              context.accent.withOpacity(0.1), 288),
+        ),
+        Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: context.surfaceColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 24,
+                      offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -134,8 +157,7 @@ class CreateAccountScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _buildBlurCircle(Color color, double size) {

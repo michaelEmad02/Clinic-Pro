@@ -188,13 +188,17 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.login),
                 const SizedBox(width: 8),
-                Text(
-                  AppStrings.login,
-                  style: AppTextStyles.headlineSmall(context).copyWith(
-                    color: AppColors.onPrimaryContainer,
+                Flexible(
+                  child: Text(
+                    AppStrings.login,
+                    style: AppTextStyles.headlineSmall(context).copyWith(
+                      color: AppColors.onPrimaryContainer,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

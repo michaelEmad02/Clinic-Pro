@@ -8,6 +8,8 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/constants/staff_roles.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
+import '../../../../core/utils/responsive_helper.dart';
+import 'widgets/auth_branding_panel.dart';
 import 'widgets/email_password_form.dart';
 import 'widgets/social_login_row.dart';
 
@@ -16,6 +18,8 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         // عند نجاح تسجيل الدخول — التوجيه حسب الدور
@@ -37,24 +41,43 @@ class LoginScreen extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: context.backgroundColor,
-        body: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
+        body: isMobile
+            ? _buildMobileContent(context)
+            : Row(
+                children: [
+                  const Expanded(
+                    flex: 5,
+                    child: AuthBrandingPanel(),
+                  ),
+                  Expanded(
+                    flex: 6,
+                    child: _buildMobileContent(context),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildMobileContent(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 460),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
                 ),
+              ],
+            ),
                 child: BlocBuilder<AuthCubit, AuthState>(
                   builder: (context, state) {
                     final isLoading = state is AuthLoading;
@@ -175,11 +198,14 @@ class LoginScreen extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  AppStrings.newClinicOwner,
-                                  style: AppTextStyles.headlineSmall(context)
-                                      .copyWith(
-                                    color: AppColors.primary,
+                                Flexible(
+                                  child: Text(
+                                    AppStrings.newClinicOwner,
+                                    style: AppTextStyles.headlineSmall(context)
+                                        .copyWith(
+                                      color: AppColors.primary,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -195,8 +221,6 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 }

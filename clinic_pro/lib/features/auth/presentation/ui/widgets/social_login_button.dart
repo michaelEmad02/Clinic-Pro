@@ -33,12 +33,17 @@ class SocialLoginButton extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             _buildIcon(context),
-            const SizedBox(width: 8),
-            Text(
-              text,
-              style: AppTextStyles.headlineSmall(context),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                text,
+                style: AppTextStyles.headlineSmall(context),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
             ),
           ],
         ),
