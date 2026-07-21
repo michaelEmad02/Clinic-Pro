@@ -3,7 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:equatable/equatable.dart';
-import '../../../../features/staff/domain/entities/invitation_entity.dart';
+import '../../../staff_and_invitations/domain/entities/invitation_entity.dart';
 
 abstract class AcceptInvitationState extends Equatable {
   const AcceptInvitationState();

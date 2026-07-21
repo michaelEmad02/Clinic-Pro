@@ -5,6 +5,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../constants/app_constants.dart';
+
 class ResponsiveHelper {
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 600;
@@ -22,5 +24,19 @@ class ResponsiveHelper {
     if (width >= 900) return 3;
     if (width >= 600) return 2;
     return 1;
+  }
+
+  /// ودجت مساعدة لمراعاة التمركز وتحديد العرض الأقصى للمحتوى على الكمبيوتر والتابلت
+  static Widget responsiveCenter({
+    required Widget child,
+    double maxWidth = AppConstants.maxContentWidth,
+  }) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: child,
+      ),
+    );
   }
 }

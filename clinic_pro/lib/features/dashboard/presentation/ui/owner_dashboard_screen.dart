@@ -7,6 +7,7 @@ import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/i_cloud_service.dart';
+import '../../../../core/widgets/app_responsive_scaffold.dart';
 import '../../../clinics/presentation/ui/clinics_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/owner_dashboard_cubit.dart';
@@ -33,8 +34,35 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     return BlocProvider(
       create: (context) =>
           OwnerDashboardCubit(sl<ICloudService>())..loadDashboardData(),
-      child: Scaffold(
-        backgroundColor: context.backgroundColor,
+      child: AppResponsiveScaffold(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        destinations: [
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.smart_home),
+            label: Text(AppStrings.home),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.building_hospital),
+            label: Text(AppStrings.clinics),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.wallet),
+            label: Text(AppStrings.expenses),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.chart_bar),
+            label: Text(AppStrings.reports),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.settings),
+            label: Text(AppStrings.settings),
+          ),
+        ],
         appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
         body: IndexedStack(
           index: _currentIndex,

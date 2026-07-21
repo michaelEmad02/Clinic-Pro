@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -232,6 +233,64 @@ class SettingsFooter extends StatelessWidget {
   }
 }
 
+/// شريط التنقل الجانبي للشاشات الكبيرة (Navigation Rail for Tablet / Desktop)
+class AppNavigationRail extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int>? onDestinationSelected;
+  final List<NavigationRailDestination>? destinations;
+
+  const AppNavigationRail({
+    super.key,
+    this.selectedIndex = 0,
+    this.onDestinationSelected,
+    this.destinations,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final defaultDestinations = [
+      NavigationRailDestination(
+        icon: const Icon(TablerIcons.smart_home),
+        label: Text(AppStrings.home),
+      ),
+      NavigationRailDestination(
+        icon: const Icon(TablerIcons.calendar),
+        label: Text(AppStrings.appointments),
+      ),
+      NavigationRailDestination(
+        icon: const Icon(TablerIcons.users),
+        label: Text(AppStrings.patients),
+      ),
+      NavigationRailDestination(
+        icon: const Icon(TablerIcons.settings),
+        label: Text(AppStrings.settings),
+      ),
+    ];
+
+    return NavigationRail(
+      selectedIndex: selectedIndex,
+      onDestinationSelected: onDestinationSelected,
+      backgroundColor: context.surfaceColor,
+      labelType: NavigationRailLabelType.all,
+      indicatorColor: context.primaryLightColor,
+      selectedIconTheme: IconThemeData(color: context.primary, size: 24),
+      unselectedIconTheme: IconThemeData(color: context.textSecondary, size: 22),
+      selectedLabelTextStyle: AppTextStyles.labelChip(context).copyWith(
+        color: context.primary,
+        fontWeight: FontWeight.bold,
+      ),
+      unselectedLabelTextStyle: AppTextStyles.labelChip(context).copyWith(
+        color: context.textSecondary,
+      ),
+      leading: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
+        child: Icon(Icons.local_hospital, color: context.primary, size: 32),
+      ),
+      destinations: destinations ?? defaultDestinations,
+    );
+  }
+}
+
 /// شريط التنقل السفلي المشترك للصفحة
 class SettingsBottomNavBar extends StatelessWidget {
   const SettingsBottomNavBar({super.key});
@@ -239,7 +298,6 @@ class SettingsBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         border: Border(
@@ -248,15 +306,23 @@ class SettingsBottomNavBar extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(context, TablerIcons.smart_home, AppStrings.home, false),
-            _navItem(
-                context, TablerIcons.calendar, AppStrings.appointments, false),
-            _navItem(context, TablerIcons.users, AppStrings.patients, false),
-            _navItem(context, TablerIcons.settings, AppStrings.settings, true),
-          ],
+        child: ResponsiveHelper.responsiveCenter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _navItem(
+                    context, TablerIcons.smart_home, AppStrings.home, false),
+                _navItem(context, TablerIcons.calendar, AppStrings.appointments,
+                    false),
+                _navItem(
+                    context, TablerIcons.users, AppStrings.patients, false),
+                _navItem(
+                    context, TablerIcons.settings, AppStrings.settings, true),
+              ],
+            ),
+          ),
         ),
       ),
     );

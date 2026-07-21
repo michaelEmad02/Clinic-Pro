@@ -31,4 +31,32 @@ class AuthUserEntity {
     this.ownerId,
     this.country,
   });
+
+  AuthUserEntity copyWith({
+    String? id,
+    String? name,
+    String? phone,
+    String? address,
+    String? email,
+    StaffRoles? role,
+    String? specialty,
+    String? imageUrl,
+    bool? isActive,
+    String? ownerId,
+    String? country,
+  }) {
+    return AuthUserEntity(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      specialty: specialty ?? this.specialty,
+      imageUrl: imageUrl ?? this.imageUrl,
+      isActive: isActive ?? this.isActive,
+      ownerId: ownerId ?? this.ownerId,
+      country: country ?? this.country,
+    );
+  }
 }

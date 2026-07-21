@@ -10,6 +10,7 @@ import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/mocks/mock_data.dart';
 import '../manager/settings_cubit.dart';
 import '../manager/settings_state.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import 'widgets/trial_countdown_card.dart';
 import 'widgets/current_plan_card.dart';
 import 'widgets/usage_progress_section.dart';
@@ -24,7 +25,7 @@ class SubscriptionScreen extends StatelessWidget {
     return BlocProvider<SettingsCubit>(
       create: (context) {
         final cubit = sl<SettingsCubit>();
-        if (cubit.state.userName.isEmpty) {
+        if (cubit.state.subscriptionEntity == null) {
           cubit.loadSettings(StaffRoles.owner, userId);
         }
         return cubit;
@@ -33,9 +34,9 @@ class SubscriptionScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(AppStrings.subscriptionAndPlan,
               style: AppTextStyles.headlineMedium(context)
-                  .copyWith(color: AppColors.primary)),
+                  .copyWith(color: context.primary)),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_forward, color: AppColors.primary),
+            icon: Icon(Icons.arrow_forward, color: context.primary),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -47,7 +48,8 @@ class SubscriptionScreen extends StatelessWidget {
 
             // Determine plan type key
             final planKey =
-                state.planType.isNotEmpty ? state.planType : 'basic';
+                state.subscriptionEntity?.subscriptionType.isNotEmpty == true ? state.subscriptionEntity!.subscriptionType : 'basic';
+            final planStatus = state.subscriptionEntity?.status ?? '';
 
             // Calculate limit bounds
             int maxClinics = 1;
@@ -67,59 +69,54 @@ class SubscriptionScreen extends StatelessWidget {
             // Calculate active usages from MockData
             final clinicsUsed = MockData.clinics.length;
             final staffUsed = MockData.clinicStaff
-                .where((e) => e['clinic_id'] == state.clinicId)
+                .where((e) => e['clinic_id'] == (state.clinicEntity?.id ?? ''))
                 .length;
             final patientsUsed = MockData.patients
-                .where((e) => e['clinic_id'] == state.clinicId)
+                .where((e) => e['clinic_id'] == (state.clinicEntity?.id ?? ''))
                 .length;
 
-            final daysRemaining = state.trialEndAt != null
-                ? DateTime.parse(state.trialEndAt!)
-                    .difference(DateTime.now())
-                    .inDays
-                : 0;
+            final daysRemaining = state.subscriptionEntity?.daysRemaining ?? 0;
+            final isTrial = state.subscriptionEntity?.isTrial ?? false;
 
-            final isTrial =
-                state.planStatus == 'trial' || state.planStatus == 'trail';
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.screenEdgeH),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppConstants.spaceSm),
-                  Text(AppStrings.subscriptionAndPlan,
-                      style: AppTextStyles.headlineLarge(context)),
-                  const SizedBox(height: AppConstants.spaceXs),
-                  Text(AppStrings.manageSubscription,
-                      style: AppTextStyles.bodyMedium(context)
-                          .copyWith(color: AppColors.textSecondary)),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  CurrentPlanCard(
-                      planKey: planKey, planStatus: state.planStatus),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  if (isTrial) ...[
-                    TrialCountdownCard(
-                        daysRemaining: daysRemaining > 0 ? daysRemaining : 0,
-                        isTrial: isTrial),
+            return ResponsiveHelper.responsiveCenter(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.screenEdgeH),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: AppConstants.spaceSm),
+                    Text(AppStrings.subscriptionAndPlan,
+                        style: AppTextStyles.headlineLarge(context)),
+                    const SizedBox(height: AppConstants.spaceXs),
+                    Text(AppStrings.manageSubscription,
+                        style: AppTextStyles.bodyMedium(context)
+                            .copyWith(color: context.textSecondary)),
+                    const SizedBox(height: AppConstants.spaceLg),
+                    CurrentPlanCard(
+                        planKey: planKey, planStatus: planStatus),
+                    const SizedBox(height: AppConstants.spaceLg),
+                    if (isTrial) ...[
+                      TrialCountdownCard(
+                          daysRemaining: daysRemaining > 0 ? daysRemaining : 0,
+                          isTrial: isTrial),
+                      const SizedBox(height: AppConstants.spaceLg),
+                    ],
+                    UsageProgressSection(
+                      clinicsUsed: clinicsUsed,
+                      clinicsMax: maxClinics,
+                      usersUsed: staffUsed,
+                      usersMax: maxStaff,
+                      patientsUsed: patientsUsed,
+                      patientsMax: maxPatients,
+                    ),
+                    const SizedBox(height: AppConstants.spaceLg),
+                    const UpgradeCtaButton(),
+                    const SizedBox(height: AppConstants.spaceXl),
+                    const BillingHistoryList(),
                     const SizedBox(height: AppConstants.spaceLg),
                   ],
-                  const SizedBox(height: AppConstants.spaceMd),
-                  UsageProgressSection(
-                    clinicsUsed: clinicsUsed,
-                    clinicsMax: maxClinics,
-                    usersUsed: staffUsed, // Users represent staff
-                    usersMax: maxStaff,
-                    patientsUsed: patientsUsed,
-                    patientsMax: maxPatients,
-                  ),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  const UpgradeCtaButton(),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  const BillingHistoryList(),
-                  const SizedBox(height: AppConstants.spaceXl),
-                ],
+                ),
               ),
             );
           },

@@ -16,15 +16,15 @@ class SettingsOwnerSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
-          child: Text(AppStrings.management, style: AppTextStyles.headlineSmall(context).copyWith(color: AppColors.textSecondary)),
+          child: Text(AppStrings.management, style: AppTextStyles.headlineSmall(context).copyWith(color: context.textSecondary)),
         ),
         const SizedBox(height: AppConstants.spaceSm),
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.surface,
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            border: Border.all(color: AppColors.border, width: 0.5),
+            border: Border.all(color: context.border, width: 0.5),
             boxShadow: const [
               BoxShadow(color: Color(0x14000000), blurRadius: 3, offset: Offset(0, 1)),
             ],
@@ -37,10 +37,10 @@ class SettingsOwnerSection extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: AppConstants.spaceMd),
                   child: Row(
                     children: [
-                      Icon(Icons.payments, color: AppColors.primaryContainer, size: 20),
+                      Icon(Icons.payments, color: context.primaryContainer, size: 20),
                       const SizedBox(width: AppConstants.spaceSm),
                        Expanded(child: Text(AppStrings.subscriptionAndPlan, style: AppTextStyles.bodyLarge(context))),
-                      const Icon(Icons.arrow_back, color: AppColors.textHint, size: 18),
+                      Icon(Icons.arrow_back, color: context.textHint, size: 18),
                     ],
                   ),
                 ),

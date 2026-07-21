@@ -4,9 +4,9 @@ import 'package:clinic_pro/core/services/i_cloud_service.dart';
 import 'package:clinic_pro/features/clinics/data/models/clinic_model.dart';
 import 'package:clinic_pro/features/clinics/data/models/clinic_statistics_model.dart';
 import 'package:clinic_pro/core/enities/performance_statistics.dart';
-import 'package:clinic_pro/features/staff/data/models/doctor_secretaries_model.dart';
-import 'package:clinic_pro/features/staff/data/models/staff_model.dart';
-import 'package:clinic_pro/features/staff/domain/entities/staff_entity.dart';
+import 'package:clinic_pro/features/staff_and_invitations/data/models/doctor_secretaries_model.dart';
+import 'package:clinic_pro/features/staff_and_invitations/data/models/staff_model.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 
 import 'package:injectable/injectable.dart';
 

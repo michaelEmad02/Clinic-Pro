@@ -26,6 +26,16 @@ class SupabaseTables {
   static const String invitations = 'invitations';
   static const String doctorSecretaries = 'doctor_secretary_schedule';
   static const String doctorSchedules = 'doctor_schedules';
+  static const String drugs = 'drugs';
+  static const String plans = 'plans';
+  static const String plansFeatures = 'plans_features';
+}
+
+class SupabaseBucket {
+  static const String usersAvatar = 'users_avatar';
+  static const String clinicLogos = 'clinics';
+  static const String attachments = 'attachments';
+  static const String pdfs = 'pdfs';
 }
 
 class AppointmentStatus {
@@ -52,6 +62,13 @@ class QueueSlotType {
   static const String consult = 'consult'; // استشارة مجانية
 }
 
+class DoctorQueueSystem {
+  static const String arrival = 'arrival';
+  static const String booking = 'booking';
+  static const String pattern = 'pattern';
+  static const String scheduled = 'scheduled';
+}
+
 class StaffRole {
   static String owner = StaffRoles.owner.name; // مالك العيادة
   static String doctor = StaffRoles.doctor.name; // طبيب
@@ -62,10 +79,12 @@ class SubscriptionType {
   static const String monthly = 'monthly';
   static const String yearly = 'yearly';
   static const String lifetime = 'lifetime';
+  static const String trail = 'trail';
 }
 
 class SubscriptionStatus {
+  static const String pending = 'pending';
   static const String active = 'active';
-  static const String trial = 'trial';
+  static const String trial = 'cancelled';
   static const String expired = 'expired';
 }

@@ -1,9 +1,8 @@
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/constants/supabase_constants.dart';
-import '../../../../../core/di/injection_container.dart';
-import '../../../../../core/services/i_cloud_service.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -26,13 +25,16 @@ class EditQueuePatternSheet extends StatelessWidget {
   static Future<void> show(BuildContext context) {
     final cubit = context.read<QueuePatternCubit>();
     final state = context.read<SettingsCubit>().state;
+    final docId = context.read<AuthCubit>().state.user?.id ?? '';
+    final clId = state.clinicEntity?.id ?? '';
+    cubit.init(docId, clId);
     return AppBottomSheet.show(
       context: context,
       child: BlocProvider.value(
         value: cubit,
         child: EditQueuePatternSheet(
-          doctorId: state.userId,
-          clinicId: state.clinicId,
+          doctorId: docId,
+          clinicId: clId,
         ),
       ),
     );
@@ -45,8 +47,8 @@ class EditQueuePatternSheet extends StatelessWidget {
           prev.isSaving && !curr.isSaving && curr.error == null,
       listener: (context, state) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('تم حفظ النمط بنجاح', textAlign: TextAlign.right),
+          SnackBar(
+              content: Text(AppStrings.patternSaved, textAlign: TextAlign.right),
               behavior: SnackBarBehavior.floating),
         );
         Navigator.pop(context);
@@ -87,14 +89,22 @@ class EditQueuePatternSheet extends StatelessWidget {
           Text(AppStrings.queueSystem,
               style: AppTextStyles.headlineMedium(context)
                   .copyWith(color: context.primary)),
-          const SizedBox(height: 4),
-          Text('اسحب لإعادة ترتيب الأنواع',
-              style: AppTextStyles.caption(context)
-                  .copyWith(color: context.textSecondary)),
+          const SizedBox(height: 8),
+          _buildSystemSelector(context, state),
+          if (state.queueSystem == 'pattern') ...[
+            const SizedBox(height: 8),
+            Text(AppStrings.dragToReorder,
+                style: AppTextStyles.caption(context)
+                    .copyWith(color: context.textSecondary)),
+          ],
+          if (state.queueSystem == 'scheduled') ...[
+            const SizedBox(height: 12),
+            _buildScheduledInput(context, state),
+          ],
           if (state.isDirty)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text('(توجد تغييرات غير محفوظة)',
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(AppStrings.unsavedChanges,
                   style: AppTextStyles.caption(context)
                       .copyWith(color: context.warningText)),
             ),
@@ -103,7 +113,89 @@ class EditQueuePatternSheet extends StatelessWidget {
     );
   }
 
+  Widget _buildSystemSelector(BuildContext context, QueuePatternState state) {
+    final cubit = context.read<QueuePatternCubit>();
+    final systems = [
+      {'key': DoctorQueueSystem.arrival, 'name': AppStrings.arrivalOrder},
+      {'key': DoctorQueueSystem.booking, 'name': AppStrings.bookingOrder},
+      {'key': DoctorQueueSystem.pattern, 'name': AppStrings.customPattern},
+      {'key': DoctorQueueSystem.scheduled, 'name': AppStrings.scheduledAppointments},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: context.background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        alignment: WrapAlignment.center,
+        children: systems.map((sys) {
+          final isSelected = state.queueSystem == sys['key'];
+          return ChoiceChip(
+            label: Text(
+              sys['name']!,
+              style: AppTextStyles.bodyMedium(context).copyWith(
+                color: isSelected ? context.surface : context.textPrimary,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            selected: isSelected,
+            selectedColor: context.primary,
+            backgroundColor: context.surface,
+            onSelected: (_) => cubit.setQueueSystem(sys['key']!),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildScheduledInput(BuildContext context, QueuePatternState state) {
+    final cubit = context.read<QueuePatternCubit>();
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.border),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            AppStrings.avgVisitTime,
+            style: AppTextStyles.bodyMedium(context),
+          ),
+          SizedBox(
+            width: 80,
+            child: TextFormField(
+              initialValue: '${state.avgVisitMinutes ?? 15}',
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onChanged: (val) {
+                final mins = int.tryParse(val);
+                cubit.setAvgVisitMinutes(mins);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSlotCards(BuildContext context, QueuePatternState state) {
+    if (state.queueSystem != 'pattern') {
+      return const SizedBox.shrink();
+    }
     final cubit = context.read<QueuePatternCubit>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
@@ -114,7 +206,7 @@ class EditQueuePatternSheet extends StatelessWidget {
             height: 72,
             child: state.slots.isEmpty
                 ? Center(
-                    child: Text('لم يتم إضافة أنواع بعد، أضف أول نوع',
+                    child: Text(AppStrings.noTypesAdded,
                         style: AppTextStyles.bodyMedium(context)
                             .copyWith(color: context.textHint)),
                   )
@@ -143,7 +235,7 @@ class EditQueuePatternSheet extends StatelessWidget {
           TextButton.icon(
             onPressed: () => _showAddTypePicker(context, cubit),
             icon: Icon(Icons.add, size: 18, color: context.primary),
-            label: Text('أضف نوع',
+            label: Text(AppStrings.addType,
                 style: AppTextStyles.headlineSmall(context)
                     .copyWith(color: context.primary)),
           ),
@@ -153,7 +245,9 @@ class EditQueuePatternSheet extends StatelessWidget {
   }
 
   Widget _buildPreviewSection(BuildContext context, QueuePatternState state) {
-    if (state.slots.isEmpty) return const SizedBox.shrink();
+    if (state.queueSystem != 'pattern' || state.slots.isEmpty) {
+      return const SizedBox.shrink();
+    }
     final cycleLen = state.cycleLength;
     return Container(
       width: double.infinity,
@@ -166,7 +260,7 @@ class EditQueuePatternSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('معاينة', style: AppTextStyles.headlineSmall(context)),
+              Text(AppStrings.preview, style: AppTextStyles.headlineSmall(context)),
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: AppConstants.spaceSm, vertical: 2),
@@ -188,7 +282,7 @@ class EditQueuePatternSheet extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Text(state.isActive ? 'مباشر' : 'غير نشط',
+                    Text(state.isActive ? AppStrings.activeLabel : AppStrings.inactiveLabel,
                         style: AppTextStyles.caption(context).copyWith(
                           color: state.isActive
                               ? context.successText
@@ -237,16 +331,16 @@ class EditQueuePatternSheet extends StatelessWidget {
   Widget _buildCycleDivider(BuildContext context) {
     return Row(
       children: [
-        const Expanded(
-            child: Divider(thickness: 0.5, color: AppColors.outlineVariant)),
+        Expanded(
+            child: Divider(thickness: 0.5, color: context.outline.withAlpha(80))),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
-          child: Text('── 🔁 دورة جديدة ──',
+          child: Text(AppStrings.newCycle,
               style: AppTextStyles.labelChip(context)
                   .copyWith(color: context.textHint)),
         ),
-        const Expanded(
-            child: Divider(thickness: 0.5, color: AppColors.outlineVariant)),
+        Expanded(
+            child: Divider(thickness: 0.5, color: context.outline.withAlpha(80))),
       ],
     );
   }
@@ -277,39 +371,34 @@ class EditQueuePatternSheet extends StatelessWidget {
                   height: 20,
                   child: CircularProgressIndicator(
                       strokeWidth: 2, color: context.onPrimary))
-              : Text('حفظ النمط', style: AppTextStyles.headlineSmall(context)),
+              : Text(AppStrings.savePattern, style: AppTextStyles.headlineSmall(context)),
         ),
       ),
     );
   }
 
   void _showAddTypePicker(BuildContext context, QueuePatternCubit cubit) async {
-    final cloudService = sl<ICloudService>();
-
-    List<_SlotTypeOption> types;
+    List<_SlotTypeOption> types = [];
     try {
-      final doctorTypes = await cloudService.select(
-        table: 'doctor_appointment_types',
-        eq: {'doctor_id': doctorId, 'clinic_id': clinicId},
-      );
+      final availableVisitTypes = await cubit.fetchAvailableVisitTypes();
 
-      final allAppTypes = await cloudService.select(table: 'appointment_types');
+      if (!context.mounted) return;
+      final warningColor = context.warningText;
+      final primaryColor = context.primary;
 
-      types = [];
-      for (final dt in doctorTypes) {
-        final typeId = dt['appointment_type_id'] as String;
-        final appType = allAppTypes.firstWhere(
-          (t) => t['id'] == typeId,
-          orElse: () => <String, dynamic>{},
-        );
-        final name = appType['name'] as String? ?? '';
-        final slotType = _mapAppointmentTypeToSlot(name);
-        types.add(_SlotTypeOption(
-          label: name.isNotEmpty ? name : '',
-          slotType: slotType,
-          icon: mapSlotTypeToIcon(slotType),
-          color: slotType == 'urgent' ? context.warningText : context.primary,
-        ));
+      for (final item in availableVisitTypes) {
+        final name = item['name'] ?? '';
+        if (name.isNotEmpty) {
+          final slotType = _mapAppointmentTypeToSlot(name);
+          types.add(_SlotTypeOption(
+            label: name,
+            slotType: slotType,
+            icon: mapSlotTypeToIcon(slotType),
+            color: slotType == QueueSlotType.urgent
+                ? warningColor
+                : primaryColor,
+          ));
+        }
       }
     } catch (_) {
       types = [];
@@ -318,8 +407,8 @@ class EditQueuePatternSheet extends StatelessWidget {
     if (types.isEmpty) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('يرجى إضافة أنواع الزيارات أولاً من الإعدادات',
+        SnackBar(
+          content: Text(AppStrings.addVisitTypesFirst,
               textAlign: TextAlign.right),
           behavior: SnackBarBehavior.floating,
         ),
@@ -340,7 +429,7 @@ class EditQueuePatternSheet extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusCard),
             ),
-            title: Text('اختيار نوع', style: AppTextStyles.headlineSmall(ctx)),
+            title: Text(AppStrings.selectTypeTitle, style: AppTextStyles.headlineSmall(ctx)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: types.map((type) {
@@ -505,7 +594,7 @@ class _PreviewPatient extends StatelessWidget {
             ),
             const SizedBox(width: AppConstants.spaceSm),
             Expanded(
-              child: Text('مريض #$number',
+              child: Text('${AppStrings.patientHashPrefix}$number',
                   style: AppTextStyles.bodyMedium(context).copyWith(
                     color: isUrgent ? context.warningText : context.textPrimary,
                     fontWeight: isUrgent ? FontWeight.bold : FontWeight.normal,
@@ -515,7 +604,6 @@ class _PreviewPatient extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                   horizontal: AppConstants.spaceMd, vertical: 3),
               decoration: BoxDecoration(
-                
                 borderRadius: BorderRadius.circular(AppConstants.radiusChip),
                 border: isUrgent
                     ? Border.all(color: context.warningText.withAlpha(50))

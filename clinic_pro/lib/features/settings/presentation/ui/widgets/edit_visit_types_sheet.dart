@@ -1,27 +1,23 @@
+// ────────────────────────────────────────────────────────
+// EditVisitTypesSheet — واجهة تعديل أسعار زيارات الطبيب بالعيادة
+// ────────────────────────────────────────────────────────
+
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/di/injection_container.dart';
-import '../../../../../core/services/i_cloud_service.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
 import '../../manager/settings_cubit.dart';
+import '../../manager/visit_types_cubit.dart';
+import '../../manager/visit_types_state.dart';
+import 'visit_type_list_section.dart';
+import 'visit_type_form_section.dart';
 
-class _VisitTypeEntry {
-  String appointmentTypeId;
-  String typeName;
-  double price;
-
-  _VisitTypeEntry({
-    required this.appointmentTypeId,
-    required this.typeName,
-    required this.price,
-  });
-}
-
-class EditVisitTypesSheet extends StatefulWidget {
+class EditVisitTypesSheet extends StatelessWidget {
   final String doctorId;
   final String clinicId;
 
@@ -32,400 +28,125 @@ class EditVisitTypesSheet extends StatefulWidget {
   });
 
   static Future<void> show(BuildContext context) {
-    final state = context.read<SettingsCubit>().state;
+    final settingsState = context.read<SettingsCubit>().state;
+    final docId = context.read<AuthCubit>().state.user?.id ?? "";
+    final clId = settingsState.clinicEntity?.id ?? "";
+
     return AppBottomSheet.show(
       context: context,
-      child: EditVisitTypesSheet(
-        doctorId: state.userId,
-        clinicId: state.clinicId,
+      child: BlocProvider(
+        create: (_) => sl<VisitTypesCubit>()..loadData(doctorId: docId, clinicId: clId),
+        child: EditVisitTypesSheet(doctorId: docId, clinicId: clId),
       ),
     );
   }
 
   @override
-  State<EditVisitTypesSheet> createState() => _EditVisitTypesSheetState();
-}
-
-class _EditVisitTypesSheetState extends State<EditVisitTypesSheet> {
-  final ICloudService _cloudService = sl<ICloudService>();
-  List<_VisitTypeEntry> _entries = [];
-  List<Map<String, dynamic>> _availableTypes = [];
-  bool _isLoading = true;
-  bool _isSaving = false;
-
-  String? _selectedTypeId;
-  final _priceController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  @override
-  void dispose() {
-    _priceController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadData() async {
-    try {
-      final results = await _cloudService.select(
-        table: 'appointment_types',
-      );
-
-      final existing = await _cloudService.select(
-        table: 'doctor_appointment_types',
-        eq: {'doctor_id': widget.doctorId, 'clinic_id': widget.clinicId},
-      );
-
-      final usedTypeIds =
-          existing.map((e) => e['appointment_type_id'] as String).toSet();
-
-      final entries = existing
-          .map((e) => _VisitTypeEntry(
-                appointmentTypeId: e['appointment_type_id'] as String,
-                typeName: '',
-                price: (e['price'] as num?)?.toDouble() ?? 0.0,
-              ))
-          .toList();
-
-      for (final entry in entries) {
-        final type = results.firstWhere(
-          (t) => t['id'] == entry.appointmentTypeId,
-          orElse: () => <String, dynamic>{},
-        );
-        entry.typeName = type['name'] as String? ?? AppStrings.noData;
-      }
-
-      if (mounted) {
-        setState(() {
-          _availableTypes =
-              results.where((t) => !usedTypeIds.contains(t['id'])).toList();
-          _entries = entries;
-          _isLoading = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  void _addEntry() {
-    final typeId = _selectedTypeId;
-    if (typeId == null || typeId.isEmpty) return;
-
-    final priceText = _priceController.text.trim();
-    final price = double.tryParse(priceText) ?? 0.0;
-
-    final type = _availableTypes.firstWhere((t) => t['id'] == typeId);
-    final typeName = type['name'] as String? ?? '';
-
-    setState(() {
-      _entries.add(_VisitTypeEntry(
-        appointmentTypeId: typeId,
-        typeName: typeName,
-        price: price,
-      ));
-      _availableTypes.removeWhere((t) => t['id'] == typeId);
-      _selectedTypeId = null;
-      _priceController.clear();
-    });
-  }
-
-  void _removeEntry(int index) {
-    final removed = _entries.removeAt(index);
-    setState(() {
-      final type = _availableTypes.isNotEmpty
-          ? {'id': removed.appointmentTypeId, 'name': removed.typeName}
-          : null;
-      if (type != null) {
-        _availableTypes.add(type);
-      }
-    });
-  }
-
-  Future<void> _save() async {
-    setState(() => _isSaving = true);
-
-    try {
-      // Delete all existing entries for this doctor+clinic
-      final existing = await _cloudService.select(
-        table: 'doctor_appointment_types',
-        eq: {'doctor_id': widget.doctorId, 'clinic_id': widget.clinicId},
-      );
-      for (final e in existing) {
-        await _cloudService.delete(
-          table: 'doctor_appointment_types',
-          matchColumn: 'id',
-          matchValue: e['id'],
-        );
-      }
-
-      // Insert new entries
-      for (final entry in _entries) {
-        await _cloudService.insert(
-          table: 'doctor_appointment_types',
-          data: {
-            'appointment_type_id': entry.appointmentTypeId,
-            'price': entry.price,
-            'doctor_id': widget.doctorId,
-            'clinic_id': widget.clinicId,
-          },
-        );
-      }
-
-      if (mounted) {
+  Widget build(BuildContext context) {
+    return BlocConsumer<VisitTypesCubit, VisitTypesState>(
+      listenWhen: (prev, curr) => prev.isSaving && !curr.isSaving && curr.error == null,
+      listener: (context, state) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم حفظ أنواع الزيارات بنجاح ✓'),
+          SnackBar(
+            content: Text(AppStrings.visitTypesSaved, textAlign: TextAlign.right),
             behavior: SnackBarBehavior.floating,
           ),
         );
         Navigator.pop(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل الحفظ: $e'),
-            behavior: SnackBarBehavior.floating,
+      },
+      builder: (context, state) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: AppConstants.spaceSm),
+              if (state.isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else ...[
+                if (state.error != null)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Center(
+                      child: Text(
+                        state.error!,
+                        style: AppTextStyles.bodyMedium(context).copyWith(color: context.danger),
+                      ),
+                    ),
+                  ),
+                VisitTypeListSection(
+                  entries: state.addedEntries,
+                  onRemove: (index) => context.read<VisitTypesCubit>().removeEntry(index),
+                ),
+                VisitTypeFormSection(
+                  availableTypes: state.availableTypes,
+                  hasEntries: state.addedEntries.isNotEmpty,
+                  onAdd: (typeId, typeName, price) => context.read<VisitTypesCubit>().addEntry(
+                        doctorId: doctorId,
+                        clinicId: clinicId,
+                        typeId: typeId,
+                        typeName: typeName,
+                        price: price,
+                      ),
+                ),
+                const SizedBox(height: AppConstants.spaceLg),
+                _buildSaveButton(context, state),
+              ],
+              SizedBox(height: MediaQuery.of(context).padding.bottom + AppConstants.spaceMd),
+            ],
           ),
         );
-        setState(() => _isSaving = false);
-      }
-    }
+      },
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.screenEdgeH),
-            child: Row(
-              children: [
-                Text(AppStrings.visitTypes,
-                    style: AppTextStyles.headlineSmall(context)),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: context.dangerText),
-                ),
-              ],
-            ),
+          Text(AppStrings.visitTypes, style: AppTextStyles.headlineSmall(context)),
+          const Spacer(),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.close, color: context.dangerText),
           ),
-          const SizedBox(height: AppConstants.spaceSm),
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.all(32),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else ...[
-            if (_entries.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.screenEdgeH),
-                child: Text(
-                  'الأنواع المضافة',
-                  style: AppTextStyles.labelChip(context)
-                      .copyWith(color: context.textSecondary),
-                ),
-              ),
-              const SizedBox(height: AppConstants.spaceSm),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.25),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppConstants.screenEdgeH),
-                  itemCount: _entries.length,
-                  itemBuilder: (context, index) {
-                    final entry = _entries[index];
-                    return Container(
-                      margin:
-                          const EdgeInsets.only(bottom: AppConstants.spaceSm),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.spaceMd,
-                          vertical: AppConstants.spaceSm),
-                      decoration: BoxDecoration(
-                        color: context.surface,
-                        borderRadius:
-                            BorderRadius.circular(AppConstants.radiusButton),
-                        border: Border.all(color: context.border),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(entry.typeName,
-                                    style: AppTextStyles.bodyLarge(context)),
-                                Text(
-                                  '${entry.price.toStringAsFixed(0)} ريال',
-                                  style: AppTextStyles.dataNumeric(context)
-                                      .copyWith(color: context.primary),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => _removeEntry(index),
-                            icon: Icon(Icons.remove_circle_outline,
-                                color: context.danger, size: 20),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: AppConstants.spaceMd),
-              Divider(height: 1, thickness: 0.5, color: context.border),
-              const SizedBox(height: AppConstants.spaceMd),
-            ],
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.screenEdgeH),
-              child: Text(
-                _entries.isEmpty ? 'أضف نوع زيارة' : 'إضافة نوع جديد',
-                style: AppTextStyles.labelChip(context)
-                    .copyWith(color: context.textSecondary),
-              ),
-            ),
-            const SizedBox(height: AppConstants.spaceSm),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.screenEdgeH),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedTypeId,
-                      hint: Text('اختر النوع',
-                          style: AppTextStyles.bodyMedium(context)
-                              .copyWith(color: context.textHint)),
-                      items: _availableTypes.map((t) {
-                        return DropdownMenuItem(
-                          value: t['id'] as String,
-                          child: Text(t['name'] as String,
-                              style: AppTextStyles.bodyMedium(context)),
-                        );
-                      }).toList(),
-                      onChanged: (val) => setState(() => _selectedTypeId = val),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: context.surface,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppConstants.radiusInput),
-                          borderSide: BorderSide(color: context.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: context.border)),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppConstants.spaceMd, vertical: 14),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppConstants.spaceMd),
-                  Expanded(
-                    flex: 2,
-                    child: TextField(
-                      controller: _priceController,
-                      keyboardType: TextInputType.number,
-                      textDirection: TextDirection.ltr,
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        hintText: 'السعر',
-                        hintStyle: AppTextStyles.bodyMedium(context)
-                            .copyWith(color: context.textHint),
-                        filled: true,
-                        fillColor: context.surface,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppConstants.radiusInput),
-                          borderSide: BorderSide(color: context.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: context.border)),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppConstants.spaceMd, vertical: 14),
-                      ),
-                      style: AppTextStyles.dataNumeric(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppConstants.spaceMd),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.screenEdgeH),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _selectedTypeId != null ? _addEntry : null,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: Text(AppStrings.add,
-                      style: AppTextStyles.bodyLarge(context)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.primary.withAlpha(76)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppConstants.radiusButton),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppConstants.spaceLg),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.screenEdgeH),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _entries.isNotEmpty && !_isSaving ? _save : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryContainer,
-                    foregroundColor: AppColors.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppConstants.radiusButton),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.onPrimary))
-                      : Text(AppStrings.save,
-                          style: AppTextStyles.headlineSmall(context)),
-                ),
-              ),
-            ),
-          ],
-          SizedBox(
-              height:
-                  MediaQuery.of(context).padding.bottom + AppConstants.spaceMd),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSaveButton(BuildContext context, VisitTypesState state) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: state.addedEntries.isNotEmpty && !state.isSaving
+              ? () => context.read<VisitTypesCubit>().save(doctorId: doctorId, clinicId: clinicId)
+              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: context.primaryContainer,
+            foregroundColor: context.onPrimary,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+            ),
+            elevation: 0,
+          ),
+          child: state.isSaving
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: context.onPrimary),
+                )
+              : Text(AppStrings.save, style: AppTextStyles.headlineSmall(context)),
+        ),
       ),
     );
   }

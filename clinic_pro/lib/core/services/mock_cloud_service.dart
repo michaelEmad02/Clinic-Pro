@@ -130,7 +130,7 @@ class MockCloudService implements ICloudService {
   // دالة مساعدة للحصول على بيانات الجدول من MockData
   List<Map<String, dynamic>> _getTableData(String table) {
     switch (table) {
-      case 'owners':
+      case 'Owners':
         return MockData.owners;
       case 'users':
         return MockData.users;

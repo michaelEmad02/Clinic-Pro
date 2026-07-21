@@ -2,12 +2,41 @@ import 'package:flutter/material.dart';
 import '../themes/app_colors.dart';
 import '../constants/app_constants.dart';
 
+import '../utils/responsive_helper.dart';
+
 class AppBottomSheet {
   static Future<T?> show<T>({
     required BuildContext context,
     required Widget child,
     bool isScrollControlled = true,
   }) {
+    if (!ResponsiveHelper.isMobile(context)) {
+      return showDialog<T>(
+        context: context,
+        builder: (context) {
+          final maxHeight = MediaQuery.sizeOf(context).height * 0.85;
+          return Dialog(
+            backgroundColor: context.surfaceColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: AppConstants.maxDialogWidth,
+                maxHeight: maxHeight,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.spaceMd),
+                child: SingleChildScrollView(
+                  child: child,
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: isScrollControlled,

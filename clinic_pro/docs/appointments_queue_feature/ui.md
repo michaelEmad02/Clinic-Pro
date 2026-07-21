@@ -5,11 +5,10 @@
 ## Screens
 
 | Screen | Route | Roles |
-|--------|-------|-----------|
+|--------|-------|-------|
 | Appointments | `/appointments` | All |
 | Appointment Details | `/appointments/:id` | All |
 | Waiting Queue | `/queue` | All |
-| Add Appointment Sheet | — | All |
 
 ---
 
@@ -17,38 +16,35 @@
 
 ```
 Tabs: اليوم | الأسبوع | الكل
-List items: time (Inter Bold) + patient + doctor + type + status badge + (···)
 
-Urgent badge: shown if is_urgent = true (🚨 pill, warningLight bg)
-Arrived indicator: green dot + "وصل" if arrived_at != null
+List items (AppListItem):
+  وقت الموعد (Inter Bold) + اسم المريض + نوع الزيارة + Status Badge + (···)
+  لو is_urgent = true → 🚨 badge بجانب الاسم
+  لو arrived_at != null → نقطة خضراء + "وصل"
 
-(···) actions:
-  ✅ تأكيد الوصول     — shown when arrived_at = null AND status = 'scheduled'
-  🚨 تمييز كطارئ      — shown when status is not cancelled and not done
-  تأكيد الكشف          — doctor only → opens Prescription screen
-  تعديل الموعد        — shown when status is not done, not in_progress, and not cancelled
-  إلغاء الموعد        — shown when status is not done and not cancelled
-  حذف الموعد نهائياً   — shown when status is cancelled
-  تسجيل فاتورة        — shown when status is not cancelled and not done
+(···) Action Sheet:
+  ✅ تأكيد الوصول   — يظهر لو arrived_at = null AND status = 'scheduled'
+  🚨 تمييز كطارئ    — يظهر لو is_urgent = false
+  تأكيد الكشف       — للدكتور فقط → يفتح Prescription Screen
+  تعديل الموعد
+  إلغاء الموعد
   عرض التفاصيل
 
-FAB → Add Appointment Sheet
-
-Urgent indicator: Shows 🚨 emoji badge next to items if is_urgent = true
-
+FAB → Add Appointment Bottom Sheet
 ```
 
-### Add Appointment Sheet
+### Add Appointment Bottom Sheet
 
 ```
-Patient autocomplete + doctor dropdown + date/time pickers
-Visit type dropdown:
-  → fetches from doctor_appointment_types WHERE doctor_id = selected_doctor
-    filtered by current clinic_id first, fallback to clinic_id IS NULL
-  → shows: type name (from appointment_types.name) + price (from doctor_appointment_types.price)
-  → if doctor has no configured types: show "لم يتم إعداد أنواع الزيارات لهذا الطبيب"
-Notes field
-Urgent toggle: "حالة طارئة 🚨" at bottom before save button
+- Patient autocomplete
+- Doctor dropdown
+- Date + Time pickers
+- Visit type dropdown:
+    fetches doctor_appointment_types WHERE doctor_id = selected AND clinic_id = current
+    fallback to clinic_id IS NULL if no clinic-specific entry
+    shows: type name + price
+- Notes field
+- Urgent toggle: "حالة طارئة 🚨" (sets is_urgent = true)
 ```
 
 ---
@@ -56,13 +52,17 @@ Urgent toggle: "حالة طارئة 🚨" at bottom before save button
 ## Appointment Details Screen
 
 ```
-Status Timeline (4 steps): حُجز → وصل → داخل → منتهي
-  Step 2 (وصل) uses arrived_at timestamp
-  Step 3 (داخل) uses called_at timestamp
+Status Timeline (4 steps):
+  حُجز (created_at) → وصل (arrived_at) → داخل (called_at) → منتهي
 
-Urgent banner shown above data card if is_urgent = true
-Linked prescription card (if exists)
-Linked invoice card (if exists)
+Urgent banner (if is_urgent = true):
+  bg: #FEF3C7 | border: #F5A623 | icon: 🚨 | text: "حالة طارئة — أولوية قصوى"
+
+Sections:
+  بيانات الموعد: مريض + دكتور + نوع + سعر متوقع + وقت
+  الروشتة المرتبطة (if prescription exists)
+  الفاتورة المرتبطة (if invoice exists)
+
 Actions: تعديل | إلغاء
 ```
 
@@ -71,30 +71,110 @@ Actions: تعديل | إلغاء
 ## Waiting Queue Screen
 
 ```
-Realtime indicator (pulse dot) in AppBar
-Pattern indicator row below AppBar: shows active doctor_queue_rules.slots as chips
+AppBar: "قائمة الانتظار" + Realtime pulse dot (accent color)
 
-Sections (in display order):
-  🚨 Urgent section (if any waiting urgent patients)
-  Fixed entries (done/in_progress) — dimmed/highlighted per status
-  Waiting entries — sorted per QueueSorter algorithm
-  🔁 "دورة جديدة" divider between pattern cycles
+Row تحت الـ AppBar — يختلف حسب queue_system:
 
-Each queue item: number + avatar + name + visit type badge + (···)
-  (···) → تمييز كطارئ (if not already urgent)
+  arrival / booking:
+    "الترتيب: حسب [الحضور / وقت الحجز]" — caption, textSecondary
 
-Bottom: "استدعاء التالي →" button — fixed, full-width, primary
-  → sets called_at, status='in_progress' on next waiting entry
+  pattern:
+    "النمط: [عادي][عادي][عادي][مستعجل] 🔁" — chips
+
+  scheduled:
+    "متوسط الكشف: X دقيقة" — caption, textSecondary
+
+───────────────────────────────────────────
+
+Queue List:
+
+  [URGENT SECTION — if any is_urgent patients]
+  Card بخلفية #FEF3C7 + right border 4px #F5A623 (RTL: left)
+
+  [FIXED entries — done/in_progress]
+  مُعتمة — لا أكشن
+
+  [WAITING entries — sorted per QueueSorter]
+  كل item:
+    رقم الدور + Avatar + اسم المريض + نوع الزيارة badge + (···)
+
+    [queue_system = 'scheduled' فقط]
+    الوقت المتوقع: 10:30 ص (Inter Bold, textSecondary)
+
+    in_progress item:
+      right border 4px #1A6B8A | bg: #EAF4F8
+      badge: "داخل الآن"
+
+    [pattern فقط]
+    "دورة جديدة" divider بين كل cycle
+
+  (···) → "تمييز كطارئ" (لو is_urgent = false)
+
+───────────────────────────────────────────
+
+Bottom (fixed):
+  [استدعاء التالي →]
+  Primary, full-width, height 52px
+  → sets called_at + status = 'in_progress' on next confirmed entry
 ```
 
 ---
 
-## Settings — Queue Rule Builder (Doctor only)
+## Settings — Queue System Section (Doctor only)
 
 ```
-Drag & drop slot builder in Settings screen (Doctor only):
-- Add/remove/reorder slot types: عادي | مستعجل | إعادة | استشارة
-- Live preview of resulting queue order
-- Cycle divider shown in preview between each full pattern repetition
-- Saves to doctor_queue_rules table
+Section "نظام قائمة الانتظار":
+
+  نوع النظام (Radio buttons):
+  ● ترتيب الحضور     — الأبسط، مين وصل أول يدخل أول
+  ○ ترتيب الحجز      — حسب وقت الموعد المحجوز
+  ○ نمط مخصص        — الدكتور يبني نمطه الخاص
+  ○ مواعيد بوقت محدد — كل مريض له وقت متوقع
+
+  [لو اختار "نمط مخصص"]
+  → يظهر Queue Rule Builder (drag & drop slots)
+    Slot types: عادي | مستعجل | إعادة | استشارة
+
+  [لو اختار "مواعيد بوقت محدد"]
+  → يظهر:
+    متوسط وقت الزيارة:
+    ┌──────────────────┐
+    │  15          دقيقة│
+    └──────────────────┘
+
+Save → UPSERT doctor_queue_rules:
+  queue_system = selected
+  slots / cycle_length → only if pattern
+  avg_visit_minutes   → only if scheduled
+  (other fields set to null)
 ```
+
+### Queue Rule Builder (pattern only)
+
+```
+Drag & drop slot cards (64×64px each):
+  عادي:    bg #EAF4F8, border #1A6B8A
+  مستعجل:  bg #FEF3C7, border #F5A623
+  إعادة:   bg #EAF3DE, border #3B6D11
+  استشارة: bg #F7F9FC, border #E2E8F0
+
+[+ أضف نوع] button
+
+Live preview:
+  Shows mock patients sorted by the current pattern
+  "دورة جديدة" divider at correct positions
+
+Save → sets queue_system = 'pattern' + slots + cycle_length
+```
+
+---
+
+## Queue Item States (visual)
+
+| الحالة | المظهر |
+|--------|--------|
+| done | معتم، لا أكشن |
+| in_progress | right border primary + bg primaryLight + badge "داخل الآن" |
+| is_urgent + waiting | right border warning + bg warningLight + 🚨 badge |
+| normal waiting | white bg، badge بنوع الزيارة |
+| scheduled system | + وقت متوقع أسفل الاسم |

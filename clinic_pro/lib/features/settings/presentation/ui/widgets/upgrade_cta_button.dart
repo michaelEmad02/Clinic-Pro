@@ -1,8 +1,9 @@
 import 'package:clinic_pro/core/constants/route_constants.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_constants.dart';
-import '../../../../../core/themes/app_colors.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
 class UpgradeCtaButton extends StatelessWidget {
@@ -28,12 +29,12 @@ class UpgradeCtaButton extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('ارتقِ بعيادتك إلى المستوى التالي',
+          Text(AppStrings.upgradeTitle,
               style: AppTextStyles.headlineMedium(context)
                   .copyWith(color: context.onPrimary)),
           const SizedBox(height: AppConstants.spaceSm),
           Text(
-              'احصل على مساحة تخزين غير محدودة، فروع متعددة، وميزات الذكاء الاصطناعي المتقدمة.',
+              AppStrings.upgradeDesc,
               style: AppTextStyles.bodyMedium(context)
                   .copyWith(color: context.onPrimaryContainer)),
           const SizedBox(height: AppConstants.spaceMd),
@@ -44,7 +45,7 @@ class UpgradeCtaButton extends StatelessWidget {
                 context.push(RouteConstants.onboardingPlan);
               },
               icon: const Icon(Icons.rocket_launch, size: 18),
-              label: const Text('ترقية الخطة الآن'),
+              label: Text(AppStrings.upgradeNow),
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.surface,
                 foregroundColor: context.primary,

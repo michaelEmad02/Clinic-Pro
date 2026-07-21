@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
@@ -40,12 +41,12 @@ class TrialCountdownCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('تنتهي الفترة التجريبية قريباً',
+                Text(AppStrings.trialEndingSoon,
                     style: AppTextStyles.headlineSmall(context)
                         .copyWith(color: context.warningText)),
                 const SizedBox(height: 2),
                 Text(
-                    'قم بترقية باقتك الآن لضمان استمرارية الوصول إلى جميع بيانات مرضاك بدون انقطاع.',
+                    AppStrings.trialDesc,
                     style: AppTextStyles.bodyMedium(context)
                         .copyWith(color: context.warningText.withAlpha(200))),
               ],
@@ -70,7 +71,7 @@ class TrialCountdownCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       fontSize: 28,
                     )),
-                Text('أيام متبقية',
+                Text(AppStrings.daysRemaining,
                     style: AppTextStyles.caption(context)
                         .copyWith(color: context.warningText)),
               ],

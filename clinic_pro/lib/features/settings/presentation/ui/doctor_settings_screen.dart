@@ -4,13 +4,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../auth/presentation/manager/auth_cubit.dart';
 import '../manager/queue_pattern_cubit.dart';
 import '../manager/queue_pattern_state.dart';
 import '../manager/settings_cubit.dart';
 import '../manager/settings_state.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import 'widgets/settings_account_section.dart';
 import 'widgets/settings_clinic_section.dart';
 import 'widgets/settings_logout_section.dart';
@@ -28,6 +31,7 @@ class DoctorSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthCubit>().state.user;
     return BlocProvider(
       create: (_) => sl<QueuePatternCubit>()..loadPattern(),
       child: Scaffold(
@@ -57,38 +61,55 @@ class DoctorSettingsScreen extends StatelessWidget {
                   child: Text('${AppStrings.error}: ${state.error}',
                       style: AppTextStyles.bodyLarge(context)));
             }
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.screenEdgeH),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppConstants.spaceMd),
-                  SettingsAccountSection(
-                    name: state.userName,
-                    subtitle: state.userSpecialty ?? AppStrings.generalDoctor,
-                    avatarUrl: state.userAvatarUrl,
-                    layout: AccountSectionLayout.centered,
-                    roleBadge: AppStrings.doctorRoleLabel,
-                    showSectionTitle: false,
-                    onEdit: () => EditProfileSheet.show(context),
+            return RefreshIndicator(
+              onRefresh: () async {
+                final role = user?.role ?? StaffRoles.doctor;
+                await context
+                    .read<SettingsCubit>()
+                    .loadSettings(role, user?.id ?? '');
+              },
+              child: ResponsiveHelper.responsiveCenter(
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.screenEdgeH),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: AppConstants.spaceMd),
+                      SettingsAccountSection(
+                        name: user?.name ?? '',
+                        email: user?.email ?? '',
+                        subtitle: user?.specialty ?? AppStrings.generalDoctor,
+                        avatarUrl: user?.imageUrl,
+                        layout: AccountSectionLayout.centered,
+                        roleBadge: AppStrings.doctorRoleLabel,
+                        showSectionTitle: false,
+                        onEdit: () => EditProfileSheet.show(context),
+                      ),
+                      const SizedBox(height: AppConstants.spaceLg),
+                      _buildManagementSection(context),
+                      const SizedBox(height: AppConstants.spaceLg),
+                      SettingsClinicSection(
+                        clinicName: state.clinicEntity?.name ?? '',
+                        clinicAddress: state.clinicEntity?.address ?? '',
+                        onChangeClinic: () => ClinicPickerSheet.show(context),
+                      ),
+                      const SizedBox(height: AppConstants.spaceLg),
+                      _buildQueuePatternSection(context),
+                      const SizedBox(height: AppConstants.spaceLg),
+                      _buildOtherSection(context),
+                      const SizedBox(height: AppConstants.spaceLg),
+                      // زر العودة كمالك (يظهر فقط إذا كان المالك يعمل كطبيب)
+                      if (context.read<AuthCubit>().isOwnerActingAsDoctor) ...[
+                        _buildSwitchBackSection(context),
+                        const SizedBox(height: AppConstants.spaceLg),
+                      ],
+                      const SettingsFooter(showSystemStatus: true),
+                      const SizedBox(height: 16),
+                    ],
                   ),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  _buildManagementSection(context),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  SettingsClinicSection(
-                    clinicName: state.clinicName,
-                    clinicAddress: state.clinicAddress,
-                    onChangeClinic: () => ClinicPickerSheet.show(context),
-                  ),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  _buildQueuePatternSection(context),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  _buildOtherSection(context),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  const SettingsFooter(showSystemStatus: true),
-                  const SizedBox(height: 16),
-                ],
+                ),
               ),
             );
           },
@@ -140,9 +161,17 @@ class DoctorSettingsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(AppStrings.currentPattern,
-              style: AppTextStyles.bodyMedium(context)
-                  .copyWith(color: context.textSecondary)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppStrings.currentPattern,
+                style: AppTextStyles.bodyMedium(context)
+                    .copyWith(color: context.textSecondary),
+              ),
+              const _QueueSystemNameBadge(),
+            ],
+          ),
           const SizedBox(height: AppConstants.spaceSm),
           const _QueuePatternChips(),
           const SizedBox(height: AppConstants.spaceMd),
@@ -150,9 +179,11 @@ class DoctorSettingsScreen extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
               onPressed: () => EditQueuePatternSheet.show(context),
-              label: Text(AppStrings.edit,
-                  style: AppTextStyles.bodyLarge(context)
-                      .copyWith(color: context.textPrimary)),
+              label: Text(
+                AppStrings.edit,
+                style: AppTextStyles.bodyLarge(context)
+                    .copyWith(color: context.textPrimary),
+              ),
               icon: Icon(Icons.chevron_left, color: context.primary, size: 18),
             ),
           ),
@@ -183,6 +214,67 @@ class DoctorSettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+  /// قسم العودة إلى لوحة تحكم المالك
+  Widget _buildSwitchBackSection(BuildContext context) {
+    return SectionCard(
+      title: '',
+      child: Column(
+        children: [
+          NavSettingsItem(
+            icon: Icons.admin_panel_settings_outlined,
+            label: AppStrings.switchBackToOwner,
+            onTap: () {
+              // العودة إلى دور المالك والانتقال للوحة تحكم المالك
+              context.read<AuthCubit>().switchBackToOwner();
+              context.go(RouteConstants.ownerDashboard);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QueueSystemNameBadge extends StatelessWidget {
+  const _QueueSystemNameBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<QueuePatternCubit, QueuePatternState>(
+      builder: (context, state) {
+        final name = _getSystemName(state.queueSystem);
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: context.primaryLightColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            name,
+            style: AppTextStyles.caption(context).copyWith(
+              color: context.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getSystemName(String system) {
+    switch (system) {
+      case 'booking':
+        return AppStrings.bookingOrder;
+      case 'pattern':
+        return AppStrings.customPattern;
+      case 'scheduled':
+        return AppStrings.scheduledAppointments;
+      case 'arrival':
+      default:
+        return AppStrings.arrivalOrder;
+    }
+  }
 }
 
 class _QueuePatternChips extends StatelessWidget {
@@ -192,6 +284,9 @@ class _QueuePatternChips extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<QueuePatternCubit, QueuePatternState>(
       builder: (context, state) {
+        if (state.queueSystem != 'pattern') {
+          return const SizedBox.shrink();
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

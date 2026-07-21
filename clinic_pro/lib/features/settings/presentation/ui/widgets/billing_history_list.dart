@@ -18,7 +18,7 @@ class BillingHistoryList extends StatelessWidget {
             Text(AppStrings.billingHistory, style: AppTextStyles.headlineSmall(context)),
             TextButton(
               onPressed: () {},
-              child: Text(AppStrings.viewAll, style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.primary)),
+              child: Text(AppStrings.viewAll, style: AppTextStyles.bodyMedium(context).copyWith(color: context.primary)),
             ),
           ],
         ),
@@ -26,9 +26,9 @@ class BillingHistoryList extends StatelessWidget {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.surface,
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            border: Border.all(color: AppColors.border, width: 0.5),
+            border: Border.all(color: context.border, width: 0.5),
             boxShadow: const [
               BoxShadow(color: Color(0x14000000), blurRadius: 3, offset: Offset(0, 1)),
             ],
@@ -37,12 +37,12 @@ class BillingHistoryList extends StatelessWidget {
             children: [
               _buildInvoiceItem(
                 context,
-                date: '24 سبتمبر، 2023',
-                amount: '0 ريال',
+                date: AppStrings.isArabic ? '24 سبتمبر، 2023' : 'Sep 24, 2023',
+                amount: '0 ${AppStrings.sar}',
                 invoice: '#INV-2309',
                 status: AppStrings.trial,
               ),
-              const Divider(height: 1, thickness: 0.5, color: AppColors.border, indent: AppConstants.spaceMd, endIndent: AppConstants.spaceMd),
+              Divider(height: 1, thickness: 0.5, color: context.border, indent: AppConstants.spaceMd, endIndent: AppConstants.spaceMd),
               _buildEmptyState(context),
             ],
           ),
@@ -65,11 +65,11 @@ class BillingHistoryList extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceContainer,
+            decoration: BoxDecoration(
+              color: context.surfaceContainerLow,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.receipt_long, color: AppColors.textSecondary, size: 20),
+            child: Icon(Icons.receipt_long, color: context.textSecondary, size: 20),
           ),
           const SizedBox(width: AppConstants.spaceMd),
           Expanded(
@@ -80,9 +80,9 @@ class BillingHistoryList extends StatelessWidget {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    Text(date, style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary)),
+                    Text(date, style: AppTextStyles.caption(context).copyWith(color: context.textSecondary)),
                     const SizedBox(width: AppConstants.spaceSm),
-                    Container(width: 4, height: 4, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.border)),
+                    Container(width: 4, height: 4, decoration: BoxDecoration(shape: BoxShape.circle, color: context.border)),
                     const SizedBox(width: AppConstants.spaceSm),
                     Text(amount, style: AppTextStyles.dataNumeric(context)),
                   ],
@@ -93,10 +93,10 @@ class BillingHistoryList extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainer,
+              color: context.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppConstants.radiusChip),
             ),
-            child: Text(status, style: AppTextStyles.labelChip(context).copyWith(color: AppColors.textSecondary)),
+            child: Text(status, style: AppTextStyles.labelChip(context).copyWith(color: context.textSecondary)),
           ),
         ],
       ),
@@ -108,15 +108,15 @@ class BillingHistoryList extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.spaceLg),
       decoration: BoxDecoration(
-        color: AppColors.surfaceBright,
+        color: context.surfaceBright,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppConstants.radiusCard - 1)),
       ),
       child: Column(
         children: [
-          const Icon(Icons.history, size: 48, color: AppColors.border),
+          Icon(Icons.history, size: 48, color: context.border),
           const SizedBox(height: AppConstants.spaceSm),
           Text(AppStrings.noBillingHistory,
-              style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
+              style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary)),
         ],
       ),
     );

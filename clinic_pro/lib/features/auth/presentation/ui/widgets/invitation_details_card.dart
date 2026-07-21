@@ -8,7 +8,7 @@ import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/constants/staff_roles.dart';
-import '../../../../staff/domain/entities/invitation_entity.dart';
+import '../../../../staff_and_invitations/domain/entities/invitation_entity.dart';
 
 class InvitationDetailsCard extends StatelessWidget {
   final InvitationEntity invitation;

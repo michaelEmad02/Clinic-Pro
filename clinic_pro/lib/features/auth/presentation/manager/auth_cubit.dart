@@ -22,6 +22,17 @@ class AuthCubit extends Cubit<AuthState> {
   final RegisterOwnerUseCase _registerOwnerUseCase;
   final LogoutUseCase _logoutUseCase;
 
+  /// الدور الأصلي للمستخدم (يُحفظ عند التبديل بين الأدوار)
+  StaffRoles? _originalRole;
+
+  /// هل المستخدم مالك أصلي يعمل حالياً بدور مختلف؟
+  bool get isOwnerActingAsDoctor =>
+      _originalRole == StaffRoles.owner &&
+      state.user?.role == StaffRoles.doctor;
+
+  /// الدور الأصلي للمستخدم
+  StaffRoles? get originalRole => _originalRole;
+
   AuthCubit(
     this._getCurrentUserUseCase,
     this._loginWithGoogleUseCase,
@@ -133,5 +144,45 @@ class AuthCubit extends Cubit<AuthState> {
       (failure) => emit(AuthError(message: failure.message)),
       (_) => emit(AuthUnauthenticated()),
     );
+  }
+
+  /// تحديث بيانات المستخدم الحالية محلياً لتنعكس على الواجهات
+  void updateUserData({
+    required String name,
+    required String phone,
+    String? address,
+    String? imageUrl,
+  }) {
+    if (state is AuthAuthenticated) {
+      final currentUser = (state as AuthAuthenticated).user;
+      final updatedUser = currentUser.copyWith(
+        name: name,
+        phone: phone,
+        address: address ?? currentUser.address,
+        imageUrl: imageUrl ?? currentUser.imageUrl,
+      );
+      emit(AuthAuthenticated(user: updatedUser));
+    }
+  }
+
+  /// تبديل الدور من مالك إلى طبيب (عرض لوحة تحكم الطبيب)
+  void switchToDoctor() {
+    if (state is AuthAuthenticated) {
+      final currentUser = (state as AuthAuthenticated).user;
+      // حفظ الدور الأصلي للعودة إليه لاحقاً
+      _originalRole = currentUser.role;
+      final updatedUser = currentUser.copyWith(role: StaffRoles.doctor);
+      emit(AuthAuthenticated(user: updatedUser));
+    }
+  }
+
+  /// العودة من دور الطبيب إلى دور المالك الأصلي
+  void switchBackToOwner() {
+    if (state is AuthAuthenticated && _originalRole == StaffRoles.owner) {
+      final currentUser = (state as AuthAuthenticated).user;
+      final updatedUser = currentUser.copyWith(role: StaffRoles.owner);
+      _originalRole = null;
+      emit(AuthAuthenticated(user: updatedUser));
+    }
   }
 }

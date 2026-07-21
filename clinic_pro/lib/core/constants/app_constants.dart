@@ -7,7 +7,10 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   // معرف العيادة النشطة حالياً على مستوى التطبيق (للمحاكاة ودعم العيادات المتعددة)
-  static String activeClinicId = 'c-1';
+  static String activeClinicId = '';
+
+  // معرف الطبيب النشط حالياً على مستوى التطبيق (خاص بالسكرتارية ودعم الأطباء المتعددين)
+  static String activeDoctorId = '';
 
   // أقطار الحواف الدائرية للبطاقات والأزرار والحقول (Border Radius)
   static const double radiusCard = 16.0;
@@ -25,6 +28,10 @@ class AppConstants {
   static const double spaceMd = 16.0;
   static const double spaceLg = 24.0;
   static const double spaceXl = 32.0;
+
+  // هوامش وتحديدات العرض للشاشات المتجاوبة (Responsive Constraints)
+  static const double maxContentWidth = 720.0;
+  static const double maxDialogWidth = 560.0;
 
   // هوامش الشاشة الافتراضية
   static const double screenEdgeH = 16.0;

@@ -29,8 +29,8 @@ class MockAuthServices implements IAuthServices {
 
   @override
   Future<void> signInWithGoogle() async {
-    _currentUserId = 'u-owner-1';
-    _currentUserEmail = 'owner@clinicpro.com';
+    _currentUserId =  "6410f855-5e71-4d6f-ac8c-2df0d31020a0";
+    _currentUserEmail = 'figo1444gm@gmail.com';
   }
 
   @override

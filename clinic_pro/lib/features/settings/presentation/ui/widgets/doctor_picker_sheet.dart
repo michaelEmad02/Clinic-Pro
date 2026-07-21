@@ -1,7 +1,3 @@
-// ────────────────────────────────────────────────────────
-// شريحة اختيار الطبيب النشط للسكرتيرة (DoctorPickerSheet)
-// ────────────────────────────────────────────────────────
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
@@ -9,6 +5,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../auth/presentation/manager/auth_cubit.dart';
 import '../../manager/settings_cubit.dart';
 import '../../manager/settings_state.dart';
 
@@ -18,8 +15,11 @@ class DoctorPickerSheet extends StatelessWidget {
   static Future<void> show(BuildContext context) {
     return AppBottomSheet.show(
       context: context,
-      child: BlocProvider.value(
-        value: context.read<SettingsCubit>(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<SettingsCubit>()),
+          BlocProvider.value(value: context.read<AuthCubit>()),
+        ],
         child: const DoctorPickerSheet(),
       ),
     );
@@ -27,6 +27,7 @@ class DoctorPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthCubit>().state.user;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Column(
@@ -39,7 +40,7 @@ class DoctorPickerSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                  color: context.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -53,7 +54,7 @@ class DoctorPickerSheet extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: AppColors.onSurfaceVariant),
+                  icon: Icon(Icons.close, color: context.textSecondary),
                 ),
               ],
             ),
@@ -88,7 +89,13 @@ class DoctorPickerSheet extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: AppConstants.spaceSm),
                       child: InkWell(
                         onTap: () {
-                          context.read<SettingsCubit>().changeActiveDoctor(docId);
+                          if (user != null) {
+                            context.read<SettingsCubit>().changeActiveDoctor(
+                                  user.id,
+                                  state.clinicEntity?.id ?? '',
+                                  docId,
+                                );
+                          }
                           Navigator.pop(context);
                         },
                         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
@@ -132,7 +139,7 @@ class DoctorPickerSheet extends StatelessWidget {
                                     Text(
                                       specialty,
                                       style: AppTextStyles.bodyMedium(context).copyWith(
-                                        color: isActive ? AppColors.onSurfaceVariant : AppColors.textSecondary,
+                                        color: isActive ? context.textSecondary : context.textSecondary,
                                       ),
                                     ),
                                   ],

@@ -20,13 +20,13 @@ class CurrentPlanCard extends StatelessWidget {
     switch (planKey) {
       case 'pro':
       case 'growth':
-        return 'الباقة الاحترافية (Pro)';
+        return AppStrings.isArabic ? 'الباقة الاحترافية (Pro)' : 'Pro Plan';
       case 'enterprise':
       case 'professional':
-        return 'باقة المؤسسات (Enterprise)';
+        return AppStrings.isArabic ? 'باقة المؤسسات (Enterprise)' : 'Enterprise Plan';
       case 'basic':
       default:
-        return 'الباقة الأساسية (Basic)';
+        return AppStrings.isArabic ? 'الباقة الأساسية (Basic)' : 'Basic Plan';
     }
   }
 
@@ -34,13 +34,13 @@ class CurrentPlanCard extends StatelessWidget {
     switch (planKey) {
       case 'pro':
       case 'growth':
-        return 'الأكثر طلباً، مثالية للعيادات المتوسطة والنمو السريع.';
+        return AppStrings.isArabic ? 'الأكثر طلباً، مثالية للعيادات المتوسطة والنمو السريع.' : 'Most popular, ideal for medium clinics and rapid growth.';
       case 'enterprise':
       case 'professional':
-        return 'مثالية للمراكز الطبية الكبيرة والمستشفيات المتكاملة.';
+        return AppStrings.isArabic ? 'مثالية للمراكز الطبية الكبيرة والمستشفيات المتكاملة.' : 'Ideal for large medical centers and integrated hospitals.';
       case 'basic':
       default:
-        return 'مثالية للعيادات الناشئة والممارسين المستقلين.';
+        return AppStrings.isArabic ? 'مثالية للعيادات الناشئة والممارسين المستقلين.' : 'Ideal for emerging clinics and independent practitioners.';
     }
   }
 
@@ -105,9 +105,9 @@ class CurrentPlanCard extends StatelessWidget {
             final maxStaff = planFeatures['max_staff'];
             final maxPatients = planFeatures['max_patients'];
 
-            featuresList.add('دعم حتى $maxClinics عيادات نشطة');
-            featuresList.add('دعم حتى $maxStaff مستخدمين من طاقم العمل');
-            featuresList.add('دعم حتى $maxPatients مريض مسجل');
+            featuresList.add(AppStrings.isArabic ? 'دعم حتى $maxClinics عيادات نشطة' : 'Support up to $maxClinics active clinics');
+            featuresList.add(AppStrings.isArabic ? 'دعم حتى $maxStaff مستخدمين من طاقم العمل' : 'Support up to $maxStaff staff members');
+            featuresList.add(AppStrings.isArabic ? 'دعم حتى $maxPatients مريض مسجل' : 'Support up to $maxPatients registered patients');
 
             // Parse jsonb features object: e.g. {"print": [{"value": true}, {"title": "الطباعة"}]}
             final rawFeatures = planFeatures['features'];
@@ -136,19 +136,19 @@ class CurrentPlanCard extends StatelessWidget {
                   : '7';
                   
           featuresList = planKey == 'pro' || planKey == 'growth'
-              ? ['دعم حتى 3 عيادات نشطة', 'دعم حتى 5 مستخدمين', 'دعم حتى 2000 مريض']
+              ? (AppStrings.isArabic ? ['دعم حتى 3 عيادات نشطة', 'دعم حتى 5 مستخدمين', 'دعم حتى 2000 مريض'] : ['Support up to 3 active clinics', 'Support up to 5 staff members', 'Support up to 2000 patients'])
               : planKey == 'enterprise' || planKey == 'professional'
-                  ? ['دعم حتى 10 عيادات نشطة', 'دعم حتى 20 مستخدم', 'دعم حتى 10000 مريض']
-                  : ['دعم عيادة واحدة فقط', 'دعم مستخدمين اثنين', 'أقصى عدد مرضى: 500 مريض'];
+                  ? (AppStrings.isArabic ? ['دعم حتى 10 عيادات نشطة', 'دعم حتى 20 مستخدم', 'دعم حتى 10000 مريض'] : ['Support up to 10 active clinics', 'Support up to 20 staff members', 'Support up to 10000 patients'])
+                  : (AppStrings.isArabic ? ['دعم عيادة واحدة فقط', 'دعم مستخدمين اثنين', 'أقصى عدد مرضى: 500 مريض'] : ['Single clinic support', 'Support up to 2 staff members', 'Maximum 500 patients']);
         }
 
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.all(AppConstants.spaceLg),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.surface,
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            border: Border.all(color: AppColors.border, width: 0.5),
+            border: Border.all(color: context.border, width: 0.5),
             boxShadow: const [
               BoxShadow(color: Color(0x14000000), blurRadius: 3, offset: Offset(0, 1)),
             ],
@@ -163,14 +163,14 @@ class CurrentPlanCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
+                      color: context.primaryLightColor,
                       borderRadius: BorderRadius.circular(AppConstants.radiusChip),
-                      border: Border.all(color: AppColors.primary.withAlpha(50)),
+                      border: Border.all(color: context.primary.withAlpha(50)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.verified, size: 14, color: AppColors.primary),
+                        Icon(Icons.verified, size: 14, color: context.primary),
                         const SizedBox(width: 4),
                         Text(
                           planStatus == 'trial' || planStatus == 'trail'
@@ -178,7 +178,7 @@ class CurrentPlanCard extends StatelessWidget {
                               : planStatus == 'active'
                                   ? AppStrings.active
                                   : planStatus,
-                          style: AppTextStyles.labelChip(context).copyWith(color: AppColors.primary),
+                          style: AppTextStyles.labelChip(context).copyWith(color: context.primary),
                         ),
                       ],
                     ),
@@ -187,19 +187,19 @@ class CurrentPlanCard extends StatelessWidget {
               ),
               const SizedBox(height: AppConstants.spaceSm),
               Text(description,
-                  style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
+                   style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary)),
               
               const SizedBox(height: AppConstants.spaceMd),
-              const Divider(height: 1, thickness: 0.5, color: AppColors.border),
+              Divider(height: 1, thickness: 0.5, color: context.border),
               const SizedBox(height: AppConstants.spaceMd),
               
-              Text('ميزات الخطة:', style: AppTextStyles.headlineSmall(context).copyWith(fontSize: 14, fontWeight: FontWeight.bold)),
+              Text(AppStrings.isArabic ? 'ميزات الخطة:' : 'Plan Features:', style: AppTextStyles.headlineSmall(context).copyWith(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: AppConstants.spaceSm),
               ...featuresList.map((feature) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle, size: 16, color: AppColors.accent),
+                    Icon(Icons.check_circle, size: 16, color: context.accent),
                     const SizedBox(width: AppConstants.spaceSm),
                     Expanded(child: Text(feature, style: AppTextStyles.bodyMedium(context))),
                   ],
@@ -216,7 +216,7 @@ class CurrentPlanCard extends StatelessWidget {
                     fontSize: 32,
                   )),
                   const SizedBox(width: 4),
-                  Text('دولار / شهرياً', style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary)),
+                  Text(AppStrings.isArabic ? 'دولار / شهرياً' : '/ month', style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary)),
                 ],
               ),
             ],

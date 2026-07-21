@@ -3,7 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/error/auth_failure.dart';
-import 'package:clinic_pro/features/staff/domain/entities/invitation_entity.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/invitation_entity.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';

@@ -5,7 +5,7 @@ import 'package:clinic_pro/features/clinics/data/data_sources/clinics_remote_dat
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_statistics_entity.dart';
 import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';
-import 'package:clinic_pro/features/staff/domain/entities/staff_entity.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import 'package:dartz/dartz.dart';
 
 import 'package:clinic_pro/features/clinics/data/models/clinic_model.dart';

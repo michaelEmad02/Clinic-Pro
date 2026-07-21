@@ -7,9 +7,9 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../auth/presentation/manager/auth_cubit.dart';
-import '../../../../staff/domain/entities/staff_entity.dart';
-import '../../../../staff/presentation/manager/staff_cubit.dart';
-import '../../../../staff/presentation/manager/staff_state.dart';
+import '../../../../staff_and_invitations/domain/entities/staff_entity.dart';
+import '../../../../staff_and_invitations/presentation/manager/staff_cubit.dart';
+import '../../../../staff_and_invitations/presentation/manager/staff_state.dart';
 /// قائمة الأطباء في العيادة الحالية (تُمرر من الخارج)
 class AddExistingStaffSheet extends StatefulWidget {
   final String clinicId;

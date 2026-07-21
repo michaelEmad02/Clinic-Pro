@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../auth/presentation/manager/auth_cubit.dart';
 import '../manager/settings_cubit.dart';
 import '../manager/settings_state.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import 'widgets/shared_settings_widgets.dart';
 import 'widgets/settings_account_section.dart';
 import 'widgets/settings_clinic_section.dart';
@@ -23,6 +26,7 @@ class SecretarySettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthCubit>().state.user;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -49,37 +53,49 @@ class SecretarySettingsScreen extends StatelessWidget {
                   style: AppTextStyles.bodyLarge(context)),
             );
           }
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.screenEdgeH),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppConstants.spaceMd),
-                SettingsAccountSection(
-                  name: state.userName,
-                  subtitle: AppStrings.secretaryRoleLabel,
-                  avatarUrl: state.userAvatarUrl,
-                  layout: AccountSectionLayout.horizontal,
-                  showSectionTitle: true,
-                  onEdit: () => EditProfileSheet.show(context),
+          return RefreshIndicator(
+            onRefresh: () async {
+              final role = user?.role ?? StaffRoles.secretary;
+              await context
+                  .read<SettingsCubit>()
+                  .loadSettings(role, user?.id ?? '');
+            },
+            child: ResponsiveHelper.responsiveCenter(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.screenEdgeH),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: AppConstants.spaceMd),
+                    SettingsAccountSection(
+                      name: user?.name ?? '',
+                      email: user?.email ?? '',
+                      subtitle: AppStrings.secretaryRoleLabel,
+                      avatarUrl: user?.imageUrl,
+                      layout: AccountSectionLayout.horizontal,
+                      showSectionTitle: true,
+                      onEdit: () => EditProfileSheet.show(context),
+                    ),
+                    const SizedBox(height: AppConstants.spaceLg),
+                    _buildManagementSection(context),
+                    const SizedBox(height: AppConstants.spaceLg),
+                    SettingsClinicSection(
+                      clinicName: state.clinicEntity?.name ?? '',
+                      clinicAddress: state.clinicEntity?.address ?? '',
+                      onChangeClinic: () => ClinicPickerSheet.show(context),
+                    ),
+                    const SizedBox(height: AppConstants.spaceLg),
+                    _buildCurrentDoctorSection(context, state),
+                    const SizedBox(height: AppConstants.spaceLg),
+                    _buildOtherSection(context),
+                    const SizedBox(height: AppConstants.spaceXl),
+                    const SettingsFooter(),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                const SizedBox(height: AppConstants.spaceLg),
-                _buildManagementSection(context),
-                const SizedBox(height: AppConstants.spaceLg),
-                SettingsClinicSection(
-                  clinicName: state.clinicName,
-                  clinicAddress: state.clinicAddress,
-                  onChangeClinic: () => ClinicPickerSheet.show(context),
-                ),
-                const SizedBox(height: AppConstants.spaceLg),
-                _buildCurrentDoctorSection(context, state),
-                const SizedBox(height: AppConstants.spaceLg),
-                _buildOtherSection(context),
-                const SizedBox(height: AppConstants.spaceXl),
-                const SettingsFooter(),
-                const SizedBox(height: 16),
-              ],
+              ),
             ),
           );
         },

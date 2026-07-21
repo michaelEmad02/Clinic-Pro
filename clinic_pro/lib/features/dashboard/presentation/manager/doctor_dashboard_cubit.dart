@@ -6,11 +6,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:injectable/injectable.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../appointments/presentation/manager/appointments_repository.dart';
 import '../../../appointments/presentation/manager/appointments_state.dart';
 import 'doctor_dashboard_state.dart';
 
+@injectable
 class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
   final AppointmentsRepository _repository;
   final ICloudService _cloudService;
@@ -18,7 +20,8 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
   // معرف الطبيب الافتراضي للمحاكاة
   static const String _currentDoctorId = 'u-doc-1';
 
-  DoctorDashboardCubit(this._repository, this._cloudService) : super(DoctorDashboardInitial());
+  DoctorDashboardCubit(this._repository, this._cloudService)
+      : super(DoctorDashboardInitial());
 
   /// تحميل كافة بيانات لوحة التحكم من خلال المستودع والخدمات السحابية
   Future<void> loadDashboardData({bool autoCallNext = false}) async {
@@ -31,8 +34,8 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
         table: 'users',
         eq: {'id': _currentDoctorId},
       );
-      final doctorName = doctorResults.isNotEmpty 
-          ? doctorResults.first['name'] as String 
+      final doctorName = doctorResults.isNotEmpty
+          ? doctorResults.first['name'] as String
           : 'د. ياسر مصطفى';
 
       // جلب بيانات العيادة الحالية المحددة
@@ -47,13 +50,14 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
       // 2. تحميل كافة المواعيد لحساب الإحصائيات (المفلترة بالعيادة النشطة)
       final allAppts = await _repository.loadAppointments();
       final todayAppts = allAppts.where((a) {
-        return a['doctor_id'] == _currentDoctorId && 
-               a['clinic_id'] == AppConstants.activeClinicId &&
-               a['date'] == todayStr;
+        return a['doctor_id'] == _currentDoctorId &&
+            a['clinic_id'] == AppConstants.activeClinicId &&
+            a['date'] == todayStr;
       }).toList();
 
       // حساب عدد الحالات المكتملة لليوم
-      final completedCount = todayAppts.where((a) => a['status'] == 'done').length;
+      final completedCount =
+          todayAppts.where((a) => a['status'] == 'done').length;
 
       // حساب عدد الحالات المنتظرة لليوم (التي وصلت ولم يتم استدعاؤها بعد)
       final waitingCount = todayAppts.where((a) {
@@ -71,14 +75,18 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
           calledCount++;
         }
       }
-      final avgMinutes = calledCount > 0 ? (totalMinutes / calledCount).round() : 0;
-      final avgWaitingTime = avgMinutes > 0 ? _toArabicNumbers('$avgMinutes ${AppStrings.isArabic ? 'دقيقة' : 'min'}') : '—';
+      final avgMinutes =
+          calledCount > 0 ? (totalMinutes / calledCount).round() : 0;
+      final avgWaitingTime = avgMinutes > 0
+          ? _toArabicNumbers(
+              '$avgMinutes ${AppStrings.isArabic ? 'دقيقة' : 'min'}')
+          : '—';
 
       // 4. جلب المريض الحالي قيد الكشف إن وجد
-      final currentRaw = todayAppts.where((a) => a['status'] == 'in_progress').toList();
-      final AppointmentItem? currentPatient = currentRaw.isNotEmpty 
-          ? _mapAppointments(currentRaw).first 
-          : null;
+      final currentRaw =
+          todayAppts.where((a) => a['status'] == 'in_progress').toList();
+      final AppointmentItem? currentPatient =
+          currentRaw.isNotEmpty ? _mapAppointments(currentRaw).first : null;
 
       // 5. جلب وترتيب طابور الانتظار باستثناء المريض الحالي قيد الكشف
       final rawQueue = await _repository.loadQueue(_currentDoctorId, todayStr);
@@ -105,7 +113,8 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
         avgWaitingTime: avgWaitingTime,
       ));
     } catch (e) {
-      emit(DoctorDashboardError('${AppStrings.loadFailedMsg}: ${e.toString()}'));
+      emit(
+          DoctorDashboardError('${AppStrings.loadFailedMsg}: ${e.toString()}'));
     }
   }
 
@@ -187,12 +196,10 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
         prescriptionDiagnosis: prescriptions.isNotEmpty
             ? prescriptions.first['diagnosis'] as String?
             : null,
-        invoiceAmount: invoices.isNotEmpty
-            ? '${invoices.first['amount']}'
-            : null,
-        invoiceStatus: invoices.isNotEmpty
-            ? invoices.first['status'] as String?
-            : null,
+        invoiceAmount:
+            invoices.isNotEmpty ? '${invoices.first['amount']}' : null,
+        invoiceStatus:
+            invoices.isNotEmpty ? invoices.first['status'] as String? : null,
         invoiceNumber: invoices.isNotEmpty
             ? '#INV-${apptId.length > 4 ? apptId.substring(apptId.length - 4) : apptId}'
             : null,

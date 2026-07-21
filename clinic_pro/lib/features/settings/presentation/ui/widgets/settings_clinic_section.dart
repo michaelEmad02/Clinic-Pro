@@ -49,7 +49,7 @@ class SettingsClinicSection extends StatelessWidget {
                         color: context.primaryLightColor,
                         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                       ),
-                      child: const Icon(Icons.local_hospital, color: AppColors.primary, size: 20),
+                      child: Icon(Icons.local_hospital, color: context.primary, size: 20),
                     ),
                     const SizedBox(width: AppConstants.spaceMd),
                     Expanded(
@@ -78,9 +78,9 @@ class SettingsClinicSection extends StatelessWidget {
                       children: [
                         Text(
                           AppStrings.changeClinic,
-                          style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
+                          style: AppTextStyles.bodyMedium(context).copyWith(color: context.primary, fontWeight: FontWeight.bold),
                         ),
-                        const Icon(Icons.chevron_left, color: AppColors.primary, size: 20),
+                        Icon(Icons.chevron_left, color: context.primary, size: 20),
                       ],
                     ),
                   ),

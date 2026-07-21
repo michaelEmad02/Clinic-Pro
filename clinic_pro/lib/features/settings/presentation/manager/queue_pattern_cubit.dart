@@ -1,70 +1,150 @@
 // ────────────────────────────────────────────────────────
-// QueuePatternCubit — يدير نمط ترتيب طابور الطبيب عبر ICloudService
+// QueuePatternCubit — يدير نمط ترتيب طابور الطبيب عبر الـ UseCases
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/services/i_cloud_service.dart';
+import '../../domain/usecases/get_doctor_appointment_types_usecase.dart';
+import '../../domain/usecases/get_global_appointment_types_usecase.dart';
+import '../../domain/usecases/get_queue_rule_usecase.dart';
+import '../../domain/usecases/upsert_queue_rule_usecase.dart';
 import 'queue_pattern_state.dart';
 
 @injectable
 class QueuePatternCubit extends Cubit<QueuePatternState> {
-  final ICloudService _cloudService;
+  final GetQueueRuleUseCase _getQueueRuleUseCase;
+  final UpsertQueueRuleUseCase _upsertQueueRuleUseCase;
+  final GetDoctorAppointmentTypesUseCase _getDoctorAppointmentTypesUseCase;
+  final GetGlobalAppointmentTypesUseCase _getGlobalAppointmentTypesUseCase;
 
-  QueuePatternCubit(this._cloudService) : super(const QueuePatternState());
+  QueuePatternCubit(
+    this._getQueueRuleUseCase,
+    this._upsertQueueRuleUseCase,
+    this._getDoctorAppointmentTypesUseCase,
+    this._getGlobalAppointmentTypesUseCase,
+  ) : super(const QueuePatternState());
 
-  // معرف الطبيب الحالي (محاكاة)
-  static const _currentDoctorId = 'u-doc-1';
-  static const _currentClinicId = 'c-1';
+  // معرفات الطبيب والعيادة (يمكن جلبها ديناميكياً من Cubit الإعدادات الرئيسي أو الـ Auth)
+  String _doctorId = 'u-doc-1';
+  String _clinicId = 'c-1';
 
-  // معرف قاعدة الطابور المُحمَّلة
-  String? _loadedRuleId;
+  /// إعداد المعرفات وتعيينها قبل تحميل النمط
+  void init(String doctorId, String clinicId) {
+    _doctorId = doctorId;
+    _clinicId = clinicId;
+  }
 
-  /// تحميل النمط الحالي من ICloudService
+  /// جلب أنواع الزيارات المتاحة للطبيب عبر الـ UseCases
+  Future<List<Map<String, String>>> fetchAvailableVisitTypes() async {
+    final List<Map<String, String>> resultTypes = [];
+
+    final doctorResult = await _getDoctorAppointmentTypesUseCase(
+      doctorId: _doctorId,
+      clinicId: _clinicId,
+    );
+    final globalResult = await _getGlobalAppointmentTypesUseCase();
+
+    doctorResult.fold(
+      (_) {},
+      (doctorTypes) {
+        for (final dt in doctorTypes) {
+          if (dt.name != null && dt.name!.isNotEmpty) {
+            resultTypes.add({
+              'id': dt.appointmentTypeId,
+              'name': dt.name!,
+            });
+          }
+        }
+      },
+    );
+
+    // إذا لم تكن هناك أنواع مخصصة للطبيب، جلب أنواع الزيارات العامة
+    if (resultTypes.isEmpty) {
+      globalResult.fold(
+        (_) {},
+        (globalTypes) {
+          for (final gt in globalTypes) {
+            final name = gt['name'] as String? ?? '';
+            final id = gt['id'] as String? ?? '';
+            if (name.isNotEmpty) {
+              resultTypes.add({'id': id, 'name': name});
+            }
+          }
+        },
+      );
+    }
+
+    return resultTypes;
+  }
+
+  /// تحميل النمط الحالي من قاعدة البيانات
   Future<void> loadPattern() async {
     emit(state.copyWith(isLoading: true, error: null));
 
-    try {
-      final rules = await _cloudService.select(
-        table: 'doctor_queue_rules',
-        eq: {'doctor_id': _currentDoctorId, 'clinic_id': _currentClinicId},
-      );
+    final result = await _getQueueRuleUseCase(
+      doctorId: _doctorId,
+      clinicId: _clinicId,
+    );
 
-      if (rules.isEmpty) {
+    result.fold(
+      (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+      (rule) {
+        if (rule == null) {
+          emit(state.copyWith(
+            queueSystem: 'arrival',
+            slots: const [],
+            cycleLength: 0,
+            avgVisitMinutes: null,
+            isActive: false,
+            isLoading: false,
+            isDirty: false,
+          ));
+          return;
+        }
+
         emit(state.copyWith(
-          slots: [],
-          cycleLength: 0,
-          isActive: false,
+          queueSystem: rule.queueSystem,
+          slots: List.from(rule.slots),
+          slotLabels: List.filled(rule.slots.length, ''),
+          cycleLength: rule.slots.length,
+          avgVisitMinutes: rule.avgVisitMinutes,
+          isActive: true, // القوانين المسجلة في السيرفر نشطة افتراضياً
           isLoading: false,
           isDirty: false,
         ));
-        return;
-      }
+      },
+    );
+  }
 
-      final rule = rules.first;
-      _loadedRuleId = rule['id'] as String;
+  /// تغيير نظام قائمة الانتظار
+  void setQueueSystem(String system) {
+    emit(state.copyWith(
+      queueSystem: system,
+      isDirty: true,
+      error: null,
+    ));
+  }
 
-      final slots = (rule['slots'] as List<dynamic>?)?.cast<String>() ?? [];
-      final isActive = rule['is_active'] as bool? ?? false;
-
-      emit(state.copyWith(
-        slots: List.from(slots),
-        slotLabels: List.filled(slots.length, ''),
-        cycleLength: slots.length,
-        isActive: isActive,
-        isLoading: false,
-        isDirty: false,
-      ));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
-    }
+  /// تغيير متوسط وقت الكشف بالدقائق (لنظام scheduled)
+  void setAvgVisitMinutes(int? minutes) {
+    emit(state.copyWith(
+      avgVisitMinutes: minutes,
+      isDirty: true,
+      error: null,
+    ));
   }
 
   /// إضافة نوع كشف إلى نهاية النمط
   void addSlot(String slotType, {String label = ''}) {
     final updatedSlots = [...state.slots, slotType];
     final updatedLabels = [...state.slotLabels, label.isEmpty ? slotType : label];
-    emit(state.copyWith(slots: updatedSlots, slotLabels: updatedLabels, cycleLength: updatedSlots.length, isDirty: true, error: null));
+    emit(state.copyWith(
+      slots: updatedSlots,
+      slotLabels: updatedLabels,
+      cycleLength: updatedSlots.length,
+      isDirty: true,
+      error: null,
+    ));
   }
 
   /// حذف نوع كشف من النمط باستخدام الفهرس
@@ -73,7 +153,13 @@ class QueuePatternCubit extends Cubit<QueuePatternState> {
     final updatedSlots = [...state.slots]..removeAt(index);
     final updatedLabels = [...state.slotLabels];
     if (index < updatedLabels.length) updatedLabels.removeAt(index);
-    emit(state.copyWith(slots: updatedSlots, slotLabels: updatedLabels, cycleLength: updatedSlots.length, isDirty: true, error: null));
+    emit(state.copyWith(
+      slots: updatedSlots,
+      slotLabels: updatedLabels,
+      cycleLength: updatedSlots.length,
+      isDirty: true,
+      error: null,
+    ));
   }
 
   /// إعادة ترتيب الخانات (سحب وإفلات)
@@ -91,43 +177,38 @@ class QueuePatternCubit extends Cubit<QueuePatternState> {
       updatedLabels.insert(newIndex, newIndex < updatedLabels.length ? label : '');
     }
 
-    emit(state.copyWith(slots: updatedSlots, slotLabels: updatedLabels, cycleLength: updatedSlots.length, isDirty: true, error: null));
+    emit(state.copyWith(
+      slots: updatedSlots,
+      slotLabels: updatedLabels,
+      cycleLength: updatedSlots.length,
+      isDirty: true,
+      error: null,
+    ));
   }
 
-  /// حفظ النمط في ICloudService
+  /// حفظ النمط في قاعدة البيانات
   Future<void> savePattern() async {
     if (!state.isDirty) return;
     emit(state.copyWith(isSaving: true, error: null));
 
-    try {
-      if (_loadedRuleId != null) {
-        await _cloudService.update(
-          table: 'doctor_queue_rules',
-          data: {
-            'slots': List.from(state.slots),
-            'cycle_length': state.slots.length,
-          },
-          matchColumn: 'id',
-          matchValue: _loadedRuleId,
-        );
-      } else {
-        final newRule = {
-          'doctor_id': _currentDoctorId,
-          'clinic_id': _currentClinicId,
-          'slots': List.from(state.slots),
-          'cycle_length': state.slots.length,
-          'is_active': true,
-        };
-        final inserted = await _cloudService.insert(
-          table: 'doctor_queue_rules',
-          data: newRule,
-        );
-        _loadedRuleId = inserted['id'] as String;
-      }
+    final result = await _upsertQueueRuleUseCase(
+      doctorId: _doctorId,
+      clinicId: _clinicId,
+      queueSystem: state.queueSystem,
+      slots: state.slots,
+      cycleLength: state.slots.length,
+      avgVisitMinutes: state.avgVisitMinutes,
+    );
 
-      emit(state.copyWith(isSaving: false, isDirty: false, isActive: true));
-    } catch (e) {
-      emit(state.copyWith(isSaving: false, error: e.toString()));
-    }
+    result.fold(
+      (failure) => emit(state.copyWith(isSaving: false, error: failure.message)),
+      (_) {
+        emit(state.copyWith(
+          isSaving: false,
+          isDirty: false,
+          isActive: true,
+        ));
+      },
+    );
   }
 }

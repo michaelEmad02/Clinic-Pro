@@ -12,7 +12,7 @@ import '../../../../../core/constants/route_constants.dart';
 import 'staff_member_card.dart';
 import 'add_existing_staff_sheet.dart';
 import '../../../../../core/constants/staff_roles.dart';
-import '../../../../staff/domain/entities/staff_entity.dart';
+import '../../../../staff_and_invitations/domain/entities/staff_entity.dart';
 
 class ClinicStaffSection extends StatelessWidget {
   final String clinicId;

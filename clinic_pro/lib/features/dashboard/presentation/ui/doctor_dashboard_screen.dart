@@ -7,6 +7,7 @@ import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../../../core/widgets/app_responsive_scaffold.dart';
 import '../../../appointments/presentation/manager/appointments_repository.dart';
 import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../../../patients/presentation/ui/patients_screen.dart';
@@ -36,8 +37,38 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         sl<AppointmentsRepository>(),
         sl<ICloudService>(),
       )..loadDashboardData(),
-      child: Scaffold(
-        backgroundColor: context.backgroundColor,
+      child: AppResponsiveScaffold(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          if (index == 0) {
+            context.read<DoctorDashboardCubit>().loadDashboardData();
+          }
+        },
+        destinations: [
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.smart_home),
+            label: Text(AppStrings.home),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.calendar),
+            label: Text(AppStrings.appointments),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.users),
+            label: Text(AppStrings.patients),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.wallet),
+            label: Text(AppStrings.expenses),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(TablerIcons.settings),
+            label: Text(AppStrings.settings),
+          ),
+        ],
         appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
         body: IndexedStack(
           index: _currentIndex,

@@ -12,7 +12,8 @@ enum AccountSectionLayout { centered, horizontal }
 
 class SettingsAccountSection extends StatelessWidget {
   final String name;
-  final String subtitle;
+  final String email;
+  final String? subtitle;
   final String? avatarUrl;
   final VoidCallback? onEdit;
   final AccountSectionLayout layout;
@@ -22,6 +23,7 @@ class SettingsAccountSection extends StatelessWidget {
   const SettingsAccountSection({
     super.key,
     required this.name,
+    required this.email,
     required this.subtitle,
     this.avatarUrl,
     this.onEdit,
@@ -45,7 +47,8 @@ class SettingsAccountSection extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: context.primaryLightColor, width: 2),
+                  border:
+                      Border.all(color: context.primaryLightColor, width: 2),
                 ),
                 child: CircleAvatar(
                   radius: 40,
@@ -54,7 +57,8 @@ class SettingsAccountSection extends StatelessWidget {
                   child: !hasAvatar
                       ? Text(
                           firstChar,
-                          style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary, fontSize: 28),
+                          style: AppTextStyles.headlineMedium(context)
+                              .copyWith(color: context.primary, fontSize: 28),
                         )
                       : null,
                 ),
@@ -66,7 +70,7 @@ class SettingsAccountSection extends StatelessWidget {
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: AppColors.accent,
+                    color: context.accent,
                     shape: BoxShape.circle,
                     border: Border.all(color: context.surfaceColor, width: 2),
                   ),
@@ -75,14 +79,26 @@ class SettingsAccountSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppConstants.spaceMd),
-          Text(name, style: AppTextStyles.headlineMedium(context).copyWith(fontWeight: FontWeight.bold)),
+          Text(name,
+              style: AppTextStyles.headlineMedium(context).copyWith(
+                  fontWeight: FontWeight.bold, color: context.textPrimary)),
           const SizedBox(height: 4),
           Text(
-            subtitle,
-            style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary),
+            email,
+            style: AppTextStyles.headlineSmall(context).copyWith(
+                fontWeight: FontWeight.bold, color: context.textSecondary),
           ),
+          const SizedBox(height: AppConstants.spaceMd),
+          if (subtitle != null) ...[
+            Text(
+              subtitle!,
+              style: AppTextStyles.bodyMedium(context)
+                  .copyWith(color: context.textSecondary),
+            ),
+            const SizedBox(height: 4),
+          ],
           if (roleBadge != null) ...[
-            const SizedBox(height: AppConstants.spaceSm),
+            const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
@@ -92,7 +108,7 @@ class SettingsAccountSection extends StatelessWidget {
               child: Text(
                 roleBadge!,
                 style: AppTextStyles.labelChip(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -102,16 +118,18 @@ class SettingsAccountSection extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onEdit,
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppColors.primary, width: 1.5),
+              side: BorderSide(color: context.primary, width: 1.5),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusButton),
               ),
             ),
-            icon: const Icon(Icons.person_outline, size: 20, color: AppColors.primary),
+            icon: Icon(Icons.person_outline,
+                size: 20, color: context.primary),
             label: Text(
               AppStrings.editProfile,
-              style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+              style: AppTextStyles.bodyLarge(context).copyWith(
+                  color: context.primary, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -127,7 +145,8 @@ class SettingsAccountSection extends StatelessWidget {
             child: !hasAvatar
                 ? Text(
                     firstChar,
-                    style: AppTextStyles.headlineMedium(context).copyWith(color: AppColors.primary),
+                    style: AppTextStyles.headlineMedium(context)
+                        .copyWith(color: context.primary),
                   )
                 : null,
           ),
@@ -138,10 +157,14 @@ class SettingsAccountSection extends StatelessWidget {
               children: [
                 Text(name, style: AppTextStyles.headlineSmall(context)),
                 const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary),
-                ),
+                if (subtitle != null) ...[
+                  Text(
+                    subtitle!,
+                    style: AppTextStyles.bodyMedium(context)
+                        .copyWith(color: context.textSecondary),
+                  ),
+                  const SizedBox(height: 4),
+                ],
               ],
             ),
           ),
@@ -149,9 +172,11 @@ class SettingsAccountSection extends StatelessWidget {
             onPressed: onEdit,
             label: Text(
               AppStrings.editProfileShort,
-              style: AppTextStyles.bodyLarge(context).copyWith(color: AppColors.primary),
+              style: AppTextStyles.bodyLarge(context)
+                  .copyWith(color: context.primary),
             ),
-            icon: const Icon(Icons.arrow_back, color: AppColors.primary, size: 18),
+            icon: Icon(Icons.arrow_back,
+                color: context.primary, size: 18),
           ),
         ],
       );
@@ -162,10 +187,12 @@ class SettingsAccountSection extends StatelessWidget {
       children: [
         if (showSectionTitle) ...[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppConstants.spaceXs),
             child: Text(
               AppStrings.account,
-              style: AppTextStyles.headlineSmall(context).copyWith(color: context.textSecondary),
+              style: AppTextStyles.headlineSmall(context)
+                  .copyWith(color: context.textSecondary),
             ),
           ),
           const SizedBox(height: AppConstants.spaceSm),

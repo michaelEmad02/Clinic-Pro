@@ -11,7 +11,7 @@ import '../../domain/use_cases/accept_invitation_use_case.dart';
 import '../../domain/use_cases/login_with_google_use_case.dart';
 import '../../domain/use_cases/login_with_apple_use_case.dart';
 import '../../domain/use_cases/logout_use_case.dart';
-import '../../../staff/domain/entities/invitation_entity.dart';
+import '../../../staff_and_invitations/domain/entities/invitation_entity.dart';
 import 'accept_invitation_state.dart';
 
 @injectable

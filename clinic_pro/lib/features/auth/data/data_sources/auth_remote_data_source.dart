@@ -8,7 +8,7 @@ import '../../../../core/services/i_auth_services.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/constants/supabase_constants.dart';
 import '../models/auth_user_model.dart';
-import '../../../staff/data/models/invitation_model.dart';
+import '../../../staff_and_invitations/data/models/invitation_model.dart';
 
 abstract class IAuthRemoteDataSource {
   Future<AuthUserModel?> getCurrentUser();
@@ -165,12 +165,13 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
         );
       }
     }
+      StaffRoles staffRole = StaffRoles.owner;
 
     // 5. بناء كائن المستخدم المرجّع بناءً على نوع الحساب
     if (ownerResults.isNotEmpty) {
-      final ownerData = Map<String, dynamic>.from(ownerResults.first);
-      ownerData['email'] = email;
-      return AuthUserModel.fromJson(ownerData, StaffRoles.owner);
+      // final ownerData = Map<String, dynamic>.from(ownerResults.first);
+      // ownerData['email'] = email;
+      // return AuthUserModel.fromJson(ownerData, StaffRoles.owner);
     }
 
     if (userResults.isNotEmpty) {
@@ -182,8 +183,7 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
         eq: {'user_id': userId},
       );
 
-      StaffRoles staffRole = StaffRoles.doctor;
-      if (staffResults.isNotEmpty) {
+      if (ownerResults.isEmpty && staffResults.isNotEmpty) {
         staffRole = StaffRoles.fromString(staffResults.first['role'] as String?);
       }
 

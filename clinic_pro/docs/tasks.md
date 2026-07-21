@@ -320,15 +320,14 @@
 ## Phase 10 — Supabase Integration
 
 ### Part 10.1 — Cloud Service
-- [ ] `core/services/supabase_service.dart` — full implementation
-- [ ] Switch DI: `MockCloudService` → `SupabaseService`
-- [ ] Test all queries against real Supabase project
+- [x] `core/services/supabase_service.dart` — full implementation
+- [x] Switch DI: `MockCloudService` → `SupabaseService`
+- [x] Test all queries against real Supabase project
 
 ### Part 10.2 — Auth Integration
-- [ ] Google Sign-In
+- [x] Google Sign-In
 - [ ] Apple Sign-In
-- [ ] Magic Link
-- [ ] Invitation deep link
+- [x] Invitation deep link
 - [ ] Session persistence
 
 ### Part 10.3 — Feature Data Integration

@@ -1,135 +1,128 @@
 // ────────────────────────────────────────────────────────
-// SettingsCubit — يدير بيانات صفحة الإعدادات عبر الـ Repository
+// SettingsCubit — يدير بيانات صفحة الإعدادات عبر الـ UseCases
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/constants/staff_roles.dart';
-import '../../../../core/strings/app_strings.dart';
-import '../../domain/repositories/i_settings_repository.dart';
+import '../../domain/usecases/update_profile_usecase.dart';
+import '../../domain/usecases/get_clinic_info_usecase.dart';
+import '../../domain/usecases/get_available_clinics_usecase.dart';
+import '../../domain/usecases/get_subscription_usecase.dart';
+import '../../domain/usecases/get_secretary_doctors_usecase.dart';
+import '../../domain/usecases/set_active_doctor_usecase.dart';
+import '../../domain/usecases/upload_avatar_usecase.dart';
 import 'settings_state.dart';
+import 'dart:io';
 
 @injectable
 class SettingsCubit extends Cubit<SettingsState> {
-  final ISettingsRepository _repository;
+  final UpdateProfileUseCase _updateProfileUseCase;
+  final GetClinicInfoUseCase _getClinicInfoUseCase;
+  final GetAvailableClinicsUseCase _getAvailableClinicsUseCase;
+  final GetSubscriptionUseCase _getSubscriptionUseCase;
+  final GetSecretaryDoctorsUseCase _getSecretaryDoctorsUseCase;
+  final SetActiveDoctorUseCase _setActiveDoctorUseCase;
+  final UploadAvatarUseCase _uploadAvatarUseCase;
 
-  SettingsCubit(this._repository) : super(const SettingsState());
-
-  String _getUserId(StaffRoles role) {
-    switch (role) {
-      case StaffRoles.owner:
-        return 'u-owner-1';
-      case StaffRoles.secretary:
-        return 'u-sec-1';
-      case StaffRoles.doctor:
-      default:
-        return 'u-doc-1';
-    }
-  }
+  SettingsCubit(
+    this._updateProfileUseCase,
+    this._getClinicInfoUseCase,
+    this._getAvailableClinicsUseCase,
+    this._getSubscriptionUseCase,
+    this._getSecretaryDoctorsUseCase,
+    this._setActiveDoctorUseCase,
+    this._uploadAvatarUseCase,
+  ) : super(const SettingsState());
 
   String _getClinicId(StaffRoles role) {
     return AppConstants.activeClinicId;
   }
 
-  String _getRoleLabel(StaffRoles role) {
-    switch (role) {
-      case StaffRoles.owner:
-        return AppStrings.ownerRoleLabel;
-      case StaffRoles.secretary:
-        return AppStrings.secretaryRoleLabel;
-      case StaffRoles.doctor:
-      default:
-        return AppStrings.generalDoctor;
-    }
-  }
-
-  /// تحميل الإعدادات من المستودع حسب دور المستخدم
+  /// تحميل الإعدادات (العيادة، العيادات المتاحة، والاشتراك)
   Future<void> loadSettings(StaffRoles role, String userId) async {
     emit(state.copyWith(isLoading: true, error: null));
 
     try {
-      final clinicId = _getClinicId(role);
+      if (role == StaffRoles.owner) {
+        // إذا كان مالكاً: جلب الاشتراك + العيادات المتاحة (للتبديل كطبيب)
+        final subResult = await _getSubscriptionUseCase(userId);
+        final clinicsResult = await _getAvailableClinicsUseCase(userId);
 
-      // 1. جلب الملف الشخصي
-      final userResult = await _repository.getUserProfile(userId);
-      // 2. جلب العيادة الحالية
-      final clinicResult = await _repository.getClinicInfo(clinicId);
-      // 3. جلب العيادات المتاحة
-      final clinicsResult = await _repository.getAvailableClinics();
-      // 4. جلب الاشتراك (للمالك)
-      final subResult = role == StaffRoles.owner
-          ? await _repository.getSubscription(userId)
-          : null;
+        subResult.fold(
+          (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+          (sub) {
+            clinicsResult.fold(
+              (failure) => emit(state.copyWith(
+                isLoading: false,
+                subscriptionEntity: sub,
+                error: failure.message,
+              )),
+              (clinics) {
+                emit(state.copyWith(
+                  isLoading: false,
+                  subscriptionEntity: sub,
+                  availableClinics: clinics,
+                  // تعيين أول عيادة كعيادة نشطة إن لم تكن موجودة
+                  clinicEntity: clinics.isNotEmpty ? clinics.first : null,
+                ));
+              },
+            );
+          },
+        );
+      } else {
+        // إذا لم يكن مالكاً (طبيب أو سكرتيرة): يتم جلب العيادة والعيادات المتاحة
+        final clinicsResult = await _getAvailableClinicsUseCase(userId);
 
-      userResult.fold(
-        (failure) =>
-            emit(state.copyWith(isLoading: false, error: failure.message)),
-        (user) {
-          clinicResult.fold(
-            (failure) =>
-                emit(state.copyWith(isLoading: false, error: failure.message)),
-            (clinic) {
-              clinicsResult.fold(
-                (failure) => emit(
-                    state.copyWith(isLoading: false, error: failure.message)),
-                (clinics) async {
-                  SettingsState updatedState = state.copyWith(
-                    isLoading: false,
-                    userId: user['id'] as String,
-                    userName: user['name'] as String,
-                    userEmail: user['email'] as String,
-                    userRole: _getRoleLabel(role),
-                    userPhone: user['phone'] as String,
-                    userAvatarUrl: user['avatar_url'] as String?,
-                    userSpecialty: user['specialty'] as String?,
-                    clinicId: clinic['id'] as String,
-                    clinicName: clinic['name'] as String,
-                    clinicAddress: clinic['address'] as String,
-                    clinicPhone:
-                        (clinic['phone'] ?? clinic['phone1'] ?? '') as String,
-                    clinicLogoUrl: clinic['logo_url'] as String?,
-                    availableClinics: clinics,
-                  );
+        await clinicsResult.fold(
+          (failure) async => emit(state.copyWith(isLoading: false, error: failure.message)),
+          (clinics) async {
+            String activeClinicId = _getClinicId(role);
+            
+            // إذا كان معرف العيادة فارغاً، نستخدم أول عيادة متاحة ونقوم بتحديث الثابت العام
+            if (activeClinicId.isEmpty && clinics.isNotEmpty) {
+              activeClinicId = clinics.first.id;
+              AppConstants.activeClinicId = activeClinicId;
+            }
 
-                  if (subResult != null) {
-                    subResult.fold(
-                      (_) {},
-                      (sub) {
-                        updatedState = updatedState.copyWith(
-                          planType: sub['plan_type'] as String? ?? '',
-                          planStatus: sub['status'] as String? ?? '',
-                          trialEndAt: sub['trial_end_at'] as String?,
-                          currentPeriodEnd:
-                              sub['current_period_end'] as String?,
-                        );
-                      },
-                    );
-                  }
+            final clinicResult = await _getClinicInfoUseCase(activeClinicId);
+            
+            clinicResult.fold(
+              (failure) => emit(state.copyWith(
+                isLoading: false,
+                availableClinics: clinics,
+                error: failure.message,
+              )),
+              (clinic) {
+                emit(state.copyWith(
+                  isLoading: false,
+                  clinicEntity: clinic,
+                  availableClinics: clinics,
+                ));
+              },
+            );
 
-                  emit(updatedState);
-
-                  // للسكرتيرة: تحميل الأطباء والجدول النشط
-                  if (role == StaffRoles.secretary) {
-                    await loadSecretaryDoctorsList();
-                  }
-                },
-              );
-            },
-          );
-        },
-      );
+            // للسكرتيرة: تحميل الأطباء والجدول النشط
+            if (role == StaffRoles.secretary && activeClinicId.isNotEmpty) {
+              await loadSecretaryDoctorsList(userId, activeClinicId);
+            }
+          },
+        );
+      }
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
 
   /// تحميل الأطباء المقترنين بالسكرتيرة
-  Future<void> loadSecretaryDoctorsList() async {
-    if (state.userId.isEmpty || state.clinicId.isEmpty) return;
+  Future<void> loadSecretaryDoctorsList(
+      String secretaryId, String clinicId) async {
+    final doctorsResult = await _getSecretaryDoctorsUseCase(
+      secretaryId: secretaryId,
+      clinicId: clinicId,
+    );
 
-    final doctorsResult =
-        await _repository.getSecretaryDoctors(state.userId, state.clinicId);
     doctorsResult.fold(
       (failure) => emit(state.copyWith(error: failure.message)),
       (doctors) {
@@ -137,9 +130,12 @@ class SettingsCubit extends Cubit<SettingsState> {
           (d) => d['is_active'] == true,
           orElse: () => <String, dynamic>{},
         );
+        final doctorId = activeDoc['doctor_id'] as String? ?? '';
+        AppConstants.activeDoctorId = doctorId;
+
         emit(state.copyWith(
           secretaryDoctors: doctors,
-          currentDoctorId: activeDoc['doctor_id'] as String?,
+          currentDoctorId: doctorId.isNotEmpty ? doctorId : null,
           currentDoctorName: activeDoc['name'] as String?,
           currentDoctorSpecialty: activeDoc['specialty'] as String?,
           currentDoctorAvatar: activeDoc['avatar_url'] as String?,
@@ -149,52 +145,77 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// تحديث الملف الشخصي في المستودع
-  Future<void> updateProfile(
-      {required String name, required String phone}) async {
-    if (state.userId.isEmpty) return;
-    emit(state.copyWith(isLoading: true));
+  Future<void> updateProfile({
+    required String userId,
+    required String name,
+    required String phone,
+    String? address,
+    String? imagePath,
+  }) async {
+    emit(state.copyWith(isLoading: true, error: null));
 
-    final result = await _repository.updateProfile(
-      userId: state.userId,
+    String? imageUrl;
+    if (imagePath != null && imagePath.isNotEmpty) {
+      try {
+        final file = File(imagePath);
+        if (await file.exists()) {
+          final fileBytes = await file.readAsBytes();
+          final uploadResult = await _uploadAvatarUseCase(
+            userId: userId,
+            fileBytes: fileBytes,
+          );
+          uploadResult.fold(
+            (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+            (url) => imageUrl = url,
+          );
+        }
+      } catch (e) {
+        emit(state.copyWith(isLoading: false, error: e.toString()));
+        return;
+      }
+    }
+
+    if (state.error != null) return; // توقف في حال فشل رفع الصورة
+
+    final result = await _updateProfileUseCase(
+      userId: userId,
       name: name,
       phone: phone,
+      address: address,
+      imageUrl: imageUrl,
     );
 
     result.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, error: failure.message)),
       (_) {
-        emit(state.copyWith(
-          isLoading: false,
-          userName: name,
-          userPhone: phone,
-        ));
+        emit(state.copyWith(isLoading: false));
       },
     );
   }
 
   /// تغيير الطبيب النشط للسكرتيرة
-  Future<void> changeActiveDoctor(String doctorId) async {
-    if (state.userId.isEmpty || state.clinicId.isEmpty) return;
-
-    final result = await _repository.setSecretaryActiveDoctor(
-      state.userId,
-      state.clinicId,
-      doctorId,
+  Future<void> changeActiveDoctor(
+      String secretaryId, String clinicId, String doctorId) async {
+    final result = await _setActiveDoctorUseCase(
+      secretaryId: secretaryId,
+      clinicId: clinicId,
+      doctorId: doctorId,
     );
 
     result.fold(
       (failure) => emit(state.copyWith(error: failure.message)),
       (_) async {
-        await loadSecretaryDoctorsList();
+        await loadSecretaryDoctorsList(secretaryId, clinicId);
       },
     );
   }
 
   /// تبديل العيادة النشطة
-  Future<void> changeClinic(String clinicId) async {
+  Future<void> changeClinic(
+      String userId, String clinicId, StaffRoles role) async {
     emit(state.copyWith(isLoading: true));
-    final clinicResult = await _repository.getClinicInfo(clinicId);
+    final clinicResult = await _getClinicInfoUseCase(clinicId);
 
     clinicResult.fold(
       (failure) =>
@@ -203,16 +224,12 @@ class SettingsCubit extends Cubit<SettingsState> {
         AppConstants.activeClinicId = clinicId; // تحديث العيادة النشطة عالمياً
         emit(state.copyWith(
           isLoading: false,
-          clinicId: clinic['id'] as String,
-          clinicName: clinic['name'] as String,
-          clinicAddress: clinic['address'] as String,
-          clinicPhone: clinic['phone'] as String,
-          clinicLogoUrl: clinic['logo_url'] as String?,
+          clinicEntity: clinic,
         ));
 
         // إذا كانت سكرتيرة، أعد تحميل قائمة الأطباء التابعة للعيادة الجديدة
-        if (state.userRole == AppStrings.secretaryRoleLabel) {
-          await loadSecretaryDoctorsList();
+        if (role == StaffRoles.secretary) {
+          await loadSecretaryDoctorsList(userId, clinicId);
         }
       },
     );

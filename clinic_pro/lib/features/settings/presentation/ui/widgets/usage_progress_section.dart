@@ -42,21 +42,21 @@ class UsageProgressSection extends StatelessWidget {
               label: AppStrings.patients,
               used: patientsUsed,
               max: patientsMax,
-              color: AppColors.primary,
+              color: context.primary,
             ),
             _UsageCard(
               icon: Icons.person,
               label: AppStrings.users,
               used: usersUsed,
               max: usersMax,
-              color: AppColors.primary,
+              color: context.primary,
             ),
             _UsageCard(
               icon: Icons.domain,
               label: AppStrings.clinics,
               used: clinicsUsed,
               max: clinicsMax,
-              color: AppColors.warningText,
+              color: context.warningText,
             ),
           ],
         ),
@@ -86,9 +86,9 @@ class _UsageCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(color: context.border, width: 0.5),
         boxShadow: const [
           BoxShadow(color: Color(0x14000000), blurRadius: 3, offset: Offset(0, 1)),
         ],
@@ -103,12 +103,12 @@ class _UsageCard extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.primaryLightColor,
                   borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 18),
+                child: Icon(icon, color: context.primary, size: 18),
               ),
-              Text('$used / $max', style: AppTextStyles.dataNumeric(context).copyWith(color: AppColors.textSecondary)),
+              Text('$used / $max', style: AppTextStyles.dataNumeric(context).copyWith(color: context.textSecondary)),
             ],
           ),
           const Spacer(),
@@ -118,7 +118,7 @@ class _UsageCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppConstants.radiusChip),
             child: LinearProgressIndicator(
               value: fraction,
-              backgroundColor: AppColors.surfaceContainer,
+              backgroundColor: context.surfaceContainerLow,
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 6,
             ),
@@ -126,9 +126,9 @@ class _UsageCard extends StatelessWidget {
           const SizedBox(height: AppConstants.spaceXs),
           Text(
             max - used >= 0
-                ? 'متبقي ${max - used} ${label == 'المرضى' ? 'مريض' : label == 'المستخدمين' ? 'مستخدمين' : 'فرع'}'
-                : 'تجاوز الحد المسموح',
-            style: AppTextStyles.caption(context).copyWith(color: AppColors.textSecondary),
+                ? '${AppStrings.remainingCount} ${max - used} $label'
+                : AppStrings.overLimit,
+            style: AppTextStyles.caption(context).copyWith(color: context.textSecondary),
           ),
         ],
       ),

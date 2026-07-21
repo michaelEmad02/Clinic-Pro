@@ -5,6 +5,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../auth/presentation/manager/auth_cubit.dart';
 import '../../manager/settings_cubit.dart';
 import '../../manager/settings_state.dart';
 
@@ -14,8 +15,11 @@ class ClinicPickerSheet extends StatelessWidget {
   static Future<void> show(BuildContext context) {
     return AppBottomSheet.show(
       context: context,
-      child: BlocProvider.value(
-        value: context.read<SettingsCubit>(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<SettingsCubit>()),
+          BlocProvider.value(value: context.read<AuthCubit>()),
+        ],
         child: const ClinicPickerSheet(),
       ),
     );
@@ -23,6 +27,7 @@ class ClinicPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthCubit>().state.user;
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -52,8 +57,8 @@ class ClinicPickerSheet extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close,
-                      color: AppColors.onSurfaceVariant),
+                  icon: Icon(Icons.close,
+                      color: context.textSecondary),
                 ),
               ],
             ),
@@ -66,11 +71,11 @@ class ClinicPickerSheet extends StatelessWidget {
                     horizontal: AppConstants.screenEdgeH),
                 child: Column(
                   children: [
-                    ...state.availableClinics.map((clinic) {
-                      final id = clinic['id'] as String;
-                      final name = clinic['name'] as String;
-                      final address = clinic['address'] as String;
-                      final isActive = id == state.clinicId;
+                     ...state.availableClinics.map((clinic) {
+                      final id = clinic.id;
+                      final name = clinic.name;
+                      final address = clinic.address;
+                      final isActive = id == (state.clinicEntity?.id ?? '');
                       return Padding(
                         padding:
                             const EdgeInsets.only(bottom: AppConstants.spaceSm),
@@ -80,8 +85,12 @@ class ClinicPickerSheet extends StatelessWidget {
                           address: address,
                           isActive: isActive,
                           onTap: () {
-                            if (!isActive) {
-                              context.read<SettingsCubit>().changeClinic(id);
+                            if (!isActive && user != null) {
+                              context.read<SettingsCubit>().changeClinic(
+                                    user.id,
+                                    id,
+                                    user.role,
+                                  );
                             }
                             Navigator.pop(context);
                           },
