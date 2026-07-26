@@ -8,6 +8,7 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/widgets/app_responsive_scaffold.dart';
+import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../clinics/presentation/ui/clinics_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/owner_dashboard_cubit.dart';
@@ -64,7 +65,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
           ),
         ],
         appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
-        body: IndexedStack(
+        body: LazyIndexedStack(
           index: _currentIndex,
           children: [
             _buildMainDashboardTab(),

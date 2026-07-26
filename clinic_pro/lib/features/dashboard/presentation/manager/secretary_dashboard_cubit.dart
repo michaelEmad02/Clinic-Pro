@@ -8,7 +8,6 @@ import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import '../../../../core/services/i_cloud_service.dart';
-import '../../../appointments/domain/entities/appointment_entity.dart';
 import '../../../appointments/domain/usecases/appointments/get_appointments_usecase.dart';
 import '../../../appointments/domain/usecases/appointments/confirm_arrival_usecase.dart';
 import '../../../appointments/domain/usecases/appointments/call_patient_usecase.dart';

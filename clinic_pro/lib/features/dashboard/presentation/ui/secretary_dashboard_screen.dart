@@ -17,6 +17,7 @@ import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/widgets/app_responsive_scaffold.dart';
+import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/secretary_dashboard_cubit.dart';
@@ -122,7 +123,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
             ),
           ],
           appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
-          body: IndexedStack(
+          body: LazyIndexedStack(
             index: _currentIndex,
             children: [
               _buildMainDashboardTab(),
