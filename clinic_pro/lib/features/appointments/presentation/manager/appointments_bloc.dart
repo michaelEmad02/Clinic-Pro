@@ -2,18 +2,46 @@
 // Bloc شاشة المواعيد — يدير تحميل وفلترة وإجراءات المواعيد
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../domain/entities/appointment_entity.dart';
+import '../../domain/usecases/appointments/get_appointments_usecase.dart';
+import '../../domain/usecases/appointments/confirm_arrival_usecase.dart';
+import '../../domain/usecases/appointments/cancel_appointment_usecase.dart';
+import '../../domain/usecases/appointments/toggle_urgent_usecase.dart';
+import '../../domain/usecases/appointments/add_appointment_usecase.dart';
+import '../../domain/usecases/appointments/update_appointment_usecase.dart';
+import '../../domain/usecases/appointments/delete_appointment_usecase.dart';
+import '../../domain/usecases/appointments/get_appointment_by_id_usecase.dart';
 import 'appointments_event.dart';
 import 'appointments_state.dart';
-import 'appointments_repository.dart';
 
 @injectable
 class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
-  final AppointmentsRepository _repository;
+  final GetAppointmentsUseCase _getAppointmentsUseCase;
+  final ConfirmArrivalUseCase _confirmArrivalUseCase;
+  final CancelAppointmentUseCase _cancelAppointmentUseCase;
+  final ToggleUrgentUseCase _toggleUrgentUseCase;
+  final AddAppointmentUseCase _addAppointmentUseCase;
+  final UpdateAppointmentUseCase _updateAppointmentUseCase;
+  final DeleteAppointmentUseCase _deleteAppointmentUseCase;
+  final GetAppointmentByIdUseCase _getAppointmentByIdUseCase;
 
-  AppointmentsBloc(this._repository) : super(AppointmentsInitial()) {
+  // معرف العيادة النشطة حالياً (ديناميكي)
+  String get _clinicId => AppConstants.activeClinicId;
+
+  AppointmentsBloc(
+    this._getAppointmentsUseCase,
+    this._confirmArrivalUseCase,
+    this._cancelAppointmentUseCase,
+    this._toggleUrgentUseCase,
+    this._addAppointmentUseCase,
+    this._updateAppointmentUseCase,
+    this._deleteAppointmentUseCase,
+    this._getAppointmentByIdUseCase,
+  ) : super(AppointmentsInitial()) {
     on<LoadAppointmentsEvent>(_onLoad);
     on<ChangeAppointmentsTabEvent>(_onChangeTab);
     on<ChangeStatusFilterEvent>(_onChangeFilter);
@@ -23,6 +51,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     on<AddAppointmentEvent>(_onAdd);
     on<UpdateAppointmentEvent>(_onUpdate);
     on<DeleteAppointmentEvent>(_onDelete);
+    on<GetAppointmentDetailsEvent>(_onGetDetails);
   }
 
   Future<void> _onLoad(
@@ -31,12 +60,19 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
   ) async {
     emit(AppointmentsLoading());
 
-    try {
-      final items = await _repository.loadAppointments();
-      emit(AppointmentsLoaded(allAppointments: _mapAppointments(items)));
-    } catch (e) {
-      emit(AppointmentsError(AppStrings.loadAppointmentsFailed));
-    }
+    final activeClinicId = (event.clinicId != null && event.clinicId!.isNotEmpty)
+        ? event.clinicId!
+        : _clinicId;
+
+    final result = await _getAppointmentsUseCase(
+      GetAppointmentsParams(clinicId: activeClinicId, doctorId: event.doctorId),
+    );
+
+    result.fold(
+      (failure) => emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
+      (items) =>
+          emit(AppointmentsLoaded(allAppointments: items)),
+    );
   }
 
   void _onChangeTab(
@@ -66,13 +102,23 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (state is! AppointmentsLoaded) return;
     final loaded = state as AppointmentsLoaded;
 
-    try {
-      await _repository.confirmArrival(event.appointmentId);
-      final items = await _repository.loadAppointments();
-      emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
-    } catch (_) {
-      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر تأكيد الوصول' : 'Failed to confirm arrival'));
-    }
+    final result = await _confirmArrivalUseCase(event.appointmentId);
+
+    await result.fold(
+      (failure) async => emit(AppointmentsError(AppStrings.isArabic
+          ? 'تعذّر تأكيد الوصول'
+          : 'Failed to confirm arrival')),
+      (_) async {
+        final loadResult = await _getAppointmentsUseCase(
+            GetAppointmentsParams(clinicId: _clinicId,));
+        loadResult.fold(
+          (failure) =>
+              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
+          (items) => emit(
+              loaded.copyWith(allAppointments: items)),
+        );
+      },
+    );
   }
 
   Future<void> _onCancel(
@@ -82,13 +128,23 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (state is! AppointmentsLoaded) return;
     final loaded = state as AppointmentsLoaded;
 
-    try {
-      await _repository.cancelAppointment(event.appointmentId);
-      final items = await _repository.loadAppointments();
-      emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
-    } catch (_) {
-      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر إلغاء الموعد' : 'Failed to cancel appointment'));
-    }
+    final result = await _cancelAppointmentUseCase(event.appointmentId);
+
+    await result.fold(
+      (failure) async => emit(AppointmentsError(AppStrings.isArabic
+          ? 'تعذّر إلغاء الموعد'
+          : 'Failed to cancel appointment')),
+      (_) async {
+        final loadResult = await _getAppointmentsUseCase(
+            GetAppointmentsParams(clinicId: _clinicId));
+        loadResult.fold(
+          (failure) =>
+              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
+          (items) => emit(
+              loaded.copyWith(allAppointments: items)),
+        );
+      },
+    );
   }
 
   Future<void> _onToggleUrgent(
@@ -99,12 +155,31 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     final loaded = state as AppointmentsLoaded;
 
     try {
-      final appt = loaded.allAppointments.firstWhere((a) => a.id == event.appointmentId);
-      await _repository.toggleUrgent(event.appointmentId, !appt.isUrgent);
-      final items = await _repository.loadAppointments();
-      emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
+      final appt =
+          loaded.allAppointments.firstWhere((a) => a.id == event.appointmentId);
+      final result = await _toggleUrgentUseCase(
+        appointmentId: event.appointmentId,
+        isUrgent: !appt.isUrgent,
+      );
+
+      await result.fold(
+        (failure) async => emit(AppointmentsError(AppStrings.isArabic
+            ? 'تعذّر تعديل حالة الاستعجال'
+            : 'Failed to update urgency')),
+        (_) async {
+          final loadResult = await _getAppointmentsUseCase(
+              GetAppointmentsParams(clinicId: _clinicId));
+          loadResult.fold(
+            (failure) =>
+                emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
+            (items) => emit(
+                loaded.copyWith(allAppointments: items)),
+          );
+        },
+      );
     } catch (_) {
-      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر تعديل حالة الاستعجال' : 'Failed to update urgency'));
+      emit(AppointmentsError(
+          AppStrings.isArabic ? 'الموعد غير موجود' : 'Appointment not found'));
     }
   }
 
@@ -115,24 +190,39 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (state is! AppointmentsLoaded) return;
     final loaded = state as AppointmentsLoaded;
 
-    try {
-      await _repository.addAppointment(
-        patientId: event.patientId,
-        doctorId: event.doctorId,
-        typeId: event.typeId,
-        date: event.date,
-        time: event.time,
-        isUrgent: event.isUrgent,
-        notes: event.notes,
-      );
-      final items = await _repository.loadAppointments();
-      emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
-    } catch (_) {
-      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر إضافة الموعد' : 'Failed to add appointment'));
-    }
+    final tempEntity = AppointmentEntity(
+      id: '',
+      clinicId: _clinicId,
+      doctorId: event.doctorId,
+      patientId: event.patientId,
+      typeId: event.typeId,
+      date: event.date,
+      time: event.time,
+      status: 'scheduled',
+      price: 0.0, // سيتم تحديد السعر وتعيينه في المستودع
+      isUrgent: event.isUrgent,
+      notes: event.notes,
+      createdBy: event.currentUser,
+      createdAt: DateTime.now(),
+    );
+
+    final result = await _addAppointmentUseCase(tempEntity);
+
+    await result.fold(
+      (failure) async => emit(AppointmentsError(failure.message)),
+      (_) async {
+        final loadResult = await _getAppointmentsUseCase(
+            GetAppointmentsParams(clinicId: _clinicId));
+        loadResult.fold(
+          (failure) =>
+              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
+          (items) => emit(
+              loaded.copyWith(allAppointments: items)),
+        );
+      },
+    );
   }
 
-  /// معالجة حدث تعديل موعد قائم
   Future<void> _onUpdate(
     UpdateAppointmentEvent event,
     Emitter<AppointmentsState> emit,
@@ -140,21 +230,43 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (state is! AppointmentsLoaded) return;
     final loaded = state as AppointmentsLoaded;
 
-    try {
-      await _repository.updateAppointment(
-        appointmentId: event.appointmentId,
-        doctorId: event.doctorId,
-        typeId: event.typeId,
-        date: event.date,
-        time: event.time,
-        isUrgent: event.isUrgent,
-        notes: event.notes,
-      );
-      final items = await _repository.loadAppointments();
-      emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
-    } catch (_) {
-      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر تعديل الموعد' : 'Failed to update appointment'));
-    }
+    final existingList = loaded.allAppointments.where((a) => a.id == event.appointmentId).toList();
+    if (existingList.isEmpty) return;
+    final existing = existingList.first;
+
+    final tempEntity = AppointmentEntity(
+      id: event.appointmentId,
+      clinicId: existing.clinicId.isEmpty ? _clinicId : existing.clinicId,
+      doctorId: event.doctorId,
+      patientId: existing.patientId,
+      typeId: event.typeId,
+      date: event.date,
+      time: event.time,
+      status: existing.status,
+      price: existing.price,
+      isUrgent: event.isUrgent,
+      notes: event.notes,
+      createdBy: existing.createdBy,
+      createdAt: existing.createdAt,
+      arrivedAt: existing.arrivedAt,
+      calledAt: existing.calledAt,
+    );
+
+    final result = await _updateAppointmentUseCase(tempEntity);
+
+    await result.fold(
+      (failure) async => emit(AppointmentsError(failure.message)),
+      (_) async {
+        final loadResult = await _getAppointmentsUseCase(
+            GetAppointmentsParams(clinicId: _clinicId));
+        loadResult.fold(
+          (failure) =>
+              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
+          (items) => emit(
+              loaded.copyWith(allAppointments:items)),
+        );
+      },
+    );
   }
 
   Future<void> _onDelete(
@@ -164,75 +276,34 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (state is! AppointmentsLoaded) return;
     final loaded = state as AppointmentsLoaded;
 
-    try {
-      await _repository.deleteAppointment(event.appointmentId);
-      final items = await _repository.loadAppointments();
-      emit(loaded.copyWith(allAppointments: _mapAppointments(items)));
-    } catch (_) {
-      emit(AppointmentsError(AppStrings.isArabic ? 'تعذّر حذف الموعد' : 'Failed to delete appointment'));
-    }
+    final result = await _deleteAppointmentUseCase(event.appointmentId);
+
+    await result.fold(
+      (failure) async => emit(AppointmentsError(AppStrings.isArabic
+          ? 'تعذّر حذف الموعد'
+          : 'Failed to delete appointment')),
+      (_) async {
+        final loadResult = await _getAppointmentsUseCase(
+            GetAppointmentsParams(clinicId: _clinicId));
+        loadResult.fold(
+          (failure) =>
+              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
+          (items) => emit(
+              loaded.copyWith(allAppointments: items)),
+        );
+      },
+    );
   }
 
-  /// تحويل بيانات الـ Map المجلوبة من المستودع إلى AppointmentItem
-  List<AppointmentItem> _mapAppointments(List<Map<String, dynamic>> rawList) {
-    return rawList.map((raw) {
-      final patient = raw['patients'] as Map<String, dynamic>? ?? {};
-      final type = raw['appointment_types'] as Map<String, dynamic>? ?? {};
-      final doctorId = raw['doctor_id'] as String;
-
-      final prescriptions = raw['prescriptions'] as List<dynamic>? ?? [];
-      final invoices = raw['invoices'] as List<dynamic>? ?? [];
-
-      final apptId = raw['id'] as String;
-
-      return AppointmentItem(
-        id: apptId,
-        patientId: raw['patient_id'] as String,
-        patientName: patient['name'] as String? ?? AppStrings.patient,
-        patientPhone: patient['phone'] as String? ?? '',
-        doctorId: doctorId,
-        doctorName: AppStrings.generalPractitioner,
-        typeId: raw['appointment_type_id'] as String,
-        typeName: type['name'] as String? ?? AppStrings.normalCheckup,
-        date: raw['date'] as String,
-        displayTime: _formatTime(raw['time'] as String? ?? '00:00:00'),
-        rawTime: raw['time'] as String? ?? '00:00:00',
-        status: raw['status'] as String,
-        price: (raw['price'] as num).toDouble(),
-        isUrgent: raw['is_urgent'] as bool? ?? false,
-        notes: raw['notes'] as String?,
-        arrivedAt: raw['arrived_at'] != null
-            ? DateTime.parse(raw['arrived_at'] as String)
-            : null,
-        calledAt: raw['called_at'] != null
-            ? DateTime.parse(raw['called_at'] as String)
-            : null,
-        hasPrescription: prescriptions.isNotEmpty,
-        hasInvoice: invoices.isNotEmpty,
-        prescriptionDiagnosis: prescriptions.isNotEmpty
-            ? prescriptions.first['diagnosis'] as String?
-            : null,
-        invoiceAmount: invoices.isNotEmpty
-            ? '${invoices.first['amount']}'
-            : null,
-        invoiceStatus: invoices.isNotEmpty
-            ? invoices.first['status'] as String?
-            : null,
-        invoiceNumber: invoices.isNotEmpty
-            ? '#INV-${apptId.length > 4 ? apptId.substring(apptId.length - 4) : apptId}'
-            : null,
-      );
-    }).toList();
-  }
-
-  /// تنسيق الوقت للعرض (مثال: 16:30 → 4:30 م)
-  String _formatTime(String raw) {
-    final parts = raw.split(':');
-    if (parts.length < 2) return raw;
-    final hour = int.tryParse(parts[0]) ?? 0;
-    final minute = parts[1];
-    final period = hour >= 12 ? (AppStrings.isArabic ? 'م' : 'PM') : (AppStrings.isArabic ? 'ص' : 'AM');
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-    return '$displayHour:$minute $period';
+  Future<void> _onGetDetails(
+    GetAppointmentDetailsEvent event,
+    Emitter<AppointmentsState> emit,
+  ) async {
+    emit(AppointmentsLoading());
+    final result = await _getAppointmentByIdUseCase(event.appointmentId);
+    result.fold(
+      (failure) => emit(AppointmentsError(failure.message)),
+      (appointment) => emit(AppointmentsLoaded(allAppointments: [appointment])),
+    );
   }
 }

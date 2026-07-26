@@ -29,13 +29,13 @@ class CallNextButton extends StatelessWidget {
           AppStrings.callNext,
           style: AppTextStyles.bodyMedium(context).copyWith(
             fontWeight: FontWeight.bold,
-            color: enabled ? Colors.white : AppColors.textHint,
+            color: enabled ? context.onPrimary : context.textHint,
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.surfaceContainerLow,
+          backgroundColor: context.primary,
+          foregroundColor: context.onPrimary,
+          disabledBackgroundColor: context.surfaceContainerLow,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

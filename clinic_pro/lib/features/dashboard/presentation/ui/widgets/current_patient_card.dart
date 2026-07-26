@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/strings/app_strings.dart';
-import '../../../../appointments/presentation/manager/appointments_state.dart';
+import '../../../../appointments/domain/entities/appointment_entity.dart';
 
 class CurrentPatientCard extends StatelessWidget {
-  final AppointmentItem? patient;
+  final AppointmentEntity? patient;
   final VoidCallback onStartExamination;
 
   const CurrentPatientCard({
@@ -124,7 +124,7 @@ class CurrentPatientCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      patient!.patientName,
+                      patient!.patientName ?? AppStrings.patient,
                       style: AppTextStyles.headlineSmall(context).copyWith(
                         fontWeight: FontWeight.bold,
                         color: context.textPrimary,
@@ -134,7 +134,7 @@ class CurrentPatientCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          patient!.patientPhone,
+                          patient!.patientPhone ?? '',
                           style: AppTextStyles.caption(context).copyWith(
                             color: context.textSecondary,
                             fontFamily: 'Inter',
@@ -144,7 +144,7 @@ class CurrentPatientCard extends StatelessWidget {
                         Container(width: 1, height: 12, color: context.borderColor),
                         const SizedBox(width: 8),
                         Text(
-                          patient!.displayTime,
+                          patient!.displayTime ?? '',
                           style: AppTextStyles.caption(context).copyWith(
                             color: context.textSecondary,
                             fontFamily: 'Inter',

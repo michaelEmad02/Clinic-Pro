@@ -36,8 +36,7 @@ class QueueItem extends StatelessWidget {
               : (isInProgress ? context.warningBg : context.primaryLightColor),
           child: Text(
             '${patient.queueNumber}',
-            style: TextStyle(
-              fontFamily: 'Inter',
+            style: AppTextStyles.dataNumeric(context).copyWith(
               fontWeight: FontWeight.bold,
               color: isInProgress ? context.warningText : context.primary,
             ),

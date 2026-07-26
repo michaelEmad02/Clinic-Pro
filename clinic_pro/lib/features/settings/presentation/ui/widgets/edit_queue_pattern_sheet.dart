@@ -89,16 +89,16 @@ class EditQueuePatternSheet extends StatelessWidget {
           Text(AppStrings.queueSystem,
               style: AppTextStyles.headlineMedium(context)
                   .copyWith(color: context.primary)),
-          const SizedBox(height: 8),
-          _buildSystemSelector(context, state),
-          if (state.queueSystem == 'pattern') ...[
-            const SizedBox(height: 8),
-            Text(AppStrings.dragToReorder,
-                style: AppTextStyles.caption(context)
-                    .copyWith(color: context.textSecondary)),
-          ],
-          if (state.queueSystem == 'scheduled') ...[
-            const SizedBox(height: 12),
+              const SizedBox(height: AppConstants.spaceSm),
+              _buildSystemSelector(context, state),
+              if (state.queueSystem == 'pattern') ...[
+                const SizedBox(height: AppConstants.spaceSm),
+                Text(AppStrings.dragToReorder,
+                    style: AppTextStyles.caption(context)
+                        .copyWith(color: context.textSecondary)),
+              ],
+              if (state.queueSystem == 'scheduled') ...[
+                const SizedBox(height: AppConstants.spaceMd),
             _buildScheduledInput(context, state),
           ],
           if (state.isDirty)
@@ -388,13 +388,15 @@ class EditQueuePatternSheet extends StatelessWidget {
 
       for (final item in availableVisitTypes) {
         final name = item['name'] ?? '';
+        final id = item['id'] ?? '';
         if (name.isNotEmpty) {
-          final slotType = _mapAppointmentTypeToSlot(name);
+          final slotType = id;
+          final isUrgentType = name.toLowerCase().contains('urgent') || name.contains('طارئ');
           types.add(_SlotTypeOption(
             label: name,
             slotType: slotType,
-            icon: mapSlotTypeToIcon(slotType),
-            color: slotType == QueueSlotType.urgent
+            icon: mapSlotTypeToIcon(name),
+            color: isUrgentType
                 ? warningColor
                 : primaryColor,
           ));
@@ -464,28 +466,28 @@ class EditQueuePatternSheet extends StatelessWidget {
     );
   }
 
-  String _mapAppointmentTypeToSlot(String name) {
-    final lower = name.toLowerCase();
-    if (lower.contains('طارئ') ||
-        lower.contains('urgent') ||
-        lower.contains('مستعجل')) {
-      return QueueSlotType.urgent;
-    }
-    if (lower.contains('إعادة') ||
-        lower.contains('revisit') ||
-        lower.contains('مراجعة')) {
-      return QueueSlotType.revisit;
-    }
-    if (lower.contains('استشارة') || lower.contains('consult')) {
-      return QueueSlotType.consult;
-    }
-    if (lower.contains('متابعة') ||
-        lower.contains('موعد') ||
-        lower.contains('فحص')) {
-      return QueueSlotType.normal;
-    }
-    return QueueSlotType.normal;
-  }
+  // String _mapAppointmentTypeToSlot(String name) {
+  //   final lower = name.toLowerCase();
+  //   if (lower.contains('طارئ') ||
+  //       lower.contains('urgent') ||
+  //       lower.contains('مستعجل')) {
+  //     return QueueSlotType.urgent;
+  //   }
+  //   if (lower.contains('إعادة') ||
+  //       lower.contains('revisit') ||
+  //       lower.contains('مراجعة')) {
+  //     return QueueSlotType.revisit;
+  //   }
+  //   if (lower.contains('استشارة') || lower.contains('consult')) {
+  //     return QueueSlotType.consult;
+  //   }
+  //   if (lower.contains('متابعة') ||
+  //       lower.contains('موعد') ||
+  //       lower.contains('فحص')) {
+  //     return QueueSlotType.normal;
+  //   }
+  //   return QueueSlotType.normal;
+  // }
 }
 
 // ────────────────────────────────────────────────────────
@@ -640,21 +642,22 @@ class _SlotTypeOption {
 // دوال مساعدة لتحويل QueueSlotType إلى بيانات العرض
 // ────────────────────────────────────────────────────────
 String mapSlotTypeToLabel(String slotType) {
-  return AppStrings.mapSlotTypeToLabel(slotType);
+  return slotType;
 }
 
 IconData mapSlotTypeToIcon(String slotType) {
-  switch (slotType) {
-    case 'urgent':
-      return Icons.bolt;
-    case 'revisit':
-      return Icons.refresh;
-    case 'consult':
-      return Icons.forum;
-    case 'normal':
-    default:
-      return Icons.person;
+  final lower = slotType.toLowerCase();
+  if (lower.contains('طارئ') || lower.contains('urgent') || lower.contains('مستعجل')) {
+    return Icons.bolt;
   }
+  if (lower.contains('إعادة') || lower.contains('revisit') || lower.contains('مراجعة')) {
+    return Icons.refresh;
+  }
+  if (lower.contains('استشارة') || lower.contains('consult')) {
+    return Icons.forum;
+  }
+  return Icons.person;
 }
 
-bool isSlotTypeUrgent(String slotType) => slotType == 'urgent';
+bool isSlotTypeUrgent(String slotType) =>
+    slotType.toLowerCase().contains('urgent') || slotType.contains('طارئ');

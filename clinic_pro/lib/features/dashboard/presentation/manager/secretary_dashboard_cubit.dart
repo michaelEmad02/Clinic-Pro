@@ -8,25 +8,37 @@ import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import '../../../../core/services/i_cloud_service.dart';
-import '../../../appointments/presentation/manager/appointments_repository.dart';
-import '../../../appointments/presentation/manager/appointments_state.dart';
+import '../../../appointments/domain/entities/appointment_entity.dart';
+import '../../../appointments/domain/usecases/appointments/get_appointments_usecase.dart';
+import '../../../appointments/domain/usecases/appointments/confirm_arrival_usecase.dart';
+import '../../../appointments/domain/usecases/appointments/call_patient_usecase.dart';
 import 'secretary_dashboard_state.dart';
 
 @injectable
 class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
-  final AppointmentsRepository _appointmentsRepository;
+  final GetAppointmentsUseCase _getAppointmentsUseCase;
+  final ConfirmArrivalUseCase _confirmArrivalUseCase;
+  final CallPatientUseCase _callPatientUseCase;
   final ICloudService _cloudService;
 
-  // معرف السكرتير الافتراضي للمحاكاة
-  static const String _currentSecretaryId = 'u-sec-1';
+  // معرفات السكرتير والعيادة النشطين
+  String _secretaryId = '';
+  String _clinicId = '';
 
   SecretaryDashboardCubit(
-    this._appointmentsRepository,
+    this._getAppointmentsUseCase,
+    this._confirmArrivalUseCase,
+    this._callPatientUseCase,
     this._cloudService,
   ) : super(SecretaryDashboardInitial());
 
   /// تحميل كافة بيانات لوحة التحكم
-  Future<void> loadDashboardData() async {
+  Future<void> loadDashboardData({
+    required String secretaryId,
+    required String clinicId,
+  }) async {
+    _secretaryId = secretaryId;
+    _clinicId = clinicId;
     emit(SecretaryDashboardLoading());
     try {
       final todayStr = DateTime.now().toIso8601String().substring(0, 10);
@@ -34,7 +46,7 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
       // 1. جلب اسم السكرتير الحالي
       final secResults = await _cloudService.select(
         table: 'users',
-        eq: {'id': _currentSecretaryId},
+        eq: {'id': _secretaryId},
       );
       final secretaryName = secResults.isNotEmpty
           ? secResults.first['name'] as String
@@ -43,7 +55,7 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
       // 2. تحميل الفواتير لحساب المبالغ المفوترة والمحصلة لليوم
       final invoices = await _cloudService.select(
         table: 'invoices',
-        eq: {'clinic_id': AppConstants.activeClinicId},
+        eq: {'clinic_id': _clinicId},
       );
       
       double invoicedSum = 0;
@@ -58,56 +70,64 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
       }
 
       // 3. تحميل المواعيد لليوم
-      final allAppts = await _appointmentsRepository.loadAppointments();
-      final todayAppts = allAppts.where((a) {
-        return a['date'] == todayStr && a['clinic_id'] == AppConstants.activeClinicId;
-      }).toList();
-
-      // 4. جلب قائمة الانتظار الحالية (التي وصلت ولم تنتهِ ولم تُلغَ)
-      final queueRaw = todayAppts.where((a) {
-        return a['arrived_at'] != null &&
-            a['status'] != 'cancelled' &&
-            a['status'] != 'done';
-      }).toList();
-
-      // ترتيب قائمة الانتظار حسب تاريخ الوصول arrived_at تصاعدياً
-      queueRaw.sort((a, b) {
-        final aTime = a['arrived_at'] as String? ?? '';
-        final bTime = b['arrived_at'] as String? ?? '';
-        return aTime.compareTo(bTime);
-      });
-
-      // جلب أسماء الأطباء
-      final users = await _cloudService.select(table: 'users');
-      final doctorNames = {
-        for (final u in users)
-          if (u['role'] == 'doctor') u['id'] as String: u['name'] as String
-      };
-
-      // جلب بيانات العيادة الحالية المحددة
-      final clinicResults = await _cloudService.select(
-        table: 'clinics',
-        eq: {'id': AppConstants.activeClinicId},
+      final appointmentsResult = await _getAppointmentsUseCase(
+        GetAppointmentsParams(clinicId: _clinicId),
       );
-      final clinicName = clinicResults.isNotEmpty
-          ? clinicResults.first['name'] as String
-          : AppStrings.currentClinic;
 
-      final doctorName = doctorNames.values.isNotEmpty
-          ? doctorNames.values.first
-          : 'د. ياسر مصطفى';
+      await appointmentsResult.fold(
+        (failure) async => emit(SecretaryDashboardError(failure.message)),
+        (allAppts) async {
+          final todayAppts = allAppts.where((a) {
+            return a.date == todayStr && a.clinicId == _clinicId;
+          }).toList();
 
-      final liveQueue = _mapAppointments(queueRaw, doctorNames);
+          // 4. جلب قائمة الانتظار الحالية (التي وصلت ولم تنتهِ ولم تُلغَ)
+          final queueRaw = todayAppts.where((a) {
+            return a.arrivedAt != null &&
+                a.status != 'cancelled' &&
+                a.status != 'done';
+          }).toList();
 
-      emit(SecretaryDashboardLoaded(
-        secretaryName: secretaryName,
-        clinicName: clinicName,
-        doctorName: doctorName,
-        liveQueue: liveQueue,
-        totalInvoiced: _formatCurrency(invoicedSum),
-        totalCollected: _formatCurrency(collectedSum),
-        totalAppointmentsCount: todayAppts.length,
-      ));
+          // ترتيب قائمة الانتظار حسب تاريخ الوصول arrived_at تصاعدياً
+          queueRaw.sort((a, b) {
+            final aTime = a.arrivedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bTime = b.arrivedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return aTime.compareTo(bTime);
+          });
+
+          // جلب أسماء الأطباء
+          final users = await _cloudService.select(table: 'users');
+          final doctorNames = {
+            for (final u in users)
+              if (u['role'] == 'doctor') u['id'] as String: u['name'] as String
+          };
+
+          // جلب بيانات العيادة الحالية المحددة
+          final clinicResults = await _cloudService.select(
+            table: 'clinics',
+            eq: {'id': AppConstants.activeClinicId},
+          );
+          final clinicName = clinicResults.isNotEmpty
+              ? clinicResults.first['name'] as String
+              : AppStrings.currentClinic;
+
+          final doctorName = doctorNames.values.isNotEmpty
+              ? doctorNames.values.first
+              : 'د. ياسر مصطفى';
+
+          final liveQueue = queueRaw;
+
+          emit(SecretaryDashboardLoaded(
+            secretaryName: secretaryName,
+            clinicName: clinicName,
+            doctorName: doctorName,
+            liveQueue: liveQueue,
+            totalInvoiced: _formatCurrency(invoicedSum),
+            totalCollected: _formatCurrency(collectedSum),
+            totalAppointmentsCount: todayAppts.length,
+          ));
+        },
+      );
     } catch (e) {
       emit(SecretaryDashboardError('${AppStrings.loadFailedMsg}: ${e.toString()}'));
     }
@@ -116,8 +136,11 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
   /// تأكيد وصول المريض
   Future<void> confirmArrival(String appointmentId) async {
     try {
-      await _appointmentsRepository.confirmArrival(appointmentId);
-      await loadDashboardData();
+      final result = await _confirmArrivalUseCase(appointmentId);
+      await result.fold(
+        (failure) async => emit(SecretaryDashboardError(failure.message)),
+        (_) => loadDashboardData(secretaryId: _secretaryId, clinicId: _clinicId),
+      );
     } catch (_) {
       emit(SecretaryDashboardError(AppStrings.isArabic ? 'تعذّر تأكيد وصول المريض' : 'Failed to confirm patient arrival'));
     }
@@ -126,8 +149,11 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
   /// استدعاء المريض
   Future<void> callPatient(String appointmentId) async {
     try {
-      await _appointmentsRepository.callPatient(appointmentId);
-      await loadDashboardData();
+      final result = await _callPatientUseCase(appointmentId);
+      await result.fold(
+        (failure) async => emit(SecretaryDashboardError(failure.message)),
+        (_) => loadDashboardData(secretaryId: _secretaryId, clinicId: _clinicId),
+      );
     } catch (_) {
       emit(SecretaryDashboardError(AppStrings.isArabic ? 'تعذّر استدعاء المريض' : 'Failed to call patient'));
     }
@@ -153,69 +179,5 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
       input = input.replaceAll(english[i], arabic[i]);
     }
     return input;
-  }
-
-  String _formatTime(String raw) {
-    final parts = raw.split(':');
-    if (parts.length < 2) return raw;
-    final hour = int.tryParse(parts[0]) ?? 0;
-    final minute = parts[1];
-    final period = AppStrings.isArabic ? (hour >= 12 ? 'م' : 'ص') : (hour >= 12 ? 'PM' : 'AM');
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-    return _toArabicNumbers('$displayHour:$minute $period');
-  }
-
-  List<AppointmentItem> _mapAppointments(
-    List<Map<String, dynamic>> rawList,
-    Map<String, String> doctorNames,
-  ) {
-    return rawList.map((raw) {
-      final patient = raw['patients'] as Map<String, dynamic>? ?? {};
-      final type = raw['appointment_types'] as Map<String, dynamic>? ?? {};
-      final doctorId = raw['doctor_id'] as String;
-
-      final prescriptions = raw['prescriptions'] as List<dynamic>? ?? [];
-      final invoices = raw['invoices'] as List<dynamic>? ?? [];
-
-      final apptId = raw['id'] as String;
-
-      return AppointmentItem(
-        id: apptId,
-        patientId: raw['patient_id'] as String,
-        patientName: patient['name'] as String? ?? AppStrings.patient,
-        patientPhone: patient['phone'] as String? ?? '',
-        doctorId: doctorId,
-        doctorName: doctorNames[doctorId] ?? AppStrings.generalPractitioner,
-        typeId: raw['appointment_type_id'] as String,
-        typeName: type['name'] as String? ?? AppStrings.normalCheckup,
-        date: raw['date'] as String,
-        displayTime: _formatTime(raw['time'] as String? ?? '00:00:00'),
-        rawTime: raw['time'] as String? ?? '00:00:00',
-        status: raw['status'] as String,
-        price: (raw['price'] as num? ?? 0).toDouble(),
-        isUrgent: raw['is_urgent'] as bool? ?? false,
-        notes: raw['notes'] as String?,
-        arrivedAt: raw['arrived_at'] != null
-            ? DateTime.parse(raw['arrived_at'] as String)
-            : null,
-        calledAt: raw['called_at'] != null
-            ? DateTime.parse(raw['called_at'] as String)
-            : null,
-        hasPrescription: prescriptions.isNotEmpty,
-        hasInvoice: invoices.isNotEmpty,
-        prescriptionDiagnosis: prescriptions.isNotEmpty
-            ? prescriptions.first['diagnosis'] as String?
-            : null,
-        invoiceAmount: invoices.isNotEmpty
-            ? '${invoices.first['amount']}'
-            : null,
-        invoiceStatus: invoices.isNotEmpty
-            ? invoices.first['status'] as String?
-            : null,
-        invoiceNumber: invoices.isNotEmpty
-            ? '#INV-${apptId.length > 4 ? apptId.substring(apptId.length - 4) : apptId}'
-            : null,
-      );
-    }).toList();
   }
 }

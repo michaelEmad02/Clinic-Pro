@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../appointments/presentation/manager/appointments_state.dart';
+import '../../../appointments/domain/entities/appointment_entity.dart';
 
 abstract class DoctorDashboardState extends Equatable {
   const DoctorDashboardState();
@@ -15,8 +15,8 @@ class DoctorDashboardLoading extends DoctorDashboardState {}
 class DoctorDashboardLoaded extends DoctorDashboardState {
   final String doctorName;
   final String clinicName;
-  final AppointmentItem? currentPatient;
-  final List<AppointmentItem> waitingQueue;
+  final AppointmentEntity? currentPatient;
+  final List<AppointmentEntity> waitingQueue;
   final int completedCount;
   final int waitingCount;
   final String avgWaitingTime; // e.g. "١٥ دقيقة"

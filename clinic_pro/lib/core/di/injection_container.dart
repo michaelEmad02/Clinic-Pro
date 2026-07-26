@@ -24,22 +24,12 @@ final sl = GetIt.instance;
 Future<void> configureDependencies() async {
   await sl.init();
 
-  // تسجيل حالات الاستخدام (UseCases) الجديدة يدوياً
-  sl.registerFactory(
-      () => SyncDoctorAppointmentTypesUseCase(sl<ISettingsRepository>()));
-  sl.registerFactory(
-      () => GetGlobalAppointmentTypesUseCase(sl<ISettingsRepository>()));
-  sl.registerFactory(
-      () => GetDoctorSchedulesUseCase(sl<ISettingsRepository>()));
-  sl.registerFactory(
-      () => UpsertDoctorScheduleUseCase(sl<ISettingsRepository>()));
-
-  sl.registerFactory(() => QueuePatternCubit(
-        sl<GetQueueRuleUseCase>(),
-        sl<UpsertQueueRuleUseCase>(),
-        sl<GetDoctorAppointmentTypesUseCase>(),
-        sl<GetGlobalAppointmentTypesUseCase>(),
-      ));
+  // sl.registerFactory(() => QueuePatternCubit(
+  //       sl<GetQueueRuleUseCase>(),
+  //       sl<UpsertQueueRuleUseCase>(),
+  //       sl<GetDoctorAppointmentTypesUseCase>(),
+  //       sl<GetGlobalAppointmentTypesUseCase>(),
+  //     ));
   sl.registerFactory(() => VisitTypesCubit(
         sl<GetDoctorAppointmentTypesUseCase>(),
         sl<GetGlobalAppointmentTypesUseCase>(),

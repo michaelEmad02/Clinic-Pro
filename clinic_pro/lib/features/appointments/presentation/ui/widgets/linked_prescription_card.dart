@@ -64,14 +64,14 @@ class LinkedPrescriptionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.medication_outlined, color: AppColors.primary),
+              Icon(Icons.medication_outlined, color: context.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   AppStrings.prescriptionLabel,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
               ),
@@ -85,7 +85,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
                   child: Text(
                     AppStrings.edit,
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.primaryContainer,
+                      color: context.primaryContainer,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -134,8 +134,8 @@ class LinkedPrescriptionCard extends StatelessWidget {
               icon: const Icon(Icons.print_outlined, size: 18),
               label: Text(AppStrings.printPrescription),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+                foregroundColor: context.primary,
+                side: BorderSide(color: context.primary.withOpacity(0.2)),
                 backgroundColor: context.primaryLightColor,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
@@ -164,8 +164,8 @@ class LinkedPrescriptionCard extends StatelessWidget {
                   icon: const Icon(Icons.add_box_outlined, size: 18),
                   label: Text(AppStrings.newPrescription),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: context.primary,
+                    foregroundColor: context.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius:

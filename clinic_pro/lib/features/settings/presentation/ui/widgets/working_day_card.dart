@@ -50,14 +50,13 @@ class WorkingDayCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
-                      child: Text(
-                        day.keyChar,
-                        style: TextStyle(
-                          color: day.isOpen ? context.textPrimary : context.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                        child: Text(
+                          day.keyChar,
+                          style: AppTextStyles.headlineSmall(context).copyWith(
+                            color: day.isOpen ? context.textPrimary : context.textSecondary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
                     ),
                   ),
                   const SizedBox(width: AppConstants.spaceSm),

@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/widgets/status_badge.dart';
-import '../../manager/appointments_state.dart';
+import '../../../domain/entities/appointment_entity.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
 class AppointmentListItem extends StatelessWidget {
-  final AppointmentItem appointment;
+  final AppointmentEntity appointment;
   final VoidCallback onTap;
   final VoidCallback onMore;
 
@@ -44,13 +44,13 @@ class AppointmentListItem extends StatelessWidget {
             children: [
               CircleAvatar(
                 backgroundColor: appointment.isUrgent
-                    ? AppColors.dangerBg
+                    ? context.dangerBg
                     : context.primaryLightColor,
                 child: Icon(
                   appointment.isUrgent
                       ? Icons.priority_high
                       : Icons.calendar_today_outlined,
-                  color: appointment.isUrgent ? AppColors.danger : AppColors.primary,
+                  color: appointment.isUrgent ? context.danger : context.primary,
                   size: 18,
                 ),
               ),
@@ -60,7 +60,7 @@ class AppointmentListItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      appointment.patientName,
+                      appointment.patientName ?? AppStrings.patient,
                       style: AppTextStyles.headlineSmall(context).copyWith(
                         color: context.textPrimary,
                         fontWeight: FontWeight.bold,
@@ -70,7 +70,7 @@ class AppointmentListItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      appointment.doctorName,
+                      appointment.doctorName ?? AppStrings.generalPractitioner,
                       style: AppTextStyles.bodyMedium(context).copyWith(
                         color: context.textSecondary,
                         fontSize: 13,
@@ -81,7 +81,7 @@ class AppointmentListItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      appointment.typeName,
+                      appointment.typeName ?? AppStrings.normalCheckup,
                       style: AppTextStyles.bodyMedium(context).copyWith(
                         color: context.textSecondary,
                         fontSize: 12,
@@ -91,7 +91,7 @@ class AppointmentListItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      appointment.displayTime,
+                      appointment.displayTime ?? '',
                       style: AppTextStyles.bodyMedium(context).copyWith(
                         color: context.textSecondary,
                         fontSize: 12,

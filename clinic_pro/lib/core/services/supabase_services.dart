@@ -78,10 +78,16 @@ class SupabaseServices extends ICloudService {
   }
 
   @override
-  Stream<List<Map<String, dynamic>>> subscribe(
-      {required String table, required String primaryKey, String? clinicId}) {
-    // TODO: implement subscribe
-    throw UnimplementedError();
+  Stream<List<Map<String, dynamic>>> subscribe({
+    required String table,
+    required String primaryKey,
+    String? clinicId,
+  }) {
+    final query = supabase.from(table).stream(primaryKey: [primaryKey]);
+    if (clinicId != null) {
+      return query.eq('clinic_id', clinicId);
+    }
+    return query;
   }
 
   @override

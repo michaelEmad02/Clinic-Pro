@@ -4,30 +4,103 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../auth/presentation/manager/auth_cubit.dart';
+import '../../../auth/presentation/manager/auth_state.dart';
+import '../../../settings/presentation/manager/settings_cubit.dart';
+import '../../../settings/presentation/manager/settings_state.dart';
 import '../manager/waiting_queue_cubit.dart';
 import '../manager/waiting_queue_state.dart';
 import 'widgets/call_next_button.dart';
 import 'widgets/queue_list.dart';
 
-class WaitingQueueScreen extends StatelessWidget {
+class WaitingQueueScreen extends StatefulWidget {
   const WaitingQueueScreen({super.key});
 
   @override
+  State<WaitingQueueScreen> createState() => _WaitingQueueScreenState();
+}
+
+class _WaitingQueueScreenState extends State<WaitingQueueScreen> {
+  late final WaitingQueueCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = sl<WaitingQueueCubit>();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tryLoadQueue();
+  }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
+
+  void _tryLoadQueue() {
+    final authState = context.read<AuthCubit>().state;
+    final settingsState = context.read<SettingsCubit>().state;
+    String doctorId = '';
+    String doctorName = '';
+    final clinicId =
+        settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+
+    if (authState is AuthAuthenticated) {
+      final currentUser = authState.user;
+      if (currentUser.role == StaffRoles.doctor) {
+        doctorId = currentUser.id;
+        doctorName = currentUser.name;
+      } else {
+        doctorId = settingsState.currentDoctorId ?? '';
+        doctorName = settingsState.currentDoctorName ?? '';
+      }
+    }
+
+    if (doctorId.isNotEmpty && clinicId.isNotEmpty) {
+      _cubit.loadQueue(
+        doctorId: doctorId,
+        clinicId: clinicId,
+        doctorName: doctorName.isNotEmpty
+            ? doctorName
+            : AppStrings.treatingDoctor,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<WaitingQueueCubit>()..loadQueue(),
-      child: const _WaitingQueueBody(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _cubit),
+      ],
+      child: BlocListener<SettingsCubit, SettingsState>(
+        listenWhen: (previous, current) =>
+            previous.currentDoctorId != current.currentDoctorId ||
+            previous.clinicEntity?.id != current.clinicEntity?.id,
+        listener: (context, state) {
+          _tryLoadQueue();
+        },
+        child: _WaitingQueueBody(onRefresh: _tryLoadQueue),
+      ),
     );
   }
 }
 
 class _WaitingQueueBody extends StatelessWidget {
-  const _WaitingQueueBody();
+  final VoidCallback onRefresh;
+  const _WaitingQueueBody({required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +111,8 @@ class _WaitingQueueBody extends StatelessWidget {
         elevation: 0,
         title: BlocBuilder<WaitingQueueCubit, WaitingQueueState>(
           builder: (context, state) {
-            final subtitle = state is WaitingQueueLoaded ? state.doctorName : '';
+            final subtitle =
+                state is WaitingQueueLoaded ? state.doctorName : '';
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -46,7 +120,7 @@ class _WaitingQueueBody extends StatelessWidget {
                   AppStrings.waitingQueueTitle,
                   style: AppTextStyles.headlineMedium(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
                 if (subtitle.isNotEmpty)
@@ -66,6 +140,8 @@ class _WaitingQueueBody extends StatelessWidget {
         ),
       ),
       body: BlocBuilder<WaitingQueueCubit, WaitingQueueState>(
+        buildWhen: (previous, current) =>
+            previous.runtimeType != current.runtimeType || previous != current,
         builder: (context, state) {
           if (state is WaitingQueueLoading) {
             return const Padding(
@@ -81,8 +157,7 @@ class _WaitingQueueBody extends StatelessWidget {
                   Text(state.message),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () =>
-                        context.read<WaitingQueueCubit>().loadQueue(),
+                    onPressed: onRefresh,
                     child: Text(AppStrings.retry),
                   ),
                 ],
@@ -94,32 +169,36 @@ class _WaitingQueueBody extends StatelessWidget {
 
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<WaitingQueueCubit>().loadQueue();
+                onRefresh();
                 await Future.delayed(const Duration(milliseconds: 200));
               },
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                children: [
-                  CallNextButton(
-                    enabled: hasNext,
-                    onPressed: () {
-                      context.read<WaitingQueueCubit>().callNext();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppStrings.patientCalled)),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  QueueList(
-                    queue: state.queue,
-                    onCallPatient: (id) {
-                      context.read<WaitingQueueCubit>().callPatient(id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppStrings.patientCalledDetails)),
-                      );
-                    },
-                  ),
-                ],
+              child: ResponsiveHelper.responsiveCenter(
+                maxWidth: 900,
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  children: [
+                    CallNextButton(
+                      enabled: hasNext,
+                      onPressed: () {
+                        context.read<WaitingQueueCubit>().callNext();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(AppStrings.patientCalled)),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    QueueList(
+                      queue: state.queue,
+                      onCallPatient: (id) {
+                        context.read<WaitingQueueCubit>().callPatient(id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(AppStrings.patientCalledDetails)),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             );
           }

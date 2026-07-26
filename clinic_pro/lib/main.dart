@@ -12,6 +12,8 @@ import 'features/onboarding/presentation/manager/onboarding_cubit.dart';
 import 'core/themes/theme_cubit.dart';
 import 'core/localization/language_cubit.dart';
 
+import 'features/settings/presentation/manager/settings_cubit.dart';
+
 void main() async {
   // تهيئة جميع خدمات التطبيق قبل الإقلاع
   await AppInitializer.init();
@@ -30,6 +32,7 @@ class ClinicPro extends StatelessWidget {
         BlocProvider(create: (_) => sl<OnboardingCubit>()),
         BlocProvider(create: (_) => sl<ThemeCubit>()),
         BlocProvider(create: (_) => sl<LanguageCubit>()),
+        BlocProvider(create: (_) => sl<SettingsCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {

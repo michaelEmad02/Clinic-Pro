@@ -20,9 +20,9 @@ class UrgentAppointmentBanner extends StatelessWidget {
         vertical: 12,
       ),
       decoration: BoxDecoration(
-        color: AppColors.dangerBg,
+        color: context.dangerBg,
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        border: Border.all(color: AppColors.danger.withOpacity(0.25)),
+        border: Border.all(color: context.danger.withOpacity(0.25)),
       ),
       child: Row(
         children: [
@@ -32,7 +32,7 @@ class UrgentAppointmentBanner extends StatelessWidget {
             child: Text(
               AppStrings.emergencyBanner,
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.dangerText,
+                color: context.dangerText,
                 fontWeight: FontWeight.bold,
               ),
             ),

@@ -18,9 +18,6 @@
 - [X] add deleteStaffFromClinic method , and use it in clinic feature 
 
 
-## auth
+## appointments
 
-- [ ] مراجعه انشاء حساب المالك .
-- [ ] قبول ورفض الدعوات.
-- [ ] after accept , will save staff data in `clinicStaff` table , and if the staff is secretary will add to `doctor_secretary` table .
-- [ ] التسجيل من خلال جوجل - و الرابط السريع .
+- [ ] تنفيذ العمليات المعتمده علي ال features  الاخري

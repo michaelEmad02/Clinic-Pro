@@ -21,7 +21,8 @@ class PatientsCubit extends Cubit<PatientsState> {
       final items = await _repository.loadPatients();
       final doctors = await _repository.getDoctors();
       emit(PatientsLoaded(allPatients: items, doctors: doctors));
-    } catch (_) {
+    } catch (e) {
+      print(e.toString());
       emit(PatientsError(AppStrings.loadPatientsFailed));
     }
   }

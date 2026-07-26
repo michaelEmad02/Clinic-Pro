@@ -12,7 +12,12 @@ abstract class AppointmentsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadAppointmentsEvent extends AppointmentsEvent {}
+class LoadAppointmentsEvent extends AppointmentsEvent {
+  final String doctorId;
+  final String? clinicId;
+
+  const LoadAppointmentsEvent({required this.doctorId, this.clinicId});
+}
 
 class ChangeAppointmentsTabEvent extends AppointmentsEvent {
   final AppointmentsTab tab;
@@ -67,6 +72,7 @@ class AddAppointmentEvent extends AppointmentsEvent {
   final String time;
   final String? notes;
   final bool isUrgent;
+  final String currentUser;
 
   const AddAppointmentEvent({
     required this.patientId,
@@ -76,6 +82,7 @@ class AddAppointmentEvent extends AppointmentsEvent {
     required this.time,
     this.notes,
     this.isUrgent = false,
+    required this.currentUser,
   });
 
   @override
@@ -112,6 +119,15 @@ class DeleteAppointmentEvent extends AppointmentsEvent {
   final String appointmentId;
 
   const DeleteAppointmentEvent(this.appointmentId);
+
+  @override
+  List<Object?> get props => [appointmentId];
+}
+
+class GetAppointmentDetailsEvent extends AppointmentsEvent {
+  final String appointmentId;
+
+  const GetAppointmentDetailsEvent(this.appointmentId);
 
   @override
   List<Object?> get props => [appointmentId];

@@ -8,6 +8,10 @@ import 'package:clinic_pro/features/patients/presentation/ui/patients_screen.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_state.dart';
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
@@ -32,52 +36,104 @@ class SecretaryDashboardScreen extends StatefulWidget {
 
 class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
   int _currentIndex = 0;
+  String _clinicId = '';
+  String _secretaryId = '';
+  bool _hasLoaded = false;
+  late final SecretaryDashboardCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = sl<SecretaryDashboardCubit>();
+  }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tryLoadDashboard();
+  }
+
+  void _tryLoadDashboard({BuildContext? customContext}) {
+    final activeContext = customContext ?? context;
+    final settingsState = activeContext.read<SettingsCubit>().state;
+    final newClinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+    final currentUser = activeContext.read<AuthCubit>().state.user;
+
+    if (currentUser == null || newClinicId.isEmpty) return;
+
+    final newSecretaryId = currentUser.id;
+
+    if (_hasLoaded && newClinicId == _clinicId && newSecretaryId == _secretaryId) return;
+
+    _clinicId = newClinicId;
+    _secretaryId = newSecretaryId;
+    _hasLoaded = true;
+
+    _cubit.loadDashboardData(
+      secretaryId: _secretaryId,
+      clinicId: _clinicId,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => sl<SecretaryDashboardCubit>()..loadDashboardData(),
-      child: AppResponsiveScaffold(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+    return BlocProvider.value(
+      value: _cubit,
+      child: BlocListener<SettingsCubit, SettingsState>(
+        listener: (context, settingsState) {
+          _tryLoadDashboard(customContext: context);
         },
-        destinations: [
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.smart_home),
-            label: Text(AppStrings.home),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.calendar),
-            label: Text(AppStrings.appointments),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.receipt_2),
-            label: Text(AppStrings.invoices),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.users),
-            label: Text(AppStrings.patients),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.settings),
-            label: Text(AppStrings.settings),
-          ),
-        ],
-        appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
-        body: IndexedStack(
-          index: _currentIndex,
-          children: [
-            _buildMainDashboardTab(),
-            const AppointmentsScreen(),
-            const InvoicesScreen(),
-            const PatientsScreen(),
-            const SettingsScreen(role: StaffRoles.secretary, showBottomNav: false),
+        child: AppResponsiveScaffold(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+            if (index == 0) {
+              _tryLoadDashboard(customContext: context);
+            }
+          },
+          destinations: [
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.smart_home),
+              label: Text(AppStrings.home),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.calendar),
+              label: Text(AppStrings.appointments),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.receipt_2),
+              label: Text(AppStrings.invoices),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.users),
+              label: Text(AppStrings.patients),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.settings),
+              label: Text(AppStrings.settings),
+            ),
           ],
+          appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
+          body: IndexedStack(
+            index: _currentIndex,
+            children: [
+              _buildMainDashboardTab(),
+              const AppointmentsScreen(),
+              const InvoicesScreen(),
+              const PatientsScreen(),
+              const SettingsScreen(role: StaffRoles.secretary, showBottomNav: false),
+            ],
+          ),
+          bottomNavigationBar: _buildBottomNav(customContext: context),
         ),
-        bottomNavigationBar: _buildBottomNav(),
       ),
     );
   }
@@ -161,7 +217,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
         if (state is SecretaryDashboardLoaded) {
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<SecretaryDashboardCubit>().loadDashboardData();
+              _tryLoadDashboard(customContext: context);
             },
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -195,7 +251,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav({required BuildContext customContext}) {
     final tabs = [
       {'label': AppStrings.home, 'icon': TablerIcons.smart_home, 'activeIcon': TablerIcons.smart_home},
       {'label': AppStrings.appointments, 'icon': TablerIcons.calendar, 'activeIcon': TablerIcons.calendar},
@@ -224,6 +280,9 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
                 setState(() {
                   _currentIndex = index;
                 });
+                if (index == 0) {
+                  _tryLoadDashboard(customContext: customContext);
+                }
               },
               borderRadius: BorderRadius.circular(16),
               child: SizedBox(

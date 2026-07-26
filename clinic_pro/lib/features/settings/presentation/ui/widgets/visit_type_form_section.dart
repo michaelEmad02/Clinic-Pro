@@ -55,7 +55,6 @@ class _VisitTypeFormSectionState extends State<VisitTypeFormSection> {
 
   @override
   Widget build(BuildContext context) {
-  var test = widget.availableTypes;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

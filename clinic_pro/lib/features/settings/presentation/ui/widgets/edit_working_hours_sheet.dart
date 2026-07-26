@@ -169,7 +169,7 @@ class EditWorkingHoursSheet extends StatelessWidget {
               },
         style: ElevatedButton.styleFrom(
           backgroundColor: context.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: context.onPrimary,
           padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -178,11 +178,11 @@ class EditWorkingHoursSheet extends StatelessWidget {
         ),
         icon: const Icon(Icons.save_outlined),
         label: state.isSaving
-            ? const SizedBox(
+            ?  SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
+                    strokeWidth: 2, color: context.onPrimary),
               )
             : Text(
                 AppStrings.save,

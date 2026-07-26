@@ -30,7 +30,7 @@ class AppointmentsTabBar extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: context.isDarkMode ? const Color(0xFF2A2A2A) : AppColors.surfaceContainerLow,
+        color: context.isDarkMode ? context.surface : context.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: context.borderColor),
       ),
@@ -60,7 +60,7 @@ class AppointmentsTabBar extends StatelessWidget {
                   tab.$2,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium(context).copyWith(
-                    color: isSelected ? AppColors.primary : context.textSecondary,
+                    color: isSelected ? context.primary : context.textSecondary,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),

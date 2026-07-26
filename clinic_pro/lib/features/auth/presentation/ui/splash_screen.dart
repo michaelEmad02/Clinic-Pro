@@ -6,6 +6,7 @@ import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/constants/staff_roles.dart';
+import '../../../settings/presentation/manager/settings_cubit.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
 import 'dart:ui' as ui;
@@ -96,6 +97,12 @@ class _SplashScreenState extends State<SplashScreen>
       listener: (context, state) {
         if (state is AuthAuthenticated) {
           final role = state.user.role;
+          final userId = state.user.id;
+
+          // تحميل الإعدادات (العيادة والطبيب النشط) في الـ SettingsCubit العام
+          // قبل الانتقال لأي شاشة حتى تكون البيانات جاهزة
+          context.read<SettingsCubit>().loadSettings(role, userId);
+
           if (role == StaffRoles.owner) {
             context.go(RouteConstants.ownerDashboard);
           } else if (role == StaffRoles.doctor) {

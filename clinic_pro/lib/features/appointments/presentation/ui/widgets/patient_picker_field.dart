@@ -1,13 +1,14 @@
 // ────────────────────────────────────────────────────────
 // حقل اختيار المريض مع بحث — مطابق لتصميم Stitch
 // ────────────────────────────────────────────────────────
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
-import '../../../../../core/mocks/mock_data.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../patients/presentation/manager/patients_cubit.dart';
+import '../../../../patients/presentation/manager/patients_state.dart';
 
 class PatientPickerField extends StatefulWidget {
   final String? selectedPatientId;
@@ -35,25 +36,38 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
     super.dispose();
   }
 
-  String? get _selectedName {
+  String? _selectedName(PatientsState state) {
     if (widget.selectedPatientId == null) return null;
-    final patient = MockData.patients.firstWhere(
-      (p) => p['id'] == widget.selectedPatientId,
-      orElse: () => {},
-    );
-    return patient['name'] as String?;
+    if (state is PatientsLoaded) {
+      final patient = state.allPatients.firstWhere(
+        (p) => p.id == widget.selectedPatientId,
+        orElse: () => const PatientItem(
+          id: '',
+          name: '',
+          phone: '',
+          gender: '',
+          allergies: '',
+          chronicConditions: '',
+          lastVisitLabel: '',
+        ),
+      );
+      return patient.name.isNotEmpty ? patient.name : null;
+    }
+    return null;
   }
 
-  List<Map<String, dynamic>> get _filteredPatients {
+  List<PatientItem> _filteredPatients(PatientsState state) {
+    if (state is! PatientsLoaded) return [];
     final query = _searchController.text.trim().toLowerCase();
-    var list = MockData.patients;
-
-    // تصفية المرضى حسب العيادة النشطة بدلاً من الطبيب، لأن المريض يمكن حجزه لدى أي طبيب بالعيادة
-    list = list.where((p) => p['clinic_id'] == AppConstants.activeClinicId).toList();
+    
+    // يتم تصفية المرضى بالعيادة النشطة مسبقاً في الـ repository
+    var list = state.allPatients;
 
     if (query.isNotEmpty) {
       list = list
-          .where((p) => (p['name'] as String).toLowerCase().contains(query))
+          .where((p) =>
+              p.name.toLowerCase().contains(query) ||
+              p.phone.contains(query))
           .toList();
     }
     return list;
@@ -61,99 +75,159 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          AppStrings.selectPatient,
-          style: AppTextStyles.caption(context).copyWith(
-            color: context.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () => setState(() => _expanded = !_expanded),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.spaceMd,
-              vertical: 13,
+    return BlocBuilder<PatientsCubit, PatientsState>(
+      builder: (context, state) {
+        final selectedName = _selectedName(state);
+        final filteredPatients = _filteredPatients(state);
+        final isLoading = state is PatientsLoading;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              AppStrings.selectPatient,
+              style: AppTextStyles.caption(context).copyWith(
+                color: context.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            decoration: BoxDecoration(
-              color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-              border: Border.all(color: context.borderColor),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spaceMd,
+                  vertical: 13,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedName ?? AppStrings.searchPatientHint,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: _selectedName != null
-                          ? context.textPrimary
-                          : AppColors.textHint,
+                decoration: BoxDecoration(
+                  color: context.surfaceColor,
+                  borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                  border: Border.all(color: context.borderColor),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 2,
+                      offset: const Offset(0, 1),
                     ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: isLoading
+                          ? const Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            )
+                          : Text(
+                              selectedName ?? AppStrings.searchPatientHint,
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                color: selectedName != null
+                                    ? context.textPrimary
+                                    : context.textHint,
+                              ),
+                            ),
+                    ),
+                    Icon(Icons.search, color: context.textSecondary, size: 20),
+                  ],
+                ),
+              ),
+            ),
+            if (_expanded) ...[
+              const SizedBox(height: 8),
+              TextField(
+                controller: _searchController,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: AppStrings.searchByName,
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spaceMd,
+                    vertical: 12,
                   ),
                 ),
-                Icon(Icons.search, color: context.textSecondary, size: 20),
-              ],
-            ),
-          ),
-        ),
-        if (_expanded) ...[
-          const SizedBox(height: 8),
-          TextField(
-            controller: _searchController,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              hintText: AppStrings.searchByName,
-              prefixIcon: const Icon(Icons.search, size: 20),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.spaceMd,
-                vertical: 12,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          ..._filteredPatients.map((patient) {
-            final id = patient['id'] as String;
-            final isSelected = widget.selectedPatientId == id;
-            return ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                patient['name'] as String,
-                style: AppTextStyles.bodyMedium(context),
-              ),
-              subtitle: Text(
-                patient['phone'] as String,
-                style: AppTextStyles.caption(context).copyWith(
-                  color: context.textSecondary,
+              const SizedBox(height: 8),
+              Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                decoration: BoxDecoration(
+                  color: context.surfaceColor,
+                  borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+                  border: Border.all(color: context.borderColor),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                textDirection: TextDirection.ltr,
+                child: isLoading
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : filteredPatients.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Center(
+                              child:                               Text(
+                                AppStrings.noPatientsFound,
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  color: context.textSecondary,
+                                ),
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            shrinkWrap: true,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            itemCount: filteredPatients.length,
+                            separatorBuilder: (_, __) => Divider(color: context.borderColor, height: 1),
+                            itemBuilder: (context, index) {
+                              final patient = filteredPatients[index];
+                              final id = patient.id;
+                              final isSelected = widget.selectedPatientId == id;
+                              return ListTile(
+                                dense: true,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                title: Text(
+                                  patient.name,
+                                  style: AppTextStyles.bodyMedium(context).copyWith(
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  patient.phone,
+                                  style: AppTextStyles.caption(context).copyWith(
+                                    color: context.textSecondary,
+                                  ),
+                                  textDirection: TextDirection.ltr,
+                                ),
+                                trailing: isSelected
+                                    ? Icon(Icons.check_circle, color: context.primary)
+                                    : null,
+                                onTap: () {
+                                  widget.onChanged(id);
+                                  setState(() => _expanded = false);
+                                },
+                              );
+                            },
+                          ),
               ),
-              trailing: isSelected
-                  ? const Icon(Icons.check_circle, color: AppColors.primary)
-                  : null,
-              onTap: () {
-                widget.onChanged(id);
-                setState(() => _expanded = false);
-              },
-            );
-          }),
-        ],
-      ],
+            ],
+          ],
+        );
+      },
     );
   }
 }

@@ -6,10 +6,10 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/realtime_indicator.dart';
 import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
-import '../../../../appointments/presentation/manager/appointments_state.dart';
+import '../../../../appointments/domain/entities/appointment_entity.dart';
 
 class WaitingQueueList extends StatelessWidget {
-  final List<AppointmentItem> queue;
+  final List<AppointmentEntity> queue;
   final VoidCallback onCallNext;
 
   const WaitingQueueList({
@@ -123,7 +123,7 @@ class WaitingQueueList extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              patient.patientName,
+                              patient.patientName ?? AppStrings.patient,
                               style: AppTextStyles.headlineSmall(context).copyWith(
                                 color: context.textPrimary,
                                 fontWeight: FontWeight.bold,
@@ -133,7 +133,7 @@ class WaitingQueueList extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              patient.doctorName,
+                              patient.doctorName ?? AppStrings.generalPractitioner,
                               style: AppTextStyles.bodyMedium(context).copyWith(
                                 color: context.textSecondary,
                                 fontSize: 13,
@@ -144,7 +144,7 @@ class WaitingQueueList extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              patient.typeName,
+                              patient.typeName ?? AppStrings.normalCheckup,
                               style: AppTextStyles.bodyMedium(context).copyWith(
                                 color: context.textSecondary,
                                 fontSize: 12,
@@ -154,7 +154,7 @@ class WaitingQueueList extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              patient.displayTime,
+                              patient.displayTime ?? '',
                               style: AppTextStyles.bodyMedium(context).copyWith(
                                 color: context.textSecondary,
                                 fontSize: 12,
@@ -187,15 +187,15 @@ class WaitingQueueList extends StatelessWidget {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        patient.patientName,
+                                        patient.patientName ?? AppStrings.patient,
                                         style: AppTextStyles.headlineSmall(context).copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: AppColors.primary,
+                                          color: context.primary,
                                         ),
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        patient.patientPhone,
+                                        patient.patientPhone ?? '',
                                         style: AppTextStyles.bodyMedium(context).copyWith(
                                           color: context.textSecondary,
                                         ),
@@ -203,7 +203,7 @@ class WaitingQueueList extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 16),
                                       ListTile(
-                                        leading: const Icon(Icons.person_outline, color: AppColors.primary),
+                                        leading: Icon(Icons.person_outline, color: context.primary),
                                         title: Text(
                                           AppStrings.patientDetails,
                                           style: AppTextStyles.bodyMedium(context).copyWith(

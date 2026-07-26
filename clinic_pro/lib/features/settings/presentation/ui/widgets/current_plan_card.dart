@@ -105,9 +105,9 @@ class CurrentPlanCard extends StatelessWidget {
             final maxStaff = planFeatures['max_staff'];
             final maxPatients = planFeatures['max_patients'];
 
-            featuresList.add(AppStrings.isArabic ? 'دعم حتى $maxClinics عيادات نشطة' : 'Support up to $maxClinics active clinics');
-            featuresList.add(AppStrings.isArabic ? 'دعم حتى $maxStaff مستخدمين من طاقم العمل' : 'Support up to $maxStaff staff members');
-            featuresList.add(AppStrings.isArabic ? 'دعم حتى $maxPatients مريض مسجل' : 'Support up to $maxPatients registered patients');
+            featuresList.add(AppStrings.supportClinics((maxClinics as num?)?.toInt() ?? 0));
+            featuresList.add(AppStrings.supportStaff((maxStaff as num?)?.toInt() ?? 0));
+            featuresList.add(AppStrings.supportPatients((maxPatients as num?)?.toInt() ?? 0));
 
             // Parse jsonb features object: e.g. {"print": [{"value": true}, {"title": "الطباعة"}]}
             final rawFeatures = planFeatures['features'];
@@ -135,11 +135,26 @@ class CurrentPlanCard extends StatelessWidget {
                   ? '17'
                   : '7';
                   
-          featuresList = planKey == 'pro' || planKey == 'growth'
-              ? (AppStrings.isArabic ? ['دعم حتى 3 عيادات نشطة', 'دعم حتى 5 مستخدمين', 'دعم حتى 2000 مريض'] : ['Support up to 3 active clinics', 'Support up to 5 staff members', 'Support up to 2000 patients'])
+          final clinicsMax = planKey == 'pro' || planKey == 'growth'
+              ? 3
               : planKey == 'enterprise' || planKey == 'professional'
-                  ? (AppStrings.isArabic ? ['دعم حتى 10 عيادات نشطة', 'دعم حتى 20 مستخدم', 'دعم حتى 10000 مريض'] : ['Support up to 10 active clinics', 'Support up to 20 staff members', 'Support up to 10000 patients'])
-                  : (AppStrings.isArabic ? ['دعم عيادة واحدة فقط', 'دعم مستخدمين اثنين', 'أقصى عدد مرضى: 500 مريض'] : ['Single clinic support', 'Support up to 2 staff members', 'Maximum 500 patients']);
+                  ? 10
+                  : 1;
+          final staffMax = planKey == 'pro' || planKey == 'growth'
+              ? 5
+              : planKey == 'enterprise' || planKey == 'professional'
+                  ? 20
+                  : 2;
+          final patientsMax = planKey == 'pro' || planKey == 'growth'
+              ? 2000
+              : planKey == 'enterprise' || planKey == 'professional'
+                  ? 10000
+                  : 500;
+          featuresList = [
+            AppStrings.supportClinics(clinicsMax),
+            AppStrings.supportStaff(staffMax),
+            AppStrings.supportPatients(patientsMax),
+          ];
         }
 
         return Container(
@@ -193,7 +208,7 @@ class CurrentPlanCard extends StatelessWidget {
               Divider(height: 1, thickness: 0.5, color: context.border),
               const SizedBox(height: AppConstants.spaceMd),
               
-              Text(AppStrings.isArabic ? 'ميزات الخطة:' : 'Plan Features:', style: AppTextStyles.headlineSmall(context).copyWith(fontSize: 14, fontWeight: FontWeight.bold)),
+              Text(AppStrings.planFeatures, style: AppTextStyles.headlineSmall(context).copyWith(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: AppConstants.spaceSm),
               ...featuresList.map((feature) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -216,7 +231,7 @@ class CurrentPlanCard extends StatelessWidget {
                     fontSize: 32,
                   )),
                   const SizedBox(width: 4),
-                  Text(AppStrings.isArabic ? 'دولار / شهرياً' : '/ month', style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary)),
+                  Text(AppStrings.perMonth, style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary)),
                 ],
               ),
             ],

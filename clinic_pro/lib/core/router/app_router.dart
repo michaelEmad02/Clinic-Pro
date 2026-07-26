@@ -1,5 +1,14 @@
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../constants/route_constants.dart';
+import '../constants/app_constants.dart';
+import '../constants/staff_roles.dart';
+import '../di/injection_container.dart';
+import '../../features/auth/presentation/manager/auth_cubit.dart';
+import '../../features/auth/presentation/manager/auth_state.dart';
+import '../../features/settings/presentation/manager/settings_cubit.dart';
+import '../../features/appointments/presentation/manager/appointments_bloc.dart';
+import '../../features/appointments/presentation/manager/appointments_event.dart';
 
 import '../../features/auth/presentation/ui/splash_screen.dart';
 import '../../features/auth/presentation/ui/login_screen.dart';
@@ -37,7 +46,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteConstants.login,
-      builder: (context, state) => LoginScreen(),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: RouteConstants.register,
@@ -86,7 +95,10 @@ final GoRouter appRouter = GoRouter(
       path: RouteConstants.appointmentDetails,
       builder: (context, state) {
         final id = state.pathParameters['id'] ?? '';
-        return AppointmentDetailsScreen(id: id);
+        return BlocProvider(
+          create: (context) => sl<AppointmentsBloc>()..add(GetAppointmentDetailsEvent(id)),
+          child: AppointmentDetailsScreen(id: id),
+        );
       },
     ),
     GoRoute(

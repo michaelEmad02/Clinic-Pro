@@ -16,7 +16,10 @@ class PatientsRepository {
   PatientsRepository(this._cloud);
 
   Future<List<PatientItem>> loadPatients() async {
-    final data = await _cloud.select(table: 'patients');
+    final data = await _cloud.select(
+      table: 'patients',
+
+    );
     return data.map((raw) => _mapPatientItem(raw)).toList();
   }
 
@@ -32,6 +35,7 @@ class PatientsRepository {
     String? doctorId,
   }) async {
     final data = await _cloud.insert(table: 'patients', data: {
+      'clinic_id': AppConstants.activeClinicId,
       'name': name,
       'phone': phone,
       'gender': gender,

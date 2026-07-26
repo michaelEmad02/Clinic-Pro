@@ -1,102 +1,8 @@
-// ────────────────────────────────────────────────────────
-// حالات شاشة المواعيد — تحتوي على نموذج AppointmentItem
-// ────────────────────────────────────────────────────────
-
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/appointment_entity.dart';
 
 /// تبويبات شاشة المواعيد: اليوم / القادمة / السجل
 enum AppointmentsTab { today, upcoming, history }
-
-/// نموذج موعد للعرض في واجهة المستخدم (UI Phase — Mock)
-class AppointmentItem extends Equatable {
-  final String id;
-  final String patientId;
-  final String patientName;
-  final String patientPhone;
-  final String doctorId;
-  final String doctorName;
-  final String typeId;
-  final String typeName;
-  final String date;
-  final String displayTime;
-  /// الوقت الخام من قاعدة البيانات (مثل '16:30:00') لاستخدامه عند التعديل
-  final String rawTime;
-  final String status;
-  final double price;
-  final bool isUrgent;
-  final String? notes;
-  final DateTime? arrivedAt;
-  final DateTime? calledAt;
-  final bool hasPrescription;
-  final bool hasInvoice;
-  final String? prescriptionDiagnosis;
-  final String? invoiceAmount;
-  final String? invoiceStatus;
-  final String? invoiceNumber;
-
-  const AppointmentItem({
-    required this.id,
-    required this.patientId,
-    required this.patientName,
-    required this.patientPhone,
-    required this.doctorId,
-    required this.doctorName,
-    required this.typeId,
-    required this.typeName,
-    required this.date,
-    required this.displayTime,
-    this.rawTime = '00:00:00',
-    required this.status,
-    required this.price,
-    required this.isUrgent,
-    this.notes,
-    this.arrivedAt,
-    this.calledAt,
-    this.hasPrescription = false,
-    this.hasInvoice = false,
-    this.prescriptionDiagnosis,
-    this.invoiceAmount,
-    this.invoiceStatus,
-    this.invoiceNumber,
-  });
-
-  AppointmentItem copyWith({
-    String? status,
-    bool? isUrgent,
-    DateTime? arrivedAt,
-    DateTime? calledAt,
-    bool? hasPrescription,
-    bool? hasInvoice,
-  }) {
-    return AppointmentItem(
-      id: id,
-      patientId: patientId,
-      patientName: patientName,
-      patientPhone: patientPhone,
-      doctorId: doctorId,
-      doctorName: doctorName,
-      typeId: typeId,
-      typeName: typeName,
-      date: date,
-      displayTime: displayTime,
-      rawTime: rawTime,
-      status: status ?? this.status,
-      price: price,
-      isUrgent: isUrgent ?? this.isUrgent,
-      notes: notes,
-      arrivedAt: arrivedAt ?? this.arrivedAt,
-      calledAt: calledAt ?? this.calledAt,
-      hasPrescription: hasPrescription ?? this.hasPrescription,
-      hasInvoice: hasInvoice ?? this.hasInvoice,
-      prescriptionDiagnosis: prescriptionDiagnosis,
-      invoiceAmount: invoiceAmount,
-      invoiceStatus: invoiceStatus,
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, status, isUrgent, arrivedAt, calledAt];
-}
 
 abstract class AppointmentsState extends Equatable {
   const AppointmentsState();
@@ -110,7 +16,7 @@ class AppointmentsInitial extends AppointmentsState {}
 class AppointmentsLoading extends AppointmentsState {}
 
 class AppointmentsLoaded extends AppointmentsState {
-  final List<AppointmentItem> allAppointments;
+  final List<AppointmentEntity> allAppointments;
   final AppointmentsTab activeTab;
   final String statusFilter;
 
@@ -121,9 +27,9 @@ class AppointmentsLoaded extends AppointmentsState {
   });
 
   /// فلترة المواعيد حسب التبويب النشط
-  List<AppointmentItem> get filteredAppointments {
+  List<AppointmentEntity> get filteredAppointments {
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    List<AppointmentItem> base;
+    List<AppointmentEntity> base;
 
     switch (activeTab) {
       case AppointmentsTab.today:
@@ -144,7 +50,7 @@ class AppointmentsLoaded extends AppointmentsState {
   }
 
   AppointmentsLoaded copyWith({
-    List<AppointmentItem>? allAppointments,
+    List<AppointmentEntity>? allAppointments,
     AppointmentsTab? activeTab,
     String? statusFilter,
   }) {

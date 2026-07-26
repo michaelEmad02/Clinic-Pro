@@ -201,7 +201,7 @@ class SettingsFooter extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'v1.0.0 — ClinicPro',
+            AppStrings.appVersion,
             style: AppTextStyles.caption(context)
                 .copyWith(color: context.textHint),
           ),
@@ -378,20 +378,17 @@ class LanguageSwitch extends StatelessWidget {
             value: locale.languageCode,
             icon: Icon(Icons.arrow_drop_down, color: context.primary),
             dropdownColor: context.surfaceColor,
-            style: TextStyle(
-              color: context.textPrimary,
-              fontFamily: locale.languageCode == 'ar' ? 'Cairo' : 'Inter',
-              fontSize: 13,
+            style: AppTextStyles.bodyMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
-            items: const [
+            items:  [
               DropdownMenuItem(
                 value: 'ar',
-                child: Text('العربية'),
+                child: Text(AppStrings.arabic),
               ),
               DropdownMenuItem(
                 value: 'en',
-                child: Text('English'),
+                child: Text(AppStrings.english),
               ),
             ],
             onChanged: (val) {

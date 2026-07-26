@@ -4,27 +4,41 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/services/i_cloud_service.dart';
-import '../../../appointments/presentation/manager/appointments_repository.dart';
-import '../../../appointments/presentation/manager/appointments_state.dart';
+import '../../../appointments/domain/entities/appointment_entity.dart';
+import '../../../appointments/domain/usecases/appointments/get_appointments_usecase.dart';
+import '../../../appointments/domain/usecases/appointments/call_patient_usecase.dart';
+import '../../../appointments/domain/usecases/appointments/sort_queue_usecase.dart';
 import 'doctor_dashboard_state.dart';
 
 @injectable
 class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
-  final AppointmentsRepository _repository;
+  final GetAppointmentsUseCase _getAppointmentsUseCase;
+  final CallPatientUseCase _callPatientUseCase;
+  final SortQueueUseCase _sortQueueUseCase;
   final ICloudService _cloudService;
 
-  // معرف الطبيب الافتراضي للمحاكاة
-  static const String _currentDoctorId = 'u-doc-1';
+  // معرفات الطبيب والعيادة النشطين
+  String _doctorId = '';
+  String _clinicId = '';
 
-  DoctorDashboardCubit(this._repository, this._cloudService)
-      : super(DoctorDashboardInitial());
+  DoctorDashboardCubit(
+    this._getAppointmentsUseCase,
+    this._callPatientUseCase,
+    this._sortQueueUseCase,
+    this._cloudService,
+  ) : super(DoctorDashboardInitial());
 
   /// تحميل كافة بيانات لوحة التحكم من خلال المستودع والخدمات السحابية
-  Future<void> loadDashboardData({bool autoCallNext = false}) async {
+  Future<void> loadDashboardData({
+    required String doctorId,
+    required String clinicId,
+    bool autoCallNext = false,
+  }) async {
+    _doctorId = doctorId;
+    _clinicId = clinicId;
     emit(DoctorDashboardLoading());
     try {
       final todayStr = DateTime.now().toIso8601String().substring(0, 10);
@@ -32,7 +46,7 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
       // 1. جلب بيانات الطبيب الحالي لعرض الاسم
       final doctorResults = await _cloudService.select(
         table: 'users',
-        eq: {'id': _currentDoctorId},
+        eq: {'id': _doctorId},
       );
       final doctorName = doctorResults.isNotEmpty
           ? doctorResults.first['name'] as String
@@ -41,80 +55,93 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
       // جلب بيانات العيادة الحالية المحددة
       final clinicResults = await _cloudService.select(
         table: 'clinics',
-        eq: {'id': AppConstants.activeClinicId},
+        eq: {'id': _clinicId},
       );
       final clinicName = clinicResults.isNotEmpty
           ? clinicResults.first['name'] as String
           : 'عيادة كليوباترا لطب الأطفال';
 
       // 2. تحميل كافة المواعيد لحساب الإحصائيات (المفلترة بالعيادة النشطة)
-      final allAppts = await _repository.loadAppointments();
-      final todayAppts = allAppts.where((a) {
-        return a['doctor_id'] == _currentDoctorId &&
-            a['clinic_id'] == AppConstants.activeClinicId &&
-            a['date'] == todayStr;
-      }).toList();
+      final appointmentsResult = await _getAppointmentsUseCase(
+        GetAppointmentsParams(clinicId: _clinicId),
+      );
 
-      // حساب عدد الحالات المكتملة لليوم
-      final completedCount =
-          todayAppts.where((a) => a['status'] == 'done').length;
+      await appointmentsResult.fold(
+        (failure) async => emit(DoctorDashboardError(failure.message)),
+        (allAppts) async {
+          final todayAppts = allAppts.where((a) {
+            return a.doctorId == _doctorId &&
+                a.clinicId == _clinicId &&
+                a.date == todayStr;
+          }).toList();
 
-      // حساب عدد الحالات المنتظرة لليوم (التي وصلت ولم يتم استدعاؤها بعد)
-      final waitingCount = todayAppts.where((a) {
-        return a['arrived_at'] != null && a['status'] == 'confirmed';
-      }).length;
+          // حساب عدد الحالات المكتملة لليوم
+          final completedCount = todayAppts.where((a) => a.status == 'done').length;
 
-      // 3. حساب متوسط وقت الانتظار بناءً على الحالات التي استدعيت بالفعل
-      int totalMinutes = 0;
-      int calledCount = 0;
-      for (final appt in todayAppts) {
-        if (appt['called_at'] != null && appt['arrived_at'] != null) {
-          final called = DateTime.parse(appt['called_at'] as String);
-          final arrived = DateTime.parse(appt['arrived_at'] as String);
-          totalMinutes += called.difference(arrived).inMinutes;
-          calledCount++;
-        }
-      }
-      final avgMinutes =
-          calledCount > 0 ? (totalMinutes / calledCount).round() : 0;
-      final avgWaitingTime = avgMinutes > 0
-          ? _toArabicNumbers(
-              '$avgMinutes ${AppStrings.isArabic ? 'دقيقة' : 'min'}')
-          : '—';
+          // حساب عدد الحالات المنتظرة لليوم (التي وصلت ولم يتم استدعاؤها بعد)
+          final waitingCount = todayAppts.where((a) {
+            return a.arrivedAt != null && a.status == 'confirmed';
+          }).length;
 
-      // 4. جلب المريض الحالي قيد الكشف إن وجد
-      final currentRaw =
-          todayAppts.where((a) => a['status'] == 'in_progress').toList();
-      final AppointmentItem? currentPatient =
-          currentRaw.isNotEmpty ? _mapAppointments(currentRaw).first : null;
+          // 3. حساب متوسط وقت الانتظار بناءً على الحالات التي استدعيت بالفعل
+          int totalMinutes = 0;
+          int calledCount = 0;
+          for (final appt in todayAppts) {
+            if (appt.calledAt != null && appt.arrivedAt != null) {
+              totalMinutes += appt.calledAt!.difference(appt.arrivedAt!).inMinutes;
+              calledCount++;
+            }
+          }
+          final avgMinutes = calledCount > 0 ? (totalMinutes / calledCount).round() : 0;
+          final avgWaitingTime = avgMinutes > 0
+              ? _toArabicNumbers('$avgMinutes ${AppStrings.isArabic ? 'دقيقة' : 'min'}')
+              : '—';
 
-      // 5. جلب وترتيب طابور الانتظار باستثناء المريض الحالي قيد الكشف
-      final rawQueue = await _repository.loadQueue(_currentDoctorId, todayStr);
-      final waitingQueue = _mapAppointments(rawQueue)
-          .where((a) => a.status == 'confirmed')
-          .toList();
+          // 4. جلب المريض الحالي قيد الكشف إن وجد
+          final currentRaw = todayAppts.where((a) => a.status == 'in_progress').toList();
+          final AppointmentEntity? currentPatient =
+              currentRaw.isNotEmpty ? currentRaw.first : null;
 
-      // إذا تطلب الأمر استدعاء تلقائي للمريض التالي وكان المريض الحالي فارغاً والطابور غير فارغ
-      if (autoCallNext && currentPatient == null && waitingQueue.isNotEmpty) {
-        final nextPatient = waitingQueue.first;
-        await _repository.callPatient(nextPatient.id);
-        // إعادة التحديث لعرض الحالة المحدثة للمريض الجديد
-        await loadDashboardData();
-        return;
-      }
+          // 5. جلب وترتيب طابور الانتظار
+          final todayWaitingAppts = allAppts.where((a) {
+            return a.doctorId == _doctorId &&
+                a.clinicId == _clinicId &&
+                a.date == todayStr &&
+                a.arrivedAt != null &&
+                a.status != 'cancelled' &&
+                a.status != 'done';
+          }).toList();
 
-      emit(DoctorDashboardLoaded(
-        doctorName: doctorName,
-        clinicName: clinicName,
-        currentPatient: currentPatient,
-        waitingQueue: waitingQueue,
-        completedCount: completedCount,
-        waitingCount: waitingCount,
-        avgWaitingTime: avgWaitingTime,
-      ));
+          // ترتيب الطابور
+          final sortedAppts = _sortQueueUseCase(
+            appointments: todayWaitingAppts,
+          );
+
+          final waitingQueue = sortedAppts
+              .where((a) => a.status == 'confirmed')
+              .toList();
+
+          // إذا تطلب الأمر استدعاء تلقائي للمريض التالي وكان المريض الحالي فارغاً والطابور غير فارغ
+          if (autoCallNext && currentPatient == null && waitingQueue.isNotEmpty) {
+            final nextPatient = waitingQueue.first;
+            await _callPatientUseCase(nextPatient.id);
+            await loadDashboardData(doctorId: _doctorId, clinicId: _clinicId);
+            return;
+          }
+
+          emit(DoctorDashboardLoaded(
+            doctorName: doctorName,
+            clinicName: clinicName,
+            currentPatient: currentPatient,
+            waitingQueue: waitingQueue,
+            completedCount: completedCount,
+            waitingCount: waitingCount,
+            avgWaitingTime: avgWaitingTime,
+          ));
+        },
+      );
     } catch (e) {
-      emit(
-          DoctorDashboardError('${AppStrings.loadFailedMsg}: ${e.toString()}'));
+      emit(DoctorDashboardError('${AppStrings.loadFailedMsg}: ${e.toString()}'));
     }
   }
 
@@ -126,10 +153,8 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
     if (loaded.waitingQueue.isNotEmpty) {
       final nextPatient = loaded.waitingQueue.first;
       try {
-        // تحديث حالة المريض في قاعدة البيانات واستدعاؤه
-        await _repository.callPatient(nextPatient.id);
-        // إعادة تحميل البيانات لتحديث الواجهة تلقائياً وبشكل متناسق
-        await loadDashboardData();
+        await _callPatientUseCase(nextPatient.id);
+        await loadDashboardData(doctorId: _doctorId, clinicId: _clinicId);
       } catch (_) {
         emit(const DoctorDashboardError('تعذّر استدعاء المريض التالي'));
       }
@@ -144,66 +169,5 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
       input = input.replaceAll(english[i], arabic[i]);
     }
     return input;
-  }
-
-  /// تنسيق الوقت للعرض (مثال: 16:30 -> 4:30 م)
-  String _formatTime(String raw) {
-    final parts = raw.split(':');
-    if (parts.length < 2) return raw;
-    final hour = int.tryParse(parts[0]) ?? 0;
-    final minute = parts[1];
-    final period = hour >= 12 ? 'م' : 'ص';
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-    return _toArabicNumbers('$displayHour:$minute $period');
-  }
-
-  /// تحويل القائمة الخام من المستودع إلى كائنات AppointmentItem المعيارية
-  List<AppointmentItem> _mapAppointments(List<Map<String, dynamic>> rawList) {
-    return rawList.map((raw) {
-      final patient = raw['patients'] as Map<String, dynamic>? ?? {};
-      final type = raw['appointment_types'] as Map<String, dynamic>? ?? {};
-      final doctorId = raw['doctor_id'] as String;
-
-      final prescriptions = raw['prescriptions'] as List<dynamic>? ?? [];
-      final invoices = raw['invoices'] as List<dynamic>? ?? [];
-
-      final apptId = raw['id'] as String;
-
-      return AppointmentItem(
-        id: apptId,
-        patientId: raw['patient_id'] as String,
-        patientName: patient['name'] as String? ?? AppStrings.patient,
-        patientPhone: patient['phone'] as String? ?? '',
-        doctorId: doctorId,
-        doctorName: AppStrings.generalPractitioner,
-        typeId: raw['appointment_type_id'] as String,
-        typeName: type['name'] as String? ?? AppStrings.normalCheckup,
-        date: raw['date'] as String,
-        displayTime: _formatTime(raw['time'] as String? ?? '00:00:00'),
-        rawTime: raw['time'] as String? ?? '00:00:00',
-        status: raw['status'] as String,
-        price: (raw['price'] as num).toDouble(),
-        isUrgent: raw['is_urgent'] as bool? ?? false,
-        notes: raw['notes'] as String?,
-        arrivedAt: raw['arrived_at'] != null
-            ? DateTime.parse(raw['arrived_at'] as String)
-            : null,
-        calledAt: raw['called_at'] != null
-            ? DateTime.parse(raw['called_at'] as String)
-            : null,
-        hasPrescription: prescriptions.isNotEmpty,
-        hasInvoice: invoices.isNotEmpty,
-        prescriptionDiagnosis: prescriptions.isNotEmpty
-            ? prescriptions.first['diagnosis'] as String?
-            : null,
-        invoiceAmount:
-            invoices.isNotEmpty ? '${invoices.first['amount']}' : null,
-        invoiceStatus:
-            invoices.isNotEmpty ? invoices.first['status'] as String? : null,
-        invoiceNumber: invoices.isNotEmpty
-            ? '#INV-${apptId.length > 4 ? apptId.substring(apptId.length - 4) : apptId}'
-            : null,
-      );
-    }).toList();
   }
 }

@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────
 
 import 'package:equatable/equatable.dart';
-import '../../../appointments/presentation/manager/appointments_state.dart';
+import '../../../appointments/domain/entities/appointment_entity.dart';
 
 abstract class SecretaryDashboardState extends Equatable {
   const SecretaryDashboardState();
@@ -20,7 +20,7 @@ class SecretaryDashboardLoaded extends SecretaryDashboardState {
   final String secretaryName;
   final String clinicName;
   final String doctorName;
-  final List<AppointmentItem> liveQueue;
+  final List<AppointmentEntity> liveQueue;
   final String totalInvoiced;
   final String totalCollected;
   final int totalAppointmentsCount;

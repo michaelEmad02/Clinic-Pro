@@ -585,6 +585,12 @@ class AppStrings {
   static String get users => isArabic ? 'المستخدمين' : 'Users';
   static String get branches => isArabic ? 'الفروع' : 'Branches';
 
+  // General app info
+  static String get appVersion => 'v1.0.0 — ClinicPro';
+  static String get arabic => isArabic ? 'العربية' : 'Arabic';
+  static String get english => isArabic ? 'الإنجليزية' : 'English';
+  static String get planFeatures => isArabic ? 'ميزات الخطة:' : 'Plan Features:';
+
   // Auth
   static String get login => isArabic ? 'تسجيل الدخول' : 'Login';
   static String get createAccount => isArabic ? 'إنشاء حساب' : 'Create Account';
@@ -882,4 +888,30 @@ class AppStrings {
   static String get agreeToTermsError => isArabic
       ? 'يجب الموافقة على الشروط والأحكام للاستمرار'
       : 'You must agree to the terms and conditions to continue';
+
+  // Appointments extra
+  static String get back => isArabic ? 'تراجع' : 'Back';
+  static String get confirmCancel => isArabic ? 'تأكيد الإلغاء' : 'Confirm Cancel';
+  static String get appointmentNotFound => isArabic ? 'الموعد غير موجود' : 'Appointment not found';
+  static String get treatingDoctor => isArabic ? 'الطبيب المعالج' : 'Treating Doctor';
+  static String get fillRequiredFields => isArabic ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields';
+  static String get notSpecified => isArabic ? 'غير محدد' : 'Not specified';
+  static String get time => isArabic ? 'الوقت' : 'Time';
+  static String get noAppointmentsMatchFilter => isArabic ? 'لا يوجد مواعيد تطابق الفلتر الحالي.' : 'No appointments match the current filter.';
+  static String get noPatientsFound => isArabic ? 'لا يوجد مرضى' : 'No patients found';
+  static String get confirmArrivalAction => isArabic ? 'تأكيد الحضور' : 'Confirm Arrival';
+  static String get markAsUrgent => isArabic ? 'تحديد كحالة طارئة' : 'Mark as Urgent';
+  static String get cancelEmergencyStatus => isArabic ? 'إلغاء حالة الطوارئ' : 'Cancel Emergency Status';
+  static String get deletePermanentlyAction => isArabic ? 'حذف نهائياً' : 'Delete Permanently';
+  static String get deleteAppointmentTitle => isArabic ? 'حذف الموعد نهائياً' : 'Delete Appointment Permanently';
+  static String get confirmDeleteAppointmentMsg => isArabic ? 'هل أنت متأكد من حذف هذا الموعد نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this appointment? This action cannot be undone.';
+  static String cancelAppointmentWithInvoice(bool hasInvoice) => isArabic
+      ? hasInvoice
+          ? 'هذا الموعد لديه فاتورة مسجلة. هل أنت متأكد من إلغاء الموعد؟ سيتم حذف الفاتورة المرتبطة به نهائياً واسترجاع المبلغ.'
+          : 'هل أنت متأكد من إلغاء هذا الموعد؟'
+      : hasInvoice
+          ? 'This appointment has a registered invoice. Are you sure you want to cancel? The associated invoice will be permanently deleted and the amount refunded.'
+          : 'Are you sure you want to cancel this appointment?';
+  static String get invoiceInFinancialModule => isArabic ? 'سيتم فتح الفاتورة في المرحلة المالية' : 'Invoice will be opened in the financial module';
+  static String get invoiceRegistrationInFinancialModule => isArabic ? 'سيتم تفعيل تسجيل الفاتورة في المرحلة المالية' : 'Invoice registration will be available in the financial module';
 }

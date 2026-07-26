@@ -8,10 +8,10 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/appointments_state.dart';
+import '../../../domain/entities/appointment_entity.dart';
 
 class AppointmentStatusTimeline extends StatelessWidget {
-  final AppointmentItem appointment;
+  final AppointmentEntity appointment;
 
   const AppointmentStatusTimeline({super.key, required this.appointment});
 
@@ -35,9 +35,9 @@ class AppointmentStatusTimeline extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -64,13 +64,13 @@ class AppointmentStatusTimeline extends StatelessWidget {
                         height: 36,
                         decoration: BoxDecoration(
                           color: isCompleted
-                              ? AppColors.primary
-                              : AppColors.surfaceContainerLow,
+                              ? context.primary
+                              : context.surfaceContainerLow,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isActive
-                                ? AppColors.primary
-                                : AppColors.border,
+                                ? context.primary
+                                : context.borderColor,
                             width: isActive ? 2 : 1,
                           ),
                         ),
@@ -78,8 +78,8 @@ class AppointmentStatusTimeline extends StatelessWidget {
                           step.$3,
                           size: 18,
                           color: isCompleted
-                              ? Colors.white
-                              : AppColors.textHint,
+                              ? context.onPrimary
+                              : context.textHint,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -89,8 +89,8 @@ class AppointmentStatusTimeline extends StatelessWidget {
                           fontWeight:
                               isActive ? FontWeight.bold : FontWeight.normal,
                           color: isCompleted
-                              ? AppColors.textPrimary
-                              : AppColors.textHint,
+                              ? context.textPrimary
+                              : context.textHint,
                           fontSize: 11,
                         ),
                         textAlign: TextAlign.center,
@@ -101,8 +101,8 @@ class AppointmentStatusTimeline extends StatelessWidget {
                         style: AppTextStyles.dataNumeric(context).copyWith(
                           fontSize: 10,
                           color: isCompleted
-                              ? AppColors.textSecondary
-                              : AppColors.textHint,
+                              ? context.textSecondary
+                              : context.textHint,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -115,8 +115,8 @@ class AppointmentStatusTimeline extends StatelessWidget {
                       height: 2,
                       margin: const EdgeInsets.only(bottom: 28),
                       color: index < currentIndex
-                          ? AppColors.primary
-                          : AppColors.border,
+                          ? context.primary
+                          : context.borderColor,
                     ),
                   ),
               ],
@@ -130,7 +130,7 @@ class AppointmentStatusTimeline extends StatelessWidget {
   String _stepTime(String stepKey) {
     switch (stepKey) {
       case 'scheduled':
-        return appointment.displayTime;
+        return appointment.displayTime ?? '';
       case 'confirmed':
         return appointment.arrivedAt != null
             ? _formatTime(appointment.arrivedAt!)
@@ -157,19 +157,19 @@ class AppointmentStatusTimeline extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.dangerBg,
+        color: context.dangerBg,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        border: Border.all(color: AppColors.danger.withOpacity(0.3)),
+        border: Border.all(color: context.danger.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.cancel_outlined, color: AppColors.danger),
+          Icon(Icons.cancel_outlined, color: context.danger),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               AppStrings.appointmentCancelled,
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.dangerText,
+                color: context.dangerText,
                 fontWeight: FontWeight.bold,
               ),
             ),

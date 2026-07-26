@@ -2,17 +2,18 @@
 // Bottom Sheet إجراءات الموعد (···)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
-import '../../manager/appointments_state.dart';
+import '../../../domain/entities/appointment_entity.dart';
 
 class AppointmentActionSheet {
   static Future<void> show({
     required BuildContext context,
-    required AppointmentItem appointment,
+    required AppointmentEntity appointment,
     required VoidCallback? onConfirmArrival,
     required VoidCallback? onToggleUrgent,
     required VoidCallback? onCancel,
@@ -30,24 +31,25 @@ class AppointmentActionSheet {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              appointment.patientName,
+              appointment.patientName ?? AppStrings.patient,
               style: AppTextStyles.headlineSmall(context).copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: context.primary,
               ),
             ),
             Text(
-              '${appointment.typeName} • ${appointment.displayTime}',
+              '${appointment.typeName ?? AppStrings.normalCheckup} • ${appointment.displayTime ?? ''}',
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
-            if (appointment.status == 'scheduled' && onConfirmArrival != null)
+            if (appointment.status == AppointmentStatus.scheduled &&
+                onConfirmArrival != null)
               _ActionTile(
                 icon: Icons.check_circle_outline,
-                label: AppStrings.isArabic ? '${AppStrings.confirm} الحضور' : '${AppStrings.confirm} Arrival',
-                color: AppColors.successText,
+                label: AppStrings.confirmArrivalAction,
+                color: context.success,
                 onTap: () {
                   Navigator.pop(context);
                   onConfirmArrival();
@@ -55,37 +57,39 @@ class AppointmentActionSheet {
               ),
             // تعديل الموعد — فقط إذا لم يبدأ الكشف ولم ينتهِ بعد
             if (onEdit != null &&
-                appointment.status != 'done' &&
-                appointment.status != 'in_progress' &&
-                appointment.status != 'cancelled')
+                appointment.status != AppointmentStatus.done &&
+                appointment.status != AppointmentStatus.inProgress &&
+                appointment.status != AppointmentStatus.cancelled)
               _ActionTile(
                 icon: Icons.edit_outlined,
                 label: '${AppStrings.edit} ${AppStrings.appointment}',
-                color: AppColors.primary,
+                color: context.primary,
                 onTap: () {
                   Navigator.pop(context);
                   onEdit();
                 },
               ),
             if (onToggleUrgent != null &&
-                appointment.status != 'cancelled' &&
-                appointment.status != 'done')
+                appointment.status != AppointmentStatus.cancelled &&
+                appointment.status != AppointmentStatus.done)
               _ActionTile(
                 icon: Icons.priority_high,
-                label: appointment.isUrgent ? (AppStrings.isArabic ? '${AppStrings.cancel} حالة الطوارئ' : '${AppStrings.cancel} Emergency Status') : (AppStrings.isArabic ? 'تحديد كحالة طارئة' : 'Mark as Urgent'),
-                color: AppColors.warning,
+                label: appointment.isUrgent
+                    ? AppStrings.cancelEmergencyStatus
+                    : AppStrings.markAsUrgent,
+                color: context.warning,
                 onTap: () {
                   Navigator.pop(context);
                   onToggleUrgent();
                 },
               ),
             if (onRegisterInvoice != null &&
-                appointment.status != 'cancelled' &&
-                appointment.status != 'done')
+                appointment.status != AppointmentStatus.cancelled &&
+                appointment.status != AppointmentStatus.done)
               _ActionTile(
                 icon: Icons.receipt_long_outlined,
                 label: AppStrings.createInvoice,
-                color: AppColors.primaryContainer,
+                color: context.primary,
                 onTap: () {
                   Navigator.pop(context);
                   onRegisterInvoice();
@@ -94,29 +98,30 @@ class AppointmentActionSheet {
             _ActionTile(
               icon: Icons.info_outline,
               label: AppStrings.viewDetails,
-              color: AppColors.primary,
+              color: context.primary,
               onTap: () {
                 Navigator.pop(context);
                 onViewDetails();
               },
             ),
-            if (appointment.status != 'done' &&
-                appointment.status != 'cancelled' &&
+            if (appointment.status != AppointmentStatus.done &&
+                appointment.status != AppointmentStatus.cancelled &&
                 onCancel != null)
               _ActionTile(
                 icon: Icons.cancel_outlined,
                 label: '${AppStrings.cancel} ${AppStrings.appointment}',
-                color: AppColors.danger,
+                color: context.danger,
                 onTap: () {
                   Navigator.pop(context);
                   onCancel();
                 },
               ),
-            if (appointment.status == 'cancelled' && onDelete != null)
+            if (appointment.status == AppointmentStatus.cancelled &&
+                onDelete != null)
               _ActionTile(
                 icon: Icons.delete_outline,
-                label: AppStrings.isArabic ? '${AppStrings.delete} ${AppStrings.appointment} نهائياً' : '${AppStrings.delete} ${AppStrings.appointment} Permanently',
-                color: AppColors.danger,
+                label: AppStrings.deletePermanentlyAction,
+                color: context.danger,
                 onTap: () {
                   Navigator.pop(context);
                   onDelete();
@@ -148,7 +153,8 @@ class _ActionTile extends StatelessWidget {
       leading: Icon(icon, color: color),
       title: Text(
         label,
-        style: AppTextStyles.bodyMedium(context).copyWith(fontWeight: FontWeight.w600),
+        style: AppTextStyles.bodyMedium(context)
+            .copyWith(fontWeight: FontWeight.w600),
       ),
       onTap: onTap,
       contentPadding: EdgeInsets.zero,

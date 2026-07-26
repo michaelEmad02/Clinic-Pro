@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────
 
 import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
-import 'package:clinic_pro/features/appointments/presentation/manager/appointments_state.dart';
+import '../../../../appointments/domain/entities/appointment_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/route_constants.dart';
@@ -14,7 +14,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/realtime_indicator.dart';
 
 class LiveQueueSection extends StatelessWidget {
-  final List<AppointmentItem> queue;
+  final List<AppointmentEntity> queue;
   final Function(String) onCall;
 
   const LiveQueueSection({
@@ -125,7 +125,7 @@ class LiveQueueSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              app.patientName,
+                              app.patientName ?? AppStrings.patient,
                               style: AppTextStyles.headlineSmall(context).copyWith(
                                 color: context.textPrimary,
                                 fontWeight: FontWeight.bold,
@@ -135,7 +135,7 @@ class LiveQueueSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              app.doctorName,
+                              app.doctorName ?? AppStrings.generalPractitioner,
                               style: AppTextStyles.bodyMedium(context).copyWith(
                                 color: context.textSecondary,
                                 fontSize: 13,
@@ -146,7 +146,7 @@ class LiveQueueSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              app.typeName,
+                              app.typeName ?? AppStrings.normalCheckup,
                               style: AppTextStyles.bodyMedium(context).copyWith(
                                 color: context.textSecondary,
                                 fontSize: 12,
@@ -156,7 +156,7 @@ class LiveQueueSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              app.displayTime,
+                              app.displayTime ?? '',
                               style: AppTextStyles.bodyMedium(context).copyWith(
                                 color: context.textSecondary,
                                 fontSize: 12,
@@ -186,7 +186,7 @@ class LiveQueueSection extends StatelessWidget {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        app.patientName,
+                                        app.patientName ?? AppStrings.patient,
                                         style: AppTextStyles.headlineSmall(context).copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.primary,
@@ -194,7 +194,7 @@ class LiveQueueSection extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        app.patientPhone,
+                                        app.patientPhone ?? '',
                                         style: AppTextStyles.bodyMedium(context).copyWith(
                                           color: context.textSecondary,
                                         ),

@@ -55,12 +55,12 @@ class InvitationStatus {
   static const String expired = 'expired';
 }
 
-class QueueSlotType {
-  static const String normal = 'normal'; // كشف عادي
-  static const String urgent = 'urgent'; // كشف مستعجل (حالة طارئة)
-  static const String revisit = 'revisit'; // إعادة كشف
-  static const String consult = 'consult'; // استشارة مجانية
-}
+// class QueueSlotType {
+//   static const String normal = 'normal'; // كشف عادي
+//   static const String urgent = 'urgent'; // كشف مستعجل (حالة طارئة)
+//   static const String revisit = 'revisit'; // إعادة كشف
+//   static const String consult = 'consult'; // استشارة مجانية
+// }
 
 class DoctorQueueSystem {
   static const String arrival = 'arrival';

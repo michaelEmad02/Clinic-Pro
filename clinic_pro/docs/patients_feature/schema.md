@@ -9,8 +9,7 @@
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | `id` | uuid | NO | `gen_random_uuid()` | |
-| `owner_id` | uuid | NO | — | FK → Owners.id — shared across owner's clinics |
-| `doctor_id` | uuid | yes | — | FK → users.id |
+| `clinic_id` | uuid | NO | — | FK → clinics.id |
 | `name` | text | NO | — | |
 | `phone` | text | YES | — | |
 | `address` | text | YES | — | |

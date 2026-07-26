@@ -47,14 +47,14 @@ class LinkedInvoiceCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.receipt_long_outlined, color: AppColors.primary),
+              Icon(Icons.receipt_long_outlined, color: context.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   AppStrings.invoice,
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: context.primary,
                   ),
                 ),
               ),
@@ -82,13 +82,12 @@ class LinkedInvoiceCard extends StatelessWidget {
             OutlinedButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text(AppStrings.isArabic ? 'سيتم فتح الفاتورة في المرحلة المالية' : 'Invoice will be opened in the financial module')),
-                );
+              SnackBar(content: Text(AppStrings.invoiceInFinancialModule)),
+            );
               },
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+                foregroundColor: context.primary,
+                side: BorderSide(color: context.primary.withOpacity(0.2)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius:
@@ -108,15 +107,14 @@ class LinkedInvoiceCard extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text(AppStrings.isArabic ? 'سيتم تفعيل تسجيل الفاتورة في المرحلة المالية' : 'Invoice registration will be available in the financial module')),
+                  SnackBar(content: Text(AppStrings.invoiceRegistrationInFinancialModule)),
                 );
               },
               icon: const Icon(Icons.add, size: 18),
               label: Text(AppStrings.createInvoice),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+                foregroundColor: context.primary,
+                side: BorderSide(color: context.primary.withOpacity(0.2)),
                 backgroundColor: context.primaryLightColor,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(

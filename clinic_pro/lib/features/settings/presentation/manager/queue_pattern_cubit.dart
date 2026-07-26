@@ -102,16 +102,27 @@ class QueuePatternCubit extends Cubit<QueuePatternState> {
           return;
         }
 
-        emit(state.copyWith(
-          queueSystem: rule.queueSystem,
-          slots: List.from(rule.slots),
-          slotLabels: List.filled(rule.slots.length, ''),
-          cycleLength: rule.slots.length,
-          avgVisitMinutes: rule.avgVisitMinutes,
-          isActive: true, // القوانين المسجلة في السيرفر نشطة افتراضياً
-          isLoading: false,
-          isDirty: false,
-        ));
+        final List<String> labels = [];
+        fetchAvailableVisitTypes().then((visitTypes) {
+          for (final slot in rule.slots) {
+            final matched = visitTypes.firstWhere(
+              (t) => t['id'] == slot.toString(),
+              orElse: () => {'name': slot.toString()},
+            );
+            labels.add(matched['name']!);
+          }
+
+          emit(state.copyWith(
+            queueSystem: rule.queueSystem,
+            slots: List.from(rule.slots),
+            slotLabels: labels,
+            cycleLength: rule.slots.length,
+            avgVisitMinutes: rule.avgVisitMinutes,
+            isActive: true,
+            isLoading: false,
+            isDirty: false,
+          ));
+        });
       },
     );
   }

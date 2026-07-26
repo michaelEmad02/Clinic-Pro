@@ -8,10 +8,10 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/appointments_state.dart';
+import '../../../domain/entities/appointment_entity.dart';
 
 class AppointmentHeaderCard extends StatelessWidget {
-  final AppointmentItem appointment;
+  final AppointmentEntity appointment;
 
   const AppointmentHeaderCard({super.key, required this.appointment});
 
@@ -39,8 +39,8 @@ class AppointmentHeaderCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.person_outline,
-                  color: AppColors.primaryContainer, size: 20),
+              Icon(Icons.person_outline,
+                  color: context.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 AppStrings.patient,
@@ -53,7 +53,7 @@ class AppointmentHeaderCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            appointment.patientName,
+            appointment.patientName ?? AppStrings.patient,
             style: AppTextStyles.headlineMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -63,7 +63,7 @@ class AppointmentHeaderCard extends StatelessWidget {
             context,
             Icons.medical_services_outlined,
             AppStrings.doctorRoleLabel,
-            appointment.doctorName,
+            appointment.doctorName ?? AppStrings.generalPractitioner,
           ),
           const SizedBox(height: 10),
           _infoRow(
@@ -76,15 +76,15 @@ class AppointmentHeaderCard extends StatelessWidget {
           _infoRow(
             context,
             Icons.schedule_outlined,
-            AppStrings.isArabic ? 'الوقت' : 'Time',
-            appointment.displayTime,
+            AppStrings.time,
+            appointment.displayTime ?? '',
           ),
           const SizedBox(height: 10),
           _infoRow(
             context,
             Icons.category_outlined,
             AppStrings.appointmentType,
-            appointment.typeName,
+            appointment.typeName ?? AppStrings.normalCheckup,
           ),
           const Divider(height: 28),
           Row(
@@ -119,12 +119,12 @@ class AppointmentHeaderCard extends StatelessWidget {
   ) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.primaryContainer),
+        Icon(icon, size: 18, color: context.primary.withOpacity(0.7)),
         const SizedBox(width: 8),
         Text(
           '$label ',
           style: AppTextStyles.bodyMedium(context).copyWith(
-            color: AppColors.textSecondary,
+            color: context.textSecondary,
           ),
         ),
         Expanded(

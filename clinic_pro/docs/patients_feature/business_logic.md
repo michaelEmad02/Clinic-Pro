@@ -1,19 +1,5 @@
 # business_logic.md — Patients Feature
 
----
-
-## Scoping Rule
-
-```
-patients.owner_id → shared across ALL clinics of the same owner
-
-Example:
-  Owner has Clinic A and Clinic B
-  Patient registered while booking in Clinic A
-  → Patient is visible and selectable in Clinic B too
-  → Visit history (appointments) is naturally filtered per clinic
-    via appointments.clinic_id, not via the patient record itself
-```
 
 ---
 

@@ -3,127 +3,163 @@
 // يتم الترتيب برمجياً في التطبيق (Client-side) دون تخزينه في قاعدة البيانات
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
+import 'package:clinic_pro/features/settings/domain/entities/queue_rule_entity.dart';
 import '../strings/app_strings.dart';
 
 class QueueSorter {
   /// ترتيب المواعيد بناءً على القواعد التالية:
-  /// 1. المواعيد التي بدأت أو انتهت (in_progress, done) تبقى ثابتة في البداية بترتيب استدعائها (called_at).
-  /// 2. الحالات الطارئة (is_urgent = true) تأتي أولاً في الانتظار.
-  /// 3. بقية الحالات يتم ترتيبها بناءً على النمط المحدد للطبيب (doctor_queue_rules)
-  ///    مثال للنمط: ["normal", "normal", "urgent"]
-  /// 4. في حال عدم وجود نمط، يتم الترتيب حسب وقت الوصول (arrived_at) تصاعدياً.
-  static List<Map<String, dynamic>> sort({
-    required List<Map<String, dynamic>> appointments,
-    List<String>? ruleSlots,
+  /// 1. المواعيد التي بدأت أو انتهت (in_progress، done) تبقى ثابتة في البداية بترتيب استدعائها (calledAt).
+  /// 2. الحالات الطارئة (isUrgent = true) تأتي أولاً في الانتظار دائماً في جميع الأنظمة.
+  /// 3. بقية الحالات العادية يتم ترتيبها بناءً على النظام المحدد للطبيب (QueueRuleEntity).
+  /// 4. في حال عدم وجود قواعد، يتم الترتيب الافتراضي حسب وقت الوصول (arrivedAt) تصاعدياً.
+  static List<AppointmentEntity> sort({
+    required List<AppointmentEntity> appointments,
+    QueueRuleEntity? rule,
   }) {
-    // 1. تصفية المواعيد الملغية أو التي لم تصل بعد
+    // 1. تصفية المواعيد التي وصلت ولم تُلغَ (يجب أن يكون arrivedAt غير فارغ ليدخل الطابور)
     final activeAppointments = appointments.where((appt) {
-      final status = appt['status'] as String?;
-      final arrivedAt = appt['arrived_at'];
-      return arrivedAt != null && status != 'cancelled';
+      return appt.arrivedAt != null && appt.status != 'cancelled';
     }).toList();
 
-    // 2. تقسيم المواعيد إلى: ثابتة (قيد الفحص حالياً) وقيد الانتظار
+    // 2. تقسيم المواعيد إلى ثابتة (قيد الكشف حالياً أو المكتملة لليوم) ومنتظرة
     final fixedAppointments = activeAppointments.where((appt) {
-      final status = appt['status'] as String?;
-      return status == 'in_progress';
+      return appt.status == AppointmentStatus.inProgress ||
+          appt.status == AppointmentStatus.done;
     }).toList();
 
-    final waitingAppointments = activeAppointments.where((appt) {
-      final status = appt['status'] as String?;
-      return status != 'in_progress' && status != 'done';
-    }).toList();
-
-    // ترتيب الثابتة بناءً على وقت الاستدعاء (called_at)
+    // ترتيب الثابتة بناءً على وقت الاستدعاء (calledAt)
     fixedAppointments.sort((a, b) {
-      final aCalled = a['called_at'] != null ? DateTime.parse(a['called_at'] as String) : DateTime.fromMillisecondsSinceEpoch(0);
-      final bCalled = b['called_at'] != null ? DateTime.parse(b['called_at'] as String) : DateTime.fromMillisecondsSinceEpoch(0);
+      final aCalled = a.calledAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bCalled = b.calledAt ?? DateTime.fromMillisecondsSinceEpoch(0);
       return aCalled.compareTo(bCalled);
     });
 
-    // 3. ترتيب المرضى المنتظرين
-    final waitingSorted = <Map<String, dynamic>>[];
+    final waitingAppointments = activeAppointments.where((appt) {
+      return appt.status == AppointmentStatus.confirmed;
+    }).toList();
 
-    // فصل الحالات الطارئة العاجلة (is_urgent == true)
-    final urgentWaiting = waitingAppointments.where((appt) => appt['is_urgent'] == true).toList();
-    // ترتيب الحالات العاجلة حسب وقت الوصول (arrived_at)
+    // 3. فصل الحالات الطارئة المنتظرة (العاجلة تأتي أولاً قبل الحالات العادية)
+    final urgentWaiting = waitingAppointments.where((appt) => appt.isUrgent).toList();
     urgentWaiting.sort((a, b) {
-      final aArrived = DateTime.parse(a['arrived_at'] as String);
-      final bArrived = DateTime.parse(b['arrived_at'] as String);
+      final aArrived = a.arrivedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bArrived = b.arrivedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
       return aArrived.compareTo(bArrived);
     });
 
-    // المرضى المنتظرين العاديين
-    final normalWaiting = waitingAppointments.where((appt) => appt['is_urgent'] != true).toList();
-    normalWaiting.sort((a, b) {
-      final aArrived = DateTime.parse(a['arrived_at'] as String);
-      final bArrived = DateTime.parse(b['arrived_at'] as String);
-      return aArrived.compareTo(bArrived);
-    });
+    // الحالات المنتظرة العادية
+    final normalWaiting = waitingAppointments.where((appt) => !appt.isUrgent).toList();
 
-    // 4. تطبيق النمط (Doctor Queue Rules Pattern)
-    if (ruleSlots != null && ruleSlots.isNotEmpty) {
-      final cycleLength = ruleSlots.length;
-      final startIndex = fixedAppointments.length;
+    // 4. ترتيب الحالات العادية بناءً على نوع النظام
+    List<AppointmentEntity> sortedNormal = [];
 
-      // نضع الحالات العاجلة جداً أولاً
-      waitingSorted.addAll(urgentWaiting);
-
-      // نقوم بتوزيع الحالات العادية حسب النمط المتاح
-      // سنقوم بالمرور على الخانات المتاحة للانتظار وتعبئتها من قائمة الانتظار
-      int normalIndex = 0;
-      int slotOffset = 0;
-
-      while (normalIndex < normalWaiting.length) {
-        final currentSlotIndex = (startIndex + waitingSorted.length + slotOffset) % cycleLength;
-        final expectedType = ruleSlots[currentSlotIndex]; // normal, urgent, revisit, consult
-
-        // البحث عن أول موعد يطابق النوع المطلوب
-        final matchIndex = normalWaiting.indexWhere((appt) {
-          final typeName = appt['appointment_types']?['name'] as String? ?? '';
-          return _mapTypeNameToSlotType(typeName) == expectedType;
-        }, normalIndex);
-
-        if (matchIndex != -1) {
-          // وجدنا موعد مطابق للنمط، نسحبه ونضعه في الترتيب
-          final matchedAppt = normalWaiting.removeAt(matchIndex);
-          waitingSorted.add(matchedAppt);
-        } else {
-          // لم نجد نوع مطابق للخانة الحالية في النمط، نتجاوز الخانة وننتقل للخانة التالية
-          slotOffset++;
-          // إذا نفدت الخيارات ولم نتمكن من المطابقة، نقوم بإضافة المرضى المتبقين حسب ترتيب وصولهم لمنع الجمود (Starvation)
-          if (slotOffset > cycleLength) {
-            waitingSorted.addAll(normalWaiting);
-            break;
+    if (rule != null) {
+      switch (rule.queueSystem) {
+        case DoctorQueueSystem.arrival:
+          sortedNormal = _sortByArrival(normalWaiting);
+          break;
+        case DoctorQueueSystem.booking:
+          sortedNormal = _sortByBooking(normalWaiting);
+          break;
+        case DoctorQueueSystem.pattern:
+          if (rule.slots.isNotEmpty) {
+            sortedNormal = _sortByPattern(
+              normalWaiting,
+              rule.slots,
+              fixedAppointments.length + urgentWaiting.length,
+            );
+          } else {
+            sortedNormal = _sortByArrival(normalWaiting);
           }
-        }
+          break;
+        case DoctorQueueSystem.scheduled:
+          if (rule.avgVisitMinutes != null) {
+            sortedNormal = _sortByScheduled(normalWaiting, rule.avgVisitMinutes!);
+          } else {
+            sortedNormal = _sortByArrival(normalWaiting);
+          }
+          break;
+        default:
+          sortedNormal = _sortByArrival(normalWaiting);
       }
     } else {
-      // إذا لم يكن هناك نمط محدد للطبيب، يتم الترتيب العادي: الحالات الطارئة أولاً ثم البقية حسب وقت الوصول
-      waitingSorted.addAll(urgentWaiting);
-      waitingSorted.addAll(normalWaiting);
+      sortedNormal = _sortByArrival(normalWaiting);
     }
 
-    return [...fixedAppointments, ...waitingSorted];
+    return [...fixedAppointments, ...urgentWaiting, ...sortedNormal];
   }
 
-  /// تحويل اسم نوع الموعد النصي للنوع المقابل له في نمط الترتيب
-  static String _mapTypeNameToSlotType(String typeName) {
-    typeName = typeName.toLowerCase();
-    if (typeName.contains('طارئ') ||
-        typeName.contains(AppStrings.queuePatternUrgent) ||
-        typeName.contains('urgent')) {
-      return 'urgent';
+  // ① ترتيب الحضور (arrivedAt تصاعدياً)
+  static List<AppointmentEntity> _sortByArrival(List<AppointmentEntity> entries) {
+    return List.from(entries)
+      ..sort((a, b) {
+        final aArrived = a.arrivedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bArrived = b.arrivedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return aArrived.compareTo(bArrived);
+      });
+  }
+
+  // ② ترتيب الحجز (time تصاعدياً)
+  static List<AppointmentEntity> _sortByBooking(List<AppointmentEntity> entries) {
+    return List.from(entries)
+      ..sort((a, b) {
+        final aTime = a.time ?? '00:00:00';
+        final bTime = b.time ?? '00:00:00';
+        return aTime.compareTo(bTime);
+      });
+  }
+
+  // ③ نمط مخصص
+  static List<AppointmentEntity> _sortByPattern(
+    List<AppointmentEntity> entries,
+    List<dynamic> slots,
+    int startIndex,
+  ) {
+    final remaining = List<AppointmentEntity>.from(entries);
+    final result = <AppointmentEntity>[];
+    final cycleLength = slots.length;
+    int slotOffset = 0;
+
+    while (remaining.isNotEmpty) {
+      final currentSlotIndex = (startIndex + result.length + slotOffset) % cycleLength;
+      final expectedType = slots[currentSlotIndex].toString();
+
+      final matchIndex = remaining.indexWhere((appt) {
+        return appt.typeId == expectedType;
+      });
+
+      if (matchIndex != -1) {
+        result.add(remaining.removeAt(matchIndex));
+      } else {
+        slotOffset++;
+        // إذا نفدت المحاولات لتجنب التكرار والجمود، نضيف المتبقي بالترتيب الافتراضي
+        if (slotOffset > cycleLength) {
+          result.addAll(remaining);
+          break;
+        }
+      }
     }
-    if (typeName.contains('إعادة') ||
-        typeName.contains(AppStrings.queuePatternRevisit) ||
-        typeName.contains('revisit')) {
-      return 'revisit';
+    return result;
+  }
+
+  // ④ مواعيد بوقت محدد (تحديث أوقات الاستدعاء المتوقعة)
+  static List<AppointmentEntity> _sortByScheduled(
+    List<AppointmentEntity> entries,
+    int avgMinutes,
+  ) {
+    final sorted = _sortByBooking(entries);
+    if (sorted.isEmpty) return sorted;
+
+    DateTime currentExpected = DateTime.now();
+    final result = <AppointmentEntity>[];
+
+    for (final appt in sorted) {
+      result.add(appt.copyWith(
+        expectedCallTime: currentExpected,
+      ));
+      currentExpected = currentExpected.add(Duration(minutes: avgMinutes));
     }
-    if (typeName.contains(AppStrings.queuePatternConsult) ||
-        typeName.contains('consult')) {
-      return 'consult';
-    }
-    return 'normal';
+    return result;
   }
 }

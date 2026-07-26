@@ -1,14 +1,20 @@
+import 'package:clinic_pro/features/appointments/domain/usecases/appointments/sort_queue_usecase.dart';
+import 'package:clinic_pro/features/appointments/domain/usecases/appointments/call_patient_usecase.dart';
+import 'package:clinic_pro/features/appointments/domain/usecases/appointments/get_appointments_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_state.dart';
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/widgets/app_responsive_scaffold.dart';
-import '../../../appointments/presentation/manager/appointments_repository.dart';
 import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../../../patients/presentation/ui/patients_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
@@ -29,60 +35,112 @@ class DoctorDashboardScreen extends StatefulWidget {
 
 class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   int _currentIndex = 0;
+  String _clinicId = '';
+  String _doctorId = '';
+  bool _hasLoaded = false;
+  late final DoctorDashboardCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = DoctorDashboardCubit(
+      sl<GetAppointmentsUseCase>(),
+      sl<CallPatientUseCase>(),
+      sl<SortQueueUseCase>(),
+      sl<ICloudService>(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tryLoadDashboard();
+  }
+
+  void _tryLoadDashboard({bool autoCallNext = false, BuildContext? customContext}) {
+    final activeContext = customContext ?? context;
+    final settingsState = activeContext.read<SettingsCubit>().state;
+    final newClinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+    final currentUser = activeContext.read<AuthCubit>().state.user;
+
+    if (currentUser == null || newClinicId.isEmpty) return;
+
+    final newDoctorId = currentUser.id;
+
+    if (_hasLoaded && newClinicId == _clinicId && newDoctorId == _doctorId && !autoCallNext) return;
+
+    _clinicId = newClinicId;
+    _doctorId = newDoctorId;
+    _hasLoaded = true;
+
+    _cubit.loadDashboardData(
+      doctorId: _doctorId,
+      clinicId: _clinicId,
+      autoCallNext: autoCallNext,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => DoctorDashboardCubit(
-        sl<AppointmentsRepository>(),
-        sl<ICloudService>(),
-      )..loadDashboardData(),
-      child: AppResponsiveScaffold(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          if (index == 0) {
-            context.read<DoctorDashboardCubit>().loadDashboardData();
-          }
+    return BlocProvider.value(
+      value: _cubit,
+      child: BlocListener<SettingsCubit, SettingsState>(
+        listener: (context, settingsState) {
+          _tryLoadDashboard(customContext: context);
         },
-        destinations: [
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.smart_home),
-            label: Text(AppStrings.home),
+            child: AppResponsiveScaffold(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+                if (index == 0) {
+                  _tryLoadDashboard(customContext: context);
+                }
+              },
+              destinations: [
+                NavigationRailDestination(
+                  icon: const Icon(TablerIcons.smart_home),
+                  label: Text(AppStrings.home),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(TablerIcons.calendar),
+                  label: Text(AppStrings.appointments),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(TablerIcons.users),
+                  label: Text(AppStrings.patients),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(TablerIcons.wallet),
+                  label: Text(AppStrings.expenses),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(TablerIcons.settings),
+                  label: Text(AppStrings.settings),
+                ),
+              ],
+              appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
+              body: IndexedStack(
+                index: _currentIndex,
+                children: [
+                  _buildMainDashboardTab(),
+                  const AppointmentsScreen(),
+                  const PatientsScreen(),
+                  const ExpensesScreen(),
+                  const SettingsScreen(showBottomNav: false),
+                ],
+              ),
+              bottomNavigationBar: _buildBottomNav(context),
+            ),
           ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.calendar),
-            label: Text(AppStrings.appointments),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.users),
-            label: Text(AppStrings.patients),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.wallet),
-            label: Text(AppStrings.expenses),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.settings),
-            label: Text(AppStrings.settings),
-          ),
-        ],
-        appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
-        body: IndexedStack(
-          index: _currentIndex,
-          children: [
-            _buildMainDashboardTab(),
-            const AppointmentsScreen(),
-            const PatientsScreen(),
-            const ExpensesScreen(),
-            const SettingsScreen(showBottomNav: false),
-          ],
-        ),
-        bottomNavigationBar: _buildBottomNav(context),
-      ),
-    );
+        );
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -172,7 +230,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         if (state is DoctorDashboardLoaded) {
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<DoctorDashboardCubit>().loadDashboardData();
+              _tryLoadDashboard(customContext: context);
             },
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -192,9 +250,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                       await context
                           .push('/prescription/${state.currentPatient!.id}');
                       if (context.mounted) {
-                        context
-                            .read<DoctorDashboardCubit>()
-                            .loadDashboardData(autoCallNext: true);
+                        _tryLoadDashboard(autoCallNext: true, customContext: context);
                       }
                     }
                   },
@@ -265,7 +321,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   _currentIndex = index;
                 });
                 if (index == 0) {
-                  context.read<DoctorDashboardCubit>().loadDashboardData();
+                  _tryLoadDashboard(customContext: context);
                 }
               },
               borderRadius: BorderRadius.circular(16),
