@@ -1,0 +1,18 @@
+{
+    "sourceFile": "clinic_pro/lib/main.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1785337145678,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1785337145678,
+            "name": "Commit-0",
+            "content": "import 'package:clinic_pro/core/di/injection_container.dart';\r\nimport 'package:flutter/material.dart';\r\nimport 'package:flutter_localizations/flutter_localizations.dart';\r\nimport 'core/router/app_router.dart';\r\nimport 'core/themes/app_theme.dart';\r\nimport 'core/services/app_initializer.dart';\r\nimport 'package:flutter_bloc/flutter_bloc.dart';\r\nimport 'features/auth/presentation/manager/auth_cubit.dart';\r\nimport 'features/onboarding/presentation/manager/onboarding_cubit.dart';\r\nimport 'core/themes/theme_cubit.dart';\r\nimport 'core/localization/language_cubit.dart';\r\nimport 'features/settings/presentation/manager/settings_cubit.dart';\r\n\r\nvoid main() async {\r\n  // تهيئة جميع خدمات التطبيق قبل الإقلاع\r\n  await AppInitializer.init();\r\n\r\n  runApp(const ClinicPro());\r\n}\r\n\r\nclass ClinicPro extends StatelessWidget {\r\n  const ClinicPro({super.key});\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return MultiBlocProvider(\r\n      providers: [\r\n        BlocProvider(create: (_) => sl<AuthCubit>()),\r\n        BlocProvider(create: (_) => sl<OnboardingCubit>()),\r\n        BlocProvider(create: (_) => sl<ThemeCubit>()),\r\n        BlocProvider(create: (_) => sl<LanguageCubit>()),\r\n        BlocProvider(create: (_) => sl<SettingsCubit>()),\r\n      ],\r\n      child: BlocBuilder<ThemeCubit, ThemeMode>(\r\n        builder: (context, themeMode) {\r\n          return BlocBuilder<LanguageCubit, Locale>(\r\n            builder: (context, locale) {\r\n              return MaterialApp.router(\r\n                key: ValueKey(locale.languageCode),\r\n                title: 'ClinicPro',\r\n                debugShowCheckedModeBanner: false,\r\n                // تفعيل اللغة المختارة واتجاه RTL/LTR تلقائياً\r\n                locale: locale,\r\n                supportedLocales: const [Locale('ar'), Locale('en')],\r\n                localizationsDelegates: const [\r\n                  GlobalMaterialLocalizations.delegate,\r\n                  GlobalWidgetsLocalizations.delegate,\r\n                  GlobalCupertinoLocalizations.delegate,\r\n                ],\r\n                theme: AppTheme.light,\r\n                darkTheme: AppTheme.dark,\r\n                themeMode: themeMode,\r\n                routerConfig: appRouter,\r\n              );\r\n            },\r\n          );\r\n        },\r\n      ),\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}
