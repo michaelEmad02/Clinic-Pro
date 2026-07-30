@@ -10,6 +10,7 @@ import 'features/onboarding/presentation/manager/onboarding_cubit.dart';
 import 'core/themes/theme_cubit.dart';
 import 'core/localization/language_cubit.dart';
 import 'features/settings/presentation/manager/settings_cubit.dart';
+
 void main() async {
   // تهيئة جميع خدمات التطبيق قبل الإقلاع
   await AppInitializer.init();
