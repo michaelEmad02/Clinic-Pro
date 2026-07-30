@@ -178,40 +178,7 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                         ? AppStrings.templateName
                         : null,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    AppStrings.templateCategory,
-                    style: AppTextStyles.headlineSmall(context).copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: context.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _categoryController,
-                    style: AppTextStyles.bodyMedium(context),
-                    decoration: InputDecoration(
-                      hintText: AppStrings.templateCategory,
-                      hintStyle: AppTextStyles.bodyMedium(context)
-                          .copyWith(color: context.textHint),
-                      filled: true,
-                      fillColor: context.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: context.border),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: context.border),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: context.primary),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
-                  ),
+                  
                   const SizedBox(height: 16),
                   TemplateDrugSearchField(
                     controller: _searchController,

@@ -27,17 +27,17 @@ class AppointmentsList extends StatelessWidget {
     required this.onItemMore,
   });
 
-  static final _filters = [
-    ('all', AppStrings.all),
-    ('scheduled', AppStrings.scheduled),
-    ('confirmed', AppStrings.confirmed),
-    ('in_progress', AppStrings.inProgress),
-    ('done', AppStrings.completed),
-    ('cancelled', AppStrings.cancelled),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final filters = [
+      ('all', AppStrings.all),
+      ('scheduled', AppStrings.scheduled),
+      ('confirmed', AppStrings.confirmed),
+      ('in_progress', AppStrings.inProgress),
+      ('done', AppStrings.completed),
+      ('cancelled', AppStrings.cancelled),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -46,7 +46,7 @@ class AppointmentsList extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
-            children: _filters.map((f) {
+            children: filters.map((f) {
               final isSelected = statusFilter == f.$1;
               return Padding(
                 padding: const EdgeInsets.only(left: 8),

@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
+import '../../../../../core/themes/app_text_styles.dart';
 import '../../manager/patients_state.dart';
 
 class PatientsFilterChips extends StatelessWidget {
@@ -40,9 +41,7 @@ class PatientsFilterChips extends StatelessWidget {
               onSelected: (_) => onChanged(f.$1),
               selectedColor: context.primary,
               backgroundColor: context.surface,
-              labelStyle: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 12,
+              labelStyle: AppTextStyles.caption(context).copyWith(
                 color: isSelected ? context.onPrimary : context.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),

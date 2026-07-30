@@ -1,5 +1,6 @@
 // ────────────────────────────────────────────────────────
 // بانر الحالة الصحية والحساسية — مطابق لتصميم Stitch
+// يستخدم PatientEntity من طبقة الدومين
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -7,23 +8,21 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/patients_state.dart';
+import '../../../domain/entities/patient_entity.dart';
 
 class PatientAllergyBanner extends StatelessWidget {
-  final PatientItem patient;
+  final PatientEntity patient;
 
   const PatientAllergyBanner({super.key, required this.patient});
 
   @override
   Widget build(BuildContext context) {
-    final hasChronic = patient.chronicConditions.isNotEmpty &&
-        patient.chronicConditions != AppStrings.none;
+    final hasChronic = patient.isChronic;
     final hasAllergies = patient.hasAllergies;
 
     if (!hasChronic && !hasAllergies) return const SizedBox.shrink();
 
     return Container(
-      //margin: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -57,7 +56,7 @@ class PatientAllergyBanner extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              patient.chronicConditions,
+              patient.chronicConditions!,
               style: AppTextStyles.bodyMedium(context),
             ),
           ],
@@ -72,7 +71,7 @@ class PatientAllergyBanner extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              patient.allergies,
+              patient.allergies!,
               style: AppTextStyles.bodyMedium(context).copyWith(
                 color: context.dangerText,
                 fontWeight: FontWeight.w600,

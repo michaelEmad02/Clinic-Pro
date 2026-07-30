@@ -1,18 +1,28 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/strings/app_strings.dart';
-import '../../../../core/services/i_cloud_service.dart';
+import '../../domain/entities/prescription_entity.dart';
+import '../../domain/usecases/copy_previous_prescription_usecase.dart';
+import '../../domain/usecases/load_prescription_data_usecase.dart';
+import '../../domain/usecases/save_prescription_usecase.dart';
+import '../../domain/usecases/templates_usecases.dart';
 import 'prescription_event.dart';
 import 'prescription_state.dart';
-import 'prescription_repository.dart';
 
 @injectable
 class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
-  final PrescriptionRepository _repository;
+  final LoadPrescriptionDataUseCase _loadPrescriptionDataUseCase;
+  final SavePrescriptionUseCase _savePrescriptionUseCase;
+  final CopyPreviousPrescriptionUseCase _copyPreviousPrescriptionUseCase;
+  final GetTemplateDataUseCase _getTemplateDataUseCase;
 
-  PrescriptionBloc(ICloudService cloudService)
-      : _repository = PrescriptionRepository(cloudService),
-        super(const PrescriptionState()) {
+  PrescriptionBloc(
+    this._loadPrescriptionDataUseCase,
+    this._savePrescriptionUseCase,
+    this._copyPreviousPrescriptionUseCase,
+    this._getTemplateDataUseCase,
+  ) : super(const PrescriptionState()) {
     on<LoadPrescriptionDataEvent>(_onLoad);
     on<ToggleDiagnosisEvent>(_onToggleDiagnosis);
     on<AddCustomDiagnosisEvent>(_onAddCustomDiagnosis);
@@ -29,38 +39,53 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     LoadPrescriptionDataEvent event,
     Emitter<PrescriptionState> emit,
   ) async {
-    emit(state.copyWith(status: PrescriptionStatus.loading));
+    final doctorId = AppConstants.activeDoctorId.isNotEmpty
+        ? AppConstants.activeDoctorId
+        : 'u-doc-1';
+    final result = await _loadPrescriptionDataUseCase(event.appointmentId, doctorId);
 
-    try {
-      final result = await _repository.loadData(event.appointmentId);
-
-      final birthDateStr = result.patientRaw['birth_date'] as String? ?? '1990-01-01';
-      final birthYear = int.tryParse(birthDateStr.substring(0, 4)) ?? 1990;
-      final age = DateTime.now().year - birthYear;
-
-      emit(state.copyWith(
-        status: PrescriptionStatus.loaded,
-        appointmentId: event.appointmentId,
-        clinicId: result.appointmentRaw['clinic_id'] as String? ?? '',
-        patientName: result.patientRaw['name'] as String? ?? AppStrings.unknownPatient,
-        patientAge: '$age سنة',
-        patientGender: (result.patientRaw['gender'] as String? ?? 'male') == 'male' ? AppStrings.male : AppStrings.female,
-        bloodType: result.patientRaw['blood_type'] as String? ?? 'O+',
-        visitType: result.typeName,
-        doctorName: result.doctor['name'] as String? ?? AppStrings.generalPractitioner,
-        visitDate: result.appointmentRaw['date'] as String? ??
-            DateTime.now().toIso8601String().substring(0, 10),
-        selectedDiagnosis: result.selectedDiagnosis,
-        selectedDrugs: result.selectedDrugs,
-        finalDiagnosis: result.finalDiagnosis,
-        notes: result.notes,
-      ));
-    } catch (e) {
-      emit(state.copyWith(
+    result.fold(
+      (failure) => emit(state.copyWith(
         status: PrescriptionStatus.error,
-        errorMessage: AppStrings.loadFailed,
-      ));
-    }
+        errorMessage: failure.message,
+      )),
+      (data) {
+        final birthDateStr = data.patientBirthDate;
+        final birthYear = int.tryParse(birthDateStr.substring(0, 4)) ?? 1990;
+        final age = DateTime.now().year - birthYear;
+
+        final selectedDrugsList = data.selectedDrugs.map((e) {
+          return SelectedDrugModel(
+            id: e.drugId ?? '',
+            tradeName: e.drug?.tradeName ?? '',
+            genericName: e.drug?.genericName ?? '',
+            category: e.drug?.category ?? '',
+            doseFrequency: e.frequency,
+            doseDuration: e.duration,
+            doseTiming: e.timing,
+            isPrn: e.isPrn,
+          );
+        }).toList();
+
+        emit(state.copyWith(
+          status: PrescriptionStatus.loaded,
+          appointmentId: event.appointmentId,
+          patientId: data.patientId,
+          clinicId: data.clinicId,
+          patientName: data.patientName,
+          patientAge: '$age سنة',
+          patientGender: data.patientGender == 'male' ? AppStrings.male : AppStrings.female,
+          bloodType: data.bloodType,
+          visitType: data.visitType,
+          doctorName: data.doctorName,
+          visitDate: data.visitDate,
+          selectedDiagnosis: data.selectedDiagnosis,
+          selectedDrugs: selectedDrugsList,
+          finalDiagnosis: data.finalDiagnosis,
+          notes: data.notes,
+        ));
+      },
+    );
   }
 
   void _onToggleDiagnosis(
@@ -154,103 +179,139 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     SavePrescriptionEvent event,
     Emitter<PrescriptionState> emit,
   ) async {
-    if (state.selectedDiagnosis.isEmpty && state.finalDiagnosis.trim().isEmpty) {
-      emit(state.copyWith(
-        status: PrescriptionStatus.error,
-        errorMessage: '${AppStrings.add} ${AppStrings.medicalDiagnosis}',
-      ));
-      return;
-    }
-    if (state.selectedDrugs.isEmpty) {
-      emit(state.copyWith(
-        status: PrescriptionStatus.error,
-        errorMessage: '${AppStrings.add} ${AppStrings.drug}',
-      ));
-      return;
-    }
-    for (final drug in state.selectedDrugs) {
-      if (!drug.isPrn && (drug.doseFrequency == null || drug.doseDuration == null)) {
-        emit(state.copyWith(
-          status: PrescriptionStatus.error,
-           errorMessage: '${AppStrings.dosage} ${AppStrings.frequency} ${drug.tradeName}',
-        ));
-        return;
-      }
-      if (drug.doseTiming == null) {
-        emit(state.copyWith(
-          status: PrescriptionStatus.error,
-           errorMessage: '${AppStrings.timing} ${drug.tradeName}',
-        ));
-        return;
-      }
-    }
+    final diagnosisCombined = state.selectedDiagnosis.join(' ، ') +
+        (state.finalDiagnosis.trim().isNotEmpty ? ' - ${state.finalDiagnosis}' : '');
+
+    final items = state.selectedDrugs.map((d) {
+      return PrescriptionItemEntity(
+        id: '',
+        prescriptionId: '',
+        drugId: d.id,
+        frequency: d.doseFrequency,
+        duration: d.doseDuration,
+        timing: d.doseTiming,
+        isPrn: d.isPrn,
+      );
+    }).toList();
+
+    final doctorId = AppConstants.activeDoctorId.isNotEmpty
+        ? AppConstants.activeDoctorId
+        : 'u-doc-1';
+
+    final prescription = PrescriptionEntity(
+      id: '',
+      clinicId: state.clinicId,
+      doctorId: doctorId,
+      patientId: state.patientId,
+      diagnosis: diagnosisCombined,
+      notes: state.notes,
+      createdAt: DateTime.now().toIso8601String(),
+      items: items,
+    );
 
     emit(state.copyWith(status: PrescriptionStatus.loading));
 
-    try {
-      await _repository.save(state);
-      emit(state.copyWith(status: PrescriptionStatus.success));
-    } catch (_) {
-      emit(state.copyWith(
+    final result = await _savePrescriptionUseCase(prescription, doctorId);
+
+    result.fold(
+      (failure) => emit(state.copyWith(
         status: PrescriptionStatus.error,
-        errorMessage: AppStrings.error,
-      ));
-    }
+        errorMessage: failure.message,
+      )),
+      (_) => emit(state.copyWith(status: PrescriptionStatus.success)),
+    );
   }
 
   Future<void> _onCopyPrevious(
     CopyPreviousPrescriptionEvent event,
     Emitter<PrescriptionState> emit,
   ) async {
-    try {
-      final (copiedDrugs, diags) = await _repository.copyPrevious();
-
-      if (copiedDrugs.isEmpty) {
-        emit(state.copyWith(
-          errorMessage: '${AppStrings.noData} ${AppStrings.prescription}',
-        ));
-        return;
-      }
-
-      emit(state.copyWith(
-        selectedDiagnosis: diags,
-        selectedDrugs: copiedDrugs,
-      ));
-    } catch (_) {
+    if (state.patientId.isEmpty) {
       emit(state.copyWith(
         errorMessage: '${AppStrings.noData} ${AppStrings.prescription}',
       ));
+      return;
     }
+
+    final result = await _copyPreviousPrescriptionUseCase(state.patientId);
+
+    result.fold(
+      (failure) => emit(state.copyWith(
+        errorMessage: failure.message,
+      )),
+      (data) {
+        final (copiedDrugs, diags) = data;
+
+        if (copiedDrugs.isEmpty) {
+          emit(state.copyWith(
+            errorMessage: '${AppStrings.noData} ${AppStrings.prescription}',
+          ));
+          return;
+        }
+
+        final selectedDrugsList = copiedDrugs.map((e) {
+          return SelectedDrugModel(
+            id: e.drugId ?? '',
+            tradeName: e.drug?.tradeName ?? '',
+            genericName: e.drug?.genericName ?? '',
+            category: e.drug?.category ?? '',
+            doseFrequency: e.frequency,
+            doseDuration: e.duration,
+            doseTiming: e.timing,
+            isPrn: e.isPrn,
+          );
+        }).toList();
+
+        emit(state.copyWith(
+          selectedDiagnosis: diags,
+          selectedDrugs: selectedDrugsList,
+        ));
+      },
+    );
   }
 
   Future<void> _onApplyTemplate(
     ApplyTemplateEvent event,
     Emitter<PrescriptionState> emit,
   ) async {
-    try {
-      final (templateItems, templateName) =
-          await _repository.getTemplateData(event.templateId);
+    final doctorId = AppConstants.activeDoctorId.isNotEmpty
+        ? AppConstants.activeDoctorId
+        : 'u-doc-1';
+    final result = await _getTemplateDataUseCase(event.templateId, doctorId);
 
-      final updatedDrugs = List<SelectedDrugModel>.from(state.selectedDrugs);
-      for (final item in templateItems) {
-        if (!updatedDrugs.any((d) => d.id == item.id)) {
-          updatedDrugs.add(item);
+    result.fold(
+      (failure) => emit(state.copyWith(
+        errorMessage: failure.message,
+      )),
+      (data) {
+        final (templateItems, templateName) = data;
+
+        final updatedDrugs = List<SelectedDrugModel>.from(state.selectedDrugs);
+        for (final item in templateItems) {
+          if (!updatedDrugs.any((d) => d.id == item.drugId)) {
+            updatedDrugs.add(SelectedDrugModel(
+              id: item.drugId ?? '',
+              tradeName: item.drug?.tradeName ?? '',
+              genericName: item.drug?.genericName ?? '',
+              category: item.drug?.category ?? '',
+              doseFrequency: item.frequency,
+              doseDuration: item.duration,
+              doseTiming: item.timing,
+              isPrn: item.isPrn,
+            ));
+          }
         }
-      }
 
-      final updatedDiagnosis = List<String>.from(state.selectedDiagnosis);
-      if (templateName.isNotEmpty && !updatedDiagnosis.contains(templateName)) {
-        updatedDiagnosis.add(templateName);
-      }
+        final updatedDiagnosis = List<String>.from(state.selectedDiagnosis);
+        if (templateName.isNotEmpty && !updatedDiagnosis.contains(templateName)) {
+          updatedDiagnosis.add(templateName);
+        }
 
-      emit(state.copyWith(
-        selectedDrugs: updatedDrugs,
-        selectedDiagnosis: updatedDiagnosis,
-      ));
-    } catch (_) {
-      emit(state.copyWith(
-        errorMessage: '${AppStrings.error} ${AppStrings.template}',
-      ));
-    }
+        emit(state.copyWith(
+          selectedDrugs: updatedDrugs,
+          selectedDiagnosis: updatedDiagnosis,
+        ));
+      },
+    );
   }
 }

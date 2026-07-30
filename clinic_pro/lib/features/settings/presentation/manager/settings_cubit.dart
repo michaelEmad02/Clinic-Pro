@@ -57,6 +57,11 @@ class SettingsCubit extends Cubit<SettingsState> {
         AppConstants.activeDoctorId = localDoctorId;
       }
 
+      if (role == StaffRoles.doctor) {
+        AppConstants.activeDoctorId = userId;
+        await _localDataSource.saveActiveDoctorId(userId, userId);
+      }
+
       // 2. جلب العيادات المتاحة للمستخدم من قاعدة البيانات
       final clinicsResult = await _getAvailableClinicsUseCase(userId);
 

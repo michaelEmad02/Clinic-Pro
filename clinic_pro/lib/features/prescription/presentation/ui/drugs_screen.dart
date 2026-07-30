@@ -84,6 +84,12 @@ class DrugsScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     DrugsCategoryChips(
                       selectedCategory: state.selectedCategory,
+                      categories: state.drugs
+                          .map((d) => d['category'] as String?)
+                          .where((c) => c != null && c.isNotEmpty)
+                          .cast<String>()
+                          .toSet()
+                          .toList(),
                       onCategorySelected: (cat) =>
                           context.read<DrugsCubit>().selectCategory(cat),
                     ),

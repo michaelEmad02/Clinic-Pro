@@ -34,7 +34,7 @@ class AppStrings {
   static String get patient => isArabic ? 'مريض' : 'Patient';
   static String get patientDetails =>
       isArabic ? 'تفاصيل المريض' : 'Patient Details';
-  static String get addPatient => isArabic ? 'إضافة مريض' : 'Add Patient';
+  static String get addPatient => isArabic ? 'إضافة' : 'Add Patient';
   static String get editPatient => isArabic ? 'تعديل المريض' : 'Edit Patient';
   static String get deletePatient => isArabic ? 'حذف المريض' : 'Delete Patient';
   static String get noPatients => isArabic ? 'لا يوجد مرضى' : 'No patients';
@@ -914,4 +914,8 @@ class AppStrings {
           : 'Are you sure you want to cancel this appointment?';
   static String get invoiceInFinancialModule => isArabic ? 'سيتم فتح الفاتورة في المرحلة المالية' : 'Invoice will be opened in the financial module';
   static String get invoiceRegistrationInFinancialModule => isArabic ? 'سيتم تفعيل تسجيل الفاتورة في المرحلة المالية' : 'Invoice registration will be available in the financial module';
+
+  // Visit Types & Duration
+  static String get durationInMinutesHint => isArabic ? 'المدة (د)' : 'Duration (min)';
+  static String get minutesShort => isArabic ? 'دقيقة' : 'min';
 }

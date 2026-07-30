@@ -187,12 +187,13 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     AddAppointmentEvent event,
     Emitter<AppointmentsState> emit,
   ) async {
-    if (state is! AppointmentsLoaded) return;
-    final loaded = state as AppointmentsLoaded;
+    final activeClinicId = event.doctorId.isNotEmpty
+        ? _clinicId
+        : AppConstants.activeClinicId;
 
     final tempEntity = AppointmentEntity(
       id: '',
-      clinicId: _clinicId,
+      clinicId: activeClinicId,
       doctorId: event.doctorId,
       patientId: event.patientId,
       typeId: event.typeId,
@@ -212,12 +213,18 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       (failure) async => emit(AppointmentsError(failure.message)),
       (_) async {
         final loadResult = await _getAppointmentsUseCase(
-            GetAppointmentsParams(clinicId: _clinicId));
+            GetAppointmentsParams(clinicId: activeClinicId));
         loadResult.fold(
           (failure) =>
               emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-          (items) => emit(
-              loaded.copyWith(allAppointments: items)),
+          (items) {
+            if (state is AppointmentsLoaded) {
+              final loaded = state as AppointmentsLoaded;
+              emit(loaded.copyWith(allAppointments: items));
+            } else {
+              emit(AppointmentsLoaded(allAppointments: items));
+            }
+          },
         );
       },
     );
@@ -227,29 +234,30 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     UpdateAppointmentEvent event,
     Emitter<AppointmentsState> emit,
   ) async {
-    if (state is! AppointmentsLoaded) return;
-    final loaded = state as AppointmentsLoaded;
+    final currentAppointments = state is AppointmentsLoaded
+        ? (state as AppointmentsLoaded).allAppointments
+        : <AppointmentEntity>[];
 
-    final existingList = loaded.allAppointments.where((a) => a.id == event.appointmentId).toList();
-    if (existingList.isEmpty) return;
-    final existing = existingList.first;
+    final existingList =
+        currentAppointments.where((a) => a.id == event.appointmentId).toList();
+    final existing = existingList.isNotEmpty ? existingList.first : null;
 
     final tempEntity = AppointmentEntity(
       id: event.appointmentId,
-      clinicId: existing.clinicId.isEmpty ? _clinicId : existing.clinicId,
+      clinicId: existing?.clinicId ?? _clinicId,
       doctorId: event.doctorId,
-      patientId: existing.patientId,
+      patientId: existing?.patientId ?? '',
       typeId: event.typeId,
       date: event.date,
       time: event.time,
-      status: existing.status,
-      price: existing.price,
+      status: existing?.status ?? 'scheduled',
+      price: existing?.price ?? 0.0,
       isUrgent: event.isUrgent,
       notes: event.notes,
-      createdBy: existing.createdBy,
-      createdAt: existing.createdAt,
-      arrivedAt: existing.arrivedAt,
-      calledAt: existing.calledAt,
+      createdBy: existing?.createdBy ?? '',
+      createdAt: existing?.createdAt ?? DateTime.now(),
+      arrivedAt: existing?.arrivedAt,
+      calledAt: existing?.calledAt,
     );
 
     final result = await _updateAppointmentUseCase(tempEntity);
@@ -257,13 +265,20 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     await result.fold(
       (failure) async => emit(AppointmentsError(failure.message)),
       (_) async {
+        final activeClinicId = tempEntity.clinicId.isNotEmpty ? tempEntity.clinicId : _clinicId;
         final loadResult = await _getAppointmentsUseCase(
-            GetAppointmentsParams(clinicId: _clinicId));
+            GetAppointmentsParams(clinicId: activeClinicId));
         loadResult.fold(
           (failure) =>
               emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-          (items) => emit(
-              loaded.copyWith(allAppointments:items)),
+          (items) {
+            if (state is AppointmentsLoaded) {
+              final loaded = state as AppointmentsLoaded;
+              emit(loaded.copyWith(allAppointments: items));
+            } else {
+              emit(AppointmentsLoaded(allAppointments: items));
+            }
+          },
         );
       },
     );

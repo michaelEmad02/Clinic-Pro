@@ -11,7 +11,7 @@ import '../../../../../core/themes/app_text_styles.dart';
 class VisitTypeFormSection extends StatefulWidget {
   final List<Map<String, dynamic>> availableTypes;
   final bool hasEntries;
-  final Function(String typeId, String typeName, double price) onAdd;
+  final Function(String typeId, String typeName, double price, int durationInMinutes) onAdd;
 
   const VisitTypeFormSection({
     super.key,
@@ -27,11 +27,12 @@ class VisitTypeFormSection extends StatefulWidget {
 class _VisitTypeFormSectionState extends State<VisitTypeFormSection> {
   String? _selectedTypeId;
   final _priceController = TextEditingController();
-
+  final _durationController = TextEditingController(text: '15');
 
   @override
   void dispose() {
     _priceController.dispose();
+    _durationController.dispose();
     super.dispose();
   }
 
@@ -42,14 +43,18 @@ class _VisitTypeFormSectionState extends State<VisitTypeFormSection> {
     final priceText = _priceController.text.trim();
     final price = double.tryParse(priceText) ?? 0.0;
 
+    final durationText = _durationController.text.trim();
+    final durationInMinutes = int.tryParse(durationText) ?? 15;
+
     final type = widget.availableTypes.firstWhere((t) => t['id'] == typeId);
     final typeName = type['name'] as String? ?? '';
 
-    widget.onAdd(typeId, typeName, price);
+    widget.onAdd(typeId, typeName, price, durationInMinutes);
 
     setState(() {
       _selectedTypeId = null;
       _priceController.clear();
+      _durationController.text = '15';
     });
   }
 
@@ -68,63 +73,108 @@ class _VisitTypeFormSectionState extends State<VisitTypeFormSection> {
         const SizedBox(height: AppConstants.spaceSm),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.screenEdgeH),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: DropdownButtonFormField<String>(
-                  value: _selectedTypeId,
-                  hint: Text(
-                    AppStrings.selectTypeHint,
-                    style: AppTextStyles.bodyMedium(context).copyWith(color: context.textHint),
-                  ),
-                  items: widget.availableTypes.map((t) {
-                    return DropdownMenuItem(
-                      value: t['id'] as String,
-                      child: Text(t['name'] as String, style: AppTextStyles.bodyMedium(context)),
-                    );
-                  }).toList(),
-                  onChanged: (val) => setState(() => _selectedTypeId = val),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: context.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-                      borderSide: BorderSide(color: context.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: context.border),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 14),
-                  ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 420;
+
+              final typeDropdown = DropdownButtonFormField<String>(
+                value: _selectedTypeId,
+                hint: Text(
+                  AppStrings.selectTypeHint,
+                  style: AppTextStyles.bodyMedium(context).copyWith(color: context.textHint),
                 ),
-              ),
-              const SizedBox(width: AppConstants.spaceMd),
-              Expanded(
-                flex: 2,
-                child: TextField(
-                  controller: _priceController,
-                  keyboardType: TextInputType.number,
-                  textDirection: TextDirection.ltr,
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(
-                    hintText: AppStrings.priceHint,
-                    hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: context.textHint),
-                    filled: true,
-                    fillColor: context.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-                      borderSide: BorderSide(color: context.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: context.border),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 14),
+                items: widget.availableTypes.map((t) {
+                  return DropdownMenuItem(
+                    value: t['id'] as String,
+                    child: Text(t['name'] as String, style: AppTextStyles.bodyMedium(context)),
+                  );
+                }).toList(),
+                onChanged: (val) => setState(() => _selectedTypeId = val),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: context.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                    borderSide: BorderSide(color: context.border),
                   ),
-                  style: AppTextStyles.dataNumeric(context),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: context.border),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 14),
                 ),
-              ),
-            ],
+              );
+
+              final priceField = TextField(
+                controller: _priceController,
+                keyboardType: TextInputType.number,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  labelText: AppStrings.priceHint,
+                  hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: context.textHint),
+                  filled: true,
+                  fillColor: context.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                    borderSide: BorderSide(color: context.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: context.border),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                ),
+                style: AppTextStyles.dataNumeric(context),
+              );
+
+              final durationField = TextField(
+                controller: _durationController,
+                keyboardType: TextInputType.number,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  labelText: AppStrings.durationInMinutesHint,
+                  hintStyle: AppTextStyles.bodyMedium(context).copyWith(color: context.textHint),
+                  filled: true,
+                  fillColor: context.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                    borderSide: BorderSide(color: context.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: context.border),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                ),
+                style: AppTextStyles.dataNumeric(context),
+              );
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    typeDropdown,
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(child: priceField),
+                        const SizedBox(width: 10),
+                        Expanded(child: durationField),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(flex: 4, child: typeDropdown),
+                  const SizedBox(width: 8),
+                  Expanded(flex: 3, child: priceField),
+                  const SizedBox(width: 8),
+                  Expanded(flex: 3, child: durationField),
+                ],
+              );
+            },
           ),
         ),
         const SizedBox(height: AppConstants.spaceMd),

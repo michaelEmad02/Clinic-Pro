@@ -6,7 +6,6 @@ import 'template_list_item.dart';
 class TemplatesList extends StatelessWidget {
   final List<Map<String, dynamic>> templates;
   final String? searchQuery;
-  final String? selectedCategory;
   final Function(Map<String, dynamic>) onPreview;
   final Function(Map<String, dynamic>) onAction;
 
@@ -14,7 +13,6 @@ class TemplatesList extends StatelessWidget {
     super.key,
     required this.templates,
     required this.searchQuery,
-    required this.selectedCategory,
     required this.onPreview,
     required this.onAction,
   });
@@ -22,12 +20,10 @@ class TemplatesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filtered = templates.where((t) {
-      final matchesCategory = selectedCategory == null || t['category'] == selectedCategory;
-      
       final q = searchQuery?.toLowerCase() ?? '';
       final matchesSearch = q.isEmpty || (t['name'] as String? ?? '').toLowerCase().contains(q);
 
-      return matchesCategory && matchesSearch;
+      return matchesSearch;
     }).toList();
 
     if (filtered.isEmpty) {

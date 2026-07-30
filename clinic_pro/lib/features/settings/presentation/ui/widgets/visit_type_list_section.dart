@@ -60,9 +60,18 @@ class VisitTypeListSection extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(entry.name ?? '', style: AppTextStyles.bodyLarge(context)),
-                          Text(
-                            '${entry.price.toStringAsFixed(0)} ${AppStrings.sar}',
-                            style: AppTextStyles.dataNumeric(context).copyWith(color: context.primary),
+                          Row(
+                            children: [
+                              Text(
+                                '${entry.price.toStringAsFixed(0)} ${AppStrings.sar}',
+                                style: AppTextStyles.dataNumeric(context).copyWith(color: context.primary),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '• ${entry.durationInMinutes} ${AppStrings.minutesShort}',
+                                style: AppTextStyles.caption(context).copyWith(color: context.textSecondary),
+                              ),
+                            ],
                           ),
                         ],
                       ),

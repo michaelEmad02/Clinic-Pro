@@ -267,26 +267,37 @@ class AppNavigationRail extends StatelessWidget {
       ),
     ];
 
-    return NavigationRail(
-      selectedIndex: selectedIndex,
-      onDestinationSelected: onDestinationSelected,
-      backgroundColor: context.surfaceColor,
-      labelType: NavigationRailLabelType.all,
-      indicatorColor: context.primaryLightColor,
-      selectedIconTheme: IconThemeData(color: context.primary, size: 24),
-      unselectedIconTheme: IconThemeData(color: context.textSecondary, size: 22),
-      selectedLabelTextStyle: AppTextStyles.labelChip(context).copyWith(
-        color: context.primary,
-        fontWeight: FontWeight.bold,
-      ),
-      unselectedLabelTextStyle: AppTextStyles.labelChip(context).copyWith(
-        color: context.textSecondary,
-      ),
-      leading: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
-        child: Icon(Icons.local_hospital, color: context.primary, size: 32),
-      ),
-      destinations: destinations ?? defaultDestinations,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: NavigationRail(
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                backgroundColor: context.surfaceColor,
+                labelType: NavigationRailLabelType.all,
+                indicatorColor: context.primaryLightColor,
+                selectedIconTheme: IconThemeData(color: context.primary, size: 24),
+                unselectedIconTheme: IconThemeData(color: context.textSecondary, size: 22),
+                selectedLabelTextStyle: AppTextStyles.labelChip(context).copyWith(
+                  color: context.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                unselectedLabelTextStyle: AppTextStyles.labelChip(context).copyWith(
+                  color: context.textSecondary,
+                ),
+                leading: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
+                  child: Icon(Icons.local_hospital, color: context.primary, size: 32),
+                ),
+                destinations: destinations ?? defaultDestinations,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

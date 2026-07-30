@@ -1,5 +1,6 @@
 // ────────────────────────────────────────────────────────
 // Bottom Sheet إجراءات المريض (···)
+// يستخدم PatientEntity من طبقة الدومين
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -7,12 +8,12 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
-import '../../manager/patients_state.dart';
+import '../../../domain/entities/patient_entity.dart';
 
 class PatientActionSheet {
   static Future<void> show({
     required BuildContext context,
-    required PatientItem patient,
+    required PatientEntity patient,
     required VoidCallback onViewDetails,
     required VoidCallback onEdit,
     required VoidCallback onBookAppointment,
@@ -33,13 +34,14 @@ class PatientActionSheet {
                 color: context.primary,
               ),
             ),
-            Text(
-              patient.phone,
-              style: AppTextStyles.bodyMedium(context).copyWith(
-                color: context.textSecondary,
+            if (patient.phone != null && patient.phone!.isNotEmpty)
+              Text(
+                patient.phone!,
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: context.textSecondary,
+                ),
+                textDirection: TextDirection.ltr,
               ),
-              textDirection: TextDirection.ltr,
-            ),
             const SizedBox(height: 16),
             _ActionTile(
               icon: Icons.person_outline,

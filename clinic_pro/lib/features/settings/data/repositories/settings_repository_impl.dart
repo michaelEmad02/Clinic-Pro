@@ -238,6 +238,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
         appointmentTypeId: typePrice.appointmentTypeId,
         name: typePrice.name,
         price: typePrice.price,
+        durationInMinutes: typePrice.durationInMinutes,
       );
       await _remoteDataSource.upsertDoctorAppointmentType(model);
       return const Right(unit);
@@ -256,11 +257,12 @@ class SettingsRepositoryImpl implements ISettingsRepository {
       final models = types
           .map((t) => DoctorAppointmentTypeModel(
                 id: t.id,
-                doctorId: t.doctorId,
-                clinicId: t.clinicId,
+                doctorId: doctorId,
+                clinicId: clinicId,
                 appointmentTypeId: t.appointmentTypeId,
                 name: t.name,
                 price: t.price,
+                durationInMinutes: t.durationInMinutes,
               ))
           .toList();
       await _remoteDataSource.syncDoctorAppointmentTypes(

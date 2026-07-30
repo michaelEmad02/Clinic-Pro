@@ -1,7 +1,16 @@
 // ────────────────────────────────────────────────────────
 // شاشة المرضى الرئيسية — مطابقة لتصميم Stitch
+// تستخدم PatientsCubit مع UseCases (Clean Architecture)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/widgets/shimmer_list.dart';
+import 'package:clinic_pro/features/appointments/presentation/ui/widgets/add_appointment_sheet.dart';
+import 'package:clinic_pro/features/patients/presentation/manager/patients_cubit.dart';
+import 'package:clinic_pro/features/patients/presentation/manager/patients_state.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -10,29 +19,90 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
-import '../../../../core/widgets/shimmer_list.dart';
-import '../manager/patients_cubit.dart';
-import '../manager/patients_state.dart';
+import '../../domain/entities/patient_entity.dart';
 import 'widgets/add_edit_patient_sheet.dart';
 import 'widgets/patient_action_sheet.dart';
-import 'widgets/patients_filter_chips.dart';
 import 'widgets/patients_list.dart';
 import 'widgets/patients_search_bar.dart';
 
-class PatientsScreen extends StatelessWidget {
+class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
 
   @override
+  State<PatientsScreen> createState() => _PatientsScreenState();
+}
+
+class _PatientsScreenState extends State<PatientsScreen> {
+  late final PatientsCubit _cubit;
+  String _clinicId = '';
+  bool _hasLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = sl<PatientsCubit>();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tryLoadPatients();
+  }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
+
+  void _tryLoadPatients({String? forceClinicId}) {
+    final settingsState = context.read<SettingsCubit>().state;
+    final newClinicId = forceClinicId ??
+        settingsState.clinicEntity?.id ??
+        AppConstants.activeClinicId;
+
+    final hasChanges = newClinicId != _clinicId;
+    if (_hasLoaded && !hasChanges) return;
+    if (newClinicId.isEmpty) return;
+
+    _clinicId = newClinicId;
+    _hasLoaded = true;
+
+    _cubit.loadPatients(clinicId: _clinicId);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<PatientsCubit>()..loadPatients(),
-      child: const _PatientsBody(),
+    return BlocProvider.value(
+      value: _cubit,
+      child: BlocListener<SettingsCubit, SettingsState>(
+        listenWhen: (previous, current) =>
+            previous.clinicEntity?.id != current.clinicEntity?.id,
+        listener: (context, settingsState) {
+          if (settingsState.clinicEntity != null) {
+            _tryLoadPatients(forceClinicId: settingsState.clinicEntity!.id);
+          }
+        },
+        child: _PatientsBody(
+          cubit: _cubit,
+          clinicId: _clinicId,
+          hasLoaded: _hasLoaded,
+        ),
+      ),
     );
   }
 }
 
 class _PatientsBody extends StatelessWidget {
-  const _PatientsBody();
+  final PatientsCubit cubit;
+  final String clinicId;
+  final bool hasLoaded;
+
+  const _PatientsBody({
+    required this.cubit,
+    required this.clinicId,
+    required this.hasLoaded,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +124,9 @@ class _PatientsBody extends StatelessWidget {
               ),
             ),
             Text(
-              AppStrings.isArabic ? 'إدارة سجلات المرضى والبيانات الشخصية' : 'Manage patient records and personal data',
+              AppStrings.isArabic
+                  ? 'إدارة سجلات المرضى والبيانات الشخصية'
+                  : 'Manage patient records and personal data',
               style: AppTextStyles.caption(context).copyWith(
                 color: context.textSecondary,
               ),
@@ -63,76 +135,75 @@ class _PatientsBody extends StatelessWidget {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: context.border, height: 1),
+          child: Container(color: context.borderColor, height: 1),
         ),
       ),
-      body: BlocBuilder<PatientsCubit, PatientsState>(
-        builder: (context, state) {
-          if (state is PatientsLoading) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: ShimmerList(itemCount: 6),
-            );
-          }
-          if (state is PatientsError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () =>
-                        context.read<PatientsCubit>().loadPatients(),
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
-              ),
-            );
-          }
-          if (state is PatientsLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<PatientsCubit>().loadPatients();
-                await Future.delayed(const Duration(milliseconds: 600));
-              },
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                children: [
-                  PatientsSearchBar(
-                    onChanged: (q) =>
-                        context.read<PatientsCubit>().search(q),
-                  ),
-                  const SizedBox(height: 12),
-                  PatientsFilterChips(
-                    activeFilter: state.activeFilter,
-                    onChanged: (f) =>
-                        context.read<PatientsCubit>().changeFilter(f),
-                  ),
-                  const SizedBox(height: 16),
-                  PatientsList(
-                    patients: state.filteredPatients,
-                    onItemTap: (p) =>
-                        context.push('${RouteConstants.patients}/${p.id}'),
-                    onItemMore: (p) => _showActions(context, p),
-                  ),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
+      body: ResponsiveHelper.responsiveCenter(
+        maxWidth: 1100,
+        child: BlocBuilder<PatientsCubit, PatientsState>(
+          builder: (context, state) {
+            if (state is PatientsLoading) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: ShimmerList(itemCount: 6),
+              );
+            }
+            if (state is PatientsError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(state.message),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => cubit.loadPatients(clinicId: clinicId),
+                      child: Text(AppStrings.retry),
+                    ),
+                  ],
+                ),
+              );
+            }
+            if (state is PatientsLoaded) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  final settingsState = context.read<SettingsCubit>().state;
+                  final currentClinicId = settingsState.clinicEntity?.id ??
+                      AppConstants.activeClinicId;
+                  cubit.loadPatients(clinicId: currentClinicId);
+                  await Future.delayed(const Duration(milliseconds: 600));
+                },
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  children: [
+                    PatientsSearchBar(
+                      onChanged: (q) => cubit.search(q),
+                    ),
+                    const SizedBox(height: 16),
+                    PatientsList(
+                      patients: state.filteredPatients,
+                      onItemTap: (patient) => context
+                          .push('${RouteConstants.patients}/${patient.id}'),
+                      onItemMore: (patient) => _showActions(context, patient),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => AddEditPatientSheet.show(context),
         backgroundColor: context.primary,
         foregroundColor: context.onPrimary,
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: Text(AppStrings.addPatient),
       ),
     );
   }
 
-  void _showActions(BuildContext context, PatientItem patient) {
+  void _showActions(BuildContext context, PatientEntity patient) {
     PatientActionSheet.show(
       context: context,
       patient: patient,
@@ -140,22 +211,26 @@ class _PatientsBody extends StatelessWidget {
           context.push('${RouteConstants.patients}/${patient.id}'),
       onEdit: () => AddEditPatientSheet.show(context, patient: patient),
       onBookAppointment: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppStrings.isArabic ? 'سيتم فتح حجز موعد من شاشة المواعيد' : 'Booking will open from the appointments screen')),
+        AddAppointmentSheet.show(
+          context,
+          initialPatientId: patient.id,
         );
       },
-      onDeletePatient: () {
-        _confirmDelete(context, patient);
-      },
+      onDeletePatient: () => _confirmDelete(context, patient),
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, PatientItem patient) async {
+  Future<void> _confirmDelete(
+      BuildContext context, PatientEntity patient) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(AppStrings.deletePatient),
-        content: Text(AppStrings.isArabic ? 'هل أنت متأكد من حذف "${patient.name}"؟' : 'Are you sure you want to delete "${patient.name}"?'),
+        content: Text(
+          AppStrings.isArabic
+              ? 'هل أنت متأكد من حذف "${patient.name}"؟'
+              : 'Are you sure you want to delete "${patient.name}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -170,7 +245,7 @@ class _PatientsBody extends StatelessWidget {
       ),
     );
     if (confirmed == true) {
-      context.read<PatientsCubit>().deletePatient(patient.id);
+      cubit.deletePatient(patient.id);
     }
   }
 }

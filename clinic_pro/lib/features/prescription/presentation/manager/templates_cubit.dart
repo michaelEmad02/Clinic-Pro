@@ -1,57 +1,63 @@
-// ────────────────────────────────────────────────────────
-// Cubit قوالب الروشتات — إدارة القوالب وتطبيقها ومحاكاتها
-// يتعامل مع ICloudService لجلب وإدارة البيانات
-// ────────────────────────────────────────────────────────
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/strings/app_strings.dart';
-import '../../../../core/services/i_cloud_service.dart';
+import '../../domain/entities/drug_entity.dart';
+import '../../domain/entities/prescription_template_entity.dart';
+import '../../domain/usecases/templates_usecases.dart';
 import 'templates_state.dart';
 
 @injectable
 class TemplatesCubit extends Cubit<TemplatesState> {
-  final ICloudService _cloudService;
+  final GetTemplatesUseCase _getTemplatesUseCase;
+  final AddTemplateUseCase _addTemplateUseCase;
+  final EditTemplateUseCase _editTemplateUseCase;
+  final DeleteTemplateUseCase _deleteTemplateUseCase;
 
-  TemplatesCubit(this._cloudService) : super(TemplatesInitial());
+  TemplatesCubit(
+    this._getTemplatesUseCase,
+    this._addTemplateUseCase,
+    this._editTemplateUseCase,
+    this._deleteTemplateUseCase,
+  ) : super(TemplatesInitial());
 
-  /// تحميل جميع قوالب الروشتات من الخدمة السحابية
   Future<void> loadTemplates() async {
     emit(TemplatesLoading());
+    final doctorId = AppConstants.activeDoctorId.isNotEmpty
+        ? AppConstants.activeDoctorId
+        : 'u-doc-1';
+    final result = await _getTemplatesUseCase(doctorId);
 
-    try {
-      final rawTemplates = await _cloudService.select(
-        table: 'prescription_templates',
-      );
+    result.fold(
+      (failure) => emit(TemplatesError(failure.message)),
+      (templatesList) {
+        final List<Map<String, dynamic>> templatesRaw = templatesList.map((t) {
+          final itemsRaw = t.items.map((item) {
+            return {
+              'id': item.id,
+              'template_id': item.templateId,
+              'drug_id': item.drugId,
+              'frequency': item.frequency,
+              'duration': item.duration,
+              'is_prn': item.isPrn,
+              'timing': item.timing,
+              'trade_name': item.drug?.tradeName ?? AppStrings.unknownDrug,
+              'generic_name': item.drug?.genericName ?? '',
+            };
+          }).toList();
 
-      final List<Map<String, dynamic>> templates = [];
-      for (final t in rawTemplates) {
-        final items = await _cloudService.select(
-          table: 'prescription_template_items',
-          eq: {'template_id': t['id']},
-        );
-        
-        final List<Map<String, dynamic>> itemsWithDrugs = [];
-        for (final item in items) {
-          final drugs = await _cloudService.select(
-            table: 'drugs',
-            eq: {'id': item['drug_id']},
-          );
-          final drug = drugs.isNotEmpty ? drugs.first : {'trade_name': AppStrings.unknownDrug, 'generic_name': ''};
-          itemsWithDrugs.add({
-            ...item,
-            'trade_name': drug['trade_name'],
-            'generic_name': drug['generic_name'],
-          });
-        }
-        
-        templates.add({...t, 'items': itemsWithDrugs});
-      }
+          return {
+            'id': t.id,
+            'doctor_id': t.doctorId,
+            'name': t.name,
+            'user_count': t.userCount,
+            'items': itemsRaw,
+          };
+        }).toList();
 
-      emit(TemplatesLoaded(templates: templates));
-    } catch (_) {
-      emit(TemplatesError(AppStrings.loadTemplatesFailed));
-    }
+        emit(TemplatesLoaded(templates: templatesRaw));
+      },
+    );
   }
 
   /// تصفية القوالب بالبحث النصي (محلي على الـ state)
@@ -62,49 +68,52 @@ class TemplatesCubit extends Cubit<TemplatesState> {
     }
   }
 
-  /// تصفية القوالب بالتصنيف (محلي على الـ state)
-  void filterByCategory(String? category) {
-    if (state is TemplatesLoaded) {
-      final loaded = state as TemplatesLoaded;
-      emit(loaded.copyWith(selectedCategory: category));
-    }
-  }
+
 
   /// إضافة قالب روشتة جديد مع أدويته عبر الخدمة السحابية
   Future<void> addTemplate(String name, List<Map<String, dynamic>> drugs) async {
     if (state is! TemplatesLoaded) return;
     final loaded = state as TemplatesLoaded;
 
-    try {
-      // إدخال القالب الأساسي
-      final newTemplate = await _cloudService.insert(
-        table: 'prescription_templates',
-        data: {
-          'doctor_id': 'u-doc-1',
-          'name': name,
-          'user_count': 0,
-        },
+    final items = drugs.map((drug) {
+      return PrescriptionTemplateItemEntity(
+        id: '',
+        templateId: '',
+        drugId: drug['drug_id'] as String,
+        frequency: drug['frequency'] as int?,
+        duration: drug['duration'] as int?,
+        timing: drug['timing'] as String?,
+        isPrn: drug['is_prn'] as bool? ?? false,
       );
+    }).toList();
 
-      // إدخال أدوية القالب المرتبطة
-      for (final drug in drugs) {
-        await _cloudService.insert(
-          table: 'prescription_template_items',
-          data: {
-            'template_id': newTemplate['id'],
-            'drug_id': drug['drug_id'],
-            'frequency': drug['frequency'],
-            'duration': drug['duration'],
-            'timing': drug['timing'],
-            'is_prn': drug['is_prn'] ?? false,
-          },
-        );
-      }
+    final doctorId = AppConstants.activeDoctorId.isNotEmpty
+        ? AppConstants.activeDoctorId
+        : 'u-doc-1';
 
-      emit(loaded.copyWith(templates: [...loaded.templates, newTemplate]));
-    } catch (_) {
-      emit(TemplatesError(AppStrings.loadTemplatesFailed));
-    }
+    final template = PrescriptionTemplateEntity(
+      id: '',
+      doctorId: doctorId,
+      name: name,
+      userCount: 0,
+      items: items,
+    );
+
+    final result = await _addTemplateUseCase(template, doctorId);
+
+    result.fold(
+      (failure) => emit(TemplatesError(failure.message)),
+      (newTemplate) {
+        final newTemplateRaw = {
+          'id': newTemplate.id,
+          'doctor_id': newTemplate.doctorId,
+          'name': newTemplate.name,
+          'user_count': newTemplate.userCount,
+          'items': drugs,
+        };
+        emit(loaded.copyWith(templates: [...loaded.templates, newTemplateRaw]));
+      },
+    );
   }
 
   /// حذف قالب وجميع أدويته المرتبطة من الخدمة السحابية
@@ -112,68 +121,52 @@ class TemplatesCubit extends Cubit<TemplatesState> {
     if (state is! TemplatesLoaded) return;
     final loaded = state as TemplatesLoaded;
 
-    try {
-      // حذف أدوية القالب أولاً
-      await _cloudService.delete(
-        table: 'prescription_template_items',
-        matchColumn: 'template_id',
-        matchValue: id,
-      );
+    final result = await _deleteTemplateUseCase(id);
 
-      // حذف القالب نفسه
-      await _cloudService.delete(
-        table: 'prescription_templates',
-        matchColumn: 'id',
-        matchValue: id,
-      );
-
-      final updatedList = loaded.templates.where((t) => t['id'] != id).toList();
-      emit(loaded.copyWith(templates: updatedList));
-    } catch (_) {
-      emit(TemplatesError(AppStrings.loadTemplatesFailed));
-    }
+    result.fold(
+      (failure) => emit(TemplatesError(failure.message)),
+      (_) {
+        final updatedList = loaded.templates.where((t) => t['id'] != id).toList();
+        emit(loaded.copyWith(templates: updatedList));
+      },
+    );
   }
 
   /// تعديل قالب روشتة موجود وتحديث قائمة أدويته عبر الخدمة السحابية
   Future<void> editTemplate(String id, String name, List<Map<String, dynamic>> drugs) async {
     if (state is! TemplatesLoaded) return;
-    final loaded = state as TemplatesLoaded;
 
-    try {
-      // تحديث بيانات القالب الأساسية
-      await _cloudService.update(
-        table: 'prescription_templates',
-        data: {'name': name},
-        matchColumn: 'id',
-        matchValue: id,
+    final items = drugs.map((drug) {
+      return PrescriptionTemplateItemEntity(
+        id: '',
+        templateId: id,
+        drugId: drug['drug_id'] as String,
+        frequency: drug['frequency'] as int?,
+        duration: drug['duration'] as int?,
+        timing: drug['timing'] as String?,
+        isPrn: drug['is_prn'] as bool? ?? false,
       );
+    }).toList();
 
-      // حذف الأدوية القديمة المرتبطة بهذا القالب
-      await _cloudService.delete(
-        table: 'prescription_template_items',
-        matchColumn: 'template_id',
-        matchValue: id,
-      );
+    final doctorId = AppConstants.activeDoctorId.isNotEmpty
+        ? AppConstants.activeDoctorId
+        : 'u-doc-1';
 
-      // إدخال الأدوية الجديدة المرتبطة بالقالب المعدل
-      for (final drug in drugs) {
-        await _cloudService.insert(
-          table: 'prescription_template_items',
-          data: {
-            'template_id': id,
-            'drug_id': drug['drug_id'],
-            'frequency': drug['frequency'],
-            'duration': drug['duration'],
-            'timing': drug['timing'],
-            'is_prn': drug['is_prn'] ?? false,
-          },
-        );
-      }
+    final template = PrescriptionTemplateEntity(
+      id: id,
+      doctorId: doctorId,
+      name: name,
+      items: items,
+    );
 
-      // إعادة تحميل القوالب لضمان تطابق البيانات
-      await loadTemplates();
-    } catch (_) {
-      emit(TemplatesError(AppStrings.loadTemplatesFailed));
-    }
+    final result = await _editTemplateUseCase(template);
+
+    result.fold(
+      (failure) => emit(TemplatesError(failure.message)),
+      (_) async {
+        // إعادة تحميل القوالب لضمان تطابق البيانات
+        await loadTemplates();
+      },
+    );
   }
 }

@@ -12,6 +12,7 @@ class DoctorAppointmentTypeEntity extends Equatable {
   final String appointmentTypeId;
   final String? name; // اسم الزيارة (كشف عادي، استشارة...)
   final double price;
+  final int durationInMinutes; // متوسط وقت الزيارة بالدقائق
 
   const DoctorAppointmentTypeEntity({
     required this.id,
@@ -20,8 +21,10 @@ class DoctorAppointmentTypeEntity extends Equatable {
     required this.appointmentTypeId,
     this.name,
     required this.price,
+    this.durationInMinutes = 15,
   });
 
   @override
-  List<Object?> get props => [id, doctorId, clinicId, appointmentTypeId, name, price];
+  List<Object?> get props =>
+      [id, doctorId, clinicId, appointmentTypeId, name, price, durationInMinutes];
 }

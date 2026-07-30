@@ -1,5 +1,6 @@
 // ────────────────────────────────────────────────────────
 // حقل اختيار المريض مع بحث — مطابق لتصميم Stitch
+// يستخدم PatientEntity بدلاً من PatientItem
 // ────────────────────────────────────────────────────────
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +8,7 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../patients/domain/entities/patient_entity.dart';
 import '../../../../patients/presentation/manager/patients_cubit.dart';
 import '../../../../patients/presentation/manager/patients_state.dart';
 
@@ -41,33 +43,24 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
     if (state is PatientsLoaded) {
       final patient = state.allPatients.firstWhere(
         (p) => p.id == widget.selectedPatientId,
-        orElse: () => const PatientItem(
-          id: '',
-          name: '',
-          phone: '',
-          gender: '',
-          allergies: '',
-          chronicConditions: '',
-          lastVisitLabel: '',
-        ),
+        
       );
       return patient.name.isNotEmpty ? patient.name : null;
     }
     return null;
   }
 
-  List<PatientItem> _filteredPatients(PatientsState state) {
+  List<PatientEntity> _filteredPatients(PatientsState state) {
     if (state is! PatientsLoaded) return [];
     final query = _searchController.text.trim().toLowerCase();
-    
-    // يتم تصفية المرضى بالعيادة النشطة مسبقاً في الـ repository
+
     var list = state.allPatients;
 
     if (query.isNotEmpty) {
       list = list
           .where((p) =>
               p.name.toLowerCase().contains(query) ||
-              p.phone.contains(query))
+              (p.phone != null && p.phone!.contains(query)))
           .toList();
     }
     return list;
@@ -129,7 +122,7 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
                                 color: selectedName != null
                                     ? context.textPrimary
                                     : context.textHint,
-                              ),
+                               ),
                             ),
                     ),
                     Icon(Icons.search, color: context.textSecondary, size: 20),
@@ -180,7 +173,7 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
                         ? Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Center(
-                              child:                               Text(
+                              child: Text(
                                 AppStrings.noPatientsFound,
                                 style: AppTextStyles.bodyMedium(context).copyWith(
                                   color: context.textSecondary,
@@ -206,13 +199,15 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
-                                subtitle: Text(
-                                  patient.phone,
-                                  style: AppTextStyles.caption(context).copyWith(
-                                    color: context.textSecondary,
-                                  ),
-                                  textDirection: TextDirection.ltr,
-                                ),
+                                subtitle: patient.phone != null
+                                    ? Text(
+                                        patient.phone!,
+                                        style: AppTextStyles.caption(context).copyWith(
+                                          color: context.textSecondary,
+                                        ),
+                                        textDirection: TextDirection.ltr,
+                                      )
+                                    : null,
                                 trailing: isSelected
                                     ? Icon(Icons.check_circle, color: context.primary)
                                     : null,

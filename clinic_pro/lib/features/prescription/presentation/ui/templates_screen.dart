@@ -14,7 +14,6 @@ import '../manager/templates_state.dart';
 import 'widgets/add_edit_template_sheet.dart';
 import 'widgets/template_action_sheet.dart';
 import 'widgets/template_preview_dialog.dart';
-import 'widgets/drugs_category_chips.dart';
 import 'widgets/drugs_search_bar.dart';
 import 'widgets/templates_list.dart';
 
@@ -84,17 +83,10 @@ class TemplatesScreen extends StatelessWidget {
                       onChanged: (q) =>
                           context.read<TemplatesCubit>().search(q),
                     ),
-                    const SizedBox(height: 8),
-                    DrugsCategoryChips(
-                      selectedCategory: state.selectedCategory,
-                      onCategorySelected: (cat) =>
-                          context.read<TemplatesCubit>().filterByCategory(cat),
-                    ),
                     const SizedBox(height: 12),
                     TemplatesList(
                       templates: state.templates,
                       searchQuery: state.searchQuery,
-                      selectedCategory: state.selectedCategory,
                       onPreview: (template) =>
                           _showPreviewDialog(context, template),
                       onAction: (template) =>

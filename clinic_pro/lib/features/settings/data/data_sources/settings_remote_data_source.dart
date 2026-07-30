@@ -479,25 +479,53 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
     required String clinicId,
     required List<DoctorAppointmentTypeModel> types,
   }) async {
-    // 1. حذف جميع التسعيرات الحالية لهذا الطبيب في هذه العيادة
+    // 1. جلب التسعيرات القديمة الموجودة في قاعدة البيانات
     final existing = await _cloudService.select(
       table: SupabaseTables.doctorAppointmentTypes,
       eq: {'doctor_id': doctorId, 'clinic_id': clinicId},
     );
-    for (final e in existing) {
-      await _cloudService.delete(
-        table: SupabaseTables.doctorAppointmentTypes,
-        matchColumn: 'id',
-        matchValue: e['id'],
+
+    final newTypeIds = types.map((t) => t.appointmentTypeId).toSet();
+
+    // 2. تحديث الأنواع الحالية أو إضافة الأنواع الجديدة دون حذف الأنواع التي قد تحتوي على مواعيد مرتبطة بها
+    for (final model in types) {
+      final matched = existing.where(
+        (e) => e['appointment_type_id'] == model.appointmentTypeId,
       );
+
+      final Map<String, dynamic> data = model.toJson();
+
+      if (matched.isNotEmpty) {
+        // تحديث السعر والمدة للنوع الموجود مسبقاً
+        await _cloudService.update(
+          table: SupabaseTables.doctorAppointmentTypes,
+          data: data,
+          matchColumn: 'id',
+          matchValue: matched.first['id'],
+        );
+      } else {
+        // إدخال نوع زيارة جديد
+        await _cloudService.insert(
+          table: SupabaseTables.doctorAppointmentTypes,
+          data: data,
+        );
+      }
     }
 
-    // 2. إدخال التسعيرات الجديدة
-    for (final model in types) {
-      await _cloudService.insert(
-        table: SupabaseTables.doctorAppointmentTypes,
-        data: model.toJson(),
-      );
+    // 3. مسح الأنواع التي قُام المستخدم بإزالتها بشرط ألا تكون مرطبطة بمواعيد سابقة
+    for (final e in existing) {
+      final typeId = e['appointment_type_id'] as String;
+      if (!newTypeIds.contains(typeId)) {
+        try {
+          await _cloudService.delete(
+            table: SupabaseTables.doctorAppointmentTypes,
+            matchColumn: 'id',
+            matchValue: e['id'],
+          );
+        } catch (_) {
+          // إذا كانت توجد مواعيد سابقة مرتبطة بنوع الكشف المحذوف، يتم القفز والتجاهل لمنع الكسر
+        }
+      }
     }
   }
 }

@@ -18,14 +18,14 @@ class AppointmentsTabBar extends StatelessWidget {
     required this.onTabChanged,
   });
 
-  static final _tabs = [
-    (AppointmentsTab.today, AppStrings.tabToday),
-    (AppointmentsTab.upcoming, AppStrings.tabUpcoming),
-    (AppointmentsTab.history, AppStrings.tabHistory),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final tabs = [
+      (AppointmentsTab.today, AppStrings.tabToday),
+      (AppointmentsTab.upcoming, AppStrings.tabUpcoming),
+      (AppointmentsTab.history, AppStrings.tabHistory),
+    ];
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(4),
@@ -35,7 +35,7 @@ class AppointmentsTabBar extends StatelessWidget {
         border: Border.all(color: context.borderColor),
       ),
       child: Row(
-        children: _tabs.map((tab) {
+        children: tabs.map((tab) {
           final isSelected = activeTab == tab.$1;
           return Expanded(
             child: GestureDetector(

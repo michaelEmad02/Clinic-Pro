@@ -1,18 +1,21 @@
 // ────────────────────────────────────────────────────────
 // تبويب المعلومات في تفاصيل المريض — مطابق لتصميم Stitch
+// يستخدم PatientEntity من طبقة الدومين
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
+import 'package:clinic_pro/features/patients/presentation/manager/patient_details_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/patients_state.dart';
 import 'add_edit_patient_sheet.dart';
 import 'patient_allergy_banner.dart';
 
 class PatientInfoTab extends StatelessWidget {
-  final PatientItem patient;
+  final PatientEntity patient;
 
   const PatientInfoTab({super.key, required this.patient});
 
@@ -28,19 +31,21 @@ class PatientInfoTab extends StatelessWidget {
           title: AppStrings.isArabic ? 'بيانات التواصل' : 'Contact Info',
           icon: Icons.contact_page_outlined,
           children: [
-            if (patient.email != null)
-              _infoRow(context, Icons.mail_outline, AppStrings.email,
-                  patient.email!, TextDirection.ltr),
-            if (patient.address != null)
+            if (patient.phone != null && patient.phone!.isNotEmpty)
+              _infoRow(context, Icons.phone_iphone_outlined, AppStrings.isArabic ? 'الهاتف' : 'Phone', patient.phone!,
+                  TextDirection.ltr),
+            if (patient.address != null && patient.address!.isNotEmpty)
               _infoRow(context, Icons.location_on_outlined, AppStrings.isArabic ? 'العنوان السكني' : 'Address',
                   patient.address!),
-            if (patient.emergencyContact != null)
-              _infoRow(context, Icons.contact_emergency_outlined, AppStrings.isArabic ? 'جهة اتصال للطوارئ' : 'Emergency Contact',
-                  patient.emergencyContact!),
-            _infoRow(context, Icons.phone_iphone_outlined, AppStrings.isArabic ? 'الهاتف' : 'Phone', patient.phone,
-                TextDirection.ltr),
-            if (patient.birthDate != null)
-              _infoRow(context, Icons.cake_outlined, AppStrings.isArabic ? 'تاريخ الميلاد' : 'Birth Date', patient.birthDate!),
+            if (patient.dateOfBirth != null && patient.dateOfBirth!.isNotEmpty)
+              _infoRow(context, Icons.cake_outlined, AppStrings.isArabic ? 'تاريخ الميلاد' : 'Birth Date', patient.dateOfBirth!),
+            _infoRow(context, Icons.wc_outlined, AppStrings.isArabic ? 'الجنس' : 'Gender',
+                patient.gender == 'male'
+                    ? (AppStrings.isArabic ? 'ذكر' : 'Male')
+                    : (AppStrings.isArabic ? 'أنثى' : 'Female')),
+            if (patient.bloodType != null)
+              _infoRow(context, Icons.bloodtype_outlined, AppStrings.isArabic ? 'فصيلة الدم' : 'Blood Type',
+                  patient.bloodType!),
           ],
         ),
         const SizedBox(height: 16),
@@ -65,8 +70,14 @@ class PatientInfoTab extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () =>
-                    AddEditPatientSheet.show(context, patient: patient),
+                onPressed: () async {
+                  await AddEditPatientSheet.show(context, patient: patient);
+                  if (context.mounted) {
+                    context
+                        .read<PatientDetailsCubit>()
+                        .loadPatientDetails(patient.id);
+                  }
+                },
                 icon: const Icon(Icons.edit_document, size: 18),
                 label: Text(AppStrings.isArabic ? 'تعديل الملف' : 'Edit Profile'),
                 style: ElevatedButton.styleFrom(
@@ -138,17 +149,13 @@ class PatientInfoTab extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 12,
+                  style: AppTextStyles.caption(context).copyWith(
                     color: context.textSecondary,
                   ),
                 ),
                 Text(
                   value,
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 14,
+                  style: AppTextStyles.bodyMedium(context).copyWith(
                     fontWeight: FontWeight.w600,
                     color: context.textPrimary,
                   ),

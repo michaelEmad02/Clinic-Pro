@@ -1,5 +1,6 @@
 // ────────────────────────────────────────────────────────
 // عنصر مريض واحد في القائمة — مطابق لتصميم Stitch
+// يستخدم PatientEntity من طبقة الدومين
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -7,10 +8,10 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/patients_state.dart';
+import '../../../domain/entities/patient_entity.dart';
 
 class PatientListItem extends StatelessWidget {
-  final PatientItem patient;
+  final PatientEntity patient;
   final VoidCallback onTap;
   final VoidCallback onMore;
 
@@ -64,32 +65,47 @@ class PatientListItem extends StatelessWidget {
                     children: [
                       Text(
                         patient.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.headlineSmall(context).copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.phone_iphone_outlined,
-                              size: 14, color: context.textSecondary),
-                          const SizedBox(width: 4),
-                          Text(
-                            patient.phone,
-                            style: AppTextStyles.caption(context).copyWith(
-                              color: context.textSecondary,
+                      if (patient.phone != null && patient.phone!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.phone_iphone_outlined,
+                                size: 14, color: context.textSecondary),
+                            const SizedBox(width: 4),
+                            Text(
+                              patient.phone!,
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.textSecondary,
+                              ),
+                              textDirection: TextDirection.ltr,
                             ),
-                            textDirection: TextDirection.ltr,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${AppStrings.lastVisit} ${patient.lastVisitLabel}',
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: context.textHint,
+                          ],
                         ),
-                      ),
+                      ],
+                      // أيقونة تحذير الحساسية بجوار اسم المريض
+                      if (patient.hasAllergies) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.warning_amber_outlined,
+                                size: 14, color: context.danger),
+                            const SizedBox(width: 4),
+                            Text(
+                              AppStrings.isArabic ? 'حساسية' : 'Allergy',
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.danger,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

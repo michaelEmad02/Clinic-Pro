@@ -64,17 +64,18 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     _tryLoadDashboard();
   }
 
-  void _tryLoadDashboard({bool autoCallNext = false, BuildContext? customContext}) {
+  void _tryLoadDashboard({bool autoCallNext = false, BuildContext? customContext, String? forceClinicId}) {
     final activeContext = customContext ?? context;
     final settingsState = activeContext.read<SettingsCubit>().state;
-    final newClinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+    final newClinicId = forceClinicId ?? settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
     final currentUser = activeContext.read<AuthCubit>().state.user;
 
     if (currentUser == null || newClinicId.isEmpty) return;
 
     final newDoctorId = currentUser.id;
 
-    if (_hasLoaded && newClinicId == _clinicId && newDoctorId == _doctorId && !autoCallNext) return;
+    final hasChanges = newClinicId != _clinicId || newDoctorId != _doctorId;
+    if (_hasLoaded && !hasChanges && !autoCallNext) return;
 
     _clinicId = newClinicId;
     _doctorId = newDoctorId;
@@ -89,11 +90,21 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // تحديث البيانات تلقائياً عند الدخول أو إعادة بناء الواجهة
+    _tryLoadDashboard();
+
     return BlocProvider.value(
       value: _cubit,
       child: BlocListener<SettingsCubit, SettingsState>(
+        listenWhen: (previous, current) =>
+            previous.clinicEntity?.id != current.clinicEntity?.id,
         listener: (context, settingsState) {
-          _tryLoadDashboard(customContext: context);
+          if (settingsState.clinicEntity != null) {
+            _tryLoadDashboard(
+              customContext: context,
+              forceClinicId: settingsState.clinicEntity!.id,
+            );
+          }
         },
             child: AppResponsiveScaffold(
               selectedIndex: _currentIndex,

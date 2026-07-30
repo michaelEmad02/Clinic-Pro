@@ -63,6 +63,7 @@ enum PrescriptionStatus { initial, loading, loaded, success, error }
 class PrescriptionState extends Equatable {
   final PrescriptionStatus status;
   final String appointmentId;
+  final String patientId;
   final String clinicId;
   final String patientName;
   final String patientAge;
@@ -80,6 +81,7 @@ class PrescriptionState extends Equatable {
   const PrescriptionState({
     this.status = PrescriptionStatus.initial,
     this.appointmentId = '',
+    this.patientId = '',
     this.clinicId = '',
     this.patientName = '',
     this.patientAge = '',
@@ -98,6 +100,7 @@ class PrescriptionState extends Equatable {
   PrescriptionState copyWith({
     PrescriptionStatus? status,
     String? appointmentId,
+    String? patientId,
     String? clinicId,
     String? patientName,
     String? patientAge,
@@ -115,6 +118,7 @@ class PrescriptionState extends Equatable {
     return PrescriptionState(
       status: status ?? this.status,
       appointmentId: appointmentId ?? this.appointmentId,
+      patientId: patientId ?? this.patientId,
       clinicId: clinicId ?? this.clinicId,
       patientName: patientName ?? this.patientName,
       patientAge: patientAge ?? this.patientAge,
@@ -135,6 +139,7 @@ class PrescriptionState extends Equatable {
   List<Object?> get props => [
         status,
         appointmentId,
+        patientId,
         clinicId,
         patientName,
         patientAge,

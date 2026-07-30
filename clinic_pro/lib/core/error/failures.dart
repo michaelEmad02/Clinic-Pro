@@ -7,3 +7,7 @@ abstract class Failure {
   const Failure(this.message);
 }
 
+class ServerFailure extends Failure {
+  const ServerFailure(super.message);
+}
+

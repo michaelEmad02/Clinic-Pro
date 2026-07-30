@@ -10,31 +10,31 @@ import '../../../../../core/themes/app_text_styles.dart';
 class DrugsCategoryChips extends StatelessWidget {
   final String? selectedCategory;
   final ValueChanged<String?> onCategorySelected;
+  final List<String> categories;
 
   const DrugsCategoryChips({
     super.key,
     required this.selectedCategory,
     required this.onCategorySelected,
+    required this.categories,
   });
 
-  static List<Map<String, String>> get _categories => [
+  List<Map<String, String>> get _categoriesList => [
         {'label': AppStrings.all, 'value': 'all'},
-        {'label': AppStrings.antibiotic, 'value': AppStrings.antibiotic},
-        {'label': AppStrings.antipyretic, 'value': AppStrings.antipyretic},
-        {'label': AppStrings.respiratory, 'value': AppStrings.respiratory},
-        {'label': AppStrings.chronic, 'value': AppStrings.chronic},
+        ...categories.map((c) => {'label': c, 'value': c}),
       ];
 
   @override
   Widget build(BuildContext context) {
+    final list = _categoriesList;
     return SizedBox(
       height: 40,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _categories.length,
+        itemCount: list.length,
         itemBuilder: (context, index) {
-          final cat = _categories[index];
+          final cat = list[index];
           final isSelected =
               (selectedCategory == null && cat['value'] == 'all') ||
                   (selectedCategory == cat['value']);

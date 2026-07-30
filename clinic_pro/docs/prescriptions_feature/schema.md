@@ -67,8 +67,7 @@ Comment: *"يحتوي علي الادوية التي توجد في كل قالب
 > custom diagnosis freely. There is no DB-level link preserved after creation —
 > analytics on "most common diagnosis" must group by the text string itself.
 >
-> ⚠️ No `appointment_id` column exists on prescriptions — previously planned but
-> not implemented in the live schema. Confirm if this link is needed before Phase 7.
+
 
 Comment: *"الروشات"*
 
@@ -101,6 +100,9 @@ Comment: *"يحتوي علي الادوية التي بالروشته"*
 > ⚠️ Column is `docUrl` (camelCase) — inconsistent with the rest of the schema's
 > snake_case convention. Must be quoted exactly in raw SQL: `"docUrl"`.
 > Supabase client (`.select('docUrl')`) handles this fine without quoting issues.
+>
+> ⚠️ **Not yet used in code.** The `prescription_docs` table exists in the DB and
+> in `SupabaseTables` constants, but no feature code reads or writes to it yet.
 
 Comment: *"يحتوي علي مستدات تخص المريض مثل اشعه او تحاليل"*
 
@@ -117,10 +119,27 @@ Comment: *"يحتوي علي مستدات تخص المريض مثل اشعه ا
 > This is the literal value in the database — must be used exactly as-is in code
 > until a migration fixes it. Do not "correct" it client-side without a DB migration.
 
+### Client-side `DrugTiming` enum (in `prescription_enums.dart`)
+
+> ⚠️ The Dart enum has **4 values** while the DB enum has only **3**.
+> The extra value `any_time` was added client-side and **may not exist in the DB enum**.
+> Inserts with `timing = 'any_time'` will fail if the DB enum doesn't include it.
+> Verify with DB admin before using this value in production inserts.
+
+```dart
+enum DrugTiming {
+  beforeMeal('before_meal'),
+  afterMeal('after_meal'),
+  throughMeal('throught_meal'),  // ⚠️ DB typo preserved
+  anyTime('any_time'),           // ⚠️ may not exist in DB enum — verify
+}
+```
+
 ---
 
 ## Constants
 
+### `SupabaseTables` (in `supabase_constants.dart`)
 ```dart
 class SupabaseTables {
   static const drugs                     = 'drugs';
@@ -130,18 +149,42 @@ class SupabaseTables {
   static const prescriptionItems         = 'prescription_items';
   static const prescriptionDocs          = 'prescription_docs';
 }
+```
 
-class DrugTiming {
-  static const afterMeal  = 'after_meal';
-  static const beforeMeal = 'before_meal';
-  static const throughMeal = 'throught_meal'; // ⚠️ exact DB spelling — typo preserved intentionally
+### `DrugFrequency` (in `prescription_enums.dart`)
+```dart
+enum DrugFrequency {
+  once(1),
+  twice(2),
+  thrice(3),
+  four(4),
+  onDemand(0);   // ⚠️ "عند اللزوم" — NOT stored in DB (PRN uses is_prn flag instead)
 }
+```
 
-class PrescriptionFrequency {
-  static const once   = 1;
-  static const twice  = 2;
-  static const thrice = 3;
-  static const four   = 4;
+> ⚠️ `onDemand(0)` is a UI-only value. The actual PRN behavior is controlled by
+> the `is_prn` boolean flag on `prescription_items`, NOT by setting frequency to 0.
+> When `is_prn = true`, frequency and duration are set to `null`, not to 0.
+
+### `DrugDuration` (in `prescription_enums.dart`)
+```dart
+enum DrugDuration {
+  threeDays(3),
+  sevenDays(7),
+  tenDays(10),
+  fourteenDays(14),
+  thirtyDays(30),
+  continuing(0);  // ⚠️ "مستمر" — 0 means indefinite treatment
+}
+```
+
+### `DrugTiming` (in `prescription_enums.dart`)
+```dart
+enum DrugTiming {
+  beforeMeal('before_meal'),
+  afterMeal('after_meal'),
+  throughMeal('throught_meal'),  // ⚠️ DB typo
+  anyTime('any_time'),           // ⚠️ verify DB enum has this value
 }
 ```
 
@@ -149,4 +192,5 @@ class PrescriptionFrequency {
 
 ## Related Files
 - `business_logic.md` — diagnosis-from-template logic, template usage tracking
-- `ui.md` — Prescription, Templates, Drugs screens
+- `prescription_enums.dart` — Dart enums for frequency, duration, timing
+- `supabase_constants.dart` — table name constants

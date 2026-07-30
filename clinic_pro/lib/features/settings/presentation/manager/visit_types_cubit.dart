@@ -35,12 +35,15 @@ class VisitTypesCubit extends Cubit<VisitTypesState> {
       );
 
       globalResult.fold(
-        (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+        (failure) =>
+            emit(state.copyWith(isLoading: false, error: failure.message)),
         (globalTypes) {
           doctorResult.fold(
-            (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+            (failure) =>
+                emit(state.copyWith(isLoading: false, error: failure.message)),
             (doctorTypes) {
-              final usedTypeIds = doctorTypes.map((e) => e.appointmentTypeId).toSet();
+              final usedTypeIds =
+                  doctorTypes.map((e) => e.appointmentTypeId).toSet();
               final availableTypes = globalTypes
                   .where((t) => !usedTypeIds.contains(t['id']))
                   .toList();
@@ -66,18 +69,21 @@ class VisitTypesCubit extends Cubit<VisitTypesState> {
     required String typeId,
     required String typeName,
     required double price,
+    int durationInMinutes = 15,
   }) {
     final entry = DoctorAppointmentTypeEntity(
-      id: DateTime.now().millisecondsSinceEpoch.toString(), // معرف مؤقت
+      id: "",
       doctorId: doctorId,
       clinicId: clinicId,
       appointmentTypeId: typeId,
       name: typeName,
       price: price,
+      durationInMinutes: durationInMinutes,
     );
 
     final updatedAdded = [...state.addedEntries, entry];
-    final updatedAvailable = state.availableTypes.where((t) => t['id'] != typeId).toList();
+    final updatedAvailable =
+        state.availableTypes.where((t) => t['id'] != typeId).toList();
 
     emit(state.copyWith(
       addedEntries: updatedAdded,
@@ -120,7 +126,8 @@ class VisitTypesCubit extends Cubit<VisitTypesState> {
     );
 
     result.fold(
-      (failure) => emit(state.copyWith(isSaving: false, error: failure.message)),
+      (failure) =>
+          emit(state.copyWith(isSaving: false, error: failure.message)),
       (_) => emit(state.copyWith(isSaving: false)),
     );
   }

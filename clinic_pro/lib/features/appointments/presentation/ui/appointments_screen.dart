@@ -28,77 +28,121 @@ import 'widgets/appointments_list.dart';
 import 'widgets/appointments_tab_bar.dart';
 import '../../../settings/presentation/manager/settings_state.dart';
 
-class AppointmentsScreen extends StatelessWidget {
+class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final currentUser = context.read<AuthCubit>().state.user!;
-
-    return BlocProvider(
-      create: (_) => sl<AppointmentsBloc>(),
-      child: _AppointmentsBody(currentUser: currentUser),
-    );
-  }
+  State<AppointmentsScreen> createState() => _AppointmentsScreenState();
 }
 
-class _AppointmentsBody extends StatefulWidget {
-  const _AppointmentsBody({required this.currentUser});
-  final dynamic currentUser;
-
-  @override
-  State<_AppointmentsBody> createState() => _AppointmentsBodyState();
-}
-
-class _AppointmentsBodyState extends State<_AppointmentsBody> {
+class _AppointmentsScreenState extends State<AppointmentsScreen> {
+  late final AppointmentsBloc _bloc;
   String _clinicId = '';
   String _doctorId = '';
   bool _hasLoaded = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // محاولة التحميل الأولي عند توفر البيانات
-    _tryLoadAppointments();
+  void initState() {
+    super.initState();
+    _bloc = sl<AppointmentsBloc>();
+  }
+
+  @override
+  void dispose() {
+    _bloc.close();
+    super.dispose();
   }
 
   /// استخراج clinicId و doctorId من SettingsCubit وتحميل المواعيد
-  void _tryLoadAppointments() {
+  void _tryLoadAppointments({String? forceClinicId, String? forceDoctorId}) {
     final settingsState = context.read<SettingsCubit>().state;
-    final newClinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
-    final settingsDoctorId = settingsState.currentDoctorId;
+    final newClinicId = forceClinicId ?? settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+    final settingsDoctorId = forceDoctorId ?? settingsState.currentDoctorId;
+    final currentUser = context.read<AuthCubit>().state.user!;
 
     String newDoctorId;
-    if (widget.currentUser.role == StaffRoles.doctor) {
-      newDoctorId = widget.currentUser.id;
+    if (currentUser.role == StaffRoles.doctor) {
+      newDoctorId = currentUser.id;
     } else {
       newDoctorId = (settingsDoctorId != null && settingsDoctorId.isNotEmpty)
           ? settingsDoctorId
           : AppConstants.activeDoctorId;
     }
 
-    // لا نعيد التحميل إذا لم تتغيّر القيم وكان التحميل قد تمّ
-    if (_hasLoaded && newClinicId == _clinicId && newDoctorId == _doctorId) return;
-    // لا نحمل إذا كان clinicId فارغاً (الإعدادات لم تجهز بعد)
+    final hasChanges = newClinicId != _clinicId || newDoctorId != _doctorId;
+    
+    // طباعة للمساعدة في التتبع والتحليل
+    debugPrint('🔍 TryLoadAppointments: _clinicId=$_clinicId, newClinicId=$newClinicId, hasChanges=$hasChanges, _hasLoaded=$_hasLoaded');
+
+    if (_hasLoaded && !hasChanges) return;
     if (newClinicId.isEmpty) return;
 
     _clinicId = newClinicId;
     _doctorId = newDoctorId;
     _hasLoaded = true;
 
-    context.read<AppointmentsBloc>().add(
+    debugPrint('🚀 Dispatching LoadAppointmentsEvent for clinic: $_clinicId, doctor: $_doctorId');
+
+    _bloc.add(
       LoadAppointmentsEvent(doctorId: _doctorId, clinicId: _clinicId),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // الاستماع لتغيّرات SettingsCubit — عند تحميل العيادة نعيد جلب المواعيد
-    return BlocListener<SettingsCubit, SettingsState>(
-      listener: (context, settingsState) {
-        _tryLoadAppointments();
-      },
-      child: Scaffold(
+    final currentUser = context.read<AuthCubit>().state.user!;
+
+    // التحقق من القيم الحالية وجلب المواعيد عند كل عملية بناء
+    _tryLoadAppointments();
+
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocListener<SettingsCubit, SettingsState>(
+        listenWhen: (previous, current) {
+          final changed = previous.clinicEntity?.id != current.clinicEntity?.id ||
+              previous.currentDoctorId != current.currentDoctorId;
+          debugPrint('📡 SettingsCubit BlocListener listenWhen: changed=$changed (prev=${previous.clinicEntity?.id}, curr=${current.clinicEntity?.id})');
+          return changed;
+        },
+        listener: (context, settingsState) {
+          debugPrint('📥 SettingsCubit BlocListener triggered! New clinic: ${settingsState.clinicEntity?.id}');
+          if (settingsState.clinicEntity != null) {
+            _tryLoadAppointments(
+              forceClinicId: settingsState.clinicEntity!.id,
+              forceDoctorId: settingsState.currentDoctorId,
+            );
+          }
+        },
+        child: _AppointmentsBody(
+          currentUser: currentUser,
+          bloc: _bloc,
+          clinicId: _clinicId,
+          doctorId: _doctorId,
+          hasLoaded: _hasLoaded,
+        ),
+      ),
+    );
+  }
+}
+
+class _AppointmentsBody extends StatelessWidget {
+  const _AppointmentsBody({
+    required this.currentUser,
+    required this.bloc,
+    required this.clinicId,
+    required this.doctorId,
+    required this.hasLoaded,
+  });
+
+  final dynamic currentUser;
+  final AppointmentsBloc bloc;
+  final String clinicId;
+  final String doctorId;
+  final bool hasLoaded;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
@@ -113,7 +157,7 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
         ),
         actions: [
           IconButton(
-            icon:  Icon(Icons.queue_outlined, color: context.primary),
+            icon: Icon(Icons.queue_outlined, color: context.primary),
             tooltip: AppStrings.queueTooltip,
             onPressed: () => context.push(RouteConstants.waitingQueue),
           ),
@@ -125,7 +169,6 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
       ),
       body: BlocBuilder<AppointmentsBloc, AppointmentsState>(
         buildWhen: (previous, current) {
-          // إعادة البناء فقط عند تغير النوع أو المحتوى أو حالة التحميل/الخطأ
           return previous.runtimeType != current.runtimeType ||
               (previous is AppointmentsLoaded &&
                   current is AppointmentsLoaded &&
@@ -134,8 +177,7 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
                       previous.filteredAppointments != current.filteredAppointments));
         },
         builder: (context, state) {
-          // حالة عدم جهوزية الإعدادات بعد
-          if (state is AppointmentsInitial && !_hasLoaded) {
+          if (state is AppointmentsInitial && !hasLoaded) {
             return const Padding(
               padding: EdgeInsets.all(16),
               child: ShimmerList(itemCount: 6),
@@ -155,9 +197,9 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
                   Text(state.message),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => context
-                        .read<AppointmentsBloc>()
-                        .add(LoadAppointmentsEvent(doctorId: _doctorId, clinicId: _clinicId)),
+                    onPressed: () => bloc.add(
+                      LoadAppointmentsEvent(doctorId: doctorId, clinicId: clinicId),
+                    ),
                     child: Text(AppStrings.retry),
                   ),
                 ],
@@ -167,9 +209,22 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
           if (state is AppointmentsLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
-                context
-                    .read<AppointmentsBloc>()
-                    .add(LoadAppointmentsEvent(doctorId: _doctorId, clinicId: _clinicId));
+                // قراءة العيادة والطبيب المحدثين مباشرة من SettingsCubit عند عمل refresh
+                final settingsState = context.read<SettingsCubit>().state;
+                final currentClinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+                final settingsDoctorId = settingsState.currentDoctorId;
+                String currentDoctorId;
+                if (currentUser.role == StaffRoles.doctor) {
+                  currentDoctorId = currentUser.id;
+                } else {
+                  currentDoctorId = (settingsDoctorId != null && settingsDoctorId.isNotEmpty)
+                      ? settingsDoctorId
+                      : AppConstants.activeDoctorId;
+                }
+
+                bloc.add(
+                  LoadAppointmentsEvent(doctorId: currentDoctorId, clinicId: currentClinicId),
+                );
                 await Future.delayed(const Duration(milliseconds: 200));
               },
               child: ResponsiveHelper.responsiveCenter(
@@ -178,19 +233,14 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
                   children: [
                     AppointmentsTabBar(
                       activeTab: state.activeTab,
-                      onTabChanged: (tab) => context
-                          .read<AppointmentsBloc>()
-                          .add(ChangeAppointmentsTabEvent(tab)),
+                      onTabChanged: (tab) => bloc.add(ChangeAppointmentsTabEvent(tab)),
                     ),
                     const SizedBox(height: 16),
                     AppointmentsList(
                       appointments: state.filteredAppointments,
                       statusFilter: state.statusFilter,
-                      onFilterChanged: (filter) => context
-                          .read<AppointmentsBloc>()
-                          .add(ChangeStatusFilterEvent(filter)),
-                      onItemTap: (item) => context
-                          .push('${RouteConstants.appointments}/${item.id}'),
+                      onFilterChanged: (filter) => bloc.add(ChangeStatusFilterEvent(filter)),
+                      onItemTap: (item) => context.push('${RouteConstants.appointments}/${item.id}'),
                       onItemMore: (item) => _showActions(context, item),
                     ),
                   ],
@@ -208,12 +258,10 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
         icon: const Icon(Icons.add),
         label: Text(AppStrings.newAppointment),
       ),
-      ),
     );
   }
 
   void _showActions(BuildContext context, AppointmentEntity item) {
-    final bloc = context.read<AppointmentsBloc>();
     AppointmentActionSheet.show(
       context: context,
       appointment: item,
@@ -222,28 +270,26 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
           : null,
       onToggleUrgent: () => bloc.add(ToggleUrgentEvent(item.id)),
       onCancel: item.status != AppointmentStatus.done && item.status != AppointmentStatus.cancelled
-          ? () => _confirmCancel(context, item, bloc)
+          ? () => _confirmCancel(context, item)
           : null,
       onRegisterInvoice: () async {
         await AddInvoiceSheet.show(context, initialAppointmentId: item.id);
         if (context.mounted) {
-          bloc.add(LoadAppointmentsEvent(doctorId: _doctorId, clinicId: _clinicId));
+          bloc.add(LoadAppointmentsEvent(doctorId: doctorId, clinicId: clinicId));
         }
       },
-      onViewDetails: () =>
-          context.push('${RouteConstants.appointments}/${item.id}'),
+      onViewDetails: () => context.push('${RouteConstants.appointments}/${item.id}'),
       onEdit: () async {
         await AddAppointmentSheet.show(context, appointment: item);
         if (context.mounted) {
-          bloc.add(LoadAppointmentsEvent(doctorId: _doctorId, clinicId: _clinicId));
+          bloc.add(LoadAppointmentsEvent(doctorId: doctorId, clinicId: clinicId));
         }
       },
-      onDelete: () => _confirmDelete(context, item, bloc),
+      onDelete: () => _confirmDelete(context, item),
     );
   }
 
-  void _confirmCancel(
-      BuildContext context, AppointmentEntity item, AppointmentsBloc bloc) {
+  void _confirmCancel(BuildContext context, AppointmentEntity item) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -267,8 +313,7 @@ class _AppointmentsBodyState extends State<_AppointmentsBody> {
     );
   }
 
-  void _confirmDelete(
-      BuildContext context, AppointmentEntity item, AppointmentsBloc bloc) {
+  void _confirmDelete(BuildContext context, AppointmentEntity item) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

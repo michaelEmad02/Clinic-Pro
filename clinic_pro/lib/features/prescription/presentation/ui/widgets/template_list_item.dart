@@ -18,20 +18,21 @@ class TemplateListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = template['name'] ?? '';
-    final category = template['category'] ??
-        ''; // Category isn't in DB, kept for UI fallback if needed
     final useCount = template['user_count'] ?? 0;
 
     final items = template['items'] as List<dynamic>? ?? [];
     final drugCount = items.length;
 
-    // تحديد لون جانبي مختلف بناء على الفئة لإضفاء جمالية
-    Color sideColor = context.primary;
-    if (category == 'أمراض مزمنة') {
-      sideColor = context.accent;
-    } else if (category == 'حالات حادة') {
-      sideColor = context.warning;
-    }
+    // تحديد لون جانبي مختلف بناء على الاسم لإضفاء جمالية ديناميكية
+    final int hash = name.hashCode;
+    final List<Color> beautifulColors = [
+      context.primary,
+      context.accent,
+      context.warning,
+      context.success,
+    ];
+    final Color sideColor =
+        beautifulColors[hash.abs() % beautifulColors.length];
 
     return Card(
       elevation: 0,
@@ -72,21 +73,6 @@ class TemplateListItem extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: context.background,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            category,
-                            style: AppTextStyles.caption(context).copyWith(
-                              color: context.textSecondary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),

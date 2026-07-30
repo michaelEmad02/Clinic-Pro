@@ -88,3 +88,30 @@ class SubscriptionStatus {
   static const String trial = 'cancelled';
   static const String expired = 'expired';
 }
+
+class Gender {
+  static const String male = 'male';
+  static const String female = 'female';
+}
+
+class BloodType {
+  static const String aPos = 'A+';
+  static const String aNeg = 'A-';
+  static const String bPos = 'B+';
+  static const String bNeg = 'B-';
+  static const String abPos = 'AB+';
+  static const String abNeg = 'AB-';
+  static const String oPos = 'O+';
+  static const String oNeg = 'O-';
+
+  static const List<String> values = [
+    aPos,
+    aNeg,
+    bPos,
+    bNeg,
+    abPos,
+    abNeg,
+    oPos,
+    oNeg,
+  ];
+}

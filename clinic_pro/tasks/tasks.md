@@ -21,3 +21,8 @@
 ## appointments
 
 - [ ] تنفيذ العمليات المعتمده علي ال features  الاخري
+
+
+## patients
+
+- [] implments patients prescriptions in patient details

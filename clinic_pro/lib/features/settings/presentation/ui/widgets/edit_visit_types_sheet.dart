@@ -2,6 +2,7 @@
 // EditVisitTypesSheet — واجهة تعديل أسعار زيارات الطبيب بالعيادة
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/utils/responsive_helper.dart';
 import '../../manager/settings_cubit.dart';
 import '../../manager/visit_types_cubit.dart';
 import '../../manager/visit_types_state.dart';
@@ -29,8 +31,11 @@ class EditVisitTypesSheet extends StatelessWidget {
 
   static Future<void> show(BuildContext context) {
     final settingsState = context.read<SettingsCubit>().state;
-    final docId = context.read<AuthCubit>().state.user?.id ?? "";
-    final clId = settingsState.clinicEntity?.id ?? "";
+    final user = context.read<AuthCubit>().state.user;
+    final docId = (user != null && user.role == StaffRoles.doctor)
+        ? user.id
+        : (settingsState.currentDoctorId ?? user?.id ?? "");
+    final clId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
 
     return AppBottomSheet.show(
       context: context,
@@ -55,9 +60,11 @@ class EditVisitTypesSheet extends StatelessWidget {
         Navigator.pop(context);
       },
       builder: (context, state) {
-        return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Column(
+        return ResponsiveHelper.responsiveCenter(
+          maxWidth: 600,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -86,13 +93,15 @@ class EditVisitTypesSheet extends StatelessWidget {
                 VisitTypeFormSection(
                   availableTypes: state.availableTypes,
                   hasEntries: state.addedEntries.isNotEmpty,
-                  onAdd: (typeId, typeName, price) => context.read<VisitTypesCubit>().addEntry(
-                        doctorId: doctorId,
-                        clinicId: clinicId,
-                        typeId: typeId,
-                        typeName: typeName,
-                        price: price,
-                      ),
+                  onAdd: (typeId, typeName, price, durationInMinutes) =>
+                      context.read<VisitTypesCubit>().addEntry(
+                            doctorId: doctorId,
+                            clinicId: clinicId,
+                            typeId: typeId,
+                            typeName: typeName,
+                            price: price,
+                            durationInMinutes: durationInMinutes,
+                          ),
                 ),
                 const SizedBox(height: AppConstants.spaceLg),
                 _buildSaveButton(context, state),
@@ -100,8 +109,9 @@ class EditVisitTypesSheet extends StatelessWidget {
               SizedBox(height: MediaQuery.of(context).padding.bottom + AppConstants.spaceMd),
             ],
           ),
-        );
-      },
+        ),
+      );
+    },
     );
   }
 

@@ -17,24 +17,45 @@ import '../../../../settings/presentation/manager/visit_types_state.dart';
 import '../../../../patients/presentation/manager/patients_cubit.dart';
 import '../../manager/appointments_bloc.dart';
 import '../../manager/appointments_event.dart';
+import '../../manager/appointments_state.dart';
 import '../../../domain/entities/appointment_entity.dart';
 import 'patient_picker_field.dart';
 
 class AddAppointmentSheet {
   /// يفتح sheet إضافة موعد جديد أو تعديل موعد موجود
-  static Future<void> show(BuildContext context,
-      {AppointmentEntity? appointment}) {
-    // نلتقط الـ Bloc الحالي من الشاشة الأم لنشاركه مع الـ Sheet
-    final bloc = context.read<AppointmentsBloc>();
+  static Future<void> show(
+    BuildContext context, {
+    AppointmentEntity? appointment,
+    String? initialPatientId,
+    AppointmentsBloc? appointmentsBloc,
+  }) {
+    AppointmentsBloc bloc;
+    if (appointmentsBloc != null) {
+      bloc = appointmentsBloc;
+    } else {
+      try {
+        bloc = context.read<AppointmentsBloc>();
+      } catch (_) {
+        bloc = sl<AppointmentsBloc>();
+      }
+    }
+    final activeClinicId =
+        context.read<SettingsCubit>().state.clinicEntity?.id ??
+            AppConstants.activeClinicId;
     return AppBottomSheet.show(
       context: context,
       child: MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: bloc),
+          BlocProvider<AppointmentsBloc>.value(value: bloc),
           BlocProvider(create: (_) => sl<VisitTypesCubit>()),
-          BlocProvider(create: (_) => sl<PatientsCubit>()..loadPatients()),
+          BlocProvider(
+              create: (_) =>
+                  sl<PatientsCubit>()..loadPatients(clinicId: activeClinicId)),
         ],
-        child: _AddAppointmentForm(appointment: appointment),
+        child: _AddAppointmentForm(
+          appointment: appointment,
+          initialPatientId: initialPatientId,
+        ),
       ),
     );
   }
@@ -42,8 +63,12 @@ class AddAppointmentSheet {
 
 class _AddAppointmentForm extends StatefulWidget {
   final AppointmentEntity? appointment;
+  final String? initialPatientId;
 
-  const _AddAppointmentForm({this.appointment});
+  const _AddAppointmentForm({
+    this.appointment,
+    this.initialPatientId,
+  });
 
   @override
   State<_AddAppointmentForm> createState() => _AddAppointmentFormState();
@@ -64,6 +89,7 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
   @override
   void initState() {
     super.initState();
+    _patientId = widget.initialPatientId;
     // ملء الحقول بقيم الموعد الحالي عند التعديل
     final appt = widget.appointment;
     if (appt != null) {
@@ -98,13 +124,58 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
           }
         }
       }
+      // تعيين وقت بداية مبدئي ذكي بناءً على آخر موعد محجوز
+      _recalculateTimeForSelectedType(_typeId);
     }
 
-    if (_doctorId != null) {
+    final activeClinicId =
+        context.read<SettingsCubit>().state.clinicEntity?.id ??
+            AppConstants.activeClinicId;
+    if (_doctorId != null && activeClinicId.isNotEmpty) {
       context.read<VisitTypesCubit>().loadData(
             doctorId: _doctorId!,
-            clinicId: AppConstants.activeClinicId,
+            clinicId: activeClinicId,
           );
+    }
+  }
+
+  void _recalculateTimeForSelectedType(String? newTypeId) {
+    if (_isEditing) return;
+
+    final appState = context.read<AppointmentsBloc>().state;
+    if (appState is AppointmentsLoaded && appState.allAppointments.isNotEmpty) {
+      final targetDateStr = _date.toIso8601String().substring(0, 10);
+      final sameDayAppts = appState.allAppointments
+          .where((a) => a.date == targetDateStr)
+          .toList();
+
+      if (sameDayAppts.isNotEmpty) {
+        sameDayAppts.sort((a, b) => (a.time ?? '').compareTo(b.time ?? ''));
+        final lastAppt = sameDayAppts.last;
+
+        final parts = (lastAppt.time ?? '00:00').split(':');
+        if (parts.length >= 2) {
+          final lastHour = int.tryParse(parts[0]) ?? 0;
+          final lastMin = int.tryParse(parts[1]) ?? 0;
+          final lastTimeInMinutes = lastHour * 60 + lastMin;
+
+          final visitCubitState = context.read<VisitTypesCubit>().state;
+          int duration = 15;
+          if (newTypeId != null &&
+              visitCubitState.addedEntries.any((t) => t.id == newTypeId)) {
+            duration = visitCubitState.addedEntries
+                .firstWhere((t) => t.id == newTypeId)
+                .durationInMinutes;
+          }
+
+          final nextTimeInMinutes = lastTimeInMinutes + duration;
+          final nextHour = (nextTimeInMinutes ~/ 60) % 24;
+          final nextMin = nextTimeInMinutes % 60;
+          setState(() {
+            _time = TimeOfDay(hour: nextHour, minute: nextMin);
+          });
+        }
+      }
     }
   }
 
@@ -220,9 +291,10 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
         final appointmentTypes = visitTypesState.addedEntries;
         final isLoadingTypes = visitTypesState.isLoading;
 
-        final selectedType = (_typeId != null && appointmentTypes.any((t) => t.id == _typeId))
-            ? appointmentTypes.firstWhere((t) => t.id == _typeId)
-            : null;
+        final selectedType =
+            (_typeId != null && appointmentTypes.any((t) => t.id == _typeId))
+                ? appointmentTypes.firstWhere((t) => t.id == _typeId)
+                : null;
         final typePrice = (selectedType != null && selectedType.id.isNotEmpty)
             ? selectedType.price.toStringAsFixed(0)
             : null;
@@ -235,325 +307,331 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-              // رأس الـ sheet: عنوان + زر إغلاق
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _isEditing
-                          ? '${AppStrings.edit} ${AppStrings.appointment}'
-                          : AppStrings.newAppointment,
-                      style: AppTextStyles.headlineSmall(context).copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: context.primary,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    color: context.textSecondary,
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // في وضع التعديل لا يمكن تغيير المريض
-              IgnorePointer(
-                ignoring: _isEditing,
-                child: Opacity(
-                  opacity: _isEditing ? 0.5 : 1.0,
-                  child: PatientPickerField(
-                    selectedPatientId: _patientId,
-                    doctorId: _doctorId,
-                    onChanged: (id) => setState(() => _patientId = id),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // الدكتور المعالج (عرض فقط)
-              Text(
-                AppStrings.doctorLabel,
-                style: AppTextStyles.caption(context).copyWith(
-                  color: context.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-                  border: Border.all(color: context.border),
-                ),
-                child: Row(
+                // رأس الـ sheet: عنوان + زر إغلاق
+                Row(
                   children: [
-                    Icon(Icons.person_outline,
-                        color: context.primary, size: 20),
-                    const SizedBox(width: 12),
-                    Text(
-                      selectedDoctorName.isNotEmpty
-                          ? selectedDoctorName
-                          : AppStrings.notSpecified,
-                      style: AppTextStyles.bodyMedium(context).copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: context.textPrimary,
+                    Expanded(
+                      child: Text(
+                        _isEditing
+                            ? '${AppStrings.edit} ${AppStrings.appointment}'
+                            : AppStrings.newAppointment,
+                        style: AppTextStyles.headlineSmall(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: context.primary,
+                        ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              // التاريخ والوقت
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          AppStrings.date,
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: context.textSecondary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        OutlinedButton.icon(
-                          onPressed: _pickDate,
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            side: BorderSide(
-                              color: context.primary.withOpacity(0.2),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(color: context.border),
-                              borderRadius: BorderRadius.circular(
-                                  AppConstants.radiusButton),
-                            ),
-                            backgroundColor: context.primaryLightColor,
-                          ),
-                          icon: Icon(Icons.calendar_month_outlined,
-                              size: 18, color: context.primary),
-                          label: Text(
-                            '${_date.day}/${_date.month}/${_date.year}',
-                            style: AppTextStyles.bodyMedium(context).copyWith(
-                              color: context.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          AppStrings.timing,
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: context.textSecondary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        OutlinedButton.icon(
-                          onPressed: _pickTime,
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            side: BorderSide(
-                              color: context.primary.withOpacity(0.2),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  AppConstants.radiusButton),
-                            ),
-                            backgroundColor: context.primaryLightColor,
-                          ),
-                          icon: Icon(Icons.schedule_outlined,
-                              size: 18, color: context.primary),
-                          label: Text(
-                            _time.format(context),
-                            style: AppTextStyles.bodyMedium(context).copyWith(
-                              color: context.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // نوع الزيارة مع السعر
-              Row(
-                children: [
-                  Text(
-                    AppStrings.visitType,
-                    style: AppTextStyles.caption(context).copyWith(
+                    IconButton(
+                      icon: const Icon(Icons.close),
                       color: context.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (typePrice != null) ...[
-                    const Spacer(),
-                    Text(
-                      '$typePrice ${AppStrings.sar}',
-                      style: AppTextStyles.dataNumeric(context).copyWith(
-                        color: context.primary,
-                      ),
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ],
-                ],
-              ),
-              const SizedBox(height: 8),
-              isLoadingTypes
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  : DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        fillColor: context.surface,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppConstants.radiusInput),
-                          borderSide: BorderSide(color: context.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppConstants.radiusInput),
-                          borderSide:
-                              BorderSide(color: context.primary, width: 1.5),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppConstants.radiusInput),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.spaceMd,
-                          vertical: 13,
-                        ),
-                      ),
-                      value: _typeId,
-                      items: appointmentTypes
-                          .map((t) => DropdownMenuItem(
-                                value:
-                                    t.id, // matches doctor_appointment_types.id
-                                child: Text(t.name ?? ''),
-                              ))
-                          .toList(),
-                      onChanged: (v) => setState(() => _typeId = v),
+                ),
+                const SizedBox(height: 16),
+                // في وضع التعديل لا يمكن تغيير المريض
+                IgnorePointer(
+                  ignoring: _isEditing,
+                  child: Opacity(
+                    opacity: _isEditing ? 0.5 : 1.0,
+                    child: PatientPickerField(
+                      selectedPatientId: _patientId,
+                      doctorId: _doctorId,
+                      onChanged: (id) => setState(() => _patientId = id),
                     ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _notesController,
-                decoration: InputDecoration(
-                  labelText: '${AppStrings.notes} ${AppStrings.optional}',
-                  alignLabelWithHint: true,
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusInput),
-                    borderSide: BorderSide(color: context.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusInput),
-                    borderSide: BorderSide(color: context.primary, width: 1.5),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusInput),
                   ),
                 ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              // مفتاح حالة طارئة
-              Container(
-                padding: const EdgeInsets.all(AppConstants.spaceMd),
-                decoration: BoxDecoration(
-                  color: _isUrgent
-                      ? context.dangerBg
-                      : (context.isDarkMode
-                          ? const Color(0xFF2A2A2A)
-                          : context.surfaceContainerLow),
-                  borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-                  border: Border.all(
-                    color: _isUrgent
-                        ? context.danger.withOpacity(0.3)
-                        : context.borderColor,
+                const SizedBox(height: 16),
+                // الدكتور المعالج (عرض فقط)
+                Text(
+                  AppStrings.doctorLabel,
+                  style: AppTextStyles.caption(context).copyWith(
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                child: Row(
+                const SizedBox(height: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                  decoration: BoxDecoration(
+                    color: context.surfaceColor,
+                    borderRadius:
+                        BorderRadius.circular(AppConstants.radiusInput),
+                    border: Border.all(color: context.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.person_outline,
+                          color: context.primary, size: 20),
+                      const SizedBox(width: 12),
+                      Text(
+                        selectedDoctorName.isNotEmpty
+                            ? selectedDoctorName
+                            : AppStrings.notSpecified,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: context.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // التاريخ والوقت
+                Row(
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            AppStrings.emergencyBanner,
-                            style: AppTextStyles.bodyMedium(context).copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: _isUrgent
-                                  ? context.dangerText
-                                  : context.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            AppStrings.emergencyPriorityDescription,
+                            AppStrings.date,
                             style: AppTextStyles.caption(context).copyWith(
                               color: context.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: _pickDate,
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              side: BorderSide(
+                                color: context.primary.withOpacity(0.2),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(color: context.border),
+                                borderRadius: BorderRadius.circular(
+                                    AppConstants.radiusButton),
+                              ),
+                              backgroundColor: context.primaryLightColor,
+                            ),
+                            icon: Icon(Icons.calendar_month_outlined,
+                                size: 18, color: context.primary),
+                            label: Text(
+                              '${_date.day}/${_date.month}/${_date.year}',
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                color: context.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    Switch(
-                      value: _isUrgent,
-                      activeColor: context.danger,
-                      onChanged: (v) => setState(() => _isUrgent = v),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            AppStrings.timing,
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: context.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: _pickTime,
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              side: BorderSide(
+                                color: context.primary.withOpacity(0.2),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    AppConstants.radiusButton),
+                              ),
+                              backgroundColor: context.primaryLightColor,
+                            ),
+                            icon: Icon(Icons.schedule_outlined,
+                                size: 18, color: context.primary),
+                            label: Text(
+                              _time.format(context),
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                color: context.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.primary,
-                  foregroundColor: context.onPrimaryContainer,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  elevation: 4,
-                  shadowColor: context.primary.withOpacity(0.25),
-                  shape: RoundedRectangleBorder(
+                const SizedBox(height: 16),
+                // نوع الزيارة مع السعر
+                Row(
+                  children: [
+                    Text(
+                      AppStrings.visitType,
+                      style: AppTextStyles.caption(context).copyWith(
+                        color: context.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (typePrice != null) ...[
+                      const Spacer(),
+                      Text(
+                        '$typePrice ${AppStrings.sar}',
+                        style: AppTextStyles.dataNumeric(context).copyWith(
+                          color: context.primary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+                isLoadingTypes
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          fillColor: context.surface,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppConstants.radiusInput),
+                            borderSide: BorderSide(color: context.border),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppConstants.radiusInput),
+                            borderSide:
+                                BorderSide(color: context.primary, width: 1.5),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppConstants.radiusInput),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.spaceMd,
+                            vertical: 13,
+                          ),
+                        ),
+                        value: _typeId,
+                        items: appointmentTypes
+                            .map((t) => DropdownMenuItem(
+                                  value: t
+                                      .id, // matches doctor_appointment_types.id
+                                  child: Text(t.name ?? ''),
+                                ))
+                            .toList(),
+                        onChanged: (v) {
+                          setState(() => _typeId = v);
+                          _recalculateTimeForSelectedType(v);
+                        },
+                      ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _notesController,
+                  decoration: InputDecoration(
+                    labelText: '${AppStrings.notes} ${AppStrings.optional}',
+                    alignLabelWithHint: true,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusInput),
+                      borderSide: BorderSide(color: context.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusInput),
+                      borderSide:
+                          BorderSide(color: context.primary, width: 1.5),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusInput),
+                    ),
+                  ),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 16),
+                // مفتاح حالة طارئة
+                Container(
+                  padding: const EdgeInsets.all(AppConstants.spaceMd),
+                  decoration: BoxDecoration(
+                    color: _isUrgent
+                        ? context.dangerBg
+                        : (context.isDarkMode
+                            ? const Color(0xFF2A2A2A)
+                            : context.surfaceContainerLow),
                     borderRadius:
-                        BorderRadius.circular(AppConstants.radiusButton),
+                        BorderRadius.circular(AppConstants.radiusCard),
+                    border: Border.all(
+                      color: _isUrgent
+                          ? context.danger.withOpacity(0.3)
+                          : context.borderColor,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppStrings.emergencyBanner,
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: _isUrgent
+                                    ? context.dangerText
+                                    : context.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              AppStrings.emergencyPriorityDescription,
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: _isUrgent,
+                        activeColor: context.danger,
+                        onChanged: (v) => setState(() => _isUrgent = v),
+                      ),
+                    ],
                   ),
                 ),
-                child: Text(
-                  _isEditing
-                      ? AppStrings.saveChanges
-                      : '${AppStrings.save} ${AppStrings.appointment}',
-                  style: AppTextStyles.headlineSmall(context).copyWith(
-                    color: context.onPrimaryContainer,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.primary,
+                    foregroundColor: context.onPrimaryContainer,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    elevation: 4,
+                    shadowColor: context.primary.withOpacity(0.25),
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusButton),
+                    ),
+                  ),
+                  child: Text(
+                    _isEditing
+                        ? AppStrings.saveChanges
+                        : '${AppStrings.save} ${AppStrings.appointment}',
+                    style: AppTextStyles.headlineSmall(context).copyWith(
+                      color: context.onPrimaryContainer,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
   }
 }

@@ -11,6 +11,8 @@ import '../../../../core/widgets/app_responsive_scaffold.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../clinics/presentation/ui/clinics_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
+import '../../../settings/presentation/manager/settings_cubit.dart';
+import '../../../settings/presentation/manager/settings_state.dart';
 import '../manager/owner_dashboard_cubit.dart';
 import '../manager/owner_dashboard_state.dart';
 import 'widgets/dashboard_summary_row.dart';
@@ -35,14 +37,23 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     return BlocProvider(
       create: (context) =>
           OwnerDashboardCubit(sl<ICloudService>())..loadDashboardData(),
-      child: AppResponsiveScaffold(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+      child: BlocListener<SettingsCubit, SettingsState>(
+        listenWhen: (SettingsState previous, SettingsState current) =>
+            previous.clinicEntity?.id != current.clinicEntity?.id,
+        listener: (context, settingsState) {
+          if (settingsState.clinicEntity != null) {
+            // إعادة تحميل إحصائيات المالك للعيادة الجديدة
+            context.read<OwnerDashboardCubit>().loadDashboardData();
+          }
         },
-        destinations: [
+        child: AppResponsiveScaffold(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          destinations: [
           NavigationRailDestination(
             icon: const Icon(TablerIcons.smart_home),
             label: Text(AppStrings.home),
@@ -77,8 +88,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
         ),
         bottomNavigationBar: _buildBottomNav(),
       ),
-    );
-  }
+    ),
+  );
+}
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(

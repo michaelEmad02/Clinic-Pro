@@ -1,14 +1,15 @@
 // ────────────────────────────────────────────────────────
 // SliverAppBar لتفاصيل المريض — مطابق لتصميم Stitch
+// يستخدم PatientEntity من طبقة الدومين
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/patients_state.dart';
+import '../../../domain/entities/patient_entity.dart';
 
 class PatientSliverAppBar extends StatelessWidget {
-  final PatientItem patient;
+  final PatientEntity patient;
 
   const PatientSliverAppBar({super.key, required this.patient});
 

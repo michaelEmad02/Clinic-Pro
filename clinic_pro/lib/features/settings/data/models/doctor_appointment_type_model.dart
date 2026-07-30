@@ -13,6 +13,7 @@ class DoctorAppointmentTypeModel extends DoctorAppointmentTypeEntity {
     required super.appointmentTypeId,
     super.name,
     required super.price,
+    super.durationInMinutes = 15,
   });
 
   factory DoctorAppointmentTypeModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +24,7 @@ class DoctorAppointmentTypeModel extends DoctorAppointmentTypeEntity {
       appointmentTypeId: json['appointment_type_id'] as String,
       name: json['name'] as String?, // يُمكن جلبه بـ Join أو تعيينه يدوياً
       price: (json['price'] as num? ?? 0.0).toDouble(),
+      durationInMinutes: json['duration_in_minutes'] as int? ?? 15,
     );
   }
 
@@ -32,6 +34,7 @@ class DoctorAppointmentTypeModel extends DoctorAppointmentTypeEntity {
       'clinic_id': clinicId,
       'appointment_type_id': appointmentTypeId,
       'price': price,
+      'duration_in_minutes': durationInMinutes,
     };
   }
 }

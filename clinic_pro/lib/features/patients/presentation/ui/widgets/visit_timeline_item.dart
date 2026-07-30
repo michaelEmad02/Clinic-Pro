@@ -1,15 +1,17 @@
 // ────────────────────────────────────────────────────────
 // عنصر زيارة في الجدول الزمني — مطابق لتصميم Stitch
+// يستخدم AppointmentEntity بدلاً من PatientVisitItem
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/patients_state.dart';
+import '../../../../appointments/domain/entities/appointment_entity.dart';
 
 class VisitTimelineItem extends StatelessWidget {
-  final PatientVisitItem visit;
+  final AppointmentEntity visit;
   final bool isLast;
 
   const VisitTimelineItem({
@@ -56,34 +58,41 @@ class VisitTimelineItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // عنوان الزيارة — نوع الموعد
                   Text(
-                    visit.title,
+                    visit.typeName ?? (AppStrings.isArabic ? 'كشف عادي' : 'Regular Visit'),
                     style: AppTextStyles.headlineSmall(context).copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
+                  // تاريخ الزيارة
                   Text(
-                    visit.displayDate,
+                    visit.date,
                     style: AppTextStyles.caption(context).copyWith(
                       color: context.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    visit.description,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: context.textSecondary,
+                  // التشخيص من الروشتة (إن وجد)
+                  if (visit.prescriptionDiagnosis != null &&
+                      visit.prescriptionDiagnosis!.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      visit.prescriptionDiagnosis!,
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        color: context.textSecondary,
+                      ),
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 8),
+                  // اسم الطبيب
                   Row(
                     children: [
                       Icon(Icons.medical_services_outlined,
                           size: 14, color: context.primaryContainer),
                       const SizedBox(width: 4),
                       Text(
-                        visit.doctorName,
+                        visit.doctorName ?? (AppStrings.isArabic ? 'طبيب غير معروف' : 'Unknown Doctor'),
                         style: AppTextStyles.caption(context).copyWith(
                           color: context.primary,
                           fontWeight: FontWeight.w600,
