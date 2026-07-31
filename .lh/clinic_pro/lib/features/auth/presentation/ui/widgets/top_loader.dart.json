@@ -1,0 +1,30 @@
+{
+    "sourceFile": "clinic_pro/lib/features/auth/presentation/ui/widgets/top_loader.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1785463119459,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1785466171615,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,6 @@\n import 'package:flutter/material.dart';\r\n+import 'package:loading_animation_widget/loading_animation_widget.dart';\r\n \r\n class TopLoader {\r\n   static  final SizedBox _container = SizedBox(\r\n     width: 35,\r\n"
+                },
+                {
+                    "date": 1785466270317,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,9 +6,9 @@\n     width: 35,\r\n     height: 35,\r\n     child:\r\n         Center(child: LoadingAnimationWidget.threeArchedCircle(\r\n-        color: Mycolor().maincolor,\r\n+        color: AppColors,\r\n         size: 120,\r\n       ),),\r\n   );\r\n \r\n"
+                },
+                {
+                    "date": 1785466276675,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,14 +1,16 @@\n import 'package:flutter/material.dart';\r\n import 'package:loading_animation_widget/loading_animation_widget.dart';\r\n \r\n+import '../../../../../core/themes/app_colors.dart';\r\n+\r\n class TopLoader {\r\n   static  final SizedBox _container = SizedBox(\r\n     width: 35,\r\n     height: 35,\r\n     child:\r\n         Center(child: LoadingAnimationWidget.threeArchedCircle(\r\n-        color: AppColors,\r\n+        color: AppColors.primary,\r\n         size: 120,\r\n       ),),\r\n   );\r\n \r\n"
+                }
+            ],
+            "date": 1785463119459,
+            "name": "Commit-0",
+            "content": "import 'package:flutter/material.dart';\r\n\r\nclass TopLoader {\r\n  static  final SizedBox _container = SizedBox(\r\n    width: 35,\r\n    height: 35,\r\n    child:\r\n        Center(child: LoadingAnimationWidget.threeArchedCircle(\r\n        color: Mycolor().maincolor,\r\n        size: 120,\r\n      ),),\r\n  );\r\n\r\n  static void startLoading(BuildContext context) {\r\n    showDialog(\r\n      barrierColor: Colors.black54,\r\n      barrierDismissible: false,\r\n      context: context,\r\n      builder: (context) => _container,\r\n    );\r\n  }\r\n\r\n  static void stopLoading(BuildContext context) {\r\n    Navigator.of(context).pop();\r\n  }\r\n}\r\n"
+        }
+    ]
+}

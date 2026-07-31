@@ -1,0 +1,18 @@
+{
+    "sourceFile": "clinic_pro/lib/features/auth/presentation/ui/widgets/top_loader,dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1785463100901,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1785463100901,
+            "name": "Commit-0",
+            "content": "import 'package:flutter/material.dart';\r\nimport 'package:loading_animation_widget/loading_animation_widget.dart';\r\nimport 'package:nqs_website/constant/colors.dart';\r\n\r\nclass TopLoader {\r\n  static  final SizedBox _container = SizedBox(\r\n    width: 35,\r\n    height: 35,\r\n    child:\r\n        Center(child: LoadingAnimationWidget.threeArchedCircle(\r\n        color: Mycolor().maincolor,\r\n        size: 120,\r\n      ),),\r\n  );\r\n\r\n  static void startLoading(BuildContext context) {\r\n    showDialog(\r\n      barrierColor: Colors.black54,\r\n      barrierDismissible: false,\r\n      context: context,\r\n      builder: (context) => _container,\r\n    );\r\n  }\r\n\r\n  static void stopLoading(BuildContext context) {\r\n    Navigator.of(context).pop();\r\n  }\r\n}\r\n"
+        }
+    ]
+}

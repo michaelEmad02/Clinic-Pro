@@ -1,0 +1,22 @@
+{
+    "sourceFile": "clinic_pro/lib/features/auth/presentation/ui/widgets/social_login_row.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1785462592399,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1785462643112,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -11,9 +11,8 @@\n \r\n   const SocialLoginRow({\r\n     super.key,\r\n     required this.onGooglePressed,\r\n-    required this.onApplePressed,\r\n   });\r\n \r\n   @override\r\n   Widget build(BuildContext context) {\r\n"
+                }
+            ],
+            "date": 1785462592399,
+            "name": "Commit-0",
+            "content": "// ────────────────────────────────────────────────────────\r\n// هذا Widget يحتوي على صف أزرار تسجيل الدخول الاجتماعي (Google و Apple)\r\n// ────────────────────────────────────────────────────────\r\n\r\nimport 'package:flutter/material.dart';\r\nimport 'social_login_button.dart';\r\n\r\nclass SocialLoginRow extends StatelessWidget {\r\n  final VoidCallback onGooglePressed;\r\n  final VoidCallback onApplePressed;\r\n\r\n  const SocialLoginRow({\r\n    super.key,\r\n    required this.onGooglePressed,\r\n    required this.onApplePressed,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Row(\r\n      children: [\r\n        // زر المتابعة باستخدام Google\r\n        Expanded(\r\n          child: SocialLoginButton(\r\n            type: SocialLoginType.google,\r\n            text: 'Google',\r\n            onPressed: onGooglePressed,\r\n          ),\r\n        ),\r\n       \r\n      ],\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}
