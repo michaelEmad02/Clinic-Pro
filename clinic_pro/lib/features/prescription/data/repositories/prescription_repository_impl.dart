@@ -3,13 +3,12 @@
 // يقوم بالتواصل مع مصدر البيانات السحابي وتحويل النماذج إلى كيانات منطقية
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/strings/app_strings.dart';
-import '../../../appointments/data/models/appointment_model.dart';
 import '../../../patients/data/models/patient_model.dart';
-import '../../../staff_and_invitations/data/models/staff_model.dart';
 import '../../domain/entities/drug_entity.dart';
 import '../../domain/entities/prescription_entity.dart';
 import '../../domain/entities/prescription_load_data_entity.dart';
@@ -28,64 +27,106 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
 
   @override
   Future<Either<Failure, PrescriptionLoadDataEntity>> getPrescriptionData(
-    String appointmentId,
+    AppointmentEntity appt,
     String doctorId,
   ) async {
     try {
-      final AppointmentModel appt = await _remoteDataSource.getAppointment(appointmentId);
+      final appointmentId = appt.id;
       final patientId = appt.patientId;
 
-      final PatientModel patient = await _remoteDataSource.getPatient(patientId);
+      String patientName = appt.patientName ?? '';
+      String patientGender = 'ذكر';
+      String patientBirthDate = '1990-01-01';
+      String bloodType = 'O+';
 
-      String doctorName = AppStrings.generalPractitioner;
+      // محاولة استكمال بيانات المريض التفصيلية إن لزم الأمر، أو الاستعانة بالاسم المحمل
       try {
-        final StaffModel doctor = await _remoteDataSource.getDoctor(doctorId);
-        doctorName = doctor.name;
+        final PatientModel patient =
+            await _remoteDataSource.getPatient(patientId);
+        patientName = patient.name.isNotEmpty ? patient.name : patientName;
+        patientGender = patient.gender;
+        patientBirthDate = patient.dateOfBirth ?? '1990-01-01';
+        bloodType = patient.bloodType ?? 'O+';
       } catch (_) {}
 
-      final typeName = appt.typeName ?? AppStrings.normalCheckup;
+      String doctorName = appt.doctorName ?? AppStrings.generalPractitioner;
+      if (doctorName.isEmpty || doctorName == AppStrings.generalPractitioner) {
+        try {
+          doctorName = await _remoteDataSource.getDoctorName(doctorId);
+        } catch (_) {}
+      }
+
+      final typeName = (appt.typeName != null && appt.typeName!.isNotEmpty)
+          ? appt.typeName!
+          : AppStrings.normalCheckup;
 
       List<String> selectedDiag = [];
       List<PrescriptionItemEntity> selectedDrugs = [];
       String prescNotes = '';
       String finalDiag = appt.notes ?? '';
 
-      final lastPresc = await _remoteDataSource.getLastPrescriptionForPatient(patientId);
+      // معرف الروشتة الحالية (إن وجدت للتعديل)
+      String prescriptionId = '';
 
-      if (lastPresc != null) {
-        prescNotes = lastPresc.notes ?? '';
-        finalDiag = lastPresc.diagnosis ?? '';
+      try {
+        // البحث أولاً عن روشتة الزيارة الحالية للتعديل
+        print("DEBUG: Searching prescription for appointment: $appointmentId");
+        var targetPresc =
+            await _remoteDataSource.getPrescriptionByAppointment(appointmentId);
+        print("DEBUG: Found targetPresc: ${targetPresc?.id}");
 
-        if (finalDiag.isNotEmpty) {
-          selectedDiag = finalDiag.split(' ، ');
+        // إذا لم توجد روشتة للزيارة الحالية، نبحث عن آخر روشتة للمريض كنسخة مبدئية
+        if (targetPresc == null) {
+          print(
+              "DEBUG: No prescription for current appointment. Fetching last prescription for patient: $patientId");
+          targetPresc =
+              await _remoteDataSource.getLastPrescriptionForPatient(patientId);
+          if (targetPresc != null) {
+            print(
+                "DEBUG: Found last prescription: ${targetPresc.id} (Will copy as template, but keep prescriptionId empty for insert)");
+          }
+        } else {
+          // الروشتة تنتمي للزيارة الحالية، نقوم بحفظ الـ ID للتعديل
+          prescriptionId = targetPresc.id;
+          print("DEBUG: Set prescriptionId for editing: $prescriptionId");
         }
 
-        final items = await _remoteDataSource.getPrescriptionItems(lastPresc.id);
-        final drugs = await _remoteDataSource.getDrugList();
-        final drugsMap = {for (final d in drugs) d.id: d};
+        if (targetPresc != null) {
+          prescNotes = targetPresc.notes ?? '';
+          finalDiag = targetPresc.diagnosis ?? '';
 
-        for (final item in items) {
-          final drug = drugsMap[item.drugId];
-          selectedDrugs.add(PrescriptionItemModel(
-            id: item.id,
-            prescriptionId: item.prescriptionId,
-            drugId: item.drugId,
-            frequency: item.frequency,
-            duration: item.duration,
-            isPrn: item.isPrn,
-            timing: item.timing,
-            drug: drug,
-          ));
+          if (finalDiag.isNotEmpty) {
+            selectedDiag = finalDiag.split(' ، ');
+          }
+
+          final items =
+              await _remoteDataSource.getPrescriptionItems(targetPresc.id);
+          final drugs = await _remoteDataSource.getDrugList();
+          final drugsMap = {for (final d in drugs) d.id: d};
+
+          for (final item in items) {
+            final drug = drugsMap[item.drugId];
+            selectedDrugs.add(PrescriptionItemModel(
+              id: item.id,
+              prescriptionId: item.prescriptionId,
+              drugId: item.drugId,
+              frequency: item.frequency,
+              duration: item.duration,
+              isPrn: item.isPrn,
+              timing: item.timing,
+              drug: drug,
+            ));
+          }
         }
-      }
+      } catch (_) {}
 
       return Right(PrescriptionLoadDataEntity(
         appointmentId: appointmentId,
         patientId: patientId,
-        patientName: patient.name,
-        patientGender: patient.gender,
-        patientBirthDate: patient.dateOfBirth ?? '1990-01-01',
-        bloodType: patient.bloodType ?? 'O+',
+        patientName: patientName,
+        patientGender: patientGender,
+        patientBirthDate: patientBirthDate,
+        bloodType: bloodType,
         clinicId: appt.clinicId,
         visitType: typeName,
         doctorName: doctorName,
@@ -94,6 +135,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         selectedDrugs: selectedDrugs,
         finalDiagnosis: finalDiag,
         notes: prescNotes,
+        prescriptionId: prescriptionId,
       ));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -111,17 +153,26 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         clinicId: prescription.clinicId,
         doctorId: doctorId,
         patientId: prescription.patientId,
+        appointmentId: prescription.appointmentId,
         diagnosis: prescription.diagnosis,
         notes: prescription.notes,
         createdAt: prescription.createdAt,
       );
 
-      final newPresc = await _remoteDataSource.insertPrescription(prescriptionModel);
+      final bool isEditing = prescription.id.isNotEmpty;
+      String activePrescriptionId = prescription.id;
+
+      if (isEditing) {
+        await _remoteDataSource.updatePrescription(prescriptionModel);
+        await _remoteDataSource.deletePrescriptionItems(prescription.id);
+      } else {
+        await _remoteDataSource.insertPrescription(prescriptionModel);
+      }
 
       for (final item in prescription.items) {
         final itemModel = PrescriptionItemModel(
           id: item.id,
-          prescriptionId: newPresc.id,
+          prescriptionId: activePrescriptionId,
           drugId: item.drugId,
           frequency: item.frequency,
           duration: item.duration,
@@ -132,14 +183,17 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       }
 
       // تحديث إحصائيات استخدام قوالب التشخيصات
-      if (prescription.diagnosis != null && prescription.diagnosis!.isNotEmpty) {
-        final diagList = prescription.diagnosis!.split(' - ').first.split(' ، ');
+      if (prescription.diagnosis != null &&
+          prescription.diagnosis!.isNotEmpty) {
+        final diagList =
+            prescription.diagnosis!.split(' - ').first.split(' ، ');
         final templates = await _remoteDataSource.getTemplates(doctorId);
 
         for (final diag in diagList) {
           final match = templates.firstWhere(
             (t) => t.name == diag,
-            orElse: () => const PrescriptionTemplateModel(id: '', doctorId: '', name: '', userCount: 0, items: []),
+            orElse: () => const PrescriptionTemplateModel(
+                id: '', doctorId: '', name: '', userCount: 0, items: []),
           );
           if (match.id.isNotEmpty) {
             final updatedTemplate = PrescriptionTemplateModel(
@@ -163,7 +217,8 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
   Future<Either<Failure, (List<PrescriptionItemEntity>, List<String>)>>
       copyPreviousPrescription(String patientId) async {
     try {
-      final lastPresc = await _remoteDataSource.getLastPrescriptionForPatient(patientId);
+      final lastPresc =
+          await _remoteDataSource.getLastPrescriptionForPatient(patientId);
 
       if (lastPresc == null) {
         return const Right((<PrescriptionItemEntity>[], <String>[]));
@@ -203,11 +258,13 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
   Future<Either<Failure, (List<PrescriptionItemEntity>, String)>>
       getTemplateData(String templateId, String doctorId) async {
     try {
-      final templateItems = await _remoteDataSource.getTemplateItems(templateId);
+      final templateItems =
+          await _remoteDataSource.getTemplateItems(templateId);
       final templates = await _remoteDataSource.getTemplates(doctorId);
       final template = templates.firstWhere(
         (t) => t.id == templateId,
-        orElse: () => const PrescriptionTemplateModel(id: '', doctorId: '', name: '', userCount: 0, items: []),
+        orElse: () => const PrescriptionTemplateModel(
+            id: '', doctorId: '', name: '', userCount: 0, items: []),
       );
       final templateName = template.name;
 
@@ -236,8 +293,8 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
   }
 
   @override
-  Future<Either<Failure, List<PrescriptionTemplateEntity>>>
-      getTemplates(String doctorId) async {
+  Future<Either<Failure, List<PrescriptionTemplateEntity>>> getTemplates(
+      String doctorId) async {
     try {
       final rawTemplates = await _remoteDataSource.getTemplates(doctorId);
       final drugs = await _remoteDataSource.getDrugList();

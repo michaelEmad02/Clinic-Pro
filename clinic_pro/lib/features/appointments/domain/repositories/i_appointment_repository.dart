@@ -48,4 +48,10 @@ abstract class IAppointmentRepository {
 
   /// حذف الموعد نهائياً من قاعدة البيانات
   Future<Either<Failure, Unit>> deleteAppointment(String appointmentId);
+
+  /// الاشتراك في تحديثات المواعيد اللحظية
+  Stream<List<AppointmentEntity>> subscribeAppointments({
+    required String clinicId,
+    String? doctorId,
+  });
 }

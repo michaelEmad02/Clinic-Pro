@@ -4,6 +4,8 @@
 // ────────────────────────────────────────────────────────
 
 import '../../domain/entities/appointment_entity.dart';
+import '../../../prescription/domain/entities/prescription_entity.dart';
+import '../../../prescription/data/models/prescription_model.dart';
 
 class AppointmentModel extends AppointmentEntity {
   const AppointmentModel({
@@ -34,6 +36,7 @@ class AppointmentModel extends AppointmentEntity {
     super.invoiceAmount,
     super.invoiceStatus,
     super.invoiceNumber,
+    super.prescriptionDrugs,
   });
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {
@@ -54,6 +57,10 @@ class AppointmentModel extends AppointmentEntity {
 
     final prescription = json['prescriptions'] as List? ?? [];
     final invoice = json['invoices'] as List? ?? [];
+    final prescriptionDrugsList = (json['prescription_drugs'] as List?)
+            ?.map((e) => PrescriptionItemModel.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        <PrescriptionItemModel>[];
 
     return AppointmentModel(
       id: json['id'] as String,
@@ -84,6 +91,7 @@ class AppointmentModel extends AppointmentEntity {
       invoiceNumber: invoice.isNotEmpty
           ? '#INV-${(json['id'] as String).substring((json['id'] as String).length > 4 ? (json['id'] as String).length - 4 : 0)}'
           : null,
+      prescriptionDrugs: prescriptionDrugsList,
     );
   }
 

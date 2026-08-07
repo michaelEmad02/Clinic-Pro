@@ -8,6 +8,7 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../domain/entities/appointment_entity.dart';
 
 class PrescriptionDrugItem {
   final String name;
@@ -20,26 +21,56 @@ class LinkedPrescriptionCard extends StatelessWidget {
   final bool hasPrescription;
   final String? diagnosis;
   final String? appointmentId;
+  final AppointmentEntity? appointment;
 
   const LinkedPrescriptionCard({
     super.key,
     required this.hasPrescription,
     this.diagnosis,
     this.appointmentId,
+    this.appointment,
   });
 
-  List<PrescriptionDrugItem> get _mockDrugs {
-    if (!hasPrescription) return [];
-    return [
-      PrescriptionDrugItem(
-        name: 'Amoxicillin 500mg',
-        dosage: AppStrings.isArabic ? 'حبة كل 8 ساعات - لمدة 5 أيام' : '1 pill every 8 hours - 5 days',
-      ),
-      PrescriptionDrugItem(
-        name: 'Panadol Extra',
-        dosage: AppStrings.isArabic ? 'عند اللزوم' : 'As needed',
-      ),
-    ];
+  List<PrescriptionDrugItem> get _realDrugs {
+    if (!hasPrescription || appointment?.prescriptionDrugs == null) return [];
+    
+    return appointment!.prescriptionDrugs!.map((item) {
+      final String name = item.drug?.tradeName ?? 'دواء غير معروف';
+      
+      final isPrn = item.isPrn;
+      final frequency = item.frequency;
+      final duration = item.duration;
+      final timing = item.timing;
+      
+      String timingText = '';
+      if (timing == 'before_meal') {
+        timingText = AppStrings.isArabic ? 'قبل الأكل' : 'before meal';
+      } else if (timing == 'after_meal') {
+        timingText = AppStrings.isArabic ? 'بعد الأكل' : 'after meal';
+      } else if (timing == 'with_meal') {
+        timingText = AppStrings.isArabic ? 'مع الأكل' : 'with meal';
+      }
+
+      String dosage = '';
+      if (isPrn) {
+        dosage = AppStrings.isArabic ? 'عند اللزوم' : 'As needed';
+      } else {
+        final String freqText = frequency != null 
+            ? (AppStrings.isArabic ? ' $frequency مرة' : 'every $frequency hours')
+            : '';
+        final String durText = duration != null
+            ? (AppStrings.isArabic ? 'لمدة $duration يوم' : 'for $duration days')
+            : '';
+        
+        final parts = [freqText, durText, timingText].where((p) => p.isNotEmpty).join(' - ');
+        dosage = parts.isNotEmpty ? parts : (AppStrings.isArabic ? 'حسب إرشادات الطبيب' : 'As directed by physician');
+      }
+
+      return PrescriptionDrugItem(
+        name: name,
+        dosage: dosage,
+      );
+    }).toList();
   }
 
   @override
@@ -79,7 +110,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     if (appointmentId != null) {
-                      context.push('/prescription/edit/$appointmentId');
+                      context.push('/prescription/edit/$appointmentId', extra: appointment);
                     }
                   },
                   child: Text(
@@ -103,7 +134,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
             ],
-            ..._mockDrugs.map((drug) => Padding(
+            ..._realDrugs.map((drug) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +189,7 @@ class LinkedPrescriptionCard extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () {
                     if (appointmentId != null) {
-                      context.push('/prescription/$appointmentId');
+                      context.push('/prescription/$appointmentId', extra: appointment);
                     }
                   },
                   icon: const Icon(Icons.add_box_outlined, size: 18),

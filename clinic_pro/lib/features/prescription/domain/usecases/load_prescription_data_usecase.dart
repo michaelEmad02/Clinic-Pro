@@ -8,6 +8,8 @@ import '../../../../core/error/failures.dart';
 import '../entities/prescription_load_data_entity.dart';
 import '../repositories/i_prescription_repository.dart';
 
+import '../../../appointments/domain/entities/appointment_entity.dart';
+
 @injectable
 class LoadPrescriptionDataUseCase {
   final IPrescriptionRepository _repository;
@@ -15,9 +17,9 @@ class LoadPrescriptionDataUseCase {
   LoadPrescriptionDataUseCase(this._repository);
 
   Future<Either<Failure, PrescriptionLoadDataEntity>> call(
-    String appointmentId,
+    AppointmentEntity appointment,
     String doctorId,
   ) {
-    return _repository.getPrescriptionData(appointmentId, doctorId);
+    return _repository.getPrescriptionData(appointment, doctorId);
   }
 }

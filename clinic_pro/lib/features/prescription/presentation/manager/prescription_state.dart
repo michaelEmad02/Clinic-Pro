@@ -76,6 +76,7 @@ class PrescriptionState extends Equatable {
   final List<SelectedDrugModel> selectedDrugs;
   final String finalDiagnosis;
   final String notes;
+  final String prescriptionId;
   final String? errorMessage;
 
   const PrescriptionState({
@@ -94,6 +95,7 @@ class PrescriptionState extends Equatable {
     this.selectedDrugs = const [],
     this.finalDiagnosis = '',
     this.notes = '',
+    this.prescriptionId = '',
     this.errorMessage,
   });
 
@@ -113,6 +115,7 @@ class PrescriptionState extends Equatable {
     List<SelectedDrugModel>? selectedDrugs,
     String? finalDiagnosis,
     String? notes,
+    String? prescriptionId,
     String? errorMessage,
   }) {
     return PrescriptionState(
@@ -131,6 +134,7 @@ class PrescriptionState extends Equatable {
       selectedDrugs: selectedDrugs ?? this.selectedDrugs,
       finalDiagnosis: finalDiagnosis ?? this.finalDiagnosis,
       notes: notes ?? this.notes,
+      prescriptionId: prescriptionId ?? this.prescriptionId,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -152,6 +156,7 @@ class PrescriptionState extends Equatable {
         selectedDrugs,
         finalDiagnosis,
         notes,
+        prescriptionId,
         errorMessage,
       ];
 }

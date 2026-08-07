@@ -35,6 +35,9 @@ abstract class IAppointmentRemoteDataSource {
   /// حذف الفواتير المرتبطة بموعد معين
   Future<void> deleteRelatedInvoices(String appointmentId);
 
+  /// جلب موعد واحد مثرى ببيانات المريض والطبيب ونوع الزيارة
+  Future<AppointmentModel> getEnrichedAppointmentById(String id);
+
   /// الاشتراك المباشر بالوقت الفعلي لتحديثات المواعيد
   Stream<List<Map<String, dynamic>>> subscribeAppointments({
     required String clinicId,

@@ -10,10 +10,12 @@ import '../entities/prescription_entity.dart';
 import '../entities/prescription_load_data_entity.dart';
 import '../entities/prescription_template_entity.dart';
 
+import '../../../appointments/domain/entities/appointment_entity.dart';
+
 abstract class IPrescriptionRepository {
   /// تحميل كافة البيانات المطلوبة لبدء الروشتة (زيارة ومريض وطبيب وآخر روشتة)
   Future<Either<Failure, PrescriptionLoadDataEntity>> getPrescriptionData(
-    String appointmentId,
+    AppointmentEntity appointment,
     String doctorId,
   );
 

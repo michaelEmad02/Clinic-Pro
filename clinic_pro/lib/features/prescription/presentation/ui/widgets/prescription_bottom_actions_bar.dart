@@ -11,12 +11,14 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
   final VoidCallback onSave;
   final VoidCallback onPrint;
   final VoidCallback onWhatsApp;
+  final VoidCallback onFinishWithoutSaving;
 
   const PrescriptionBottomActionsBar({
     super.key,
     required this.onSave,
     required this.onPrint,
     required this.onWhatsApp,
+    required this.onFinishWithoutSaving,
   });
 
   @override
@@ -35,74 +37,103 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: SafeArea(
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // زر حفظ وإنهاء (رئيسي)
-            Expanded(
-              flex: 2,
-              child: ElevatedButton.icon(
-                onPressed: onSave,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                // زر حفظ وإنهاء (رئيسي)
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: onSave,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.save, size: 20),
+                    label: Text(
+                      AppStrings.saveAndFinish,
+                      style: AppTextStyles.headlineSmall(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                  elevation: 0,
                 ),
-                icon: const Icon(Icons.save, size: 20),
-                label: Text(
-                  AppStrings.saveAndFinish,
-                  style: AppTextStyles.headlineSmall(context).copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                const SizedBox(width: 8),
+                // زر طباعة
+                Expanded(
+                  flex: 1,
+                  child: OutlinedButton.icon(
+                    onPressed: onPrint,
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: context.border),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: Icon(Icons.print, size: 20, color: context.primary),
+                    label: Text(
+                      AppStrings.print,
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.primary,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                // const SizedBox(width: 8),
+                // // زر إرسال عبر واتساب
+                // InkWell(
+                //   onTap: onWhatsApp,
+                //   child: Container(
+                //     width: 48,
+                //     height: 48,
+                //     decoration: BoxDecoration(
+                //       color: context.successBg,
+                //       borderRadius: BorderRadius.circular(12),
+                //       border: Border.all(
+                //         color: context.accent.withOpacity(0.3),
+                //       ),
+                //     ),
+                //     child: Center(
+                //       child: Icon(
+                //         Icons.send,
+                //         color: context.successText,
+                //         size: 20,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+              ],
             ),
-            const SizedBox(width: 8),
-            // زر طباعة
-            Expanded(
-              flex: 1,
-              child: OutlinedButton.icon(
-                onPressed: onPrint,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: context.border),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+            const SizedBox(height: 8),
+            // زر إنهاء بدون روشتة (أحمر خفيف/رمادي)
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: onFinishWithoutSaving,
+                style: TextButton.styleFrom(
+                  backgroundColor: context.dangerBg,
+                  foregroundColor: context.danger,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                icon: Icon(Icons.print, size: 20, color: context.primary),
+                icon: const Icon(Icons.close_rounded, size: 18),
                 label: Text(
-                  AppStrings.print,
+                  AppStrings.finishWithoutPrescription,
                   style: AppTextStyles.bodyMedium(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    color: context.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // زر إرسال عبر واتساب
-            InkWell(
-              onTap: onWhatsApp,
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: context.successBg,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: context.accent.withOpacity(0.3),
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.send,
-                    color: context.successText,
-                    size: 20,
+                    color: context.danger,
                   ),
                 ),
               ),

@@ -21,6 +21,7 @@ class PrescriptionLoadDataEntity extends Equatable {
   final List<PrescriptionItemEntity> selectedDrugs;
   final String finalDiagnosis;
   final String notes;
+  final String? prescriptionId; // معرف الروشتة الحالية (إن وجد للتعديل)
 
   const PrescriptionLoadDataEntity({
     required this.appointmentId,
@@ -37,6 +38,7 @@ class PrescriptionLoadDataEntity extends Equatable {
     required this.selectedDrugs,
     required this.finalDiagnosis,
     required this.notes,
+    this.prescriptionId,
   });
 
   @override
@@ -55,5 +57,6 @@ class PrescriptionLoadDataEntity extends Equatable {
         selectedDrugs,
         finalDiagnosis,
         notes,
+        prescriptionId,
       ];
 }

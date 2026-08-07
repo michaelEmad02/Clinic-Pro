@@ -40,6 +40,8 @@ import '../../features/appointments/domain/usecases/appointments/sort_queue_usec
     as _i20;
 import '../../features/appointments/domain/usecases/appointments/toggle_urgent_usecase.dart'
     as _i367;
+import '../../features/appointments/domain/usecases/appointments/subscribe_appointments_usecase.dart'
+    as _i999;
 import '../../features/appointments/domain/usecases/appointments/update_appointment_status_usecase.dart'
     as _i996;
 import '../../features/appointments/domain/usecases/appointments/update_appointment_usecase.dart'
@@ -439,6 +441,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i228.GetAppointmentsUseCase(gh<_i330.IAppointmentRepository>()));
     gh.factory<_i209.GetAppointmentByIdUseCase>(() =>
         _i209.GetAppointmentByIdUseCase(gh<_i330.IAppointmentRepository>()));
+    gh.factory<_i999.SubscribeAppointmentsUseCase>(() =>
+        _i999.SubscribeAppointmentsUseCase(gh<_i330.IAppointmentRepository>()));
     gh.factory<_i367.ToggleUrgentUseCase>(
         () => _i367.ToggleUrgentUseCase(gh<_i330.IAppointmentRepository>()));
     gh.factory<_i996.UpdateAppointmentStatusUseCase>(() =>
@@ -486,6 +490,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i807.UpdateAppointmentUseCase>(),
           gh<_i373.DeleteAppointmentUseCase>(),
           gh<_i209.GetAppointmentByIdUseCase>(),
+          gh<_i999.SubscribeAppointmentsUseCase>(),
         ));
     gh.factory<_i730.AcceptInvitationUseCase>(
         () => _i730.AcceptInvitationUseCase(gh<_i589.IAuthRepository>()));
@@ -572,6 +577,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i95.CallPatientUseCase>(),
           gh<_i924.GetQueueRuleUseCase>(),
           gh<_i20.SortQueueUseCase>(),
+          gh<_i999.SubscribeAppointmentsUseCase>(),
         ));
     gh.factory<_i628.InviteStaffCubit>(() => _i628.InviteStaffCubit(
           fetchAllStaffUseCase: gh<_i675.FetchAllStaffUseCase>(),

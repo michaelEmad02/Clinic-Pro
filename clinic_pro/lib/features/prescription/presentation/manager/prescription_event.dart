@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../appointments/domain/entities/appointment_entity.dart';
 
 
 abstract class PrescriptionEvent extends Equatable {
@@ -8,13 +9,14 @@ abstract class PrescriptionEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadPrescriptionDataEvent extends PrescriptionEvent {
-  final String appointmentId;
 
-  const LoadPrescriptionDataEvent(this.appointmentId);
+class LoadPrescriptionDataEvent extends PrescriptionEvent {
+  final AppointmentEntity appointment;
+
+  const LoadPrescriptionDataEvent(this.appointment);
 
   @override
-  List<Object?> get props => [appointmentId];
+  List<Object?> get props => [appointment];
 }
 
 class ToggleDiagnosisEvent extends PrescriptionEvent {

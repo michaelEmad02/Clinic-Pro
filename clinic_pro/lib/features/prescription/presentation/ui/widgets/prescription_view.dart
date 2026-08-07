@@ -20,15 +20,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../appointments/domain/entities/appointment_entity.dart';
+import '../../../../appointments/presentation/manager/appointments_bloc.dart';
+import '../../../../appointments/presentation/manager/appointments_event.dart';
+
 class PrescriptionView extends StatelessWidget {
-  const PrescriptionView(this.isEditing, {super.key});
+  const PrescriptionView(this.isEditing, {super.key, required this.appointment});
   final bool isEditing;
+  final AppointmentEntity appointment;
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PrescriptionBloc, PrescriptionState>(
       // عند نجاح الحفظ، نعود للشاشة السابقة مع رسالة نجاح
       listener: (context, state) {
         if (state.status == PrescriptionStatus.success) {
+          // تحديث حالة الزيارة إلى "منتهي" وتعيين called_at إذا كانت فارغة
+          context.read<AppointmentsBloc>().add(
+            CompleteAppointmentEvent(
+              appointmentId: appointment.id,
+              calledAt: appointment.calledAt,
+            ),
+          );
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:
@@ -81,6 +94,12 @@ class PrescriptionView extends StatelessWidget {
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
+                  },
+                  onFinishWithoutSaving: () {
+                    context.read<AppointmentsBloc>().add(
+                          CompleteAppointmentEvent(appointmentId: appointment.id),
+                        );
+                    context.pop();
                   },
                 )
               : null,
@@ -210,9 +229,9 @@ class PrescriptionView extends StatelessWidget {
             visitDate: state.visitDate,
           ),
 
-          const SizedBox(height: 8),
-          // ٢. قسم قوالب الروشتات
-          const TemplatesSelectorSection(),
+            const SizedBox(height: 8),
+            // ٢. قسم قوالب الروشتات
+            const TemplatesSelectorSection(),
 
           const SizedBox(height: 8),
           // ٣. قائمة الأدوية المختارة + زر إضافة

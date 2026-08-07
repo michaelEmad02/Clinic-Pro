@@ -8,7 +8,6 @@ import '../../../../core/constants/supabase_constants.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../appointments/data/models/appointment_model.dart';
 import '../../../patients/data/models/patient_model.dart';
-import '../../../staff_and_invitations/data/models/staff_model.dart';
 import '../models/drug_model.dart';
 import '../models/prescription_model.dart';
 import '../models/prescription_template_model.dart';
@@ -16,16 +15,22 @@ import '../models/prescription_template_model.dart';
 abstract class IPrescriptionRemoteDataSource {
   Future<AppointmentModel> getAppointment(String appointmentId);
   Future<PatientModel> getPatient(String patientId);
-  Future<StaffModel> getDoctor(String doctorId);
+  Future<String> getDoctorName(String doctorId);
+  Future<PrescriptionModel?> getPrescriptionByAppointment(String appointmentId);
+  Future<void> updatePrescription(PrescriptionModel prescription);
+  Future<void> deletePrescriptionItems(String prescriptionId);
   Future<PrescriptionModel?> getLastPrescriptionForPatient(String patientId);
-  Future<List<PrescriptionItemModel>> getPrescriptionItems(String prescriptionId);
+  Future<List<PrescriptionItemModel>> getPrescriptionItems(
+      String prescriptionId);
   Future<List<DrugModel>> getDrugList();
   Future<PrescriptionModel> insertPrescription(PrescriptionModel prescription);
   Future<void> insertPrescriptionItem(PrescriptionItemModel item);
   Future<void> updateAppointmentStatus(String appointmentId, String status);
   Future<List<PrescriptionTemplateModel>> getTemplates(String doctorId);
-  Future<List<PrescriptionTemplateItemModel>> getTemplateItems(String templateId);
-  Future<PrescriptionTemplateModel> insertTemplate(PrescriptionTemplateModel template);
+  Future<List<PrescriptionTemplateItemModel>> getTemplateItems(
+      String templateId);
+  Future<PrescriptionTemplateModel> insertTemplate(
+      PrescriptionTemplateModel template);
   Future<void> insertTemplateItem(PrescriptionTemplateItemModel item);
   Future<void> deleteTemplateItems(String templateId);
   Future<void> deleteTemplate(String templateId);
@@ -36,7 +41,8 @@ abstract class IPrescriptionRemoteDataSource {
 }
 
 @LazySingleton(as: IPrescriptionRemoteDataSource)
-class PrescriptionRemoteDataSourceImpl implements IPrescriptionRemoteDataSource {
+class PrescriptionRemoteDataSourceImpl
+    implements IPrescriptionRemoteDataSource {
   final ICloudService _cloud;
 
   PrescriptionRemoteDataSourceImpl(this._cloud);
@@ -66,7 +72,7 @@ class PrescriptionRemoteDataSourceImpl implements IPrescriptionRemoteDataSource 
   }
 
   @override
-  Future<StaffModel> getDoctor(String doctorId) async {
+  Future<String> getDoctorName(String doctorId) async {
     // جدول المستخدمين أو الموظفين
     final results = await _cloud.select(
       table: SupabaseTables.users,
@@ -75,11 +81,42 @@ class PrescriptionRemoteDataSourceImpl implements IPrescriptionRemoteDataSource 
     if (results.isEmpty) {
       throw Exception('Doctor user not found');
     }
-    return StaffModel.fromJson(results.first);
+    return results.first["name"];
   }
 
   @override
-  Future<PrescriptionModel?> getLastPrescriptionForPatient(String patientId) async {
+  Future<PrescriptionModel?> getPrescriptionByAppointment(
+      String appointmentId) async {
+    final results = await _cloud.select(
+      table: SupabaseTables.prescriptions,
+      eq: {'appointment_id': appointmentId},
+    );
+    if (results.isEmpty) return null;
+    return PrescriptionModel.fromJson(results.first);
+  }
+
+  @override
+  Future<void> updatePrescription(PrescriptionModel prescription) async {
+    await _cloud.update(
+      table: SupabaseTables.prescriptions,
+      data: prescription.toJson(),
+      matchColumn: 'id',
+      matchValue: prescription.id,
+    );
+  }
+
+  @override
+  Future<void> deletePrescriptionItems(String prescriptionId) async {
+    await _cloud.delete(
+      table: SupabaseTables.prescriptionItems,
+      matchColumn: 'prescription_id',
+      matchValue: prescriptionId,
+    );
+  }
+
+  @override
+  Future<PrescriptionModel?> getLastPrescriptionForPatient(
+      String patientId) async {
     final results = await _cloud.select(
       table: SupabaseTables.prescriptions,
       eq: {'patient_id': patientId},
@@ -91,7 +128,8 @@ class PrescriptionRemoteDataSourceImpl implements IPrescriptionRemoteDataSource 
   }
 
   @override
-  Future<List<PrescriptionItemModel>> getPrescriptionItems(String prescriptionId) async {
+  Future<List<PrescriptionItemModel>> getPrescriptionItems(
+      String prescriptionId) async {
     final results = await _cloud.select(
       table: SupabaseTables.prescriptionItems,
       eq: {'prescription_id': prescriptionId},
@@ -106,7 +144,8 @@ class PrescriptionRemoteDataSourceImpl implements IPrescriptionRemoteDataSource 
   }
 
   @override
-  Future<PrescriptionModel> insertPrescription(PrescriptionModel prescription) async {
+  Future<PrescriptionModel> insertPrescription(
+      PrescriptionModel prescription) async {
     final data = prescription.toJson();
     final result = await _cloud.insert(
       table: SupabaseTables.prescriptions,
@@ -124,7 +163,8 @@ class PrescriptionRemoteDataSourceImpl implements IPrescriptionRemoteDataSource 
   }
 
   @override
-  Future<void> updateAppointmentStatus(String appointmentId, String status) async {
+  Future<void> updateAppointmentStatus(
+      String appointmentId, String status) async {
     await _cloud.update(
       table: SupabaseTables.appointments,
       data: {'status': status},
@@ -143,16 +183,20 @@ class PrescriptionRemoteDataSourceImpl implements IPrescriptionRemoteDataSource 
   }
 
   @override
-  Future<List<PrescriptionTemplateItemModel>> getTemplateItems(String templateId) async {
+  Future<List<PrescriptionTemplateItemModel>> getTemplateItems(
+      String templateId) async {
     final results = await _cloud.select(
       table: SupabaseTables.prescriptionTemplateItems,
       eq: {'template_id': templateId},
     );
-    return results.map((e) => PrescriptionTemplateItemModel.fromJson(e)).toList();
+    return results
+        .map((e) => PrescriptionTemplateItemModel.fromJson(e))
+        .toList();
   }
 
   @override
-  Future<PrescriptionTemplateModel> insertTemplate(PrescriptionTemplateModel template) async {
+  Future<PrescriptionTemplateModel> insertTemplate(
+      PrescriptionTemplateModel template) async {
     final result = await _cloud.insert(
       table: SupabaseTables.prescriptionTemplates,
       data: template.toJson(),

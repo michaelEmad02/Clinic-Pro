@@ -21,6 +21,13 @@ class TemplatesCubit extends Cubit<TemplatesState> {
     this._deleteTemplateUseCase,
   ) : super(TemplatesInitial());
 
+  /// حماية من إرسال حالات بعد إغلاق الكيوبت
+  @override
+  void emit(TemplatesState state) {
+    if (isClosed) return;
+    super.emit(state);
+  }
+
   Future<void> loadTemplates() async {
     emit(TemplatesLoading());
     final doctorId = AppConstants.activeDoctorId.isNotEmpty

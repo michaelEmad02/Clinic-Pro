@@ -436,6 +436,8 @@ class AppStrings {
   static String get newPrescription =>
       isArabic ? 'إصدار روشتة جديدة' : 'Issue New Prescription';
   static String get saveAndFinish => isArabic ? 'حفظ وإنهاء' : 'Save & Finish';
+  static String get finishWithoutPrescription =>
+      isArabic ? 'إنهاء بدون روشتة' : 'Finish without Prescription';
   static String get print => isArabic ? 'طباعة' : 'Print';
   static String get diagnosis => isArabic ? 'التشخيص' : 'Diagnosis';
   static String get medicalDiagnosis =>
@@ -479,6 +481,7 @@ class AppStrings {
   static String get confirmed => isArabic ? 'مؤكد' : 'Confirmed';
   static String get inProgress => isArabic ? 'قيد الكشف' : 'In Progress';
   static String get completed => isArabic ? 'منتهي' : 'Completed';
+  static String get completeVisit => isArabic ? 'إتمام الزيارة' : 'Complete Visit';
   static String get cancelled => isArabic ? 'ملغي' : 'Cancelled';
   static String get booked => isArabic ? 'حُجز' : 'Booked';
   static String get arrived => isArabic ? 'وصل' : 'Arrived';

@@ -2,6 +2,7 @@
 // حالات شاشة طابور الانتظار
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:equatable/equatable.dart';
 
 class QueuePatient extends Equatable {
@@ -77,4 +78,12 @@ class WaitingQueueError extends WaitingQueueState {
 
   @override
   List<Object?> get props => [message];
+}
+
+class PatientCalledSuccessfully extends WaitingQueueState {
+  final AppointmentEntity appointment; // AppointmentEntity
+  const PatientCalledSuccessfully(this.appointment);
+
+  @override
+  List<Object?> get props => [appointment];
 }

@@ -2,6 +2,7 @@
 // أحداث Bloc شاشة المواعيد
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:equatable/equatable.dart';
 import 'appointments_state.dart';
 
@@ -17,6 +18,22 @@ class LoadAppointmentsEvent extends AppointmentsEvent {
   final String? clinicId;
 
   const LoadAppointmentsEvent({required this.doctorId, this.clinicId});
+}
+
+class SubscribeAppointmentsEvent extends AppointmentsEvent {
+  final String doctorId;
+  final String? clinicId;
+
+  const SubscribeAppointmentsEvent({required this.doctorId, this.clinicId});
+}
+
+class RefreshAppointmentsEvent extends AppointmentsEvent {
+  final List<AppointmentEntity> appointments;
+
+  const RefreshAppointmentsEvent(this.appointments);
+
+  @override
+  List<Object?> get props => [appointments];
 }
 
 class ChangeAppointmentsTabEvent extends AppointmentsEvent {
@@ -131,4 +148,18 @@ class GetAppointmentDetailsEvent extends AppointmentsEvent {
 
   @override
   List<Object?> get props => [appointmentId];
+}
+
+/// حدث إنهاء الزيارة بعد حفظ الروشتة — يغير الحالة إلى done ويضع called_at إذا كانت فارغة
+class CompleteAppointmentEvent extends AppointmentsEvent {
+  final String appointmentId;
+  final DateTime? calledAt;
+
+  const CompleteAppointmentEvent({
+    required this.appointmentId,
+    this.calledAt,
+  });
+
+  @override
+  List<Object?> get props => [appointmentId, calledAt];
 }

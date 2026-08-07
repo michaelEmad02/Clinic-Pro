@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -30,8 +31,8 @@ class SupabaseServices extends ICloudService {
   @override
   Future<Map<String, dynamic>> insert(
       {required String table, required Map<String, dynamic> data}) async {
-     var result = await supabase.from(table).insert(data).select().single();
-     return result;
+    var result = await supabase.from(table).insert(data).select().single();
+    return result;
   }
 
   @override
@@ -83,11 +84,56 @@ class SupabaseServices extends ICloudService {
     required String primaryKey,
     String? clinicId,
   }) {
-    final query = supabase.from(table).stream(primaryKey: [primaryKey]);
-    if (clinicId != null) {
-      return query.eq('clinic_id', clinicId);
-    }
-    return query;
+    // استخدام Realtime Channel مباشرة بدلاً من .stream() البطيئة
+    // .stream() فيها debounce داخلي يسبب تأخير 1-3 ثوانٍ
+    // Channel يُرسل الإشعار فوراً بأجزاء من الملي ثانية
+
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    RealtimeChannel? channel;
+
+    controller.onListen = () async {
+      // 1. جلب البيانات الأولية فوراً
+      try {
+        final initial = await select(
+          table: table,
+          eq: (clinicId != null && clinicId.isNotEmpty)
+              ? {'clinic_id': clinicId}
+              : null,
+        );
+        if (!controller.isClosed) controller.add(initial);
+      } catch (_) {}
+
+      // 2. الاشتراك بالـ Realtime Channel للإشعارات الفورية
+      final name = 'rt_${table}_${clinicId ?? 'all'}';
+      channel = supabase.channel(name);
+
+      channel!.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: table,
+        callback: (payload) async {
+          // عند أي حدث (INSERT, UPDATE, DELETE) نعيد جلب القائمة الخام
+          try {
+            final updated = await select(
+              table: table,
+              eq: (clinicId != null && clinicId.isNotEmpty)
+                  ? {'clinic_id': clinicId}
+                  : null,
+            );
+            if (!controller.isClosed) controller.add(updated);
+          } catch (_) {}
+        },
+      );
+
+      channel!.subscribe();
+    };
+
+    controller.onCancel = () {
+      if (channel != null) supabase.removeChannel(channel!);
+      if (!controller.isClosed) controller.close();
+    };
+
+    return controller.stream;
   }
 
   @override

@@ -1,15 +1,11 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../constants/route_constants.dart';
-import '../constants/app_constants.dart';
-import '../constants/staff_roles.dart';
 import '../di/injection_container.dart';
-import '../../features/auth/presentation/manager/auth_cubit.dart';
-import '../../features/auth/presentation/manager/auth_state.dart';
-import '../../features/settings/presentation/manager/settings_cubit.dart';
 import '../../features/appointments/presentation/manager/appointments_bloc.dart';
 import '../../features/appointments/presentation/manager/appointments_event.dart';
 
+import '../../features/appointments/domain/entities/appointment_entity.dart';
 import '../../features/auth/presentation/ui/splash_screen.dart';
 import '../../features/auth/presentation/ui/login_screen.dart';
 import '../../features/auth/presentation/ui/create_account_screen.dart';
@@ -120,15 +116,45 @@ final GoRouter appRouter = GoRouter(
       path: RouteConstants.prescriptionNew,
       builder: (context, state) {
         final appointmentId = state.pathParameters['appointment_id'] ?? '';
-        return PrescriptionScreen(appointmentId: appointmentId);
+        final extraAppt = state.extra as AppointmentEntity?;
+        final appointment = extraAppt ??
+            AppointmentEntity(
+              id: appointmentId,
+              clinicId: '',
+              doctorId: '',
+              patientId: '',
+              typeId: '',
+              date: DateTime.now().toIso8601String().substring(0, 10),
+              status: 'in_progress',
+              price: 0,
+              isUrgent: false,
+              createdBy: '',
+              createdAt: DateTime.now(),
+            );
+        return PrescriptionScreen(appointment: appointment);
       },
     ),
     GoRoute(
       path: RouteConstants.prescriptionEdit,
       builder: (context, state) {
         final appointmentId = state.pathParameters['appointment_id'] ?? '';
+        final extraAppt = state.extra as AppointmentEntity?;
+        final appointment = extraAppt ??
+            AppointmentEntity(
+              id: appointmentId,
+              clinicId: '',
+              doctorId: '',
+              patientId: '',
+              typeId: '',
+              date: DateTime.now().toIso8601String().substring(0, 10),
+              status: 'in_progress',
+              price: 0,
+              isUrgent: false,
+              createdBy: '',
+              createdAt: DateTime.now(),
+            );
         return PrescriptionScreen(
-          appointmentId: appointmentId,
+          appointment: appointment,
           isEditing: true,
         );
       },

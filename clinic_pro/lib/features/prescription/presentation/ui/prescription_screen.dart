@@ -11,22 +11,32 @@ import '../../../../core/di/injection_container.dart';
 import '../manager/prescription_bloc.dart';
 import '../manager/prescription_event.dart';
 
+import '../../../appointments/domain/entities/appointment_entity.dart';
+import '../../../appointments/presentation/manager/appointments_bloc.dart';
+
 class PrescriptionScreen extends StatelessWidget {
-  final String appointmentId;
+  final AppointmentEntity appointment;
   final bool isEditing;
 
   const PrescriptionScreen({
     super.key,
-    required this.appointmentId,
+    required this.appointment,
     this.isEditing = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          sl<PrescriptionBloc>()..add(LoadPrescriptionDataEvent(appointmentId)),
-      child: PrescriptionView(isEditing),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              sl<PrescriptionBloc>()..add(LoadPrescriptionDataEvent(appointment)),
+        ),
+        BlocProvider(
+          create: (context) => sl<AppointmentsBloc>(),
+        ),
+      ],
+      child: PrescriptionView(isEditing, appointment: appointment),
     );
   }
 }

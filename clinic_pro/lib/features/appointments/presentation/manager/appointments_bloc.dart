@@ -1,11 +1,9 @@
-// ────────────────────────────────────────────────────────
-// Bloc شاشة المواعيد — يدير تحميل وفلترة وإجراءات المواعيد
-// ────────────────────────────────────────────────────────
-
+import 'dart:async';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../../../core/constants/supabase_constants.dart';
 import '../../domain/entities/appointment_entity.dart';
 import '../../domain/usecases/appointments/get_appointments_usecase.dart';
 import '../../domain/usecases/appointments/confirm_arrival_usecase.dart';
@@ -15,6 +13,7 @@ import '../../domain/usecases/appointments/add_appointment_usecase.dart';
 import '../../domain/usecases/appointments/update_appointment_usecase.dart';
 import '../../domain/usecases/appointments/delete_appointment_usecase.dart';
 import '../../domain/usecases/appointments/get_appointment_by_id_usecase.dart';
+import '../../domain/usecases/appointments/subscribe_appointments_usecase.dart';
 import 'appointments_event.dart';
 import 'appointments_state.dart';
 
@@ -28,6 +27,11 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
   final UpdateAppointmentUseCase _updateAppointmentUseCase;
   final DeleteAppointmentUseCase _deleteAppointmentUseCase;
   final GetAppointmentByIdUseCase _getAppointmentByIdUseCase;
+  final SubscribeAppointmentsUseCase _subscribeAppointmentsUseCase;
+
+  StreamSubscription<List<AppointmentEntity>>? _appointmentsSubscription;
+
+  String? _subscribedDoctorId;
 
   // معرف العيادة النشطة حالياً (ديناميكي)
   String get _clinicId => AppConstants.activeClinicId;
@@ -41,8 +45,11 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     this._updateAppointmentUseCase,
     this._deleteAppointmentUseCase,
     this._getAppointmentByIdUseCase,
+    this._subscribeAppointmentsUseCase,
   ) : super(AppointmentsInitial()) {
     on<LoadAppointmentsEvent>(_onLoad);
+    on<SubscribeAppointmentsEvent>(_onSubscribe);
+    on<RefreshAppointmentsEvent>(_onRefresh);
     on<ChangeAppointmentsTabEvent>(_onChangeTab);
     on<ChangeStatusFilterEvent>(_onChangeFilter);
     on<ConfirmArrivalEvent>(_onConfirmArrival);
@@ -52,6 +59,46 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     on<UpdateAppointmentEvent>(_onUpdate);
     on<DeleteAppointmentEvent>(_onDelete);
     on<GetAppointmentDetailsEvent>(_onGetDetails);
+    on<CompleteAppointmentEvent>(_onComplete);
+  }
+
+  Future<void> _onSubscribe(
+    SubscribeAppointmentsEvent event,
+    Emitter<AppointmentsState> emit,
+  ) async {
+    final activeClinicId = (event.clinicId != null && event.clinicId!.isNotEmpty)
+        ? event.clinicId!
+        : _clinicId;
+
+    _subscribedDoctorId = event.doctorId;
+
+    // 1. التكيف مع التحميل الأولي
+    add(LoadAppointmentsEvent(doctorId: event.doctorId, clinicId: activeClinicId));
+
+    // 2. إلغاء أي اشتراك فرعي سابق
+    await _appointmentsSubscription?.cancel();
+
+    // 3. إنشاء اشتراك realtime stream جديد يُرجع AppointmentEntity جاهزة مباشرة!
+    _appointmentsSubscription = _subscribeAppointmentsUseCase(
+      clinicId: activeClinicId,
+      doctorId: _subscribedDoctorId,
+    ).listen((items) {
+      if (!isClosed) {
+        add(RefreshAppointmentsEvent(items));
+      }
+    });
+  }
+
+  void _onRefresh(
+    RefreshAppointmentsEvent event,
+    Emitter<AppointmentsState> emit,
+  ) {
+    if (state is AppointmentsLoaded) {
+      final loaded = state as AppointmentsLoaded;
+      emit(loaded.copyWith(allAppointments: event.appointments));
+    } else {
+      emit(AppointmentsLoaded(allAppointments: event.appointments));
+    }
   }
 
   Future<void> _onLoad(
@@ -320,5 +367,49 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       (failure) => emit(AppointmentsError(failure.message)),
       (appointment) => emit(AppointmentsLoaded(allAppointments: [appointment])),
     );
+  }
+
+  /// إنهاء الزيارة بعد حفظ الروشتة — تغيير الحالة إلى done وتعيين called_at إذا كانت فارغة
+  Future<void> _onComplete(
+    CompleteAppointmentEvent event,
+    Emitter<AppointmentsState> emit,
+  ) async {
+    // جلب بيانات الموعد الحالية من قاعدة البيانات
+    final detailsResult = await _getAppointmentByIdUseCase(event.appointmentId);
+
+    await detailsResult.fold(
+      (failure) async {
+        // لا نوقف عملية الحفظ إذا فشل جلب بيانات الموعد
+      },
+      (appointment) async {
+        final updatedEntity = appointment.copyWith(
+          status: AppointmentStatus.done,
+          calledAt: appointment.calledAt ?? event.calledAt ?? DateTime.now(),
+        );
+
+        final result = await _updateAppointmentUseCase(updatedEntity);
+
+        result.fold(
+          (failure) {
+            // لا نوقف العملية إذا فشل التحديث
+          },
+          (_) {
+            if (state is AppointmentsLoaded) {
+              final loaded = state as AppointmentsLoaded;
+              final updatedList = loaded.allAppointments.map((a) {
+                return a.id == event.appointmentId ? updatedEntity : a;
+              }).toList();
+              emit(loaded.copyWith(allAppointments: updatedList));
+            }
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Future<void> close() {
+    _appointmentsSubscription?.cancel();
+    return super.close();
   }
 }

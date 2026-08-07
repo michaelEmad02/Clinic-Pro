@@ -2,6 +2,9 @@
 // Cubit طابور الانتظار — يستخدم SortQueueUseCase لترتيب المرضى
 // ────────────────────────────────────────────────────────
 
+import 'dart:async';
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/strings/app_strings.dart';
@@ -9,6 +12,7 @@ import '../../../settings/domain/usecases/get_queue_rule_usecase.dart';
 import '../../domain/usecases/appointments/get_appointments_usecase.dart';
 import '../../domain/usecases/appointments/call_patient_usecase.dart';
 import '../../domain/usecases/appointments/sort_queue_usecase.dart';
+import '../../domain/usecases/appointments/subscribe_appointments_usecase.dart';
 import 'waiting_queue_state.dart';
 
 @injectable
@@ -17,6 +21,9 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
   final CallPatientUseCase _callPatientUseCase;
   final GetQueueRuleUseCase _getQueueRuleUseCase;
   final SortQueueUseCase _sortQueueUseCase;
+  final SubscribeAppointmentsUseCase _subscribeAppointmentsUseCase;
+
+  StreamSubscription<List<AppointmentEntity>>? _queueSubscription;
 
   String _doctorId = '';
   String _clinicId = '';
@@ -27,28 +34,35 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
     this._callPatientUseCase,
     this._getQueueRuleUseCase,
     this._sortQueueUseCase,
+    this._subscribeAppointmentsUseCase,
   ) : super(WaitingQueueInitial());
 
   Future<void> loadQueue({
     required String doctorId,
     required String clinicId,
     required String doctorName,
+    bool isSilent = false,
   }) async {
     _doctorId = doctorId;
     _clinicId = clinicId;
     _doctorName = doctorName;
 
-    emit(WaitingQueueLoading());
+    if (!isSilent) {
+      emit(WaitingQueueLoading());
+    }
+
+    _subscribeToQueueChanges();
 
     try {
       final today = DateTime.now().toIso8601String().substring(0, 10);
-      
+
       // 1. جلب المواعيد
       final appointmentsResult = await _getAppointmentsUseCase(
         GetAppointmentsParams(
           clinicId: _clinicId,
           doctorId: _doctorId,
           date: today,
+          status: AppointmentStatus.confirmed,
         ),
       );
 
@@ -59,7 +73,9 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
       );
 
       appointmentsResult.fold(
-        (failure) => emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر تحميل طابور الانتظار' : 'Failed to load queue')),
+        (failure) => emit(WaitingQueueError(AppStrings.isArabic
+            ? 'تعذّر تحميل طابور الانتظار'
+            : 'Failed to load queue')),
         (appointments) {
           ruleResult.fold(
             (failure) {
@@ -72,7 +88,8 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
             },
             (rule) {
               // ترتيب الطابور بناءً على قاعدة الطبيب
-              final sorted = _sortQueueUseCase(appointments: appointments, rule: rule);
+              final sorted =
+                  _sortQueueUseCase(appointments: appointments, rule: rule);
               emit(WaitingQueueLoaded(
                 queue: _mapEntitiesToQueuePatients(sorted),
                 doctorName: _doctorName,
@@ -82,7 +99,9 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
         },
       );
     } catch (e) {
-      emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر تحميل طابور الانتظار' : 'Failed to load queue'));
+      emit(WaitingQueueError(AppStrings.isArabic
+          ? 'تعذّر تحميل طابور الانتظار'
+          : 'Failed to load queue'));
     }
   }
 
@@ -98,11 +117,16 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
       final apptId = loaded.queue[nextIndex].id;
       final result = await _callPatientUseCase(apptId);
       result.fold(
-        (failure) => emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر استدعاء المريض التالي' : 'Failed to call next patient')),
-        (_) => loadQueue(doctorId: _doctorId, clinicId: _clinicId, doctorName: _doctorName),
+        (failure) => emit(WaitingQueueError(AppStrings.isArabic
+            ? 'تعذّر استدعاء المريض التالي'
+            : 'Failed to call next patient')),
+        (_) => loadQueue(
+            doctorId: _doctorId, clinicId: _clinicId, doctorName: _doctorName),
       );
     } catch (_) {
-      emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر استدعاء المريض التالي' : 'Failed to call next patient'));
+      emit(WaitingQueueError(AppStrings.isArabic
+          ? 'تعذّر استدعاء المريض التالي'
+          : 'Failed to call next patient'));
     }
   }
 
@@ -113,11 +137,16 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
     try {
       final result = await _callPatientUseCase(appointmentId);
       result.fold(
-        (failure) => emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر استدعاء المريض' : 'Failed to call patient')),
-        (_) => loadQueue(doctorId: _doctorId, clinicId: _clinicId, doctorName: _doctorName),
+        (failure) => emit(WaitingQueueError(AppStrings.isArabic
+            ? 'تعذّر استدعاء المريض'
+            : 'Failed to call patient')),
+        (_) => loadQueue(
+            doctorId: _doctorId, clinicId: _clinicId, doctorName: _doctorName),
       );
     } catch (_) {
-      emit(WaitingQueueError(AppStrings.isArabic ? 'تعذّر استدعاء المريض' : 'Failed to call patient'));
+      emit(WaitingQueueError(AppStrings.isArabic
+          ? 'تعذّر استدعاء المريض'
+          : 'Failed to call patient'));
     }
   }
 
@@ -137,12 +166,38 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
     }).toList();
   }
 
+  void _subscribeToQueueChanges() {
+    if (_queueSubscription != null || _clinicId.isEmpty) return;
+
+    _queueSubscription = _subscribeAppointmentsUseCase(
+      clinicId: _clinicId,
+      doctorId: _doctorId,
+    ).listen(
+      (_) {
+        loadQueue(
+          doctorId: _doctorId,
+          clinicId: _clinicId,
+          doctorName: _doctorName,
+          isSilent: true,
+        );
+      },
+    );
+  }
+
+  @override
+  Future<void> close() {
+    _queueSubscription?.cancel();
+    return super.close();
+  }
+
   String _formatTime(String raw) {
     final parts = raw.split(':');
     if (parts.length < 2) return raw;
     final hour = int.tryParse(parts[0]) ?? 0;
     final minute = parts[1];
-    final period = hour >= 12 ? (AppStrings.isArabic ? 'م' : 'PM') : (AppStrings.isArabic ? 'ص' : 'AM');
+    final period = hour >= 12
+        ? (AppStrings.isArabic ? 'م' : 'PM')
+        : (AppStrings.isArabic ? 'ص' : 'AM');
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
     return '$displayHour:$minute $period';
   }

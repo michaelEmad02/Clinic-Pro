@@ -15,6 +15,7 @@ class AppointmentActionSheet {
     required BuildContext context,
     required AppointmentEntity appointment,
     required VoidCallback? onConfirmArrival,
+    required VoidCallback? onComplete,
     required VoidCallback? onToggleUrgent,
     required VoidCallback? onCancel,
     required VoidCallback? onRegisterInvoice,
@@ -55,6 +56,17 @@ class AppointmentActionSheet {
                   onConfirmArrival();
                 },
               ),
+            if (appointment.status == AppointmentStatus.inProgress &&
+                onComplete != null)
+              _ActionTile(
+                icon: Icons.done_all_outlined,
+                label: AppStrings.completeVisit,
+                color: context.success,
+                onTap: () {
+                  Navigator.pop(context);
+                  onComplete();
+                },
+              ),
             // تعديل الموعد — فقط إذا لم يبدأ الكشف ولم ينتهِ بعد
             if (onEdit != null &&
                 appointment.status != AppointmentStatus.done &&
@@ -71,6 +83,7 @@ class AppointmentActionSheet {
               ),
             if (onToggleUrgent != null &&
                 appointment.status != AppointmentStatus.cancelled &&
+                appointment.status != AppointmentStatus.inProgress &&
                 appointment.status != AppointmentStatus.done)
               _ActionTile(
                 icon: Icons.priority_high,
@@ -106,6 +119,7 @@ class AppointmentActionSheet {
             ),
             if (appointment.status != AppointmentStatus.done &&
                 appointment.status != AppointmentStatus.cancelled &&
+                appointment.status != AppointmentStatus.inProgress &&
                 onCancel != null)
               _ActionTile(
                 icon: Icons.cancel_outlined,

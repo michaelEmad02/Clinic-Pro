@@ -46,6 +46,7 @@ class PrescriptionEntity extends Equatable {
   final String? clinicId;
   final String? doctorId;
   final String? patientId;
+  final String? appointmentId;
   final String? diagnosis;
   final String? notes;
   final List<PrescriptionItemEntity> items;
@@ -56,6 +57,7 @@ class PrescriptionEntity extends Equatable {
     this.clinicId,
     this.doctorId,
     this.patientId,
+    this.appointmentId,
     this.diagnosis,
     this.notes,
     this.items = const [],
@@ -68,6 +70,7 @@ class PrescriptionEntity extends Equatable {
         clinicId,
         doctorId,
         patientId,
+        appointmentId,
         diagnosis,
         notes,
         items,

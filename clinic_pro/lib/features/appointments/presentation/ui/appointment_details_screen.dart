@@ -2,6 +2,7 @@
 // شاشة تفاصيل الموعد — مطابقة لتصميم Stitch
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -100,11 +101,13 @@ class AppointmentDetailsScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 AppointmentHeaderCard(appointment: appointment),
                 const SizedBox(height: 16),
-                LinkedPrescriptionCard(
-                  hasPrescription: appointment.hasPrescription,
-                  diagnosis: appointment.prescriptionDiagnosis,
-                  appointmentId: appointment.id,
-                ),
+                if (appointment.status != AppointmentStatus.scheduled)
+                  LinkedPrescriptionCard(
+                    hasPrescription: appointment.hasPrescription,
+                    diagnosis: appointment.prescriptionDiagnosis,
+                    appointmentId: appointment.id,
+                    appointment: appointment,
+                  ),
                 const SizedBox(height: 16),
                 LinkedInvoiceCard(
                   hasInvoice: appointment.hasInvoice,

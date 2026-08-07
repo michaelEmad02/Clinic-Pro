@@ -81,10 +81,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     _doctorId = newDoctorId;
     _hasLoaded = true;
 
-    debugPrint('🚀 Dispatching LoadAppointmentsEvent for clinic: $_clinicId, doctor: $_doctorId');
+    debugPrint('🚀 Dispatching SubscribeAppointmentsEvent for clinic: $_clinicId, doctor: $_doctorId');
 
     _bloc.add(
-      LoadAppointmentsEvent(doctorId: _doctorId, clinicId: _clinicId),
+      SubscribeAppointmentsEvent(doctorId: _doctorId, clinicId: _clinicId),
     );
   }
 
@@ -267,6 +267,9 @@ class _AppointmentsBody extends StatelessWidget {
       appointment: item,
       onConfirmArrival: item.status == AppointmentStatus.scheduled
           ? () => bloc.add(ConfirmArrivalEvent(item.id))
+          : null,
+      onComplete: item.status == AppointmentStatus.inProgress
+          ? () => bloc.add(CompleteAppointmentEvent(appointmentId: item.id))
           : null,
       onToggleUrgent: () => bloc.add(ToggleUrgentEvent(item.id)),
       onCancel: item.status != AppointmentStatus.done && item.status != AppointmentStatus.cancelled

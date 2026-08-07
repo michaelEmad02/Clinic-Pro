@@ -4,6 +4,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:equatable/equatable.dart';
+import '../../../prescription/domain/entities/prescription_entity.dart';
 
 class AppointmentEntity extends Equatable {
   final String id;
@@ -39,6 +40,7 @@ class AppointmentEntity extends Equatable {
   final String? invoiceAmount;
   final String? invoiceStatus;
   final String? invoiceNumber;
+  final List<PrescriptionItemEntity>? prescriptionDrugs; // قائمة أدوية الروشتة المرتبطة بالزيارة
 
   const AppointmentEntity({
     required this.id,
@@ -68,6 +70,7 @@ class AppointmentEntity extends Equatable {
     this.invoiceAmount,
     this.invoiceStatus,
     this.invoiceNumber,
+    this.prescriptionDrugs,
   });
 
   AppointmentEntity copyWith({
@@ -87,6 +90,7 @@ class AppointmentEntity extends Equatable {
     String? invoiceAmount,
     String? invoiceStatus,
     String? invoiceNumber,
+    List<PrescriptionItemEntity>? prescriptionDrugs,
   }) {
     return AppointmentEntity(
       id: id,
@@ -116,6 +120,7 @@ class AppointmentEntity extends Equatable {
       invoiceAmount: invoiceAmount ?? this.invoiceAmount,
       invoiceStatus: invoiceStatus ?? this.invoiceStatus,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+      prescriptionDrugs: prescriptionDrugs ?? this.prescriptionDrugs,
     );
   }
 
@@ -148,5 +153,7 @@ class AppointmentEntity extends Equatable {
         invoiceAmount,
         invoiceStatus,
         invoiceNumber,
+        prescriptionDrugs,
       ];
 }
+

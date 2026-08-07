@@ -220,6 +220,86 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
       return Left(DatabaseFailure(e.toString()));
     }
   }
+
+  // كاش محلي للتحديثات الفورية بدون إعادة جلب كامل للقائمة من الشبكة
+  List<AppointmentEntity> _cachedAppointments = [];
+
+  @override
+  Stream<List<AppointmentEntity>> subscribeAppointments({
+    required String clinicId,
+    String? doctorId,
+  }) {
+    return _remoteDataSource
+        .subscribeAppointments(clinicId: clinicId)
+        .asyncMap((rawList) async {
+      // 1. تصفية الـ rawList بحسب doctorId إن وُجد
+      final filteredRaw = doctorId != null && doctorId.isNotEmpty
+          ? rawList.where((r) => r['doctor_id'] == doctorId).toList()
+          : rawList;
+
+      final rawIds = filteredRaw.map((r) => r['id'] as String).toSet();
+      final cachedIds = _cachedAppointments.map((e) => e.id).toSet();
+
+      // ─── الحالة 1: تحميل أول مرة ─── //
+      if (_cachedAppointments.isEmpty) {
+        try {
+          final fresh = await _remoteDataSource.getAppointments(
+            clinicId: clinicId,
+            doctorId: doctorId,
+          );
+          _cachedAppointments = fresh;
+          return fresh;
+        } catch (_) {
+          return <AppointmentEntity>[];
+        }
+      }
+
+      // ─── الحالة 2: عنصر محذوف (DELETE) ─── //
+      final deletedIds = cachedIds.difference(rawIds);
+      if (deletedIds.isNotEmpty) {
+        _cachedAppointments.removeWhere((item) => deletedIds.contains(item.id));
+      }
+
+      // ─── الحالة 3: عنصر مضاف جديد (INSERT) ─── //
+      final addedIds = rawIds.difference(cachedIds);
+      if (addedIds.isNotEmpty) {
+        for (final newId in addedIds) {
+          try {
+            // نمر لإجابة موعد واحد فقط مثرى بدلاً من إعادة تحميل القائمة الكاملة!
+            final newAppt = await _remoteDataSource.getEnrichedAppointmentById(newId);
+            _cachedAppointments.add(newAppt);
+          } catch (_) {}
+        }
+      }
+
+      // ─── الحالة 4: تحديث موعد (UPDATE) ─── //
+      final rawMap = {for (final r in filteredRaw) r['id'] as String: r};
+      final updatedList = <AppointmentEntity>[];
+
+      for (final cached in _cachedAppointments) {
+        final raw = rawMap[cached.id];
+        if (raw != null) {
+          updatedList.add(cached.copyWith(
+            status: raw['status'] as String? ?? cached.status,
+            isUrgent: raw['is_urgent'] as bool? ?? cached.isUrgent,
+            arrivedAt: raw['arrived_at'] != null
+                ? DateTime.tryParse(raw['arrived_at'].toString())
+                : cached.arrivedAt,
+            calledAt: raw['called_at'] != null
+                ? DateTime.tryParse(raw['called_at'].toString())
+                : cached.calledAt,
+            // notes: raw['notes'] as String? ?? cached.notes,
+            // price: (raw['price'] as num?)?.toDouble() ?? cached.price,
+          ));
+        } else {
+          updatedList.add(cached);
+        }
+      }
+
+      _cachedAppointments = updatedList;
+      return List<AppointmentEntity>.from(_cachedAppointments);
+    });
+  }
 }
 
 class DatabaseFailure extends Failure {

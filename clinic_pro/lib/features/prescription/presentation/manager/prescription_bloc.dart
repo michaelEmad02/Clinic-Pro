@@ -42,7 +42,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     final doctorId = AppConstants.activeDoctorId.isNotEmpty
         ? AppConstants.activeDoctorId
         : 'u-doc-1';
-    final result = await _loadPrescriptionDataUseCase(event.appointmentId, doctorId);
+    final result = await _loadPrescriptionDataUseCase(event.appointment, doctorId);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -69,7 +69,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
 
         emit(state.copyWith(
           status: PrescriptionStatus.loaded,
-          appointmentId: event.appointmentId,
+          appointmentId: event.appointment.id,
           patientId: data.patientId,
           clinicId: data.clinicId,
           patientName: data.patientName,
@@ -83,6 +83,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           selectedDrugs: selectedDrugsList,
           finalDiagnosis: data.finalDiagnosis,
           notes: data.notes,
+          prescriptionId: data.prescriptionId,
         ));
       },
     );
@@ -179,8 +180,29 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     SavePrescriptionEvent event,
     Emitter<PrescriptionState> emit,
   ) async {
-    final diagnosisCombined = state.selectedDiagnosis.join(' ، ') +
-        (state.finalDiagnosis.trim().isNotEmpty ? ' - ${state.finalDiagnosis}' : '');
+    // إذا ضغط المستخدم حفظ بدون إدخال أي بيانات، يتم الخروج من الشاشة دون حفظ روشتة فارغة
+    if (state.selectedDrugs.isEmpty &&
+        state.finalDiagnosis.trim().isEmpty &&
+        state.selectedDiagnosis.isEmpty) {
+      emit(state.copyWith(status: PrescriptionStatus.success));
+      return;
+    }
+
+    final String diagnosisCombined;
+    final bool isEditing = state.prescriptionId.isNotEmpty;
+
+    if (!isEditing) {
+      // في وضع الإضافة: دمج التشخيصات المختارة مع التشخيص النهائي
+      diagnosisCombined = state.selectedDiagnosis.join(' ، ') +
+          (state.finalDiagnosis.trim().isNotEmpty ? ' - ${state.finalDiagnosis}' : '');
+    } else {
+      // في وضع التعديل: استخدام التشخيص النهائي إذا كان موجوداً، وإلا استخدام أسماء القوالب
+      if (state.finalDiagnosis.trim().isNotEmpty) {
+        diagnosisCombined = state.finalDiagnosis;
+      } else {
+        diagnosisCombined = state.selectedDiagnosis.join(' ، ');
+      }
+    }
 
     final items = state.selectedDrugs.map((d) {
       return PrescriptionItemEntity(
@@ -199,10 +221,11 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
         : 'u-doc-1';
 
     final prescription = PrescriptionEntity(
-      id: '',
+      id: state.prescriptionId,
       clinicId: state.clinicId,
       doctorId: doctorId,
       patientId: state.patientId,
+      appointmentId: state.appointmentId,
       diagnosis: diagnosisCombined,
       notes: state.notes,
       createdAt: DateTime.now().toIso8601String(),
@@ -302,15 +325,21 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           }
         }
 
-        final updatedDiagnosis = List<String>.from(state.selectedDiagnosis);
-        if (templateName.isNotEmpty && !updatedDiagnosis.contains(templateName)) {
-          updatedDiagnosis.add(templateName);
+        // في وضع التعديل لا نضيف اسم القالب للتشخيص
+        if (state.prescriptionId.isEmpty) {
+          final updatedDiagnosis = List<String>.from(state.selectedDiagnosis);
+          if (templateName.isNotEmpty && !updatedDiagnosis.contains(templateName)) {
+            updatedDiagnosis.add(templateName);
+          }
+          emit(state.copyWith(
+            selectedDrugs: updatedDrugs,
+            selectedDiagnosis: updatedDiagnosis,
+          ));
+        } else {
+          emit(state.copyWith(
+            selectedDrugs: updatedDrugs,
+          ));
         }
-
-        emit(state.copyWith(
-          selectedDrugs: updatedDrugs,
-          selectedDiagnosis: updatedDiagnosis,
-        ));
       },
     );
   }

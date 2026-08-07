@@ -34,7 +34,7 @@ class PrescriptionItemModel extends PrescriptionItemEntity {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      
       'prescription_id': prescriptionId,
       'drug_id': drugId,
       'frequency': frequency,
@@ -52,6 +52,7 @@ class PrescriptionModel extends PrescriptionEntity {
     super.clinicId,
     super.doctorId,
     super.patientId,
+    super.appointmentId,
     super.diagnosis,
     super.notes,
     super.items = const [],
@@ -71,6 +72,7 @@ class PrescriptionModel extends PrescriptionEntity {
       clinicId: json['clinic_id'] as String?,
       doctorId: json['doctor_id'] as String?,
       patientId: json['patient_id'] as String?,
+      appointmentId: json['appointment_id'] as String?,
       diagnosis: json['diagnosis'] as String?,
       notes: json['notes'] as String?,
       items: itemsList,
@@ -79,11 +81,12 @@ class PrescriptionModel extends PrescriptionEntity {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      
       'created_at': createdAt,
       'clinic_id': clinicId,
       'doctor_id': doctorId,
       'patient_id': patientId,
+      'appointment_id': appointmentId,
       'diagnosis': diagnosis,
       'notes': notes,
     };

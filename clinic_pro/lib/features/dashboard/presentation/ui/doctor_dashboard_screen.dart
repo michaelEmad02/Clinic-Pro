@@ -258,8 +258,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   patient: state.currentPatient,
                   onStartExamination: () async {
                     if (state.currentPatient != null) {
-                      await context
-                          .push('/prescription/${state.currentPatient!.id}');
+                      await context.push(
+                        '/prescription/${state.currentPatient!.id}',
+                        extra: state.currentPatient,
+                      );
                       if (context.mounted) {
                         _tryLoadDashboard(autoCallNext: true, customContext: context);
                       }
