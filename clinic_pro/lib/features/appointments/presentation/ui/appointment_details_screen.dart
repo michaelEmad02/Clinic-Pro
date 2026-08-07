@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────
-// شاشة تفاصيل الموعد — مطابقة لتصميم Stitch
+// شاشة تفاصيل الموعد — مطابقة لتصميم Stitch ومتجاوبة
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
@@ -88,19 +88,18 @@ class AppointmentDetailsScreen extends StatelessWidget {
             ),
           ),
           body: ResponsiveHelper.responsiveCenter(
-            maxWidth: 800,
+            maxWidth: AppConstants.maxContentWidth,
             child: ListView(
-              padding:
-                  const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
+              padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
               children: [
                 AppointmentStatusTimeline(appointment: appointment),
                 if (appointment.isUrgent) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppConstants.spaceSm + 4),
                   const UrgentAppointmentBanner(),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: AppConstants.spaceMd),
                 AppointmentHeaderCard(appointment: appointment),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppConstants.spaceMd),
                 if (appointment.status != AppointmentStatus.scheduled)
                   LinkedPrescriptionCard(
                     hasPrescription: appointment.hasPrescription,
@@ -108,7 +107,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
                     appointmentId: appointment.id,
                     appointment: appointment,
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppConstants.spaceMd),
                 LinkedInvoiceCard(
                   hasInvoice: appointment.hasInvoice,
                   amount: appointment.invoiceAmount,
@@ -116,7 +115,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
                   invoiceNumber: appointment.invoiceNumber,
                 ),
                 if (canCancel) ...[
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppConstants.spaceLg),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppConstants.spaceMd,
@@ -151,7 +150,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                const SizedBox(height: 24),
+                const SizedBox(height: AppConstants.spaceLg),
               ],
             ),
           ),

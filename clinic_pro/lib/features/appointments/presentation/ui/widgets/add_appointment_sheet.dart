@@ -559,7 +559,7 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                     color: _isUrgent
                         ? context.dangerBg
                         : (context.isDarkMode
-                            ? const Color(0xFF2A2A2A)
+                            ? context.surfaceColor
                             : context.surfaceContainerLow),
                     borderRadius:
                         BorderRadius.circular(AppConstants.radiusCard),

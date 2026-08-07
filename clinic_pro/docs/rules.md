@@ -278,7 +278,7 @@ class MockData {
 ```dart
 // ✅ Always use AppColors and AppTextStyles
 Text('عنوان', style: AppTextStyles.h3)
-Container(color: AppColors.primary)
+Container(color: context.primary)
 
 // ❌ Never use raw colors or sizes
 Text('عنوان', style: TextStyle(fontSize: 16, color: Color(0xFF1A6B8A)))

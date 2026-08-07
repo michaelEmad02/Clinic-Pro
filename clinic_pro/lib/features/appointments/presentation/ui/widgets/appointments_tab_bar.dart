@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -27,11 +28,11 @@ class AppointmentsTabBar extends StatelessWidget {
     ];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(4),
+      margin: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+      padding: const EdgeInsets.all(AppConstants.spaceXs),
       decoration: BoxDecoration(
         color: context.isDarkMode ? context.surface : context.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         border: Border.all(color: context.borderColor),
       ),
       child: Row(
@@ -42,19 +43,11 @@ class AppointmentsTabBar extends StatelessWidget {
               onTap: () => onTabChanged(tab.$1),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceSm + 2),
                 decoration: BoxDecoration(
                   color: isSelected ? context.surfaceColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ]
-                      : null,
+                  borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                  boxShadow: isSelected ? AppConstants.cardShadow : null,
                 ),
                 child: Text(
                   tab.$2,

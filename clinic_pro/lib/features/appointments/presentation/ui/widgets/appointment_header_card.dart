@@ -26,13 +26,7 @@ class AppointmentHeaderCard extends StatelessWidget {
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
         border: Border.all(color: context.borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -40,8 +34,8 @@ class AppointmentHeaderCard extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.person_outline,
-                  color: context.primary, size: 20),
-              const SizedBox(width: 8),
+                  color: context.primary, size: AppConstants.iconSizeXl),
+              const SizedBox(width: AppConstants.spaceSm),
               Text(
                 AppStrings.patient,
                 style: AppTextStyles.caption(context).copyWith(
@@ -51,7 +45,7 @@ class AppointmentHeaderCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppConstants.spaceSm),
           Text(
             appointment.patientName ?? AppStrings.patient,
             style: AppTextStyles.headlineMedium(context).copyWith(
@@ -119,8 +113,8 @@ class AppointmentHeaderCard extends StatelessWidget {
   ) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: context.primary.withOpacity(0.7)),
-        const SizedBox(width: 8),
+        Icon(icon, size: AppConstants.iconSizeLg, color: context.primary),
+        const SizedBox(width: AppConstants.spaceSm),
         Text(
           '$label ',
           style: AppTextStyles.bodyMedium(context).copyWith(

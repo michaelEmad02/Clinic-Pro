@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -44,12 +45,12 @@ class AppointmentsList extends StatelessWidget {
         // فلاتر الحالة
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
           child: Row(
             children: filters.map((f) {
               final isSelected = statusFilter == f.$1;
               return Padding(
-                padding: const EdgeInsets.only(left: 8),
+                padding: const EdgeInsets.only(left: AppConstants.spaceSm),
                 child: ChoiceChip(
                   label: Text(f.$2),
                   selected: isSelected,
@@ -61,7 +62,7 @@ class AppointmentsList extends StatelessWidget {
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppConstants.radiusChip),
                     side: BorderSide(
                       color: isSelected ? context.primary : context.borderColor,
                     ),
@@ -72,7 +73,7 @@ class AppointmentsList extends StatelessWidget {
             }).toList(),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppConstants.spaceSm + 4),
         // القائمة أو الحالة الفارغة (تخطيط متجاوب بين الهواتف والأجهزة اللوحية والمكتبية)
         if (appointments.isEmpty)
           EmptyState(
@@ -84,12 +85,12 @@ class AppointmentsList extends StatelessWidget {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: ResponsiveHelper.gridColumns(context),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              mainAxisExtent: 140,
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 420,
+              mainAxisSpacing: AppConstants.spaceSm + 4,
+              crossAxisSpacing: AppConstants.spaceSm + 4,
+              childAspectRatio: 2.6,
             ),
             itemCount: appointments.length,
             itemBuilder: (context, index) {
@@ -105,7 +106,7 @@ class AppointmentsList extends StatelessWidget {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
             itemCount: appointments.length,
             itemBuilder: (context, index) {
               final item = appointments[index];

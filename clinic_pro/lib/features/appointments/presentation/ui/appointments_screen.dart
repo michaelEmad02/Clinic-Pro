@@ -4,10 +4,8 @@
 
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/constants/staff_roles.dart';
-import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
-import '../../../invoices/presentation/ui/widgets/add_invoice_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -18,12 +16,11 @@ import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../domain/entities/appointment_entity.dart';
 import '../manager/appointments_bloc.dart';
 import '../manager/appointments_event.dart';
 import '../manager/appointments_state.dart';
 import 'widgets/add_appointment_sheet.dart';
-import 'widgets/appointment_action_sheet.dart';
+import 'widgets/appointment_dialogs.dart';
 import 'widgets/appointments_list.dart';
 import 'widgets/appointments_tab_bar.dart';
 import '../../../settings/presentation/manager/settings_state.dart';
@@ -48,12 +45,17 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tryLoadAppointments();
+  }
+
+  @override
   void dispose() {
     _bloc.close();
     super.dispose();
   }
 
-  /// استخراج clinicId و doctorId من SettingsCubit وتحميل المواعيد
   void _tryLoadAppointments({String? forceClinicId, String? forceDoctorId}) {
     final settingsState = context.read<SettingsCubit>().state;
     final newClinicId = forceClinicId ?? settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
@@ -70,18 +72,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     }
 
     final hasChanges = newClinicId != _clinicId || newDoctorId != _doctorId;
-    
-    // طباعة للمساعدة في التتبع والتحليل
-    debugPrint('🔍 TryLoadAppointments: _clinicId=$_clinicId, newClinicId=$newClinicId, hasChanges=$hasChanges, _hasLoaded=$_hasLoaded');
-
     if (_hasLoaded && !hasChanges) return;
     if (newClinicId.isEmpty) return;
 
     _clinicId = newClinicId;
     _doctorId = newDoctorId;
     _hasLoaded = true;
-
-    debugPrint('🚀 Dispatching SubscribeAppointmentsEvent for clinic: $_clinicId, doctor: $_doctorId');
 
     _bloc.add(
       SubscribeAppointmentsEvent(doctorId: _doctorId, clinicId: _clinicId),
@@ -92,20 +88,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   Widget build(BuildContext context) {
     final currentUser = context.read<AuthCubit>().state.user!;
 
-    // التحقق من القيم الحالية وجلب المواعيد عند كل عملية بناء
-    _tryLoadAppointments();
-
     return BlocProvider.value(
       value: _bloc,
       child: BlocListener<SettingsCubit, SettingsState>(
-        listenWhen: (previous, current) {
-          final changed = previous.clinicEntity?.id != current.clinicEntity?.id ||
-              previous.currentDoctorId != current.currentDoctorId;
-          debugPrint('📡 SettingsCubit BlocListener listenWhen: changed=$changed (prev=${previous.clinicEntity?.id}, curr=${current.clinicEntity?.id})');
-          return changed;
-        },
+        listenWhen: (previous, current) =>
+            previous.clinicEntity?.id != current.clinicEntity?.id ||
+            previous.currentDoctorId != current.currentDoctorId,
         listener: (context, settingsState) {
-          debugPrint('📥 SettingsCubit BlocListener triggered! New clinic: ${settingsState.clinicEntity?.id}');
           if (settingsState.clinicEntity != null) {
             _tryLoadAppointments(
               forceClinicId: settingsState.clinicEntity!.id,
@@ -177,16 +166,13 @@ class _AppointmentsBody extends StatelessWidget {
                       previous.filteredAppointments != current.filteredAppointments));
         },
         builder: (context, state) {
-          if (state is AppointmentsInitial && !hasLoaded) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: ShimmerList(itemCount: 6),
-            );
-          }
-          if (state is AppointmentsLoading) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: ShimmerList(itemCount: 6),
+          if (state is AppointmentsInitial || state is AppointmentsLoading) {
+            return ResponsiveHelper.responsiveCenter(
+              maxWidth: AppConstants.maxContentWidth,
+              child: const Padding(
+                padding: EdgeInsets.all(AppConstants.spaceMd),
+                child: ShimmerList(itemCount: 6),
+              ),
             );
           }
           if (state is AppointmentsError) {
@@ -195,7 +181,7 @@ class _AppointmentsBody extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(state.message),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppConstants.spaceMd),
                   ElevatedButton(
                     onPressed: () => bloc.add(
                       LoadAppointmentsEvent(doctorId: doctorId, clinicId: clinicId),
@@ -209,18 +195,14 @@ class _AppointmentsBody extends StatelessWidget {
           if (state is AppointmentsLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
-                // قراءة العيادة والطبيب المحدثين مباشرة من SettingsCubit عند عمل refresh
                 final settingsState = context.read<SettingsCubit>().state;
                 final currentClinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
                 final settingsDoctorId = settingsState.currentDoctorId;
-                String currentDoctorId;
-                if (currentUser.role == StaffRoles.doctor) {
-                  currentDoctorId = currentUser.id;
-                } else {
-                  currentDoctorId = (settingsDoctorId != null && settingsDoctorId.isNotEmpty)
-                      ? settingsDoctorId
-                      : AppConstants.activeDoctorId;
-                }
+                String currentDoctorId = currentUser.role == StaffRoles.doctor
+                    ? currentUser.id
+                    : ((settingsDoctorId != null && settingsDoctorId.isNotEmpty)
+                        ? settingsDoctorId
+                        : AppConstants.activeDoctorId);
 
                 bloc.add(
                   LoadAppointmentsEvent(doctorId: currentDoctorId, clinicId: currentClinicId),
@@ -228,20 +210,27 @@ class _AppointmentsBody extends StatelessWidget {
                 await Future.delayed(const Duration(milliseconds: 200));
               },
               child: ResponsiveHelper.responsiveCenter(
+                maxWidth: AppConstants.maxContentWidth,
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
                   children: [
                     AppointmentsTabBar(
                       activeTab: state.activeTab,
                       onTabChanged: (tab) => bloc.add(ChangeAppointmentsTabEvent(tab)),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppConstants.spaceMd),
                     AppointmentsList(
                       appointments: state.filteredAppointments,
                       statusFilter: state.statusFilter,
                       onFilterChanged: (filter) => bloc.add(ChangeStatusFilterEvent(filter)),
                       onItemTap: (item) => context.push('${RouteConstants.appointments}/${item.id}'),
-                      onItemMore: (item) => _showActions(context, item),
+                      onItemMore: (item) => AppointmentDialogs.showActions(
+                        context: context,
+                        item: item,
+                        bloc: bloc,
+                        clinicId: clinicId,
+                        doctorId: doctorId,
+                      ),
                     ),
                   ],
                 ),
@@ -257,85 +246,6 @@ class _AppointmentsBody extends StatelessWidget {
         foregroundColor: context.onPrimary,
         icon: const Icon(Icons.add),
         label: Text(AppStrings.newAppointment),
-      ),
-    );
-  }
-
-  void _showActions(BuildContext context, AppointmentEntity item) {
-    AppointmentActionSheet.show(
-      context: context,
-      appointment: item,
-      onConfirmArrival: item.status == AppointmentStatus.scheduled
-          ? () => bloc.add(ConfirmArrivalEvent(item.id))
-          : null,
-      onComplete: item.status == AppointmentStatus.inProgress
-          ? () => bloc.add(CompleteAppointmentEvent(appointmentId: item.id))
-          : null,
-      onToggleUrgent: () => bloc.add(ToggleUrgentEvent(item.id)),
-      onCancel: item.status != AppointmentStatus.done && item.status != AppointmentStatus.cancelled
-          ? () => _confirmCancel(context, item)
-          : null,
-      onRegisterInvoice: () async {
-        await AddInvoiceSheet.show(context, initialAppointmentId: item.id);
-        if (context.mounted) {
-          bloc.add(LoadAppointmentsEvent(doctorId: doctorId, clinicId: clinicId));
-        }
-      },
-      onViewDetails: () => context.push('${RouteConstants.appointments}/${item.id}'),
-      onEdit: () async {
-        await AddAppointmentSheet.show(context, appointment: item);
-        if (context.mounted) {
-          bloc.add(LoadAppointmentsEvent(doctorId: doctorId, clinicId: clinicId));
-        }
-      },
-      onDelete: () => _confirmDelete(context, item),
-    );
-  }
-
-  void _confirmCancel(BuildContext context, AppointmentEntity item) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('${AppStrings.cancel} ${AppStrings.appointment}'),
-        content: Text(AppStrings.cancelAppointmentWithInvoice(item.hasInvoice)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppStrings.back),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              bloc.add(CancelAppointmentEvent(item.id));
-            },
-            style: TextButton.styleFrom(foregroundColor: context.danger),
-            child: Text(AppStrings.confirmCancel),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, AppointmentEntity item) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppStrings.deleteAppointmentTitle),
-        content: Text(AppStrings.confirmDeleteAppointmentMsg),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppStrings.back),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              bloc.add(DeleteAppointmentEvent(item.id));
-            },
-            style: TextButton.styleFrom(foregroundColor: context.danger),
-            child: Text(AppStrings.confirmDelete),
-          ),
-        ],
       ),
     );
   }

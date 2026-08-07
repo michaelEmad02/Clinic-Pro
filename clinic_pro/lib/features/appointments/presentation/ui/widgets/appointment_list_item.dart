@@ -25,15 +25,12 @@ class AppointmentListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: AppConstants.spaceSm),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppConstants.spaceMd,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.all(AppConstants.spaceMd),
           decoration: BoxDecoration(
             color: context.surfaceColor,
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
@@ -51,7 +48,7 @@ class AppointmentListItem extends StatelessWidget {
                       ? Icons.priority_high
                       : Icons.calendar_today_outlined,
                   color: appointment.isUrgent ? context.danger : context.primary,
-                  size: 18,
+                  size: AppConstants.iconSizeLg,
                 ),
               ),
               const SizedBox(width: AppConstants.spaceMd),
@@ -68,12 +65,11 @@ class AppointmentListItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppConstants.spaceXs),
                     Text(
                       appointment.doctorName ?? AppStrings.generalPractitioner,
                       style: AppTextStyles.bodyMedium(context).copyWith(
                         color: context.textSecondary,
-                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
@@ -82,9 +78,8 @@ class AppointmentListItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       appointment.typeName ?? AppStrings.normalCheckup,
-                      style: AppTextStyles.bodyMedium(context).copyWith(
+                      style: AppTextStyles.caption(context).copyWith(
                         color: context.textSecondary,
-                        fontSize: 12,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -92,9 +87,8 @@ class AppointmentListItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       appointment.displayTime ?? '',
-                      style: AppTextStyles.bodyMedium(context).copyWith(
+                      style: AppTextStyles.caption(context).copyWith(
                         color: context.textSecondary,
-                        fontSize: 12,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -113,7 +107,7 @@ class AppointmentListItem extends StatelessWidget {
                     constraints: const BoxConstraints(),
                     onPressed: onMore,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppConstants.spaceSm),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -123,7 +117,7 @@ class AppointmentListItem extends StatelessWidget {
                           status: BadgeStatus.error,
                           addBackgroundColor: false,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: AppConstants.spaceXs),
                       ],
                       _buildStatusBadge(appointment.status),
                     ],
@@ -144,8 +138,7 @@ class AppointmentListItem extends StatelessWidget {
       case 'confirmed':
         return StatusBadge(text: AppStrings.confirmed, status: BadgeStatus.success);
       case 'in_progress':
-        return StatusBadge(
-            text: AppStrings.inProgress, status: BadgeStatus.warning);
+        return StatusBadge(text: AppStrings.inProgress, status: BadgeStatus.warning);
       case 'done':
         return StatusBadge(text: AppStrings.completed, status: BadgeStatus.success);
       case 'cancelled':

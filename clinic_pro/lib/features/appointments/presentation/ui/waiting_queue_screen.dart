@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────
-// شاشة طابور الانتظار — للطبيب والسكرتيرة
+// شاشة طابور الانتظار — للطبيب والسكرتيرة (Responsive)
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -54,8 +54,7 @@ class _WaitingQueueScreenState extends State<WaitingQueueScreen> {
     final settingsState = context.read<SettingsCubit>().state;
     String doctorId = '';
     String doctorName = '';
-    final clinicId =
-        settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+    final clinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
 
     if (authState is AuthAuthenticated) {
       final currentUser = authState.user;
@@ -72,9 +71,7 @@ class _WaitingQueueScreenState extends State<WaitingQueueScreen> {
       _cubit.loadQueue(
         doctorId: doctorId,
         clinicId: clinicId,
-        doctorName: doctorName.isNotEmpty
-            ? doctorName
-            : AppStrings.treatingDoctor,
+        doctorName: doctorName.isNotEmpty ? doctorName : AppStrings.treatingDoctor,
       );
     }
   }
@@ -111,8 +108,7 @@ class _WaitingQueueBody extends StatelessWidget {
         elevation: 0,
         title: BlocBuilder<WaitingQueueCubit, WaitingQueueState>(
           builder: (context, state) {
-            final subtitle =
-                state is WaitingQueueLoaded ? state.doctorName : '';
+            final subtitle = state is WaitingQueueLoaded ? state.doctorName : '';
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -145,7 +141,7 @@ class _WaitingQueueBody extends StatelessWidget {
         builder: (context, state) {
           if (state is WaitingQueueLoading) {
             return const Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(AppConstants.spaceMd),
               child: ShimmerList(itemCount: 4),
             );
           }
@@ -155,7 +151,7 @@ class _WaitingQueueBody extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(state.message),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppConstants.spaceMd),
                   ElevatedButton(
                     onPressed: onRefresh,
                     child: Text(AppStrings.retry),
@@ -173,9 +169,9 @@ class _WaitingQueueBody extends StatelessWidget {
                 await Future.delayed(const Duration(milliseconds: 200));
               },
               child: ResponsiveHelper.responsiveCenter(
-                maxWidth: 900,
+                maxWidth: AppConstants.maxContentWidth,
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
                   children: [
                     CallNextButton(
                       enabled: hasNext,
@@ -186,14 +182,13 @@ class _WaitingQueueBody extends StatelessWidget {
                         );
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppConstants.spaceMd),
                     QueueList(
                       queue: state.queue,
                       onCallPatient: (id) {
                         context.read<WaitingQueueCubit>().callPatient(id);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(AppStrings.patientCalledDetails)),
+                          SnackBar(content: Text(AppStrings.patientCalledDetails)),
                         );
                       },
                     ),
