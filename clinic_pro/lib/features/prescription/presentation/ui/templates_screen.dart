@@ -1,13 +1,16 @@
 // ────────────────────────────────────────────────────────
-// شاشة إدارة قوالب الروشتات — تصفح، فلترة، إضافة وتعديل
+// شاشة إدارة قوالب الروشتات — تصفح، فلترة، إضافة وتعديل (Responsive)
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/widgets/app_bottom_sheet.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/di/injection_container.dart';
 import '../manager/templates_cubit.dart';
 import '../manager/templates_state.dart';
@@ -25,10 +28,10 @@ class TemplatesScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => sl<TemplatesCubit>()..loadTemplates(),
       child: Scaffold(
-        backgroundColor: context.background,
+        backgroundColor: context.backgroundColor,
         appBar: AppBar(
           toolbarHeight: 64,
-          backgroundColor: context.surface,
+          backgroundColor: context.surfaceColor,
           elevation: 0,
           scrolledUnderElevation: 0,
           title: Text(
@@ -40,15 +43,18 @@ class TemplatesScreen extends StatelessWidget {
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(color: context.border, height: 1),
+            child: Container(color: context.borderColor, height: 1),
           ),
         ),
         body: BlocBuilder<TemplatesCubit, TemplatesState>(
           builder: (context, state) {
             if (state is TemplatesLoading) {
-              return const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: ShimmerList(),
+              return ResponsiveHelper.responsiveCenter(
+                maxWidth: AppConstants.maxContentWidth,
+                child: const Padding(
+                  padding: EdgeInsets.all(AppConstants.spaceMd),
+                  child: ShimmerList(itemCount: 6),
+                ),
               );
             }
 
@@ -61,10 +67,9 @@ class TemplatesScreen extends StatelessWidget {
                       state.message,
                       style: AppTextStyles.bodyMedium(context),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppConstants.spaceSm + 4),
                     ElevatedButton(
-                      onPressed: () =>
-                          context.read<TemplatesCubit>().loadTemplates(),
+                      onPressed: () => context.read<TemplatesCubit>().loadTemplates(),
                       child: Text(AppStrings.retry),
                     ),
                   ],
@@ -75,25 +80,25 @@ class TemplatesScreen extends StatelessWidget {
             if (state is TemplatesLoaded) {
               return RefreshIndicator(
                 onRefresh: () => context.read<TemplatesCubit>().loadTemplates(),
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    const SizedBox(height: 8),
-                    DrugsSearchBar(
-                      onChanged: (q) =>
-                          context.read<TemplatesCubit>().search(q),
-                    ),
-                    const SizedBox(height: 12),
-                    TemplatesList(
-                      templates: state.templates,
-                      searchQuery: state.searchQuery,
-                      onPreview: (template) =>
-                          _showPreviewDialog(context, template),
-                      onAction: (template) =>
-                          _showTemplateActions(context, template),
-                    ),
-                    const SizedBox(height: 80),
-                  ],
+                child: ResponsiveHelper.responsiveCenter(
+                  maxWidth: AppConstants.maxContentWidth,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceSm),
+                    children: [
+                      DrugsSearchBar(
+                        onChanged: (q) => context.read<TemplatesCubit>().search(q),
+                      ),
+                      const SizedBox(height: AppConstants.spaceSm + 4),
+                      TemplatesList(
+                        templates: state.templates,
+                        searchQuery: state.searchQuery,
+                        onPreview: (template) => _showPreviewDialog(context, template),
+                        onAction: (template) => _showTemplateActions(context, template),
+                      ),
+                      const SizedBox(height: 80),
+                    ],
+                  ),
                 ),
               );
             }
@@ -106,7 +111,7 @@ class TemplatesScreen extends StatelessWidget {
             return FloatingActionButton(
               onPressed: () => _showAddTemplateSheet(context),
               backgroundColor: context.primary,
-              child: Icon(Icons.add, color: context.surfaceBright),
+              child: Icon(Icons.add, color: context.onPrimary),
             );
           },
         ),
@@ -116,22 +121,12 @@ class TemplatesScreen extends StatelessWidget {
 
   void _showAddTemplateSheet(BuildContext context) {
     final templatesCubit = context.read<TemplatesCubit>();
-    showModalBottomSheet(
+    AppBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SingleChildScrollView(
-        child: Container(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: AddEditTemplateSheet(
-            onSave: (name, drugs) {
-              templatesCubit.addTemplate(name, drugs);
-            },
-          ),
-        ),
+      child: AddEditTemplateSheet(
+        onSave: (name, drugs) {
+          templatesCubit.addTemplate(name, drugs);
+        },
       ),
     );
   }
@@ -143,8 +138,7 @@ class TemplatesScreen extends StatelessWidget {
     );
   }
 
-  void _showTemplateActions(
-      BuildContext context, Map<String, dynamic> template) {
+  void _showTemplateActions(BuildContext context, Map<String, dynamic> template) {
     final templatesCubit = context.read<TemplatesCubit>();
     TemplateActionSheet.show(
       context: context,
@@ -158,27 +152,15 @@ class TemplatesScreen extends StatelessWidget {
     );
   }
 
-  // عرض ورقة تعديل قالب الروشتة وتطبيق الحفظ
-  void _showEditTemplateSheet(
-      BuildContext context, Map<String, dynamic> template) {
+  void _showEditTemplateSheet(BuildContext context, Map<String, dynamic> template) {
     final templatesCubit = context.read<TemplatesCubit>();
-    showModalBottomSheet(
+    AppBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SingleChildScrollView(
-        child: Container(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: AddEditTemplateSheet(
-            template: template,
-            onSave: (name, drugs) {
-              templatesCubit.editTemplate(template['id'], name, drugs);
-            },
-          ),
-        ),
+      child: AddEditTemplateSheet(
+        template: template,
+        onSave: (name, drugs) {
+          templatesCubit.editTemplate(template['id'], name, drugs);
+        },
       ),
     );
   }

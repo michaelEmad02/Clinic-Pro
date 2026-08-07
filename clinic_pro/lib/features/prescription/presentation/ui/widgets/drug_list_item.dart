@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -23,33 +24,30 @@ class DrugListItem extends StatelessWidget {
     final String category = drug['category'] ?? '';
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.only(bottom: AppConstants.spaceSm),
       decoration: BoxDecoration(
-        color: context.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+        border: Border.all(color: context.borderColor),
+        boxShadow: AppConstants.cardShadow,
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.spaceMd,
+          vertical: AppConstants.spaceSm,
+        ),
         leading: Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
             color: context.primaryLightColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppConstants.radiusButton),
           ),
           child: Center(
             child: Icon(
               Icons.medication_outlined,
               color: context.primary,
-              size: 24,
+              size: AppConstants.iconSizeXl,
             ),
           ),
         ),
@@ -65,10 +63,13 @@ class DrugListItem extends StatelessWidget {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spaceSm,
+                vertical: 2,
+              ),
               decoration: BoxDecoration(
                 color: context.primaryLightColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppConstants.radiusSm),
               ),
               child: Text(
                 category,
@@ -83,7 +84,7 @@ class DrugListItem extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 4),
+            const SizedBox(height: AppConstants.spaceXs),
             Text(
               genericName,
               style: AppTextStyles.bodyMedium(context).copyWith(
@@ -93,7 +94,7 @@ class DrugListItem extends StatelessWidget {
           ],
         ),
         trailing: IconButton(
-          icon:  Icon(Icons.more_vert, color: context.textSecondary),
+          icon: Icon(Icons.more_vert, color: context.textSecondary),
           onPressed: onTap,
         ),
       ),

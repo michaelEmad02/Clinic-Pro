@@ -1,55 +1,75 @@
+// ────────────────────────────────────────────────────────
+// قائمة قوالب الروشتات (Responsive Grid/List)
+// ────────────────────────────────────────────────────────
+
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
+import '../../../../../core/utils/responsive_helper.dart';
 import 'template_list_item.dart';
 
 class TemplatesList extends StatelessWidget {
   final List<Map<String, dynamic>> templates;
   final String? searchQuery;
-  final Function(Map<String, dynamic>) onPreview;
-  final Function(Map<String, dynamic>) onAction;
+  final ValueChanged<Map<String, dynamic>> onPreview;
+  final ValueChanged<Map<String, dynamic>> onAction;
 
   const TemplatesList({
     super.key,
     required this.templates,
-    required this.searchQuery,
+    this.searchQuery,
     required this.onPreview,
     required this.onAction,
   });
 
   @override
   Widget build(BuildContext context) {
-    final filtered = templates.where((t) {
-      final q = searchQuery?.toLowerCase() ?? '';
-      final matchesSearch = q.isEmpty || (t['name'] as String? ?? '').toLowerCase().contains(q);
+    var filtered = List<Map<String, dynamic>>.from(templates);
 
-      return matchesSearch;
-    }).toList();
+    if (searchQuery != null && searchQuery!.isNotEmpty) {
+      final query = searchQuery!.toLowerCase();
+      filtered = filtered.where((t) {
+        final name = (t['name'] as String? ?? '').toLowerCase();
+        return name.contains(query);
+      }).toList();
+    }
 
     if (filtered.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        child: EmptyState(
-          icon: Icons.assignment_outlined,
-          title: AppStrings.noTemplates,
-          subtitle: '${AppStrings.search} ${AppStrings.template}',
-        ),
+      return EmptyState(
+        title: AppStrings.noTemplates,
+        subtitle: AppStrings.noData,
+        icon: Icons.description_outlined,
       );
     }
 
-    final double width = MediaQuery.of(context).size.width;
-    final int crossAxisCount = width > 900 ? 3 : (width > 600 ? 2 : 1);
+    if (!ResponsiveHelper.isMobile(context)) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 420,
+          mainAxisSpacing: AppConstants.spaceSm + 4,
+          crossAxisSpacing: AppConstants.spaceSm + 4,
+          childAspectRatio: 2.2,
+        ),
+        itemCount: filtered.length,
+        itemBuilder: (context, index) {
+          final template = filtered[index];
+          return TemplateListItem(
+            template: template,
+            onTap: () => onPreview(template),
+            onMoreTap: () => onAction(template),
+          );
+        },
+      );
+    }
 
-    return GridView.builder(
+    return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: crossAxisCount == 1 ? 2.1 : 1.5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final template = filtered[index];

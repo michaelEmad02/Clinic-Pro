@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -24,7 +25,10 @@ class PrescriptionNotesField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppConstants.spaceMd,
+        vertical: AppConstants.spaceSm,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -46,20 +50,20 @@ class PrescriptionNotesField extends StatelessWidget {
                 color: context.textHint,
               ),
               border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: context.border),
+                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderSide: BorderSide(color: context.borderColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: context.border),
+                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderSide: BorderSide(color: context.primary),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: context.border),
+                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderSide: BorderSide(color: context.borderColor),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppConstants.spaceMd),
           Text(
             AppStrings.notes,
             style: AppTextStyles.headlineSmall(context).copyWith(
@@ -78,16 +82,16 @@ class PrescriptionNotesField extends StatelessWidget {
                 color: context.textHint,
               ),
               border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: context.border),
+                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderSide: BorderSide(color: context.borderColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: context.border),
+                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderSide: BorderSide(color: context.primary),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: context.border),
+                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderSide: BorderSide(color: context.borderColor),
               ),
             ),
           ),

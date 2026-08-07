@@ -1,5 +1,6 @@
 import 'package:clinic_pro/core/constants/prescription_enums.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -32,25 +33,21 @@ class DrugDoseCard extends StatelessWidget {
     final isPrn = drug.isPrn;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppConstants.spaceMd,
+        vertical: AppConstants.spaceSm,
+      ),
       decoration: BoxDecoration(
-        color: context.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border),
-        boxShadow: [
-          BoxShadow(
-            color: context.background,
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+        border: Border.all(color: context.borderColor),
+        boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // رأس الكارت: اسم الدواء وزر الحذف
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppConstants.spaceMd),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -58,14 +55,14 @@ class DrugDoseCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: context.surfaceBright,
-                    borderRadius: BorderRadius.circular(8),
+                    color: context.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                   ),
                   child: Center(
                     child: Icon(Icons.medication, color: context.textSecondary),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppConstants.spaceSm + 4),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,15 +90,12 @@ class DrugDoseCard extends StatelessWidget {
               ],
             ),
           ),
-          Divider(height: 1, color: context.border),
-
-          // خيارات التكرار والمدة والتوقيت
+          Divider(height: 1, color: context.borderColor),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppConstants.spaceMd),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // زر التبديل PRN
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -118,7 +112,6 @@ class DrugDoseCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 if (!isPrn) ...[
                   const SizedBox(height: 6),
                   _buildRowTitle(context, AppStrings.frequency),
@@ -133,7 +126,7 @@ class DrugDoseCard extends StatelessWidget {
                       onUpdate(doseFrequency: freq.dbValue);
                     },
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppConstants.spaceSm + 4),
                   _buildRowTitle(context, AppStrings.duration),
                   const SizedBox(height: 6),
                   DoseChipSelector(
@@ -147,8 +140,7 @@ class DrugDoseCard extends StatelessWidget {
                     },
                   ),
                 ],
-
-                const SizedBox(height: 12),
+                const SizedBox(height: AppConstants.spaceSm + 4),
                 _buildRowTitle(context, AppStrings.timing),
                 const SizedBox(height: 6),
                 DoseChipSelector(

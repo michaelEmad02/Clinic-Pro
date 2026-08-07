@@ -1,13 +1,16 @@
 // ────────────────────────────────────────────────────────
-// شاشة قاعدة بيانات الأدوية — تصفح، فلترة، إضافة وتعديل
+// شاشة قاعدة بيانات الأدوية — تصفح، فلترة، إضافة وتعديل (Responsive)
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/widgets/app_bottom_sheet.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/di/injection_container.dart';
 import '../manager/drugs_cubit.dart';
 import '../manager/drugs_state.dart';
@@ -28,7 +31,7 @@ class DrugsScreen extends StatelessWidget {
         backgroundColor: context.backgroundColor,
         appBar: AppBar(
           toolbarHeight: 64,
-          backgroundColor: context.surface,
+          backgroundColor: context.surfaceColor,
           elevation: 0,
           scrolledUnderElevation: 0,
           title: Text(
@@ -40,15 +43,18 @@ class DrugsScreen extends StatelessWidget {
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(color: context.border, height: 1),
+            child: Container(color: context.borderColor, height: 1),
           ),
         ),
         body: BlocBuilder<DrugsCubit, DrugsState>(
           builder: (context, state) {
             if (state is DrugsLoading) {
-              return const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: ShimmerList(),
+              return ResponsiveHelper.responsiveCenter(
+                maxWidth: AppConstants.maxContentWidth,
+                child: const Padding(
+                  padding: EdgeInsets.all(AppConstants.spaceMd),
+                  child: ShimmerList(itemCount: 6),
+                ),
               );
             }
 
@@ -61,7 +67,7 @@ class DrugsScreen extends StatelessWidget {
                       state.message,
                       style: AppTextStyles.bodyMedium(context),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppConstants.spaceSm + 4),
                     ElevatedButton(
                       onPressed: () => context.read<DrugsCubit>().loadDrugs(),
                       child: Text(AppStrings.retry),
@@ -74,34 +80,37 @@ class DrugsScreen extends StatelessWidget {
             if (state is DrugsLoaded) {
               return RefreshIndicator(
                 onRefresh: () => context.read<DrugsCubit>().loadDrugs(),
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    const SizedBox(height: 8),
-                    DrugsSearchBar(
-                      onChanged: (q) => context.read<DrugsCubit>().search(q),
-                    ),
-                    const SizedBox(height: 8),
-                    DrugsCategoryChips(
-                      selectedCategory: state.selectedCategory,
-                      categories: state.drugs
-                          .map((d) => d['category'] as String?)
-                          .where((c) => c != null && c.isNotEmpty)
-                          .cast<String>()
-                          .toSet()
-                          .toList(),
-                      onCategorySelected: (cat) =>
-                          context.read<DrugsCubit>().selectCategory(cat),
-                    ),
-                    const SizedBox(height: 12),
-                    DrugsList(
-                      drugs: state.drugs,
-                      searchQuery: state.searchQuery,
-                      selectedCategory: state.selectedCategory,
-                      onDrugAction: (drug) => _showDrugActions(context, drug),
-                    ),
-                    const SizedBox(height: 80), // مسافة إضافية للـ FAB
-                  ],
+                child: ResponsiveHelper.responsiveCenter(
+                  maxWidth: AppConstants.maxContentWidth,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceSm),
+                    children: [
+                      DrugsSearchBar(
+                        onChanged: (q) => context.read<DrugsCubit>().search(q),
+                      ),
+                      const SizedBox(height: AppConstants.spaceSm),
+                      DrugsCategoryChips(
+                        selectedCategory: state.selectedCategory,
+                        categories: state.drugs
+                            .map((d) => d['category'] as String?)
+                            .where((c) => c != null && c.isNotEmpty)
+                            .cast<String>()
+                            .toSet()
+                            .toList(),
+                        onCategorySelected: (cat) =>
+                            context.read<DrugsCubit>().selectCategory(cat),
+                      ),
+                      const SizedBox(height: AppConstants.spaceSm + 4),
+                      DrugsList(
+                        drugs: state.drugs,
+                        searchQuery: state.searchQuery,
+                        selectedCategory: state.selectedCategory,
+                        onDrugAction: (drug) => _showDrugActions(context, drug),
+                      ),
+                      const SizedBox(height: 80),
+                    ],
+                  ),
                 ),
               );
             }
@@ -114,7 +123,7 @@ class DrugsScreen extends StatelessWidget {
             return FloatingActionButton(
               onPressed: () => _showAddDrugSheet(context),
               backgroundColor: context.primary,
-              child: const Icon(Icons.add, color: Colors.white),
+              child: Icon(Icons.add, color: context.onPrimary),
             );
           },
         ),
@@ -124,30 +133,20 @@ class DrugsScreen extends StatelessWidget {
 
   void _showAddDrugSheet(BuildContext context) {
     final drugsCubit = context.read<DrugsCubit>();
-    showModalBottomSheet(
+    AppBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SingleChildScrollView(
-        child: Container(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: AddEditDrugSheet(
-            onSave: ({
-              required String tradeName,
-              required String genericName,
-              required String category,
-            }) {
-              drugsCubit.addDrug(
-                tradeName: tradeName,
-                genericName: genericName,
-                category: category,
-              );
-            },
-          ),
-        ),
+      child: AddEditDrugSheet(
+        onSave: ({
+          required String tradeName,
+          required String genericName,
+          required String category,
+        }) {
+          drugsCubit.addDrug(
+            tradeName: tradeName,
+            genericName: genericName,
+            category: category,
+          );
+        },
       ),
     );
   }
@@ -158,32 +157,22 @@ class DrugsScreen extends StatelessWidget {
       context: context,
       drug: drug,
       onEdit: () {
-        showModalBottomSheet(
+        AppBottomSheet.show(
           context: context,
-          isScrollControlled: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          builder: (_) => SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: AddEditDrugSheet(
-                drug: drug,
-                onSave: ({
-                  required String tradeName,
-                  required String genericName,
-                  required String category,
-                }) {
-                  drugsCubit.updateDrug(
-                    id: drug['id'],
-                    tradeName: tradeName,
-                    genericName: genericName,
-                    category: category,
-                  );
-                },
-              ),
-            ),
+          child: AddEditDrugSheet(
+            drug: drug,
+            onSave: ({
+              required String tradeName,
+              required String genericName,
+              required String category,
+            }) {
+              drugsCubit.updateDrug(
+                id: drug['id'],
+                tradeName: tradeName,
+                genericName: genericName,
+                category: category,
+              );
+            },
           ),
         );
       },

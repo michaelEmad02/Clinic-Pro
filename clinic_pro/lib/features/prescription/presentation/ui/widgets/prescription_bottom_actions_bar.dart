@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -25,116 +26,98 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: context.surface,
-        border: Border(top: BorderSide(color: context.border, width: 1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        color: context.surfaceColor,
+        border: Border(top: BorderSide(color: context.borderColor, width: 1)),
+        boxShadow: AppConstants.cardShadow,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppConstants.spaceMd,
+        vertical: AppConstants.spaceSm + 4,
+      ),
       child: SafeArea(
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                // زر حفظ وإنهاء (رئيسي)
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton.icon(
-                    onPressed: onSave,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
+            Flexible(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: AppConstants.maxContentWidth),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            onPressed: onSave,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.primary,
+                              foregroundColor: context.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                              ),
+                              elevation: 0,
+                            ),
+                            icon: Icon(Icons.save, size: AppConstants.iconSizeXl, color: context.onPrimary),
+                            label: Text(
+                              AppStrings.saveAndFinish,
+                              style: AppTextStyles.headlineSmall(context).copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: context.onPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppConstants.spaceSm),
+                        Expanded(
+                          flex: 1,
+                          child: OutlinedButton.icon(
+                            onPressed: onPrint,
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: context.borderColor),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                              ),
+                            ),
+                            icon: Icon(Icons.print, size: AppConstants.iconSizeXl, color: context.primary),
+                            label: Text(
+                              AppStrings.print,
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: context.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    icon: const Icon(Icons.save, size: 20),
-                    label: Text(
-                      AppStrings.saveAndFinish,
-                      style: AppTextStyles.headlineSmall(context).copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    const SizedBox(height: AppConstants.spaceSm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton.icon(
+                        onPressed: onFinishWithoutSaving,
+                        style: TextButton.styleFrom(
+                          backgroundColor: context.dangerBg,
+                          foregroundColor: context.danger,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                          ),
+                        ),
+                        icon: Icon(Icons.close_rounded, size: AppConstants.iconSizeLg, color: context.danger),
+                        label: Text(
+                          AppStrings.finishWithoutPrescription,
+                          style: AppTextStyles.bodyMedium(context).copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: context.danger,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // زر طباعة
-                Expanded(
-                  flex: 1,
-                  child: OutlinedButton.icon(
-                    onPressed: onPrint,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: context.border),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    icon: Icon(Icons.print, size: 20, color: context.primary),
-                    label: Text(
-                      AppStrings.print,
-                      style: AppTextStyles.bodyMedium(context).copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: context.primary,
-                      ),
-                    ),
-                  ),
-                ),
-                // const SizedBox(width: 8),
-                // // زر إرسال عبر واتساب
-                // InkWell(
-                //   onTap: onWhatsApp,
-                //   child: Container(
-                //     width: 48,
-                //     height: 48,
-                //     decoration: BoxDecoration(
-                //       color: context.successBg,
-                //       borderRadius: BorderRadius.circular(12),
-                //       border: Border.all(
-                //         color: context.accent.withOpacity(0.3),
-                //       ),
-                //     ),
-                //     child: Center(
-                //       child: Icon(
-                //         Icons.send,
-                //         color: context.successText,
-                //         size: 20,
-                //       ),
-                //     ),
-                //   ),
-                // ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // زر إنهاء بدون روشتة (أحمر خفيف/رمادي)
-            SizedBox(
-              width: double.infinity,
-              child: TextButton.icon(
-                onPressed: onFinishWithoutSaving,
-                style: TextButton.styleFrom(
-                  backgroundColor: context.dangerBg,
-                  foregroundColor: context.danger,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.close_rounded, size: 18),
-                label: Text(
-                  AppStrings.finishWithoutPrescription,
-                  style: AppTextStyles.bodyMedium(context).copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: context.danger,
-                  ),
+                  ],
                 ),
               ),
             ),

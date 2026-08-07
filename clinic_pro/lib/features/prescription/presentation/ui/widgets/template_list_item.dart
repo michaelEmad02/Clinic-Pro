@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -23,7 +24,6 @@ class TemplateListItem extends StatelessWidget {
     final items = template['items'] as List<dynamic>? ?? [];
     final drugCount = items.length;
 
-    // تحديد لون جانبي مختلف بناء على الاسم لإضفاء جمالية ديناميكية
     final int hash = name.hashCode;
     final List<Color> beautifulColors = [
       context.primary,
@@ -36,10 +36,10 @@ class TemplateListItem extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: context.surface,
+      color: context.surfaceColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: context.border),
+        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+        side: BorderSide(color: context.borderColor),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -50,11 +50,10 @@ class TemplateListItem extends StatelessWidget {
               right: BorderSide(color: sideColor, width: 4),
             ),
           ),
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppConstants.spaceMd),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // العنوان والزر
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -84,25 +83,24 @@ class TemplateListItem extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Divider(height: 1, color: context.border),
-              const SizedBox(height: 12),
-
-              // الإحصائيات بالأسفل
+              const SizedBox(height: AppConstants.spaceMd),
+              Divider(height: 1, color: context.borderColor),
+              const SizedBox(height: AppConstants.spaceSm + 4),
               Row(
                 children: [
-                  // عدد الأدوية
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.spaceSm + 2,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: context.primaryLightColor,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                     ),
                     child: Row(
                       children: [
                         Icon(Icons.medication_outlined,
-                            size: 16, color: context.primary),
+                            size: AppConstants.iconSizeMd, color: context.primary),
                         const SizedBox(width: 4),
                         Text(
                           '$drugCount ${AppStrings.drugs}',
@@ -114,17 +112,15 @@ class TemplateListItem extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  // عدد مرات الاستخدام
+                  const SizedBox(width: AppConstants.spaceSm + 4),
                   Row(
                     children: [
                       Icon(Icons.history,
-                          size: 16, color: context.textSecondary),
+                          size: AppConstants.iconSizeMd, color: context.textSecondary),
                       const SizedBox(width: 4),
                       Text(
                         '$useCount',
-                        style: AppTextStyles.caption(context).copyWith(
-                          fontFamily: 'Inter',
+                        style: AppTextStyles.dataNumeric(context).copyWith(
                           color: context.textSecondary,
                         ),
                       ),

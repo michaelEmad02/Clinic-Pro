@@ -1,50 +1,84 @@
+// ────────────────────────────────────────────────────────
+// قائمة الأدوية (Responsive Grid/List)
+// ────────────────────────────────────────────────────────
+
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
+import '../../../../../core/utils/responsive_helper.dart';
 import 'drug_list_item.dart';
 
 class DrugsList extends StatelessWidget {
   final List<Map<String, dynamic>> drugs;
   final String? searchQuery;
   final String? selectedCategory;
-  final Function(Map<String, dynamic>) onDrugAction;
+  final ValueChanged<Map<String, dynamic>> onDrugAction;
 
   const DrugsList({
     super.key,
     required this.drugs,
-    required this.searchQuery,
-    required this.selectedCategory,
+    this.searchQuery,
+    this.selectedCategory,
     required this.onDrugAction,
   });
 
   @override
   Widget build(BuildContext context) {
-    // تصفية الأدوية برمجياً بناءً على البحث والتصنيف
-    final filtered = drugs.where((d) {
-      final matchesCategory = selectedCategory == null || d['category'] == selectedCategory;
-      
-      final q = searchQuery?.toLowerCase() ?? '';
-      final matchesSearch = q.isEmpty ||
-          (d['trade_name'] as String).toLowerCase().contains(q) ||
-          (d['generic_name'] as String).toLowerCase().contains(q);
+    var filtered = List<Map<String, dynamic>>.from(drugs);
 
-      return matchesCategory && matchesSearch;
-    }).toList();
+    if (selectedCategory != null && selectedCategory!.isNotEmpty) {
+      filtered = filtered
+          .where((d) => d['category'] == selectedCategory)
+          .toList();
+    }
+
+    if (searchQuery != null && searchQuery!.isNotEmpty) {
+      final query = searchQuery!.toLowerCase();
+      filtered = filtered.where((d) {
+        final tradeName = (d['trade_name'] as String? ?? '').toLowerCase();
+        final genericName = (d['generic_name'] as String? ?? '').toLowerCase();
+        final category = (d['category'] as String? ?? '').toLowerCase();
+        return tradeName.contains(query) ||
+            genericName.contains(query) ||
+            category.contains(query);
+      }).toList();
+    }
 
     if (filtered.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        child: EmptyState(
-          icon: Icons.medication_outlined,
-          title: AppStrings.noDrugs,
-          subtitle: '${AppStrings.search} ${AppStrings.drug}',
+      return EmptyState(
+        title: AppStrings.noData,
+        subtitle: AppStrings.noData,
+        icon: Icons.medication_outlined,
+      );
+    }
+
+    if (!ResponsiveHelper.isMobile(context)) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 400,
+          mainAxisSpacing: AppConstants.spaceSm,
+          crossAxisSpacing: AppConstants.spaceSm,
+          childAspectRatio: 3.2,
         ),
+        itemCount: filtered.length,
+        itemBuilder: (context, index) {
+          final drug = filtered[index];
+          return DrugListItem(
+            drug: drug,
+            onTap: () => onDrugAction(drug),
+          );
+        },
       );
     }
 
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final drug = filtered[index];

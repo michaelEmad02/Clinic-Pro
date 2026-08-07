@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -30,22 +31,18 @@ class PrescriptionHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppConstants.spaceMd,
+        vertical: AppConstants.spaceSm,
+      ),
       decoration: BoxDecoration(
-        color: context.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+        border: Border.all(color: context.borderColor),
+        boxShadow: AppConstants.cardShadow,
       ),
       child: Stack(
         children: [
-          // شريط جانبي ملون (primary accent)
           Positioned(
             right: 0,
             top: 0,
@@ -55,20 +52,24 @@ class PrescriptionHeaderCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.primary,
                 borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
+                  topRight: Radius.circular(AppConstants.radiusCard),
+                  bottomRight: Radius.circular(AppConstants.radiusCard),
                 ),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 22, 16),
+            padding: const EdgeInsets.fromLTRB(
+              AppConstants.spaceMd,
+              AppConstants.spaceMd,
+              AppConstants.spaceLg,
+              AppConstants.spaceMd,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    // صورة رمزية للمريض
                     Container(
                       width: 56,
                       height: 56,
@@ -84,20 +85,19 @@ class PrescriptionHeaderCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppConstants.spaceSm + 4),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             patientName,
-                            style:
-                                AppTextStyles.headlineMedium(context).copyWith(
+                            style: AppTextStyles.headlineMedium(context).copyWith(
                               fontWeight: FontWeight.bold,
                               color: context.textPrimary,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppConstants.spaceXs),
                           Row(
                             children: [
                               Text(
@@ -106,33 +106,32 @@ class PrescriptionHeaderCard extends StatelessWidget {
                                   color: context.textSecondary,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppConstants.spaceSm),
                               Container(
                                 width: 4,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: context.border,
+                                  color: context.borderColor,
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppConstants.spaceSm),
                               Text(
                                 gender,
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: context.textSecondary,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppConstants.spaceSm),
                               Container(
                                 width: 4,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: context.border,
+                                  color: context.borderColor,
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              // شارة فصيلة الدم
+                              const SizedBox(width: AppConstants.spaceSm),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 6,
@@ -140,22 +139,20 @@ class PrescriptionHeaderCard extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: context.dangerBg,
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(AppConstants.radiusXs),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(
                                       Icons.water_drop,
-                                      size: 12,
+                                      size: AppConstants.iconSizeSm,
                                       color: context.danger,
                                     ),
                                     const SizedBox(width: 2),
                                     Text(
                                       bloodType,
-                                      style: AppTextStyles.dataNumeric(context)
-                                          .copyWith(
+                                      style: AppTextStyles.dataNumeric(context).copyWith(
                                         color: context.danger,
-                                        fontSize: 11,
                                       ),
                                     ),
                                   ],
@@ -169,13 +166,12 @@ class PrescriptionHeaderCard extends StatelessWidget {
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Divider(color: context.border, height: 1),
+                  padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceSm + 4),
+                  child: Divider(color: context.borderColor, height: 1),
                 ),
-                // بيانات وصفية: نوع الزيارة – الطبيب – التاريخ
                 Wrap(
-                  spacing: 16,
-                  runSpacing: 8,
+                  spacing: AppConstants.spaceMd,
+                  runSpacing: AppConstants.spaceSm,
                   children: [
                     _buildMetaItem(context, Icons.medical_services_outlined,
                         AppStrings.visitType, visitType),
@@ -198,7 +194,7 @@ class PrescriptionHeaderCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: context.primary),
+        Icon(icon, size: AppConstants.iconSizeMd, color: context.primary),
         const SizedBox(width: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +203,6 @@ class PrescriptionHeaderCard extends StatelessWidget {
               label,
               style: AppTextStyles.caption(context).copyWith(
                 color: context.textHint,
-                fontSize: 10,
               ),
             ),
             Text(

@@ -4,9 +4,13 @@
 // بطاقة المريض، التشخيص، الأدوية، الملاحظات، وأزرار الحفظ
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
+import 'package:clinic_pro/core/widgets/shimmer_list.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_bloc.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_event.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_state.dart';
@@ -28,13 +32,12 @@ class PrescriptionView extends StatelessWidget {
   const PrescriptionView(this.isEditing, {super.key, required this.appointment});
   final bool isEditing;
   final AppointmentEntity appointment;
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PrescriptionBloc, PrescriptionState>(
-      // عند نجاح الحفظ، نعود للشاشة السابقة مع رسالة نجاح
       listener: (context, state) {
         if (state.status == PrescriptionStatus.success) {
-          // تحديث حالة الزيارة إلى "منتهي" وتعيين called_at إذا كانت فارغة
           context.read<AppointmentsBloc>().add(
             CompleteAppointmentEvent(
               appointmentId: appointment.id,
@@ -44,12 +47,11 @@ class PrescriptionView extends StatelessWidget {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text('${AppStrings.prescription} ${AppStrings.success} ✓'),
+              content: Text('${AppStrings.prescription} ${AppStrings.success} ✓'),
               backgroundColor: context.accent,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               ),
             ),
           );
@@ -67,7 +69,7 @@ class PrescriptionView extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: context.background,
+          backgroundColor: context.backgroundColor,
           appBar: _buildAppBar(context, state, isEditing),
           body: _buildBody(context, state),
           bottomNavigationBar: state.status == PrescriptionStatus.loaded
@@ -80,8 +82,7 @@ class PrescriptionView extends StatelessWidget {
                   onPrint: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                            '${AppStrings.print} ${AppStrings.loading}...'),
+                        content: Text('${AppStrings.print} ${AppStrings.loading}...'),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -89,8 +90,7 @@ class PrescriptionView extends StatelessWidget {
                   onWhatsApp: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content:
-                            Text('${AppStrings.save} ${AppStrings.loading}...'),
+                        content: Text('${AppStrings.save} ${AppStrings.loading}...'),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -112,7 +112,7 @@ class PrescriptionView extends StatelessWidget {
       BuildContext context, PrescriptionState state, bool isEditing) {
     return AppBar(
       toolbarHeight: 64,
-      backgroundColor: context.surface,
+      backgroundColor: context.surfaceColor,
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: IconButton(
@@ -140,7 +140,6 @@ class PrescriptionView extends StatelessWidget {
       ),
       actions: [
         if (!isEditing)
-          // زر نسخ آخر روشتة
           TextButton.icon(
             onPressed: () {
               context.read<PrescriptionBloc>().add(
@@ -148,14 +147,13 @@ class PrescriptionView extends StatelessWidget {
                   );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                      '${AppStrings.prescription} ${AppStrings.success} ✓'),
+                  content: Text('${AppStrings.prescription} ${AppStrings.success} ✓'),
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 2),
                 ),
               );
             },
-            icon: Icon(Icons.content_copy, size: 18, color: context.primary),
+            icon: Icon(Icons.content_copy, size: AppConstants.iconSizeLg, color: context.primary),
             label: Text(
               AppStrings.copyLastPrescription,
               style: AppTextStyles.caption(context).copyWith(
@@ -164,44 +162,39 @@ class PrescriptionView extends StatelessWidget {
               ),
             ),
           ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppConstants.spaceSm),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(color: context.border, height: 1),
+        child: Container(color: context.borderColor, height: 1),
       ),
     );
   }
 
   Widget _buildBody(BuildContext context, PrescriptionState state) {
-    // حالة التحميل الأولي
     if (state.status == PrescriptionStatus.initial ||
         state.status == PrescriptionStatus.loading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: context.primary),
-            const SizedBox(height: 16),
-            Text(AppStrings.loading),
-          ],
+      return ResponsiveHelper.responsiveCenter(
+        maxWidth: AppConstants.maxContentWidth,
+        child: const Padding(
+          padding: EdgeInsets.all(AppConstants.spaceMd),
+          child: ShimmerList(itemCount: 5),
         ),
       );
     }
 
-    // حالة الخطأ
     if (state.status == PrescriptionStatus.error) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.error_outline, size: 48, color: context.danger),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppConstants.spaceSm + 4),
             Text(
               state.errorMessage ?? AppStrings.loadFailed,
               style: AppTextStyles.bodyMedium(context),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.spaceMd),
             ElevatedButton(
               onPressed: () => context.pop(),
               child: Text(AppStrings.close),
@@ -211,93 +204,76 @@ class PrescriptionView extends StatelessWidget {
       );
     }
 
-    // المحتوى الرئيسي (حالة loaded أو success)
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 8),
-          // ١. بطاقة بيانات المريض
-          PrescriptionHeaderCard(
-            patientName: state.patientName,
-            age: state.patientAge,
-            gender: state.patientGender,
-            bloodType: state.bloodType,
-            visitType: state.visitType,
-            doctorName: state.doctorName,
-            visitDate: state.visitDate,
-          ),
-
-            const SizedBox(height: 8),
-            // ٢. قسم قوالب الروشتات
+    return ResponsiveHelper.responsiveCenter(
+      maxWidth: AppConstants.maxContentWidth,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: AppConstants.spaceLg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: AppConstants.spaceSm),
+            PrescriptionHeaderCard(
+              patientName: state.patientName,
+              age: state.patientAge,
+              gender: state.patientGender,
+              bloodType: state.bloodType,
+              visitType: state.visitType,
+              doctorName: state.doctorName,
+              visitDate: state.visitDate,
+            ),
+            const SizedBox(height: AppConstants.spaceSm),
             const TemplatesSelectorSection(),
-
-          const SizedBox(height: 8),
-          // ٣. قائمة الأدوية المختارة + زر إضافة
-          DrugsListSection(
-            selectedDrugs: state.selectedDrugs,
-            onUpdateDrug: (drugId,
-                {doseFrequency, doseDuration, doseTiming, isPrn}) {
-              context.read<PrescriptionBloc>().add(
-                    UpdateDrugDoseEvent(
-                      drugId: drugId,
-                      doseFrequency: doseFrequency,
-                      doseDuration: doseDuration,
-                      doseTiming: doseTiming,
-                      isPrn: isPrn,
-                    ),
-                  );
-            },
-            onRemoveDrug: (drugId) {
-              context.read<PrescriptionBloc>().add(
-                    RemoveDrugFromPrescriptionEvent(drugId),
-                  );
-            },
-            onAddDrugTap: () => _showAddDrugSheet(context),
-          ),
-
-          const SizedBox(height: 8),
-          // ٤. التشخيص النهائي والملاحظات
-          PrescriptionNotesField(
-            finalDiagnosis: state.finalDiagnosis,
-            notes: state.notes,
-            onFinalDiagnosisChanged: (value) {
-              context.read<PrescriptionBloc>().add(
-                    UpdatePrescriptionFieldsEvent(finalDiagnosis: value),
-                  );
-            },
-            onNotesChanged: (value) {
-              context.read<PrescriptionBloc>().add(
-                    UpdatePrescriptionFieldsEvent(notes: value),
-                  );
-            },
-          ),
-        ],
+            const SizedBox(height: AppConstants.spaceSm),
+            DrugsListSection(
+              selectedDrugs: state.selectedDrugs,
+              onUpdateDrug: (drugId,
+                  {doseFrequency, doseDuration, doseTiming, isPrn}) {
+                context.read<PrescriptionBloc>().add(
+                      UpdateDrugDoseEvent(
+                        drugId: drugId,
+                        doseFrequency: doseFrequency,
+                        doseDuration: doseDuration,
+                        doseTiming: doseTiming,
+                        isPrn: isPrn,
+                      ),
+                    );
+              },
+              onRemoveDrug: (drugId) {
+                context.read<PrescriptionBloc>().add(
+                      RemoveDrugFromPrescriptionEvent(drugId),
+                    );
+              },
+              onAddDrugTap: () => _showAddDrugSheet(context),
+            ),
+            const SizedBox(height: AppConstants.spaceSm),
+            PrescriptionNotesField(
+              finalDiagnosis: state.finalDiagnosis,
+              notes: state.notes,
+              onFinalDiagnosisChanged: (value) {
+                context.read<PrescriptionBloc>().add(
+                      UpdatePrescriptionFieldsEvent(finalDiagnosis: value),
+                    );
+              },
+              onNotesChanged: (value) {
+                context.read<PrescriptionBloc>().add(
+                      UpdatePrescriptionFieldsEvent(notes: value),
+                    );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  /// فتح شاشة البحث عن الأدوية وإضافتها
   void _showAddDrugSheet(BuildContext context) {
     final bloc = context.read<PrescriptionBloc>();
-    showModalBottomSheet(
+    AppBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: AddDrugSearchSheet(
-            onDrugSelected: (drug) {
-              bloc.add(AddDrugToPrescriptionEvent(drug));
-            },
-          ),
-        ),
+      child: AddDrugSearchSheet(
+        onDrugSelected: (drug) {
+          bloc.add(AddDrugToPrescriptionEvent(drug));
+        },
       ),
     );
   }
