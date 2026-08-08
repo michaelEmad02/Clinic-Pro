@@ -20,6 +20,7 @@ abstract class IPrescriptionRemoteDataSource {
   Future<void> updatePrescription(PrescriptionModel prescription);
   Future<void> deletePrescriptionItems(String prescriptionId);
   Future<PrescriptionModel?> getLastPrescriptionForPatient(String patientId);
+  Future<List<PrescriptionModel>> getPrescriptionsForPatient(String patientId);
   Future<List<PrescriptionItemModel>> getPrescriptionItems(
       String prescriptionId);
   Future<List<DrugModel>> getDrugList();
@@ -125,6 +126,18 @@ class PrescriptionRemoteDataSourceImpl
     );
     if (results.isEmpty) return null;
     return PrescriptionModel.fromJson(results.first);
+  }
+
+  @override
+  Future<List<PrescriptionModel>> getPrescriptionsForPatient(
+      String patientId) async {
+    final results = await _cloud.select(
+      table: SupabaseTables.prescriptions,
+      eq: {'patient_id': patientId},
+      order: 'created_at',
+      ascending: false,
+    );
+    return results.map((e) => PrescriptionModel.fromJson(e)).toList();
   }
 
   @override

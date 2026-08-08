@@ -26,3 +26,21 @@
 ## patients
 
 - [] implments patients prescriptions in patient details
+
+
+## reports 
+- [ ] build doctor reports screen .will show doctor statistics, will display in bottom nav bar instad of expenses.
+
+
+- [x] auth
+- [x] settings
+- [x] clinics
+- [x] staff_and_invitations
+- [x] patients
+- [x] appointments
+- [x] prescriptions
+- [ ] invoices
+- [ ] expenses
+- [ ] reports
+- [ ] dashboard
+- [ ] subscriptions

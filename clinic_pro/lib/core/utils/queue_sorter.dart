@@ -6,7 +6,6 @@
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:clinic_pro/features/settings/domain/entities/queue_rule_entity.dart';
-import '../strings/app_strings.dart';
 
 class QueueSorter {
   /// ترتيب المواعيد بناءً على القواعد التالية:

@@ -157,8 +157,10 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
         },
       );
 
-      // حذف الفواتير المرتبطة بالموعد عند إلغائه
-      await _remoteDataSource.deleteRelatedInvoices(appointmentId);
+      // حذف الفواتير المرتبطة بالموعد عند إلغائه (إن وجدت)
+      try {
+        await _remoteDataSource.deleteRelatedInvoices(appointmentId);
+      } catch (_) {}
       return const Right(unit);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));
@@ -214,15 +216,17 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
   Future<Either<Failure, Unit>> deleteAppointment(String appointmentId) async {
     try {
       await _remoteDataSource.deleteAppointment(appointmentId);
-      await _remoteDataSource.deleteRelatedInvoices(appointmentId);
+      try {
+        await _remoteDataSource.deleteRelatedInvoices(appointmentId);
+      } catch (_) {}
       return const Right(unit);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));
     }
   }
 
-  // كاش محلي للتحديثات الفورية بدون إعادة جلب كامل للقائمة من الشبكة
-  List<AppointmentEntity> _cachedAppointments = [];
+  // كاش محلي آمن للتحديثات الفورية بدون إعادة جلب كامل للقائمة من الشبكة
+  List<AppointmentEntity> _cachedAppointments = const [];
 
   @override
   Stream<List<AppointmentEntity>> subscribeAppointments({
@@ -247,17 +251,19 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
             clinicId: clinicId,
             doctorId: doctorId,
           );
-          _cachedAppointments = fresh;
-          return fresh;
+          _cachedAppointments = List.unmodifiable(fresh);
+          return _cachedAppointments;
         } catch (_) {
-          return <AppointmentEntity>[];
+          return const <AppointmentEntity>[];
         }
       }
+
+      final updatedList = List<AppointmentEntity>.from(_cachedAppointments);
 
       // ─── الحالة 2: عنصر محذوف (DELETE) ─── //
       final deletedIds = cachedIds.difference(rawIds);
       if (deletedIds.isNotEmpty) {
-        _cachedAppointments.removeWhere((item) => deletedIds.contains(item.id));
+        updatedList.removeWhere((item) => deletedIds.contains(item.id));
       }
 
       // ─── الحالة 3: عنصر مضاف جديد (INSERT) ─── //
@@ -265,21 +271,19 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
       if (addedIds.isNotEmpty) {
         for (final newId in addedIds) {
           try {
-            // نمر لإجابة موعد واحد فقط مثرى بدلاً من إعادة تحميل القائمة الكاملة!
             final newAppt = await _remoteDataSource.getEnrichedAppointmentById(newId);
-            _cachedAppointments.add(newAppt);
+            updatedList.add(newAppt);
           } catch (_) {}
         }
       }
 
       // ─── الحالة 4: تحديث موعد (UPDATE) ─── //
       final rawMap = {for (final r in filteredRaw) r['id'] as String: r};
-      final updatedList = <AppointmentEntity>[];
 
-      for (final cached in _cachedAppointments) {
+      final finalList = updatedList.map((cached) {
         final raw = rawMap[cached.id];
         if (raw != null) {
-          updatedList.add(cached.copyWith(
+          return cached.copyWith(
             status: raw['status'] as String? ?? cached.status,
             isUrgent: raw['is_urgent'] as bool? ?? cached.isUrgent,
             arrivedAt: raw['arrived_at'] != null
@@ -288,16 +292,13 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
             calledAt: raw['called_at'] != null
                 ? DateTime.tryParse(raw['called_at'].toString())
                 : cached.calledAt,
-            // notes: raw['notes'] as String? ?? cached.notes,
-            // price: (raw['price'] as num?)?.toDouble() ?? cached.price,
-          ));
-        } else {
-          updatedList.add(cached);
+          );
         }
-      }
+        return cached;
+      }).toList();
 
-      _cachedAppointments = updatedList;
-      return List<AppointmentEntity>.from(_cachedAppointments);
+      _cachedAppointments = List.unmodifiable(finalList);
+      return _cachedAppointments;
     });
   }
 }

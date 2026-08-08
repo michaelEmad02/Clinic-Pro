@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
+import 'package:clinic_pro/features/settings/domain/entities/queue_rule_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/strings/app_strings.dart';
@@ -28,6 +29,10 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
   String _doctorId = '';
   String _clinicId = '';
   String _doctorName = '';
+
+  /// كاش قاعدة ترتيب الدور — تُجلب مرة واحدة ثم تُستخدم في كل تحديث realtime
+  QueueRuleEntity? _cachedRule;
+  bool _ruleLoaded = false;
 
   WaitingQueueCubit(
     this._getAppointmentsUseCase,
@@ -66,36 +71,19 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
         ),
       );
 
-      // 2. جلب قاعدة ترتيب الدور للطبيب
-      final ruleResult = await _getQueueRuleUseCase(
-        doctorId: _doctorId,
-        clinicId: _clinicId,
-      );
+      // 2. جلب قاعدة ترتيب الدور للطبيب (وتخزينها مؤقتاً)
+      await _ensureRuleLoaded();
 
       appointmentsResult.fold(
         (failure) => emit(WaitingQueueError(AppStrings.isArabic
             ? 'تعذّر تحميل طابور الانتظار'
             : 'Failed to load queue')),
         (appointments) {
-          ruleResult.fold(
-            (failure) {
-              // إذا فشل جلب القاعدة، نرتب بالترتيب الافتراضي بدون قاعدة
-              final sorted = _sortQueueUseCase(appointments: appointments);
-              emit(WaitingQueueLoaded(
-                queue: _mapEntitiesToQueuePatients(sorted),
-                doctorName: _doctorName,
-              ));
-            },
-            (rule) {
-              // ترتيب الطابور بناءً على قاعدة الطبيب
-              final sorted =
-                  _sortQueueUseCase(appointments: appointments, rule: rule);
-              emit(WaitingQueueLoaded(
-                queue: _mapEntitiesToQueuePatients(sorted),
-                doctorName: _doctorName,
-              ));
-            },
-          );
+          final sorted = _sortQueueUseCase(appointments: appointments, rule: _cachedRule);
+          emit(WaitingQueueLoaded(
+            queue: _mapEntitiesToQueuePatients(sorted),
+            doctorName: _doctorName,
+          ));
         },
       );
     } catch (e) {
@@ -103,6 +91,20 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
           ? 'تعذّر تحميل طابور الانتظار'
           : 'Failed to load queue'));
     }
+  }
+
+  /// جلب قاعدة الترتيب مرة واحدة فقط وتخزينها
+  Future<void> _ensureRuleLoaded() async {
+    if (_ruleLoaded) return;
+    final ruleResult = await _getQueueRuleUseCase(
+      doctorId: _doctorId,
+      clinicId: _clinicId,
+    );
+    ruleResult.fold(
+      (_) => _cachedRule = null,
+      (rule) => _cachedRule = rule,
+    );
+    _ruleLoaded = true;
   }
 
   /// استدعاء المريض التالي في الطابور
@@ -172,16 +174,23 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
     _queueSubscription = _subscribeAppointmentsUseCase(
       clinicId: _clinicId,
       doctorId: _doctorId,
-    ).listen(
-      (_) {
-        loadQueue(
-          doctorId: _doctorId,
-          clinicId: _clinicId,
+    ).listen((allAppointments) {
+      // فلترة ذكية: فقط مواعيد اليوم بحالة confirmed
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+      final todayConfirmed = allAppointments
+          .where((a) => a.date == today && a.status == AppointmentStatus.confirmed)
+          .toList();
+
+      // استخدام البيانات مباشرة من الـ stream + القاعدة المخزنة مؤقتاً
+      final sorted = _sortQueueUseCase(appointments: todayConfirmed, rule: _cachedRule);
+
+      if (!isClosed) {
+        emit(WaitingQueueLoaded(
+          queue: _mapEntitiesToQueuePatients(sorted),
           doctorName: _doctorName,
-          isSilent: true,
-        );
-      },
-    );
+        ));
+      }
+    });
   }
 
   @override

@@ -19,6 +19,11 @@ abstract class IPrescriptionRepository {
     String doctorId,
   );
 
+  /// جلب كافة الروشتات السابقة الخاصة بمريض معين
+  Future<Either<Failure, List<PrescriptionEntity>>> getPrescriptionsForPatient(
+    String patientId,
+  );
+
   /// حفظ الروشتة الطبية وأدويتها في قاعدة البيانات
   Future<Either<Failure, void>> savePrescription(
     PrescriptionEntity prescription,

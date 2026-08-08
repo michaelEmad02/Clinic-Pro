@@ -20,33 +20,41 @@ class AppointmentsLoaded extends AppointmentsState {
   final AppointmentsTab activeTab;
   final String statusFilter;
 
-  const AppointmentsLoaded({
+  final List<AppointmentEntity> _filteredAppointmentsCache;
+
+  AppointmentsLoaded({
     required this.allAppointments,
     this.activeTab = AppointmentsTab.today,
     this.statusFilter = 'all',
-  });
+  }) : _filteredAppointmentsCache = _computeFiltered(allAppointments, activeTab, statusFilter);
 
-  /// فلترة المواعيد حسب التبويب النشط
-  List<AppointmentEntity> get filteredAppointments {
+  /// getter سريع يعيد القائمة المفحوصة والمفلترة المجهزة مسبقاً (O(1) access)
+  List<AppointmentEntity> get filteredAppointments => _filteredAppointmentsCache;
+
+  static List<AppointmentEntity> _computeFiltered(
+    List<AppointmentEntity> all,
+    AppointmentsTab tab,
+    String filter,
+  ) {
     final today = DateTime.now().toIso8601String().substring(0, 10);
     List<AppointmentEntity> base;
 
-    switch (activeTab) {
+    switch (tab) {
       case AppointmentsTab.today:
-        base = allAppointments.where((a) => a.date == today).toList();
+        base = all.where((a) => a.date == today).toList();
       case AppointmentsTab.upcoming:
-        base = allAppointments
+        base = all
             .where((a) => a.date.compareTo(today) > 0 && a.status != 'cancelled')
             .toList();
       case AppointmentsTab.history:
-        base = allAppointments
+        base = all
             .where((a) => a.date.compareTo(today) < 0 || a.status == 'done' || a.status == 'cancelled')
             .where((a) => a.date != today || a.status == 'done' || a.status == 'cancelled')
             .toList();
     }
 
-    if (statusFilter == 'all') return base;
-    return base.where((a) => a.status == statusFilter).toList();
+    if (filter == 'all') return base;
+    return base.where((a) => a.status == filter).toList();
   }
 
   AppointmentsLoaded copyWith({

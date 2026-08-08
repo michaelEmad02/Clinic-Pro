@@ -5,10 +5,8 @@
 
 import 'dart:async';
 import 'package:app_links/app_links.dart';
-import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DeepLinkService {
   final AppLinks _appLinks = AppLinks();

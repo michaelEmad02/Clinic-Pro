@@ -4,6 +4,7 @@
 // ────────────────────────────────────────────────────────
 
 import '../../../appointments/data/models/appointment_model.dart';
+import '../../../prescription/data/models/prescription_model.dart';
 import '../models/patient_model.dart';
 
 abstract class IPatientsRemoteDataSource {
@@ -24,4 +25,7 @@ abstract class IPatientsRemoteDataSource {
 
   /// جلب زيارات (مواعيد) مريض محدد
   Future<List<AppointmentModel>> getVisitsForPatient(String patientId);
+
+  /// جلب روشتات مريض محدد
+  Future<List<PrescriptionModel>> getPrescriptionsForPatient(String patientId);
 }

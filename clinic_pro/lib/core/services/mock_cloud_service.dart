@@ -10,6 +10,7 @@ class MockCloudService implements ICloudService {
     String columns = '*',
     Map<String, dynamic>? eq,
     Map<String, dynamic>? neq,
+    Map<String, dynamic>? gte,
     String? notIsNull,
     String? order,
     bool ascending = true,
@@ -20,6 +21,17 @@ class MockCloudService implements ICloudService {
     if (eq != null) {
       data = data.where((item) {
         return eq.entries.every((entry) => item[entry.key] == entry.value);
+      }).toList();
+    }
+
+    // Filtering (gte)
+    if (gte != null) {
+      data = data.where((item) {
+        return gte.entries.every((entry) {
+          final val = item[entry.key];
+          if (val == null) return false;
+          return val.toString().compareTo(entry.value.toString()) >= 0;
+        });
       }).toList();
     }
 

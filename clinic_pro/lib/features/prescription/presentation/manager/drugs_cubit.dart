@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/strings/app_strings.dart';
 import '../../domain/entities/drug_entity.dart';
 import '../../domain/usecases/drugs_usecases.dart';
 import 'drugs_state.dart';

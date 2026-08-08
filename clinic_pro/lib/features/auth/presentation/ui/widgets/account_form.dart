@@ -25,7 +25,6 @@ class _AccountFormState extends State<AccountForm> {
   bool _agreedToTerms = false;
   bool _obscurePassword = true;
 
-  @override
   final _formKey = GlobalKey<FormState>();
 
   @override

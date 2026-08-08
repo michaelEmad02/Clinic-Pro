@@ -7,6 +7,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../appointments/domain/entities/appointment_entity.dart';
+import '../../../prescription/domain/entities/prescription_entity.dart';
 import '../entities/patient_entity.dart';
 
 abstract class IPatientsRepository {
@@ -32,5 +33,9 @@ abstract class IPatientsRepository {
     String patientId,
   );
 
+  /// جلب روشتات مريض محدد
+  Future<Either<Failure, List<PrescriptionEntity>>> getPrescriptionsForPatient(
+    String patientId,
+  );
 }
 

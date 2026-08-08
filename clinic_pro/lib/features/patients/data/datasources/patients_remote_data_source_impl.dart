@@ -4,6 +4,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/features/appointments/data/models/appointment_model.dart';
+import 'package:clinic_pro/features/prescription/data/models/prescription_model.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/constants/supabase_constants.dart';
 import '../../../../core/services/i_cloud_service.dart';
@@ -159,5 +160,63 @@ class PatientsRemoteDataSourceImpl implements IPatientsRemoteDataSource {
     }
 
     return visits;
+  }
+
+  @override
+  Future<List<PrescriptionModel>> getPrescriptionsForPatient(
+      String patientId) async {
+    try {
+      final results = await _cloud.select(
+        table: SupabaseTables.prescriptions,
+        eq: {'patient_id': patientId},
+        order: 'created_at',
+        ascending: false,
+      );
+
+      if (results.isEmpty) return [];
+
+      // جلب قائمة كافة الأدوية المتاحة لتوفير البيانات O(1)
+      List<Map<String, dynamic>> drugsList = [];
+      try {
+        drugsList = await _cloud.select(table: SupabaseTables.drugs);
+      } catch (_) {}
+
+      final enrichedPrescriptions = await Future.wait(results.map((rawPresc) async {
+        final prescId = rawPresc['id']?.toString() ?? '';
+        List<Map<String, dynamic>> rawItems = [];
+        if (prescId.isNotEmpty) {
+          try {
+            rawItems = await _cloud.select(
+              table: SupabaseTables.prescriptionItems,
+              eq: {'prescription_id': prescId},
+            );
+          } catch (_) {}
+        }
+
+        // إقران كل عنصر بالدواء الخاص به إن وجد
+        final enrichedItems = rawItems.map((itemRaw) {
+          final drugId = itemRaw['drug_id'];
+          final matchedDrug = drugsList.firstWhere(
+            (d) => d['id'] == drugId,
+            orElse: () => <String, dynamic>{},
+          );
+          return {
+            ...itemRaw,
+            if (matchedDrug.isNotEmpty) 'drugs': matchedDrug,
+          };
+        }).toList();
+
+        return {
+          ...rawPresc,
+          'prescription_items': enrichedItems,
+        };
+      }));
+
+      return enrichedPrescriptions
+          .map((e) => PrescriptionModel.fromJson(e))
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 }

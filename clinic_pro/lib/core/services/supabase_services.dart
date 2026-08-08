@@ -41,6 +41,7 @@ class SupabaseServices extends ICloudService {
       String columns = '*',
       Map<String, dynamic>? eq,
       Map<String, dynamic>? neq,
+      Map<String, dynamic>? gte,
       String? notIsNull,
       String? order,
       bool ascending = true}) async {
@@ -58,6 +59,13 @@ class SupabaseServices extends ICloudService {
     if (neq != null) {
       neq.forEach((key, value) {
         query = query.neq(key, value);
+      });
+    }
+
+    // تطبيق فلاتر أكبر من أو يساوي (gte) إذا كانت متوفرة
+    if (gte != null) {
+      gte.forEach((key, value) {
+        query = query.gte(key, value);
       });
     }
 

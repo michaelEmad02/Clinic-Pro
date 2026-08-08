@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/strings/app_strings.dart';
-import '../../domain/entities/drug_entity.dart';
 import '../../domain/entities/prescription_template_entity.dart';
 import '../../domain/usecases/templates_usecases.dart';
 import 'templates_state.dart';
@@ -75,10 +74,9 @@ class TemplatesCubit extends Cubit<TemplatesState> {
     }
   }
 
-
-
   /// إضافة قالب روشتة جديد مع أدويته عبر الخدمة السحابية
-  Future<void> addTemplate(String name, List<Map<String, dynamic>> drugs) async {
+  Future<void> addTemplate(
+      String name, List<Map<String, dynamic>> drugs) async {
     if (state is! TemplatesLoaded) return;
     final loaded = state as TemplatesLoaded;
 
@@ -133,14 +131,16 @@ class TemplatesCubit extends Cubit<TemplatesState> {
     result.fold(
       (failure) => emit(TemplatesError(failure.message)),
       (_) {
-        final updatedList = loaded.templates.where((t) => t['id'] != id).toList();
+        final updatedList =
+            loaded.templates.where((t) => t['id'] != id).toList();
         emit(loaded.copyWith(templates: updatedList));
       },
     );
   }
 
   /// تعديل قالب روشتة موجود وتحديث قائمة أدويته عبر الخدمة السحابية
-  Future<void> editTemplate(String id, String name, List<Map<String, dynamic>> drugs) async {
+  Future<void> editTemplate(
+      String id, String name, List<Map<String, dynamic>> drugs) async {
     if (state is! TemplatesLoaded) return;
 
     final items = drugs.map((drug) {

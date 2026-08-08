@@ -9,6 +9,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/error/query_failure.dart';
 import '../../../appointments/domain/entities/appointment_entity.dart';
+import '../../../prescription/domain/entities/prescription_entity.dart';
 import '../../domain/entities/patient_entity.dart';
 import '../../domain/repositories/i_patients_repository.dart';
 import '../datasources/i_patients_remote_data_source.dart';
@@ -85,6 +86,35 @@ class PatientsRepositoryImpl implements IPatientsRepository {
     try {
       final visits = await _remoteDataSource.getVisitsForPatient(patientId);
       return Right(visits);
+    } catch (e) {
+      return Left(QueryFailure.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<PrescriptionEntity>>> getPrescriptionsForPatient(String patientId,
+  ) async {
+    try {
+      final models = await _remoteDataSource.getPrescriptionsForPatient(patientId);
+      if (models.isEmpty) return const Right([]);
+
+      final List<PrescriptionEntity> result = [];
+
+      for (final model in models) {
+        result.add(PrescriptionEntity(
+          id: model.id,
+          createdAt: model.createdAt,
+          clinicId: model.clinicId,
+          doctorId: model.doctorId,
+          patientId: model.patientId,
+          appointmentId: model.appointmentId,
+          diagnosis: model.diagnosis,
+          notes: model.notes,
+          items: model.items,
+        ));
+      }
+
+      return Right(result);
     } catch (e) {
       return Left(QueryFailure.fromException(e));
     }

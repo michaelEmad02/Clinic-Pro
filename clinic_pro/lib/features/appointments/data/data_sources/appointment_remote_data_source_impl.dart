@@ -24,23 +24,26 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
     String? status,
   }) async {
     final Map<String, dynamic> eq = {'clinic_id': clinicId};
-    if (doctorId != null) eq['doctor_id'] = doctorId;
-    if (date != null) eq['date'] = date;
-    if (status != null) eq['status'] = status;
+    if (doctorId != null && doctorId.isNotEmpty) eq['doctor_id'] = doctorId;
+    if (date != null && date.isNotEmpty) eq['date'] = date;
+    if (status != null && status.isNotEmpty) eq['status'] = status;
+
+    Map<String, dynamic>? gte;
+    if (date == null || date.isEmpty) {
+      final defaultStartDate = DateTime.now().subtract(const Duration(days: 30)).toIso8601String().substring(0, 10);
+      gte = {'date': defaultStartDate};
+    }
 
     final appointments = await _cloud.select(
       table: SupabaseTables.appointments,
       eq: eq,
+      gte: gte,
     );
 
-    final List<AppointmentModel> models = [];
+    if (appointments.isEmpty) return [];
 
-    for (final raw in appointments) {
-      final enriched = await _enrichAppointmentData(raw, detailed: false);
-      models.add(AppointmentModel.fromJson(enriched));
-    }
-
-    return models;
+    final enrichedList = await _enrichAppointmentsBatch(appointments);
+    return enrichedList.map((e) => AppointmentModel.fromJson(e)).toList();
   }
 
   @override
@@ -167,7 +170,90 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
     );
   }
 
-  /// دالة مساعدة لإغناء بيانات الموعد الخام ببيانات المريض، الطبيب ونوع الزيارة
+  /// إغناء مجموعة مواعيد دفعة واحدة (Batch/Parallel Queries) متوافق تماماً مع ICloudService
+  Future<List<Map<String, dynamic>>> _enrichAppointmentsBatch(
+    List<Map<String, dynamic>> rawList,
+  ) async {
+    if (rawList.isEmpty) return [];
+
+    final patientIds = rawList.map((r) => r['patient_id'] as String?).whereType<String>().toSet();
+    final doctorIds = rawList.map((r) => r['doctor_id'] as String?).whereType<String>().toSet();
+    final typeIds = rawList.map((r) => r['type_id'] as String?).whereType<String>().toSet();
+
+    final results = await Future.wait([
+      // 1. جلب مرضى المواعيد بالتوازي
+      Future.wait(patientIds.map((id) => _cloud.select(table: SupabaseTables.patients, eq: {'id': id}))),
+      // 2. جلب أطباء المواعيد بالتوازي
+      Future.wait(doctorIds.map((id) => _cloud.select(table: 'users', eq: {'id': id}))),
+      // 3. جلب أنواع المواعيد للأطباء بالتوازي
+      Future.wait(typeIds.map((id) => _cloud.select(table: SupabaseTables.doctorAppointmentTypes, eq: {'id': id}))),
+    ]);
+
+    final List<List<Map<String, dynamic>>> patientsRes = results[0];
+    final List<List<Map<String, dynamic>>> doctorsRes = results[1];
+    final List<List<Map<String, dynamic>>> doctorTypesRes = results[2];
+
+    final Map<String, Map<String, dynamic>> patientsMap = {};
+    for (final res in patientsRes) {
+      if (res.isNotEmpty && res.first['id'] != null) {
+        patientsMap[res.first['id'] as String] = res.first;
+      }
+    }
+
+    final Map<String, Map<String, dynamic>> doctorsMap = {};
+    for (final res in doctorsRes) {
+      if (res.isNotEmpty && res.first['id'] != null) {
+        doctorsMap[res.first['id'] as String] = res.first;
+      }
+    }
+
+    final Map<String, String> doctorTypeToApptTypeIdMap = {};
+    final Set<String> mainTypeIds = {};
+    for (final res in doctorTypesRes) {
+      if (res.isNotEmpty && res.first['id'] != null && res.first['appointment_type_id'] != null) {
+        final id = res.first['id'] as String;
+        final apptTypeId = res.first['appointment_type_id'] as String;
+        doctorTypeToApptTypeIdMap[id] = apptTypeId;
+        mainTypeIds.add(apptTypeId);
+      }
+    }
+
+    final mainTypesRes = await Future.wait(
+      mainTypeIds.map((id) => _cloud.select(table: SupabaseTables.appointmentTypes, eq: {'id': id})),
+    );
+
+    final Map<String, Map<String, dynamic>> typesMap = {};
+    for (final res in mainTypesRes) {
+      if (res.isNotEmpty && res.first['id'] != null) {
+        typesMap[res.first['id'] as String] = res.first;
+      }
+    }
+
+    // ربط البيانات الجاهزة فوراً
+    return rawList.map((raw) {
+      final pId = raw['patient_id'] as String?;
+      final dId = raw['doctor_id'] as String?;
+      final tId = raw['type_id'] as String?;
+
+      final patient = (pId != null ? patientsMap[pId] : null) ?? {'name': 'مريض غير معروف', 'phone': ''};
+      final doctor = (dId != null ? doctorsMap[dId] : null) ?? {'name': 'طبيب غير معروف'};
+
+      final mainTypeId = tId != null ? doctorTypeToApptTypeIdMap[tId] : null;
+      final type = (mainTypeId != null ? typesMap[mainTypeId] : null) ?? {'name': 'كشف عادي'};
+
+      return {
+        ...raw,
+        'patients': patient,
+        'appointment_types': type,
+        'users': doctor,
+        'prescriptions': <Map<String, dynamic>>[],
+        'invoices': <Map<String, dynamic>>[],
+        'prescription_drugs': <Map<String, dynamic>>[],
+      };
+    }).toList();
+  }
+
+  /// دالة مساعدة لإغناء بيانات موعد واحد خام التفصيلية
   Future<Map<String, dynamic>> _enrichAppointmentData(
       Map<String, dynamic> raw, {
       required bool detailed,
@@ -249,7 +335,7 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
             'duration': item['duration'],
             'timing': item['timing'],
             'is_prn': item['is_prn'] ?? false,
-            'drugs': drugModel != null ? drugModel.toJson() : null,
+            'drugs': drugModel?.toJson(),
           });
         }
       }

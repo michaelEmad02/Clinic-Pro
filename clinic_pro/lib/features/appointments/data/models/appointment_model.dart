@@ -4,7 +4,6 @@
 // ────────────────────────────────────────────────────────
 
 import '../../domain/entities/appointment_entity.dart';
-import '../../../prescription/domain/entities/prescription_entity.dart';
 import '../../../prescription/data/models/prescription_model.dart';
 
 class AppointmentModel extends AppointmentEntity {
@@ -58,7 +57,8 @@ class AppointmentModel extends AppointmentEntity {
     final prescription = json['prescriptions'] as List? ?? [];
     final invoice = json['invoices'] as List? ?? [];
     final prescriptionDrugsList = (json['prescription_drugs'] as List?)
-            ?.map((e) => PrescriptionItemModel.fromJson(e as Map<String, dynamic>))
+            ?.map((e) =>
+                PrescriptionItemModel.fromJson(e as Map<String, dynamic>))
             .toList() ??
         <PrescriptionItemModel>[];
 
@@ -74,10 +74,16 @@ class AppointmentModel extends AppointmentEntity {
       price: (json['price'] as num? ?? 0.0).toDouble(),
       notes: json['notes'] as String?,
       isUrgent: json['is_urgent'] as bool? ?? false,
-      arrivedAt: json['arrived_at'] != null ? DateTime.parse(json['arrived_at'] as String) : null,
-      calledAt: json['called_at'] != null ? DateTime.parse(json['called_at'] as String) : null,
+      arrivedAt: json['arrived_at'] != null
+          ? DateTime.parse(json['arrived_at'] as String)
+          : null,
+      calledAt: json['called_at'] != null
+          ? DateTime.parse(json['called_at'] as String)
+          : null,
       createdBy: json['created_by'] as String? ?? '',
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : DateTime.now(),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
       patientName: patient['name'] as String?,
       patientPhone: patient['phone'] as String?,
       doctorName: doctor['name'] as String?,
@@ -85,9 +91,12 @@ class AppointmentModel extends AppointmentEntity {
       displayTime: displayTime,
       hasPrescription: prescription.isNotEmpty,
       hasInvoice: invoice.isNotEmpty,
-      prescriptionDiagnosis: prescription.isNotEmpty ? prescription.first['diagnosis'] as String? : null,
+      prescriptionDiagnosis: prescription.isNotEmpty
+          ? prescription.first['diagnosis'] as String?
+          : null,
       invoiceAmount: invoice.isNotEmpty ? '${invoice.first['amount']}' : null,
-      invoiceStatus: invoice.isNotEmpty ? invoice.first['status'] as String? : null,
+      invoiceStatus:
+          invoice.isNotEmpty ? invoice.first['status'] as String? : null,
       invoiceNumber: invoice.isNotEmpty
           ? '#INV-${(json['id'] as String).substring((json['id'] as String).length > 4 ? (json['id'] as String).length - 4 : 0)}'
           : null,

@@ -72,13 +72,15 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
 
     _subscribedDoctorId = event.doctorId;
 
-    // 1. التكيف مع التحميل الأولي
-    add(LoadAppointmentsEvent(doctorId: event.doctorId, clinicId: activeClinicId));
+    // إظهار حالة التحميل أول مرة فقط
+    if (state is! AppointmentsLoaded) {
+      emit(AppointmentsLoading());
+    }
 
-    // 2. إلغاء أي اشتراك فرعي سابق
+    // إلغاء أي اشتراك فرعي سابق
     await _appointmentsSubscription?.cancel();
 
-    // 3. إنشاء اشتراك realtime stream جديد يُرجع AppointmentEntity جاهزة مباشرة!
+    // إنشاء اشتراك realtime stream جديد
     _appointmentsSubscription = _subscribeAppointmentsUseCase(
       clinicId: activeClinicId,
       doctorId: _subscribedDoctorId,
@@ -105,7 +107,9 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     LoadAppointmentsEvent event,
     Emitter<AppointmentsState> emit,
   ) async {
-    emit(AppointmentsLoading());
+    if (state is! AppointmentsLoaded) {
+      emit(AppointmentsLoading());
+    }
 
     final activeClinicId = (event.clinicId != null && event.clinicId!.isNotEmpty)
         ? event.clinicId!
@@ -117,8 +121,13 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
 
     result.fold(
       (failure) => emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-      (items) =>
-          emit(AppointmentsLoaded(allAppointments: items)),
+      (items) {
+        if (state is AppointmentsLoaded) {
+          emit((state as AppointmentsLoaded).copyWith(allAppointments: items));
+        } else {
+          emit(AppointmentsLoaded(allAppointments: items));
+        }
+      },
     );
   }
 
@@ -149,22 +158,26 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (state is! AppointmentsLoaded) return;
     final loaded = state as AppointmentsLoaded;
 
-    final result = await _confirmArrivalUseCase(event.appointmentId);
-
-    await result.fold(
-      (failure) async => emit(AppointmentsError(AppStrings.isArabic
-          ? 'تعذّر تأكيد الوصول'
-          : 'Failed to confirm arrival')),
-      (_) async {
-        final loadResult = await _getAppointmentsUseCase(
-            GetAppointmentsParams(clinicId: _clinicId,));
-        loadResult.fold(
-          (failure) =>
-              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-          (items) => emit(
-              loaded.copyWith(allAppointments: items)),
+    // Optimistic Update فورية في الواجهة
+    final updatedList = loaded.allAppointments.map((item) {
+      if (item.id == event.appointmentId) {
+        return item.copyWith(
+          status: AppointmentStatus.confirmed,
+          arrivedAt: DateTime.now(),
         );
+      }
+      return item;
+    }).toList();
+
+    emit(loaded.copyWith(allAppointments: updatedList));
+
+    final result = await _confirmArrivalUseCase(event.appointmentId);
+    result.fold(
+      (failure) {
+        // عند الفشل نعيد الحالة الأصلية دون تفريغ الصفحة
+        emit(loaded);
       },
+      (_) {},
     );
   }
 
@@ -175,22 +188,23 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (state is! AppointmentsLoaded) return;
     final loaded = state as AppointmentsLoaded;
 
-    final result = await _cancelAppointmentUseCase(event.appointmentId);
+    // Optimistic Update فورية في الواجهة
+    final updatedList = loaded.allAppointments.map((item) {
+      if (item.id == event.appointmentId) {
+        return item.copyWith(status: AppointmentStatus.cancelled);
+      }
+      return item;
+    }).toList();
 
-    await result.fold(
-      (failure) async => emit(AppointmentsError(AppStrings.isArabic
-          ? 'تعذّر إلغاء الموعد'
-          : 'Failed to cancel appointment')),
-      (_) async {
-        final loadResult = await _getAppointmentsUseCase(
-            GetAppointmentsParams(clinicId: _clinicId));
-        loadResult.fold(
-          (failure) =>
-              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-          (items) => emit(
-              loaded.copyWith(allAppointments: items)),
-        );
+    emit(loaded.copyWith(allAppointments: updatedList));
+
+    final result = await _cancelAppointmentUseCase(event.appointmentId);
+    result.fold(
+      (failure) {
+        // عند الفشل نعيد الحالة الأصلية دون تفريغ الصفحة
+        emit(loaded);
       },
+      (_) {},
     );
   }
 
@@ -202,31 +216,33 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     final loaded = state as AppointmentsLoaded;
 
     try {
-      final appt =
-          loaded.allAppointments.firstWhere((a) => a.id == event.appointmentId);
+      final appt = loaded.allAppointments.firstWhere((a) => a.id == event.appointmentId);
+      final targetUrgentState = !appt.isUrgent;
+
+      // Optimistic Update فورية
+      final updatedList = loaded.allAppointments.map((item) {
+        if (item.id == event.appointmentId) {
+          return item.copyWith(isUrgent: targetUrgentState);
+        }
+        return item;
+      }).toList();
+
+      emit(loaded.copyWith(allAppointments: updatedList));
+
       final result = await _toggleUrgentUseCase(
         appointmentId: event.appointmentId,
-        isUrgent: !appt.isUrgent,
+        isUrgent: targetUrgentState,
       );
 
-      await result.fold(
-        (failure) async => emit(AppointmentsError(AppStrings.isArabic
-            ? 'تعذّر تعديل حالة الاستعجال'
-            : 'Failed to update urgency')),
-        (_) async {
-          final loadResult = await _getAppointmentsUseCase(
-              GetAppointmentsParams(clinicId: _clinicId));
-          loadResult.fold(
-            (failure) =>
-                emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-            (items) => emit(
-                loaded.copyWith(allAppointments: items)),
-          );
+      result.fold(
+        (failure) {
+          // عند الفشل نعيد الحالة الأصلية دون تفريغ الصفحة
+          emit(loaded);
         },
+        (_) {},
       );
     } catch (_) {
-      emit(AppointmentsError(
-          AppStrings.isArabic ? 'الموعد غير موجود' : 'Appointment not found'));
+      emit(AppointmentsError(AppStrings.isArabic ? 'الموعد غير موجود' : 'Appointment not found'));
     }
   }
 
@@ -247,7 +263,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       date: event.date,
       time: event.time,
       status: 'scheduled',
-      price: 0.0, // سيتم تحديد السعر وتعيينه في المستودع
+      price: 0.0,
       isUrgent: event.isUrgent,
       notes: event.notes,
       createdBy: event.currentUser,
@@ -256,23 +272,15 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
 
     final result = await _addAppointmentUseCase(tempEntity);
 
-    await result.fold(
-      (failure) async => emit(AppointmentsError(failure.message)),
-      (_) async {
-        final loadResult = await _getAppointmentsUseCase(
-            GetAppointmentsParams(clinicId: activeClinicId));
-        loadResult.fold(
-          (failure) =>
-              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-          (items) {
-            if (state is AppointmentsLoaded) {
-              final loaded = state as AppointmentsLoaded;
-              emit(loaded.copyWith(allAppointments: items));
-            } else {
-              emit(AppointmentsLoaded(allAppointments: items));
-            }
-          },
-        );
+    result.fold(
+      (failure) => emit(AppointmentsError(failure.message)),
+      (newAppointment) {
+        if (state is AppointmentsLoaded) {
+          final loaded = state as AppointmentsLoaded;
+          final currentList = List<AppointmentEntity>.from(loaded.allAppointments);
+          currentList.insert(0, newAppointment);
+          emit(loaded.copyWith(allAppointments: currentList));
+        }
       },
     );
   }
@@ -309,24 +317,21 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
 
     final result = await _updateAppointmentUseCase(tempEntity);
 
-    await result.fold(
-      (failure) async => emit(AppointmentsError(failure.message)),
-      (_) async {
-        final activeClinicId = tempEntity.clinicId.isNotEmpty ? tempEntity.clinicId : _clinicId;
-        final loadResult = await _getAppointmentsUseCase(
-            GetAppointmentsParams(clinicId: activeClinicId));
-        loadResult.fold(
-          (failure) =>
-              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-          (items) {
-            if (state is AppointmentsLoaded) {
-              final loaded = state as AppointmentsLoaded;
-              emit(loaded.copyWith(allAppointments: items));
-            } else {
-              emit(AppointmentsLoaded(allAppointments: items));
+    result.fold(
+      (failure) => emit(AppointmentsError(failure.message)),
+      (_) {
+        if (state is AppointmentsLoaded) {
+          final loaded = state as AppointmentsLoaded;
+          final updatedList = loaded.allAppointments.map((a) {
+            if (a.id == event.appointmentId) {
+              return a.copyWith(
+                isUrgent: event.isUrgent,
+              );
             }
-          },
-        );
+            return a;
+          }).toList();
+          emit(loaded.copyWith(allAppointments: updatedList));
+        }
       },
     );
   }
@@ -338,22 +343,16 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     if (state is! AppointmentsLoaded) return;
     final loaded = state as AppointmentsLoaded;
 
-    final result = await _deleteAppointmentUseCase(event.appointmentId);
+    // Optimistic Delete محلي فوري
+    final updatedList = loaded.allAppointments.where((a) => a.id != event.appointmentId).toList();
+    emit(loaded.copyWith(allAppointments: updatedList));
 
-    await result.fold(
-      (failure) async => emit(AppointmentsError(AppStrings.isArabic
-          ? 'تعذّر حذف الموعد'
-          : 'Failed to delete appointment')),
-      (_) async {
-        final loadResult = await _getAppointmentsUseCase(
-            GetAppointmentsParams(clinicId: _clinicId));
-        loadResult.fold(
-          (failure) =>
-              emit(AppointmentsError(AppStrings.loadAppointmentsFailed)),
-          (items) => emit(
-              loaded.copyWith(allAppointments: items)),
-        );
+    final result = await _deleteAppointmentUseCase(event.appointmentId);
+    result.fold(
+      (failure) {
+        emit(loaded);
       },
+      (_) {},
     );
   }
 
@@ -361,49 +360,57 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     GetAppointmentDetailsEvent event,
     Emitter<AppointmentsState> emit,
   ) async {
-    emit(AppointmentsLoading());
     final result = await _getAppointmentByIdUseCase(event.appointmentId);
     result.fold(
       (failure) => emit(AppointmentsError(failure.message)),
-      (appointment) => emit(AppointmentsLoaded(allAppointments: [appointment])),
+      (appointment) {
+        if (state is AppointmentsLoaded) {
+          final loaded = state as AppointmentsLoaded;
+          final updatedList = loaded.allAppointments.map((a) => a.id == appointment.id ? appointment : a).toList();
+          emit(loaded.copyWith(allAppointments: updatedList));
+        } else {
+          emit(AppointmentsLoaded(allAppointments: [appointment]));
+        }
+      },
     );
   }
 
-  /// إنهاء الزيارة بعد حفظ الروشتة — تغيير الحالة إلى done وتعيين called_at إذا كانت فارغة
   Future<void> _onComplete(
     CompleteAppointmentEvent event,
     Emitter<AppointmentsState> emit,
   ) async {
-    // جلب بيانات الموعد الحالية من قاعدة البيانات
-    final detailsResult = await _getAppointmentByIdUseCase(event.appointmentId);
+    if (state is AppointmentsLoaded) {
+      final loaded = state as AppointmentsLoaded;
+      final updatedList = loaded.allAppointments.map((a) {
+        if (a.id == event.appointmentId) {
+          return a.copyWith(
+            status: AppointmentStatus.done,
+            calledAt: a.calledAt ?? event.calledAt ?? DateTime.now(),
+          );
+        }
+        return a;
+      }).toList();
+      emit(loaded.copyWith(allAppointments: updatedList));
+    }
 
+    final detailsResult = await _getAppointmentByIdUseCase(event.appointmentId);
     await detailsResult.fold(
-      (failure) async {
-        // لا نوقف عملية الحفظ إذا فشل جلب بيانات الموعد
-      },
+      (_) async {},
       (appointment) async {
         final updatedEntity = appointment.copyWith(
           status: AppointmentStatus.done,
           calledAt: appointment.calledAt ?? event.calledAt ?? DateTime.now(),
         );
-
-        final result = await _updateAppointmentUseCase(updatedEntity);
-
-        result.fold(
-          (failure) {
-            // لا نوقف العملية إذا فشل التحديث
-          },
-          (_) {
-            if (state is AppointmentsLoaded) {
-              final loaded = state as AppointmentsLoaded;
-              final updatedList = loaded.allAppointments.map((a) {
-                return a.id == event.appointmentId ? updatedEntity : a;
-              }).toList();
-              emit(loaded.copyWith(allAppointments: updatedList));
-            }
-          },
-        );
+        await _updateAppointmentUseCase(updatedEntity);
       },
+    );
+  }
+
+  Future<AppointmentEntity?> getAppointmentById(String appointmentId) async {
+    final result = await _getAppointmentByIdUseCase(appointmentId);
+    return result.fold(
+      (failure) => null,
+      (appointment) => appointment,
     );
   }
 
