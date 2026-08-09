@@ -29,6 +29,7 @@ class SupabaseTables {
   static const String drugs = 'drugs';
   static const String plans = 'plans';
   static const String plansFeatures = 'plans_features';
+  static const String ownerSettings = 'owner_settings';
 }
 
 class SupabaseBucket {
@@ -115,3 +116,29 @@ class BloodType {
     oNeg,
   ];
 }
+
+class DoseTiming {
+  static const String afterMeal = 'after_meal';
+  static const String beforeMeal = 'before_meal';
+  static const String throughtMeal = 'throught_meal';
+  static const String anyTime = 'any_time';
+
+  /// تحويل قيمة موعد الجرعة إلى اللغة العربية
+  static String toArabic(String? timing) {
+    if (timing == null || timing.trim().isEmpty) return '-';
+    final normalized = timing.trim().toLowerCase();
+    switch (normalized) {
+      case afterMeal:
+        return 'بعد الأكل';
+      case beforeMeal:
+        return 'قبل الأكل';
+      case throughtMeal:
+        return 'أثناء الأكل';
+      case anyTime:
+        return 'في أي وقت';
+      default:
+        return timing;
+    }
+  }
+}
+

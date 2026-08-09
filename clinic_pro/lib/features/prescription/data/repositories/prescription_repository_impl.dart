@@ -3,7 +3,12 @@
 // يقوم بالتواصل مع مصدر البيانات السحابي وتحويل النماذج إلى كيانات منطقية
 // ────────────────────────────────────────────────────────
 
+import 'dart:typed_data';
 import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
+import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
+import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
+import 'package:clinic_pro/features/settings/domain/entities/printing_settings_entity.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
@@ -367,6 +372,32 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       return const Right(null);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Uint8List>> generatePrescriptionPdf({
+    required PrescriptionEntity prescription,
+    ClinicEntity? clinic,
+    StaffEntity? doctor,
+    PatientEntity? patient,
+    PrintingSettingsEntity? printingSettings,
+    bool includeHeader = true,
+    bool isA5Format = false,
+  }) async {
+    try {
+      final pdfBytes = await _remoteDataSource.generatePrescriptionPdf(
+        prescription: prescription,
+        clinic: clinic,
+        doctor: doctor,
+        patient: patient,
+        printingSettings: printingSettings,
+        includeHeader: includeHeader,
+        isA5Format: isA5Format,
+      );
+      return Right(pdfBytes);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
     }
   }
 

@@ -6,6 +6,7 @@
 import 'package:equatable/equatable.dart';
 import '../../../auth/domain/entities/auth_user_entity.dart';
 import '../../../clinics/domain/entities/clinic_entity.dart';
+import '../../../staff_and_invitations/domain/entities/staff_entity.dart';
 import '../../../subscriptions/domain/entities/subscription_entity.dart';
 
 class SettingsState extends Equatable {
@@ -16,6 +17,7 @@ class SettingsState extends Equatable {
   final AuthUserEntity? userEntity;
   final ClinicEntity? clinicEntity;
   final SubscriptionEntity? subscriptionEntity;
+  final StaffEntity? doctorEntity;
 
   // قائمة العيادات المتاحة
   final List<ClinicEntity> availableClinics;
@@ -23,25 +25,24 @@ class SettingsState extends Equatable {
   // قائمة الأطباء للسكرتيرة
   final List<Map<String, dynamic>> secretaryDoctors;
 
-  // بيانات الطبيب الحالي المحدد للسكرتيرة
-  final String? currentDoctorId;
-  final String? currentDoctorName;
-  final String? currentDoctorSpecialty;
-  final String? currentDoctorAvatar;
-
   const SettingsState({
     this.isLoading = false,
     this.error,
     this.userEntity,
     this.clinicEntity,
     this.subscriptionEntity,
+    this.doctorEntity,
     this.availableClinics = const [],
     this.secretaryDoctors = const [],
-    this.currentDoctorId,
-    this.currentDoctorName,
-    this.currentDoctorSpecialty,
-    this.currentDoctorAvatar,
   });
+
+  // Getters مساعدة للتوافق التام
+  StaffEntity? get doctor => doctorEntity;
+  String? get currentDoctorId =>
+      (doctor?.userId.isNotEmpty == true) ? doctor!.userId : doctor?.id;
+  String? get currentDoctorName => doctor?.name;
+  String? get currentDoctorSpecialty => doctor?.specialty;
+  String? get currentDoctorAvatar => doctor?.avatarUrl;
 
   SettingsState copyWith({
     bool? isLoading,
@@ -49,12 +50,9 @@ class SettingsState extends Equatable {
     AuthUserEntity? userEntity,
     ClinicEntity? clinicEntity,
     SubscriptionEntity? subscriptionEntity,
+    StaffEntity? doctorEntity,
     List<ClinicEntity>? availableClinics,
     List<Map<String, dynamic>>? secretaryDoctors,
-    String? currentDoctorId,
-    String? currentDoctorName,
-    String? currentDoctorSpecialty,
-    String? currentDoctorAvatar,
   }) {
     return SettingsState(
       isLoading: isLoading ?? this.isLoading,
@@ -62,12 +60,9 @@ class SettingsState extends Equatable {
       userEntity: userEntity ?? this.userEntity,
       clinicEntity: clinicEntity ?? this.clinicEntity,
       subscriptionEntity: subscriptionEntity ?? this.subscriptionEntity,
+      doctorEntity: doctorEntity ?? this.doctorEntity,
       availableClinics: availableClinics ?? this.availableClinics,
       secretaryDoctors: secretaryDoctors ?? this.secretaryDoctors,
-      currentDoctorId: currentDoctorId ?? this.currentDoctorId,
-      currentDoctorName: currentDoctorName ?? this.currentDoctorName,
-      currentDoctorSpecialty: currentDoctorSpecialty ?? this.currentDoctorSpecialty,
-      currentDoctorAvatar: currentDoctorAvatar ?? this.currentDoctorAvatar,
     );
   }
 
@@ -78,11 +73,8 @@ class SettingsState extends Equatable {
         userEntity,
         clinicEntity,
         subscriptionEntity,
+        doctorEntity,
         availableClinics,
         secretaryDoctors,
-        currentDoctorId,
-        currentDoctorName,
-        currentDoctorSpecialty,
-        currentDoctorAvatar,
       ];
 }

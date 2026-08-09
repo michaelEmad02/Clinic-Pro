@@ -20,6 +20,9 @@ import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescri
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_header_card.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_notes_field.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/templates_selector_section.dart';
+import 'package:clinic_pro/features/prescription/domain/entities/drug_entity.dart';
+import 'package:clinic_pro/features/prescription/domain/entities/prescription_entity.dart';
+import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_print_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -80,11 +83,39 @@ class PrescriptionView extends StatelessWidget {
                         );
                   },
                   onPrint: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${AppStrings.print} ${AppStrings.loading}...'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    final itemsMapped = state.selectedDrugs.map((d) {
+                      return PrescriptionItemEntity(
+                        id: d.id,
+                        prescriptionId: state.prescriptionId,
+                        drugId: d.id,
+                        frequency: d.doseFrequency,
+                        duration: d.doseDuration,
+                        timing: d.doseTiming,
+                        isPrn: d.isPrn,
+                        drug: DrugEntity(
+                          id: d.id,
+                          tradeName: d.tradeName,
+                          genericName: d.genericName,
+                          category: d.category,
+                        ),
+                      );
+                    }).toList();
+
+                    final prescEntity = PrescriptionEntity(
+                      id: state.prescriptionId,
+                      createdAt: DateTime.now().toIso8601String(),
+                      clinicId: appointment.clinicId,
+                      doctorId: appointment.doctorId,
+                      patientId: appointment.patientId,
+                      appointmentId: appointment.id,
+                      diagnosis: state.selectedDiagnosis.join(', '),
+                      notes: state.notes,
+                      items: itemsMapped,
+                    );
+
+                    PrescriptionPrintDialog.show(
+                      context,
+                      prescription: prescEntity,
                     );
                   },
                   onWhatsApp: () {

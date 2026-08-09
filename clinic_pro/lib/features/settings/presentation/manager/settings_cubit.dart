@@ -14,6 +14,7 @@ import '../../domain/usecases/get_secretary_doctors_usecase.dart';
 import '../../domain/usecases/set_active_doctor_usecase.dart';
 import '../../domain/usecases/upload_avatar_usecase.dart';
 import '../../../clinics/domain/entities/clinic_entity.dart';
+import '../../../staff_and_invitations/domain/entities/staff_entity.dart';
 import '../../../subscriptions/domain/entities/subscription_entity.dart';
 import 'settings_state.dart';
 import 'dart:io';
@@ -148,12 +149,26 @@ class SettingsCubit extends Cubit<SettingsState> {
           await _localDataSource.saveActiveDoctorId(secretaryId, doctorId);
         }
 
+        StaffEntity? currentDoctor;
+        if (doctorId.isNotEmpty) {
+          currentDoctor = StaffEntity(
+            id: doctorId,
+            clinicId: clinicId,
+            userId: doctorId,
+            name: activeDoc['name'] as String? ?? '',
+            email: activeDoc['email'] as String? ?? '',
+            phone: activeDoc['phone'] as String? ?? '',
+            specialty: activeDoc['specialty'] as String?,
+            avatarUrl: activeDoc['avatar_url'] as String?,
+            role: StaffRoles.doctor,
+            isActive: activeDoc['is_active'] as bool? ?? true,
+            joinedAt: DateTime.now(),
+          );
+        }
+
         emit(state.copyWith(
           secretaryDoctors: doctors,
-          currentDoctorId: doctorId.isNotEmpty ? doctorId : null,
-          currentDoctorName: activeDoc['name'] as String?,
-          currentDoctorSpecialty: activeDoc['specialty'] as String?,
-          currentDoctorAvatar: activeDoc['avatar_url'] as String?,
+          doctorEntity: currentDoctor,
         ));
       },
     );
