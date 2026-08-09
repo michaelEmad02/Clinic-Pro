@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 4,
+            "activePatchIndex": 6,
             "patches": [
                 {
                     "date": 1785462491073,
@@ -24,6 +24,14 @@
                 {
                     "date": 1785462617590,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -131,15 +131,17 @@\n                       const SizedBox(height: 16),\r\n                     ],\r\n \r\n                     // أزرار تسجيل الدخول الاجتماعي\r\n-                   Expanded(\r\n-          child: SocialLoginButton(\r\n-            type: SocialLoginType.google,\r\n-            text: 'Google',\r\n-            onPressed: onGooglePressed,\r\n-          ),\r\n-        ),\r\n+                    SocialLoginRow(\r\n+                      onGooglePressed: isLoading\r\n+                          ? () {}\r\n+                          : () {\r\n+                              // context.read<AuthCubit>().login('sara@clinicpro.com', 'mock');\r\n+                              context.read<AuthCubit>().loginWithGoogle();\r\n+                            },\r\n+                     \r\n+                    ),\r\n                     const SizedBox(height: 24),\r\n \r\n                     // Divider\r\n                     Row(\r\n"
+                },
+                {
+                    "date": 1785537649321,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -89,9 +89,9 @@\n                     // Logo & Header\r\n                     Column(\r\n                       children: [\r\n                         Container(\r\n-                          width: 70,\r\n+                          width: 10,\r\n                           height: 70,\r\n                           decoration: BoxDecoration(\r\n                             color: context.primaryLightColor,\r\n                             borderRadius: BorderRadius.circular(16),\r\n"
+                },
+                {
+                    "date": 1785537715018,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -89,10 +89,10 @@\n                     // Logo & Header\r\n                     Column(\r\n                       children: [\r\n                         Container(\r\n-                          width: 10,\r\n-                          height: 70,\r\n+                          width: 120,\r\n+                          height: 120,\r\n                           decoration: BoxDecoration(\r\n                             color: context.primaryLightColor,\r\n                             borderRadius: BorderRadius.circular(16),\r\n                             boxShadow: [\r\n@@ -107,9 +107,9 @@\n                             'images/logo.png',\r\n                             fit: BoxFit.contain,\r\n                           ),\r\n                         ),\r\n-                        const SizedBox(height: 16),\r\n+                        const SizedBox(height: 18),\r\n                         Text(\r\n                           AppStrings.welcomeGreeting,\r\n                           style: AppTextStyles.headlineLarge(context),\r\n                         ),\r\n@@ -138,9 +138,8 @@\n                           : () {\r\n                               // context.read<AuthCubit>().login('sara@clinicpro.com', 'mock');\r\n                               context.read<AuthCubit>().loginWithGoogle();\r\n                             },\r\n-                     \r\n                     ),\r\n                     const SizedBox(height: 24),\r\n \r\n                     // Divider\r\n"
                 }
             ],
             "date": 1785462491073,

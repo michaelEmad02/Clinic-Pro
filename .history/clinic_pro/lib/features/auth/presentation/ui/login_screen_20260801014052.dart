@@ -108,7 +108,7 @@ class LoginScreen extends StatelessWidget {
                             fit: BoxFit.contain,
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
                         Text(
                           AppStrings.welcomeGreeting,
                           style: AppTextStyles.headlineLarge(context),
