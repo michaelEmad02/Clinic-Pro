@@ -3,12 +3,17 @@
 // تحدد العمليات المنطقية لميزة الروشتات مستقلة عن طبقة البيانات
 // ────────────────────────────────────────────────────────
 
+import 'dart:typed_data';
+import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
+import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
+import 'package:clinic_pro/features/prescription/domain/entities/prescription_template_entity.dart';
+import 'package:clinic_pro/features/settings/domain/entities/printing_settings_entity.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/drug_entity.dart';
 import '../entities/prescription_entity.dart';
 import '../entities/prescription_load_data_entity.dart';
-import '../entities/prescription_template_entity.dart';
 
 import '../../../appointments/domain/entities/appointment_entity.dart';
 
@@ -54,8 +59,19 @@ abstract class IPrescriptionRepository {
     PrescriptionTemplateEntity template,
   );
 
-  /// حذف قالب روشتة وأدويته
+  /// حذف قالب روشتة معين
   Future<Either<Failure, void>> deleteTemplate(String id);
+
+  /// توليد الـ PDF للروشتة بصيغة Uint8List بجميع البيانات المجلوبة
+  Future<Either<Failure, Uint8List>> generatePrescriptionPdf({
+    required PrescriptionEntity prescription,
+    ClinicEntity? clinic,
+    StaffEntity? doctor,
+    PatientEntity? patient,
+    PrintingSettingsEntity? printingSettings,
+    bool includeHeader = true,
+    bool isA5Format = false,
+  });
 
   /// جلب قائمة الأدوية
   Future<Either<Failure, List<DrugEntity>>> getDrugs();

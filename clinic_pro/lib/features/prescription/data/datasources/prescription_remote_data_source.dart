@@ -3,14 +3,21 @@
 // يتصل بـ ICloudService مباشرة لتحميل وحفظ البيانات باستخدام النماذج (Models)
 // ────────────────────────────────────────────────────────
 
+import 'dart:typed_data';
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/core/services/i_cloud_service.dart';
+import 'package:clinic_pro/core/services/i_prescription_pdf_service.dart';
+import 'package:clinic_pro/features/appointments/data/models/appointment_model.dart';
+import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
+import 'package:clinic_pro/features/patients/data/models/patient_model.dart';
+import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
+import 'package:clinic_pro/features/prescription/domain/entities/prescription_entity.dart';
+import 'package:clinic_pro/features/prescription/data/models/drug_model.dart';
+import 'package:clinic_pro/features/prescription/data/models/prescription_model.dart';
+import 'package:clinic_pro/features/prescription/data/models/prescription_template_model.dart';
+import 'package:clinic_pro/features/settings/domain/entities/printing_settings_entity.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/constants/supabase_constants.dart';
-import '../../../../core/services/i_cloud_service.dart';
-import '../../../appointments/data/models/appointment_model.dart';
-import '../../../patients/data/models/patient_model.dart';
-import '../models/drug_model.dart';
-import '../models/prescription_model.dart';
-import '../models/prescription_template_model.dart';
 
 abstract class IPrescriptionRemoteDataSource {
   Future<AppointmentModel> getAppointment(String appointmentId);
@@ -39,14 +46,29 @@ abstract class IPrescriptionRemoteDataSource {
   Future<DrugModel> insertDrug(DrugModel drug);
   Future<void> updateDrug(DrugModel drug);
   Future<void> deleteDrug(String id);
+
+  /// توليد PDF الروشتة المكتمل بالبيانات الممررة
+  Future<Uint8List> generatePrescriptionPdf({
+    required PrescriptionEntity prescription,
+    ClinicEntity? clinic,
+    StaffEntity? doctor,
+    PatientEntity? patient,
+    PrintingSettingsEntity? printingSettings,
+    bool includeHeader = true,
+    bool isA5Format = false,
+  });
 }
 
 @LazySingleton(as: IPrescriptionRemoteDataSource)
 class PrescriptionRemoteDataSourceImpl
     implements IPrescriptionRemoteDataSource {
   final ICloudService _cloud;
+  final IPrescriptionPdfService _pdfService;
 
-  PrescriptionRemoteDataSourceImpl(this._cloud);
+  PrescriptionRemoteDataSourceImpl(
+    this._cloud,
+    this._pdfService,
+  );
 
   @override
   Future<AppointmentModel> getAppointment(String appointmentId) async {
@@ -278,6 +300,36 @@ class PrescriptionRemoteDataSourceImpl
       table: SupabaseTables.drugs,
       matchColumn: 'id',
       matchValue: id,
+    );
+  }
+
+  @override
+  Future<Uint8List> generatePrescriptionPdf({
+    required PrescriptionEntity prescription,
+    ClinicEntity? clinic,
+    StaffEntity? doctor,
+    PatientEntity? patient,
+    PrintingSettingsEntity? printingSettings,
+    bool includeHeader = true,
+    bool isA5Format = false,
+  }) async {
+    // 1. جلب بيانات المريض إذا لم تكن ممررة
+    PatientEntity? currentPatient = patient;
+    if (currentPatient == null && prescription.patientId != null && prescription.patientId!.isNotEmpty) {
+      try {
+        currentPatient = await getPatient(prescription.patientId!);
+      } catch (_) {}
+    }
+
+    // 2. تمرير الكائنات الممررة الجاهزة مباشرة لـ PDF Service
+    return _pdfService.generatePrescriptionPdf(
+      prescription: prescription,
+      clinic: clinic,
+      doctor: doctor,
+      patient: currentPatient,
+      printingSettings: printingSettings,
+      includeHeader: includeHeader,
+      isA5Format: isA5Format,
     );
   }
 }

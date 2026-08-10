@@ -921,4 +921,50 @@ class AppStrings {
   // Visit Types & Duration
   static String get durationInMinutesHint => isArabic ? 'المدة (د)' : 'Duration (min)';
   static String get minutesShort => isArabic ? 'دقيقة' : 'min';
+
+  // Printing Settings
+  static String get printingSettingsTitle =>
+      isArabic ? 'إعدادات طباعة الروشتة' : 'Prescription Printing Settings';
+  static String get headerFooterOptions =>
+      isArabic ? 'خيارات الترويسة والتذييل:' : 'Header & Footer Options:';
+  static String get hideHeaderTitle =>
+      isArabic ? 'إخفاء الترويسة بالكامل (Header)' : 'Hide Full Header';
+  static String get hideHeaderSub => isArabic
+      ? 'مناسب للطباعة على ورق مروّس جاهز'
+      : 'Suitable for pre-printed letterhead paper';
+  static String get hideLogoTitle =>
+      isArabic ? 'إخفاء الشعار (Logo)' : 'Hide Logo';
+  static String get hideDoctorInfoTitle => isArabic
+      ? 'إخفاء بيانات الطبيب بالترويسة'
+      : 'Hide Doctor Info in Header';
+  static String get hideSignatureTitle => isArabic
+      ? 'إخفاء توقيع الطبيب في التذييل (Signature)'
+      : 'Hide Doctor Signature in Footer';
+  static String get hidePatientInfoTitle => isArabic
+      ? 'إخفاء شريط بيانات المريض والتاريخ'
+      : 'Hide Patient Info & Date Bar';
+  static String get hideFooterTitle => isArabic
+      ? 'إخفاء التذييل والتوقيع بالكامل (Footer)'
+      : 'Hide Full Footer & Signature';
+  static String get footerLinesSection => isArabic
+      ? 'أسطر التذييل المخصصة (Footer Lines):'
+      : 'Custom Footer Lines:';
+  static String get footerLine1Label => isArabic
+      ? 'السطر الأول'
+      : 'First Line';
+  static String get footerLine2Label => isArabic
+      ? 'السطر الثاني'
+      : 'Second Line';
+  static String get footerLine3Label => isArabic
+      ? 'السطر الثالث'
+      : 'Third Line';
+  static String get defaultPageFormatLabel =>
+      isArabic ? 'المقاس الافتراضي:' : 'Default Page Size:';
+  static String get saveSettings =>
+      isArabic ? 'حفظ الإعدادات' : 'Save Settings';
+  static String get savingSettings =>
+      isArabic ? 'جاري الحفظ...' : 'Saving...';
+  static String get printingSettingsSavedSuccess => isArabic
+      ? 'تم حفظ إعدادات الطباعة بنجاح'
+      : 'Printing settings saved successfully';
 }

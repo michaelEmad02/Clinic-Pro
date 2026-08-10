@@ -11,7 +11,7 @@ import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/features/appointments/presentation/manager/appointments_bloc.dart';
 import 'package:clinic_pro/features/prescription/domain/entities/prescription_entity.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/prescription_screen.dart';
-import 'package:clinic_pro/features/prescription/presentation/ui/widgets/template_preview_dialog.dart';
+import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_print_dialog.dart';
 import 'package:flutter/material.dart';
 
 class PatientPrescriptionCard extends StatelessWidget {
@@ -26,7 +26,8 @@ class PatientPrescriptionCard extends StatelessWidget {
     final appointmentId = prescription.appointmentId;
     if (appointmentId == null || appointmentId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذّر تحديد الموعد المرتبط بهذه الروشتة')),
+        const SnackBar(
+            content: Text('تعذّر تحديد الموعد المرتبط بهذه الروشتة')),
       );
       return;
     }
@@ -40,7 +41,8 @@ class PatientPrescriptionCard extends StatelessWidget {
 
     try {
       final appointmentsBloc = sl<AppointmentsBloc>();
-      final realAppointment = await appointmentsBloc.getAppointmentById(appointmentId);
+      final realAppointment =
+          await appointmentsBloc.getAppointmentById(appointmentId);
 
       if (context.mounted) {
         Navigator.pop(context); // إغلاق حوار التحميل
@@ -72,26 +74,11 @@ class PatientPrescriptionCard extends StatelessWidget {
   }
 
   void _onPreviewPrescription(BuildContext context) {
-    final itemsMapped = prescription.items.map((im) {
-      return {
-        'trade_name': im.drug?.tradeName ?? 'دواء موصوف',
-        'frequency': im.frequency != null ? '${im.frequency} مرات يومياً' : '',
-        'duration': im.duration != null ? '${im.duration} أيام' : '',
-        'timing': im.timing ?? '',
-      };
-    }).toList();
-
-    showDialog(
-      context: context,
-      builder: (_) => TemplatePreviewDialog(
-        template: {
-          'name': 'بتاريخ ${prescription.createdAt.length >= 10 ? prescription.createdAt.substring(0, 10) : prescription.createdAt}',
-          'items': itemsMapped,
-        },
-      ),
+    PrescriptionPrintDialog.show(
+      context,
+      prescription: prescription,
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -99,9 +86,10 @@ class PatientPrescriptionCard extends StatelessWidget {
         ? prescription.createdAt.substring(0, 10)
         : prescription.createdAt;
 
-    final diagnosesList = (prescription.diagnosis != null && prescription.diagnosis!.isNotEmpty)
-        ? prescription.diagnosis!.split(', ')
-        : <String>[];
+    final diagnosesList =
+        (prescription.diagnosis != null && prescription.diagnosis!.isNotEmpty)
+            ? prescription.diagnosis!.split(', ')
+            : <String>[];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -148,7 +136,8 @@ class PatientPrescriptionCard extends StatelessWidget {
             Flexible(
               fit: FlexFit.loose,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: context.primary.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(20),
@@ -201,7 +190,8 @@ class PatientPrescriptionCard extends StatelessWidget {
               runSpacing: 6,
               children: diagnosesList.map((diag) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: context.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -244,8 +234,11 @@ class PatientPrescriptionCard extends StatelessWidget {
               final item = prescription.items[index];
               final tradeName = item.drug?.tradeName ?? 'دواء موصوف';
               final genericName = item.drug?.genericName ?? '';
-              final frequencyStr = item.frequency != null ? '${item.frequency} مرات يومياً' : (item.timing ?? '');
-              final durationStr = item.duration != null ? '${item.duration} أيام' : '';
+              final frequencyStr = item.frequency != null
+                  ? '${item.frequency} مرات يومياً'
+                  : (item.timing ?? '');
+              final durationStr =
+                  item.duration != null ? '${item.duration} أيام' : '';
 
               return Container(
                 padding: const EdgeInsets.all(10),
@@ -363,13 +356,17 @@ class PatientPrescriptionCard extends StatelessWidget {
             children: [
               OutlinedButton.icon(
                 onPressed: () => _onPreviewPrescription(context),
-                icon: const Icon(Icons.remove_red_eye_outlined, size: 18),
-                label: const Text('معاينة'),
+                icon: const Icon(Icons.print, size: 18),
+                label: const Text('طباعه'),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                   ),
+                  side: BorderSide(color: context.primary),
+                  foregroundColor: context.primary,
+                  backgroundColor: context.background,
                 ),
               ),
               const SizedBox(width: 10),
@@ -380,7 +377,8 @@ class PatientPrescriptionCard extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: context.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppConstants.radiusSm),

@@ -54,6 +54,8 @@ dependencies:
   google_sign_in: ^6.2.2
   app_links: ^6.3.3          # التعامل مع Deep Links للدعوات
   loading_animation_widget: ^1.2.1
+  pdf: ^3.11.3
+  printing: ^5.14.3
 
 dev_dependencies:
   flutter_test:

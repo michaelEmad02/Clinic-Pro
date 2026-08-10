@@ -1,4 +1,5 @@
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
+import 'package:clinic_pro/features/settings/presentation/ui/widgets/printing_settings_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -107,6 +108,12 @@ class OwnerSettingsScreen extends StatelessWidget {
             icon: Icons.groups_outlined,
             label: AppStrings.manageStaff,
             onTap: () => context.push(RouteConstants.staff),
+          ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          NavSettingsItem(
+            icon: Icons.print_outlined,
+            label: 'إعدادات وقوالب الطباعة',
+            onTap: () => PrintingSettingsSheet.show(context),
           ),
           Divider(height: 1, thickness: 0.5, color: context.border),
           NavSettingsItem(
