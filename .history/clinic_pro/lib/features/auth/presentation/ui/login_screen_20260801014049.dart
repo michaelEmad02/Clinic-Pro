@@ -90,8 +90,8 @@ class LoginScreen extends StatelessWidget {
                     Column(
                       children: [
                         Container(
-                          width: 120,
-                          height: 120,
+                          width: 10,
+                          height: 70,
                           decoration: BoxDecoration(
                             color: context.primaryLightColor,
                             borderRadius: BorderRadius.circular(16),
@@ -108,7 +108,7 @@ class LoginScreen extends StatelessWidget {
                             fit: BoxFit.contain,
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
                         Text(
                           AppStrings.welcomeGreeting,
                           style: AppTextStyles.headlineLarge(context),
@@ -139,6 +139,7 @@ class LoginScreen extends StatelessWidget {
                               // context.read<AuthCubit>().login('sara@clinicpro.com', 'mock');
                               context.read<AuthCubit>().loginWithGoogle();
                             },
+                     
                     ),
                     const SizedBox(height: 24),
 
