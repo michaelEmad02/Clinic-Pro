@@ -15,6 +15,8 @@ class PrintingSettingsEntity extends Equatable {
   final String footerLine2;
   final String footerLine3;
   final String defaultPageFormat; // 'A5' or 'A4'
+  final double customWidth;
+  final double customHeight;
 
   const PrintingSettingsEntity({
     this.hideHeader = false,
@@ -27,6 +29,8 @@ class PrintingSettingsEntity extends Equatable {
     this.footerLine2 = '',
     this.footerLine3 = '',
     this.defaultPageFormat = 'A5',
+    this.customWidth = 15.0,
+    this.customHeight = 20.0,
   });
 
   PrintingSettingsEntity copyWith({
@@ -40,6 +44,8 @@ class PrintingSettingsEntity extends Equatable {
     String? footerLine2,
     String? footerLine3,
     String? defaultPageFormat,
+    double? customWidth,
+    double? customHeight,
   }) {
     return PrintingSettingsEntity(
       hideHeader: hideHeader ?? this.hideHeader,
@@ -52,6 +58,8 @@ class PrintingSettingsEntity extends Equatable {
       footerLine2: footerLine2 ?? this.footerLine2,
       footerLine3: footerLine3 ?? this.footerLine3,
       defaultPageFormat: defaultPageFormat ?? this.defaultPageFormat,
+      customWidth: customWidth ?? this.customWidth,
+      customHeight: customHeight ?? this.customHeight,
     );
   }
 
@@ -67,5 +75,7 @@ class PrintingSettingsEntity extends Equatable {
         footerLine2,
         footerLine3,
         defaultPageFormat,
+        customWidth,
+        customHeight,
       ];
 }

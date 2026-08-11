@@ -1,197 +1,270 @@
 // ────────────────────────────────────────────────────────
-// Cubit شاشة الفواتير — تحميل وإضافة وتعديل عبر المستودع
+// InvoicesCubit — Cubit إدارة واجهات الفواتير وفق المعمارية النظيفة
 // ────────────────────────────────────────────────────────
 
-import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
+import 'package:clinic_pro/features/appointments/domain/usecases/appointments/get_appointment_by_id_usecase.dart';
+import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
+import 'package:clinic_pro/features/invoices/domain/usecases/create_invoice_usecase.dart';
+import 'package:clinic_pro/features/invoices/domain/usecases/delete_invoice_usecase.dart';
+import 'package:clinic_pro/features/invoices/domain/usecases/get_invoices_usecase.dart';
+import 'package:clinic_pro/features/invoices/domain/usecases/get_patient_unpaid_appointments_usecase.dart';
+import 'package:clinic_pro/features/invoices/domain/usecases/update_invoice_usecase.dart';
+import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
+import 'package:clinic_pro/features/patients/domain/usecases/find_patient_by_id_usecase.dart';
+import 'package:clinic_pro/features/patients/domain/usecases/load_patients_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+
 import 'invoices_state.dart';
-import 'invoices_repository.dart';
 
 @injectable
 class InvoicesCubit extends Cubit<InvoicesState> {
-  final InvoicesRepository _repository;
+  final GetInvoicesUseCase _getInvoicesUseCase;
+  final CreateInvoiceUseCase _createInvoiceUseCase;
+  final UpdateInvoiceUseCase _updateInvoiceUseCase;
+  final DeleteInvoiceUseCase _deleteInvoiceUseCase;
+  final GetPatientUnpaidAppointmentsUseCase
+      _getPatientUnpaidAppointmentsUseCase;
+  final FindPatientByIdUseCase _findPatientByIdUseCase;
+  final GetAppointmentByIdUseCase _getAppointmentByIdUseCase;
+  final LoadPatientsUseCase _loadPatientsUseCase;
 
-  InvoicesCubit(this._repository) : super(InvoicesInitial());
+  InvoicesCubit(
+    this._getInvoicesUseCase,
+    this._createInvoiceUseCase,
+    this._updateInvoiceUseCase,
+    this._deleteInvoiceUseCase,
+    this._getPatientUnpaidAppointmentsUseCase,
+    this._findPatientByIdUseCase,
+    this._getAppointmentByIdUseCase,
+    this._loadPatientsUseCase,
+  ) : super(const InvoicesState());
 
-  Future<void> loadInvoices() async {
-    emit(InvoicesLoading());
-    try {
-      final items = await _repository.loadInvoices();
-      emit(InvoicesLoaded(allInvoices: _mapInvoices(items)));
-    } catch (_) {
-      emit(InvoicesError(AppStrings.loadFailedMsg));
-    }
+  /// تحميل جميع الفواتير الخاصة بالعيادة
+  Future<void> loadInvoices(String clinicId) async {
+    emit(state.copyWith(status: InvoicesStatus.loading));
+
+    final result = await _getInvoicesUseCase(clinicId);
+
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: InvoicesStatus.failure,
+        errorMessage: failure.message,
+      )),
+      (invoices) {
+        emit(state.copyWith(
+          status: InvoicesStatus.success,
+          invoices: invoices,
+        ));
+        _applyFilters();
+      },
+    );
   }
 
-  void changeFilter(InvoiceFilter filter) {
-    if (state is InvoicesLoaded) {
-      emit((state as InvoicesLoaded).copyWith(activeFilter: filter));
-    }
+  /// فلترة الفواتير بحسب الحالة أو نطاق التواريخ أو نص البحث
+  void filterInvoices({
+    String? statusFilter,
+    InvoicesDateRange? dateRange,
+    DateTime? customStart,
+    DateTime? customEnd,
+    String? search,
+  }) {
+    emit(state.copyWith(
+      activeStatusFilter: statusFilter ?? state.activeStatusFilter,
+      activeDateRange: dateRange ?? state.activeDateRange,
+      customStartDate: customStart ?? state.customStartDate,
+      customEndDate: customEnd ?? state.customEndDate,
+      searchQuery: search ?? state.searchQuery,
+    ));
+    _applyFilters();
   }
 
-  void changeDateRange(InvoicesDateRange range,
-      {DateTime? start, DateTime? end}) {
-    if (state is InvoicesLoaded) {
-      emit((state as InvoicesLoaded).copyWith(
-        activeRange: range,
-        customStart: start,
-        customEnd: end,
-      ));
+  void _applyFilters() {
+    List<InvoiceEntity> result = List.from(state.invoices);
+
+    // 1. تطبيق فلتر نطاق التاريخ
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+
+    switch (state.activeDateRange) {
+      case InvoicesDateRange.today:
+        result = result.where((inv) => inv.createdAt.isAfter(todayStart) || inv.createdAt.isAtSameMomentAs(todayStart)).toList();
+        break;
+      case InvoicesDateRange.thisWeek:
+        // بداية الأسبوع يوم السبت (Saturday = 6, Sunday = 7, Monday = 1, ... Friday = 5)
+        final int daysFromSaturday = (now.weekday == DateTime.saturday)
+            ? 0
+            : (now.weekday == DateTime.sunday ? 1 : now.weekday + 1);
+        final weekStart = todayStart.subtract(Duration(days: daysFromSaturday));
+        result = result.where((inv) => inv.createdAt.isAfter(weekStart) || inv.createdAt.isAtSameMomentAs(weekStart)).toList();
+        break;
+      case InvoicesDateRange.thisMonth:
+        final monthStart = DateTime(now.year, now.month, 1);
+        result = result.where((inv) => inv.createdAt.isAfter(monthStart)).toList();
+        break;
+      case InvoicesDateRange.threeMonths:
+        final threeMonthsAgo = DateTime(now.year, now.month - 3, now.day);
+        result = result.where((inv) => inv.createdAt.isAfter(threeMonthsAgo)).toList();
+        break;
+      case InvoicesDateRange.custom:
+        if (state.customStartDate != null && state.customEndDate != null) {
+          final start = DateTime(state.customStartDate!.year, state.customStartDate!.month, state.customStartDate!.day);
+          final end = DateTime(state.customEndDate!.year, state.customEndDate!.month, state.customEndDate!.day, 23, 59, 59);
+          result = result.where((inv) => inv.createdAt.isAfter(start) && inv.createdAt.isBefore(end)).toList();
+        }
+        break;
+      case InvoicesDateRange.all:
+      default:
+        break;
     }
+
+    // 2. تطبيق فلتر الحالة
+    if (state.activeStatusFilter != 'الكل') {
+      result = result.where((inv) {
+        return inv.statusArabic == state.activeStatusFilter;
+      }).toList();
+    }
+
+    // 3. تطبيق البحث باسم المريض أو رقم الفاتورة
+    if (state.searchQuery.trim().isNotEmpty) {
+      final q = state.searchQuery.trim().toLowerCase();
+      result = result.where((inv) {
+        final nameMatch =
+            inv.patientName?.toLowerCase().contains(q) ?? false;
+        final idMatch = inv.id.toLowerCase().contains(q);
+        return nameMatch || idMatch;
+      }).toList();
+    }
+
+    emit(state.copyWith(filteredInvoices: result));
   }
 
-  Future<void> createInvoice({
+  /// جلب المواعيد غير المدفوعة بالكامل لمريض محدد
+  Future<void> loadPatientUnpaidAppointments(String patientId) async {
+    final result = await _getPatientUnpaidAppointmentsUseCase(patientId);
+    result.fold(
+      (_) => emit(state.copyWith(patientUnpaidAppointments: const [])),
+      (appointments) =>
+          emit(state.copyWith(patientUnpaidAppointments: appointments)),
+    );
+  }
+
+  /// إنشاء فاتورة جديدة
+  Future<bool> createInvoice({
+    required String clinicId,
     required String patientId,
-    required String patientName,
-    required String appointmentType,
     required String sourceId,
     required double totalAmount,
     required double paidAmount,
     String? paymentMethod,
+    required String createdBy,
   }) async {
-    if (state is! InvoicesLoaded) return;
-    final loaded = state as InvoicesLoaded;
+    emit(state.copyWith(status: InvoicesStatus.saving));
 
-    try {
-      await _repository.createInvoice(
-        patientId: patientId,
-        patientName: patientName,
-        appointmentType: appointmentType,
-        sourceId: sourceId,
-        totalAmount: totalAmount,
-        paidAmount: paidAmount,
-        paymentMethod: paymentMethod,
-      );
-      // إعادة تحميل الفواتير لتحديث القائمة مع الحفاظ على الفلتر
-      final items = await _repository.loadInvoices();
-      emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
-    } catch (_) {
-      emit(InvoicesError(AppStrings.loadFailedMsg));
-    }
+    final result = await _createInvoiceUseCase(
+      clinicId: clinicId,
+      patientId: patientId,
+      sourceId: sourceId,
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+      paymentMethod: paymentMethod,
+      createdBy: createdBy,
+    );
+
+    return result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: InvoicesStatus.failure,
+          errorMessage: failure.message,
+        ));
+        return false;
+      },
+      (_) {
+        emit(state.copyWith(
+          status: InvoicesStatus.success,
+          successMessage: 'تم إنشاء الفاتورة بنجاح',
+        ));
+        loadInvoices(clinicId);
+        return true;
+      },
+    );
   }
 
-  Future<void> updatePaidAmount({
-    required String invoiceId,
-    required double newPaidAmount,
-    String? paymentMethod,
-  }) async {
-    if (state is! InvoicesLoaded) return;
-    final loaded = state as InvoicesLoaded;
+  /// تعديل فاتورة
+  Future<bool> updateInvoice(InvoiceEntity invoice) async {
+    emit(state.copyWith(status: InvoicesStatus.saving));
 
-    try {
-      await _repository.updatePaidAmount(
-        invoiceId: invoiceId,
-        newPaidAmount: newPaidAmount,
-        paymentMethod: paymentMethod,
-      );
-      // إعادة تحميل الفواتير لتحديث القائمة مع الحفاظ على الفلتر
-      final items = await _repository.loadInvoices();
-      emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
-    } catch (_) {
-      emit(InvoicesError(AppStrings.loadFailedMsg));
-    }
+    final result = await _updateInvoiceUseCase(invoice);
+
+    return result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: InvoicesStatus.failure,
+          errorMessage: failure.message,
+        ));
+        return false;
+      },
+      (_) {
+        emit(state.copyWith(
+          status: InvoicesStatus.success,
+          successMessage: 'تم تعديل الفاتورة بنجاح',
+        ));
+        loadInvoices(invoice.clinicId);
+        return true;
+      },
+    );
   }
 
-  /// تحديث بيانات فاتورة قائمة بالكامل
-  Future<void> updateInvoice({
-    required String invoiceId,
-    required double totalAmount,
-    required double paidAmount,
-    String? paymentMethod,
-  }) async {
-    if (state is! InvoicesLoaded) return;
-    final loaded = state as InvoicesLoaded;
+  /// حذف فاتورة
+  Future<bool> deleteInvoice(String invoiceId, String clinicId) async {
+    emit(state.copyWith(status: InvoicesStatus.deleting));
 
-    try {
-      await _repository.updateInvoice(
-        invoiceId: invoiceId,
-        totalAmount: totalAmount,
-        paidAmount: paidAmount,
-        paymentMethod: paymentMethod,
-      );
-      // إعادة تحميل الفواتير
-      final items = await _repository.loadInvoices();
-      emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
-    } catch (_) {
-      emit(InvoicesError(AppStrings.loadFailedMsg));
-    }
+    final result = await _deleteInvoiceUseCase(invoiceId);
+
+    return result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: InvoicesStatus.failure,
+          errorMessage: failure.message,
+        ));
+        return false;
+      },
+      (_) {
+        emit(state.copyWith(
+          status: InvoicesStatus.success,
+          successMessage: 'تم حذف الفاتورة بنجاح',
+        ));
+        loadInvoices(clinicId);
+        return true;
+      },
+    );
   }
 
-  /// البحث عن المرضى عبر المستودع
-  Future<List<Map<String, dynamic>>> searchPatients(String query) async {
-    try {
-      final patients = await _repository.loadPatients();
-      if (query.isEmpty) return patients;
-      final q = query.trim().toLowerCase();
-      return patients.where((p) {
-        final name = (p['name'] as String).toLowerCase();
-        final phone = (p['phone'] as String);
-        return name.contains(q) || phone.contains(q);
-      }).toList();
-    } catch (_) {
-      return [];
-    }
+  /// جلب بيانات مريض محدد بمعرفه
+  Future<PatientEntity?> getPatientById(String patientId) async {
+    final result = await _findPatientByIdUseCase(patientId);
+    return result.fold(
+      (_) => null,
+      (patient) => patient,
+    );
   }
 
-  /// تحميل مواعيد المريض المنتهية وغير المفوترة بعد
-  Future<List<Map<String, dynamic>>> loadPatientAppointments(
-      String patientId) async {
-    try {
-      return await _repository.loadAppointmentsForPatient(patientId);
-    } catch (_) {
-      return [];
-    }
+  /// جلب موعد محدد بمعرفه
+  Future<AppointmentEntity?> getAppointmentById(String appointmentId) async {
+    final result = await _getAppointmentByIdUseCase(appointmentId);
+    return result.fold(
+      (_) => null,
+      (appointment) => appointment,
+    );
   }
 
-  /// جلب تفاصيل موعد محدد
-  Future<Map<String, dynamic>?> getAppointmentDetails(
-      String appointmentId) async {
-    try {
-      return await _repository.getAppointment(appointmentId);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// جلب تفاصيل مريض محدد
-  Future<Map<String, dynamic>?> getPatientDetails(String patientId) async {
-    try {
-      return await _repository.getPatient(patientId);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// حذف الفاتورة نهائياً وإعادة تحميل القائمة
-  Future<void> deleteInvoice(String invoiceId) async {
-    if (state is! InvoicesLoaded) return;
-    final loaded = state as InvoicesLoaded;
-    try {
-      await _repository.deleteInvoice(invoiceId);
-      final items = await _repository.loadInvoices();
-      emit(loaded.copyWith(allInvoices: _mapInvoices(items)));
-    } catch (_) {
-      emit(InvoicesError(AppStrings.loadFailedMsg));
-    }
-  }
-
-  List<InvoiceItem> _mapInvoices(List<Map<String, dynamic>> rawList) {
-    return rawList.map((inv) {
-      return InvoiceItem(
-        id: inv['id'] as String,
-        clinicId: inv['clinic_id'] as String? ?? 'c-1',
-        patientId: inv['patient_id'] as String,
-        patientName: inv['patient_name'] as String,
-        appointmentType: inv['appointment_type'] as String,
-        sourceId: inv['source_id'] as String,
-        sourceType: inv['source_type'] as String? ?? 'appointment',
-        totalAmount: (inv['total_amount'] as num).toDouble(),
-        paidAmount: (inv['paid_amount'] as num).toDouble(),
-        paymentMethod: inv['payment_method'] as String?,
-        createdAt: inv['created_at'] as String,
-        createdBy: inv['created_by'] as String,
-      );
-    }).toList();
+  /// تحميل كل مرضى العيادة لغرض البحث
+  Future<List<PatientEntity>> loadPatientsForClinic(String clinicId) async {
+    final result = await _loadPatientsUseCase(clinicId: clinicId);
+    return result.fold(
+      (_) => const [],
+      (patients) => patients,
+    );
   }
 }

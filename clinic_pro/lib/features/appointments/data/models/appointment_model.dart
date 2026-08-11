@@ -3,6 +3,9 @@
 // يرث من AppointmentEntity ويقوم بعمليات التحويل من وإلى JSON
 // ────────────────────────────────────────────────────────
 
+import 'dart:convert';
+import 'package:clinic_pro/core/strings/app_strings.dart';
+
 import '../../domain/entities/appointment_entity.dart';
 import '../../../prescription/data/models/prescription_model.dart';
 
@@ -94,12 +97,23 @@ class AppointmentModel extends AppointmentEntity {
       prescriptionDiagnosis: prescription.isNotEmpty
           ? prescription.first['diagnosis'] as String?
           : null,
-      invoiceAmount: invoice.isNotEmpty ? '${invoice.first['amount']}' : null,
-      invoiceStatus:
-          invoice.isNotEmpty ? invoice.first['status'] as String? : null,
-      invoiceNumber: invoice.isNotEmpty
-          ? '#INV-${(json['id'] as String).substring((json['id'] as String).length > 4 ? (json['id'] as String).length - 4 : 0)}'
+      invoiceAmount: invoice.isNotEmpty
+          ? (() {
+              final totalPaid = invoice.fold<double>(0.0, (sum, item) => sum + ((item['paid_amount'] as num?)?.toDouble() ?? 0.0));
+              final totalTotal = (invoice.first['total_amount'] as num?)?.toDouble() ?? 0.0;
+              return '${totalPaid.toStringAsFixed(0)} / ${totalTotal.toStringAsFixed(0)}';
+            })()
           : null,
+      invoiceStatus: invoice.isNotEmpty
+          ? () {
+              final totalAmount = (invoice.first['total_amount'] as num?)?.toDouble() ?? 0.0;
+              final paidAmount = invoice.fold<double>(0.0, (sum, item) => sum + ((item['paid_amount'] as num?)?.toDouble() ?? 0.0));
+              if (paidAmount <= 0) return 'pending';
+              if (paidAmount < totalAmount) return 'partial';
+              return 'paid';
+            }()
+          : null,
+      invoiceNumber: invoice.isNotEmpty ? jsonEncode(invoice) : null,
       prescriptionDrugs: prescriptionDrugsList,
     );
   }

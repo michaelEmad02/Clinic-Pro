@@ -2,26 +2,30 @@
 // Bottom Sheet تسجيل فاتورة جديدة — مطابق لتصميم Stitch وبدون MockData مباشرة
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/di/injection_container.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
+import 'package:clinic_pro/features/invoices/presentation/manager/invoices_cubit.dart';
+import 'package:clinic_pro/features/invoices/presentation/manager/invoices_state.dart';
+import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/constants/app_constants.dart';
-import '../../../../../core/strings/app_strings.dart';
-import '../../../../../core/themes/app_colors.dart';
-import '../../../../../core/themes/app_text_styles.dart';
-import '../../../../../core/widgets/app_bottom_sheet.dart';
-import '../../../../../core/di/injection_container.dart';
-import '../../manager/invoices_cubit.dart';
-import '../../manager/invoices_state.dart';
 
 class AddInvoiceSheet {
   static Future<void> show(BuildContext context,
-      {String? initialAppointmentId, InvoiceItem? invoice}) {
-    // التقاط الـ Cubit الحالي من السياق أو إنشاء واحد جديد
+      {String? initialAppointmentId, InvoiceEntity? invoice}) {
+    final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
     InvoicesCubit cubit;
     try {
       cubit = context.read<InvoicesCubit>();
     } catch (_) {
-      cubit = sl<InvoicesCubit>()..loadInvoices();
+      cubit = sl<InvoicesCubit>()..loadInvoices(clinicId);
     }
 
     return AppBottomSheet.show(
@@ -39,7 +43,7 @@ class AddInvoiceSheet {
 
 class _AddInvoiceForm extends StatefulWidget {
   final String? initialAppointmentId;
-  final InvoiceItem? invoice;
+  final InvoiceEntity? invoice;
   const _AddInvoiceForm({this.initialAppointmentId, this.invoice});
 
   @override
@@ -55,15 +59,18 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
   String? _selectedPatientId;
   String? _selectedPatientName;
   String? _selectedPatientPhone;
-  String? _selectedAppointmentType;
   String? _selectedAppointmentId;
   String _paymentMethod = 'cash';
 
-  List<Map<String, dynamic>> _searchResults = [];
-  List<Map<String, dynamic>> _patientAppointments = [];
+  List<PatientEntity> _searchResults = [];
+  List<PatientEntity>? _cachedPatients;
   bool _showPatientSearch = true;
-  double _expectedPrice = 0;
+   double _expectedPrice = 0;
+  double _alreadyPaidForAppointment = 0.0;
   bool _isLoading = false;
+  String? _patientError;
+  String? _totalAmountError;
+  String? _paidAmountError;
 
   List<(String, String)> get _paymentMethods => [
         ('cash', AppStrings.isArabic ? 'نقد' : 'Cash'),
@@ -86,14 +93,10 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       if (widget.invoice != null) {
         setState(() => _isLoading = true);
         final inv = widget.invoice!;
-        final patient = await cubit.getPatientDetails(inv.patientId);
-        final appt = await cubit.getAppointmentDetails(inv.sourceId);
+        final patient = await cubit.getPatientById(inv.patientId);
 
         if (patient != null) {
           await _selectPatient(patient);
-          if (appt != null) {
-            _selectAppointment(appt);
-          }
           setState(() {
             _totalAmountController.text = inv.totalAmount.toStringAsFixed(0);
             _paidAmountController.text = inv.paidAmount.toStringAsFixed(0);
@@ -107,56 +110,25 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       if (widget.initialAppointmentId != null) {
         setState(() => _isLoading = true);
 
-        // جلب تفاصيل الموعد والمريض عبر الـ Cubit
-        final appt =
-            await cubit.getAppointmentDetails(widget.initialAppointmentId!);
+        final appt = await cubit.getAppointmentById(widget.initialAppointmentId!);
+
         if (appt != null) {
-          final patientId = appt['patient_id'] as String;
-          final patient = await cubit.getPatientDetails(patientId);
+          final patient = await cubit.getPatientById(appt.patientId);
 
           if (patient != null) {
             await _selectPatient(patient);
-            _selectAppointment(appt);
 
-            // التحقق من وجود فاتورة سابقة للموعد المحدد
-            if (cubit.state is InvoicesLoaded) {
-              final state = cubit.state as InvoicesLoaded;
-              final existingInvoice = state.allInvoices.firstWhere(
-                (inv) => inv.sourceId == widget.initialAppointmentId,
-                orElse: () => const InvoiceItem(
-                  id: '',
-                  patientId: '',
-                  patientName: '',
-                  appointmentType: '',
-                  sourceId: '',
-                  totalAmount: 0,
-                  paidAmount: 0,
-                  createdAt: '',
-                  createdBy: '',
-                ),
-              );
-
-              if (existingInvoice.id.isNotEmpty) {
-                final remaining =
-                    existingInvoice.totalAmount - existingInvoice.paidAmount;
-                if (remaining <= 0) {
-                  if (mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(AppStrings.isArabic
-                              ? 'هذا الموعد مسجل له فاتورة مدفوعة بالكامل بالفعل.'
-                              : 'This appointment already has a fully paid invoice.')),
-                    );
-                  }
-                  return;
-                }
-                setState(() {
-                  _totalAmountController.text = remaining.toStringAsFixed(0);
-                  _expectedPrice = remaining;
-                });
-              }
+            double paidSoFar = 0.0;
+            final related = cubit.state.invoices.where((inv) => inv.sourceId == widget.initialAppointmentId);
+            if (related.isNotEmpty) {
+              paidSoFar = related.fold<double>(0.0, (sum, inv) => sum + inv.paidAmount);
             }
+
+            _selectAppointment({
+              'id': appt.id,
+              'price': appt.price,
+              'appointment_type_id': appt.typeId,
+            }, paidSoFar: paidSoFar);
           }
         }
         setState(() => _isLoading = false);
@@ -174,45 +146,49 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
   }
 
   Future<void> _searchPatients(String query) async {
-    final results = await context.read<InvoicesCubit>().searchPatients(query);
+    if (_cachedPatients == null) {
+      final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
+      _cachedPatients = await context.read<InvoicesCubit>().loadPatientsForClinic(clinicId);
+    }
+
+    final allPatients = _cachedPatients!;
+
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = allPatients;
+      });
+      return;
+    }
+
+    final results = allPatients.where((p) {
+      final name = p.name.toLowerCase();
+      final phone = (p.phone ?? '').toLowerCase();
+      final q = query.trim().toLowerCase();
+      return name.contains(q) || phone.contains(q);
+    }).toList();
+
     setState(() {
       _searchResults = results;
     });
   }
 
-  Future<void> _selectPatient(Map<String, dynamic> patient) async {
-    final patientId = patient['id'] as String;
+  Future<void> _selectPatient(PatientEntity patient) async {
+    final patientId = patient.id;
 
     setState(() => _isLoading = true);
     final cubit = context.read<InvoicesCubit>();
 
-    // جلب المعرفات للمواعيد المدفوعة بالكامل
-    final Set<String> fullyPaidSourceIds = {};
-    if (cubit.state is InvoicesLoaded) {
-      for (final inv in (cubit.state as InvoicesLoaded).allInvoices) {
-        if (inv.paidAmount >= inv.totalAmount) {
-          fullyPaidSourceIds.add(inv.sourceId);
-        }
-      }
-    }
-
-    final allAppointments = await cubit.loadPatientAppointments(patientId);
-    final appointments = allAppointments.where((a) {
-      final isTarget = widget.initialAppointmentId != null &&
-          a['id'] == widget.initialAppointmentId;
-      return isTarget || !fullyPaidSourceIds.contains(a['id']);
-    }).toList();
+    await cubit.loadPatientUnpaidAppointments(patientId);
 
     setState(() {
       _selectedPatientId = patientId;
-      _selectedPatientName = patient['name'] as String;
-      _selectedPatientPhone = patient['phone'] as String;
+      _selectedPatientName = patient.name;
+      _selectedPatientPhone = patient.phone ?? '';
       _showPatientSearch = false;
-      _patientSearchController.text = patient['name'] as String;
+      _patientSearchController.text = patient.name;
       _searchResults = [];
-      _patientAppointments = appointments;
       _expectedPrice = 0;
-      _selectedAppointmentType = null;
+      _alreadyPaidForAppointment = 0.0;
       _selectedAppointmentId = null;
       _totalAmountController.clear();
       _paidAmountController.clear();
@@ -220,54 +196,92 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
     });
   }
 
-  void _selectAppointment(Map<String, dynamic> appointment) {
-    final typeName = appointment['appointment_types']['name'] as String;
-    final price = (appointment['appointment_types']['price'] as num).toDouble();
+  void _selectAppointment(Map<String, dynamic> appointment, {double paidSoFar = 0.0}) {
+    final price = (appointment['price'] as num?)?.toDouble() ?? 0.0;
+    final remaining = (price - paidSoFar) > 0 ? (price - paidSoFar) : 0.0;
 
     setState(() {
-      _selectedAppointmentType = typeName;
       _selectedAppointmentId = appointment['id'] as String;
+      _alreadyPaidForAppointment = paidSoFar;
       _totalAmountController.text = price.toStringAsFixed(0);
+      _paidAmountController.text = remaining.toStringAsFixed(0);
       _expectedPrice = price;
     });
   }
 
   Future<void> _submit() async {
-    if (_selectedPatientId == null || _totalAmountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(AppStrings.isArabic
-                ? 'يرجى ملء جميع الحقول المطلوبة'
-                : 'Please fill all required fields')),
-      );
-      return;
+    setState(() {
+      _patientError = null;
+      _totalAmountError = null;
+      _paidAmountError = null;
+    });
+
+    bool hasError = false;
+
+    if (_selectedPatientId == null) {
+      _patientError = AppStrings.isArabic
+          ? 'يرجى اختيار المريض من القائمة'
+          : 'Please select a patient';
+      hasError = true;
     }
 
     final totalAmount = double.tryParse(_totalAmountController.text) ?? 0;
     final paidAmount = double.tryParse(_paidAmountController.text) ?? 0;
 
-    if (totalAmount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(AppStrings.isArabic
-                ? 'المبلغ الإجمالي يجب أن يكون أكبر من 0'
-                : 'Total amount must be greater than 0')),
-      );
+    if (_totalAmountController.text.trim().isEmpty) {
+      _totalAmountError = AppStrings.isArabic
+          ? 'يرجى إدخال المبلغ الإجمالي'
+          : 'Please enter total amount';
+      hasError = true;
+    } else if (totalAmount <= 0) {
+      _totalAmountError = AppStrings.isArabic
+          ? 'المبلغ الإجمالي يجب أن يكون أكبر من 0'
+          : 'Total amount must be greater than 0';
+      hasError = true;
+    }
+
+    if (paidAmount < 0) {
+      _paidAmountError = AppStrings.isArabic
+          ? 'المبلغ المدفوع لا يمكن أن يكون بالسالب'
+          : 'Paid amount cannot be negative';
+      hasError = true;
+    } else if (totalAmount > 0 && paidAmount > totalAmount) {
+      _paidAmountError = AppStrings.isArabic
+          ? 'المبلغ المدفوع لا يمكن أن يتخطى المبلغ الإجمالي'
+          : 'Paid amount cannot exceed total amount';
+      hasError = true;
+    } else if (_alreadyPaidForAppointment > 0) {
+      final remaining = (totalAmount - _alreadyPaidForAppointment) > 0 ? (totalAmount - _alreadyPaidForAppointment) : 0.0;
+      if (paidAmount > remaining) {
+        _paidAmountError = AppStrings.isArabic
+            ? 'المبلغ المدفوع لا يمكن أن يتخطى المتبقي (${remaining.toStringAsFixed(0)})'
+            : 'Paid amount cannot exceed remaining amount';
+        hasError = true;
+      }
+    }
+
+    if (hasError) {
+      setState(() {});
       return;
     }
 
     setState(() => _isLoading = true);
     final cubit = context.read<InvoicesCubit>();
+    final user = context.read<AuthCubit>().state.user;
+    final clinicId =
+        context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
+    final createdBy = user?.id ?? '';
 
     if (widget.invoice != null) {
-      await cubit.updateInvoice(
-        invoiceId: widget.invoice!.id,
-        totalAmount: totalAmount,
-        paidAmount: paidAmount,
-        paymentMethod: _paymentMethod,
+      final success = await cubit.updateInvoice(
+        widget.invoice!.copyWith(
+          totalAmount: totalAmount,
+          paidAmount: paidAmount,
+          paymentMethod: _paymentMethod,
+        ),
       );
       setState(() => _isLoading = false);
-      if (context.mounted) {
+      if (success && context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppStrings.operationSuccessful)),
@@ -276,50 +290,19 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       return;
     }
 
-    InvoiceItem existingInvoice = const InvoiceItem(
-      id: '',
-      patientId: '',
-      patientName: '',
-      appointmentType: '',
-      sourceId: '',
-      totalAmount: 0,
-      paidAmount: 0,
-      createdAt: '',
-      createdBy: '',
+    final success = await cubit.createInvoice(
+      clinicId: clinicId,
+      patientId: _selectedPatientId!,
+      sourceId: _selectedAppointmentId ?? widget.initialAppointmentId ?? '',
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+      paymentMethod: _paymentMethod,
+      createdBy: createdBy,
     );
-
-    if (cubit.state is InvoicesLoaded) {
-      existingInvoice = (cubit.state as InvoicesLoaded).allInvoices.firstWhere(
-            (inv) => inv.sourceId == widget.initialAppointmentId,
-            orElse: () => existingInvoice,
-          );
-    }
-
-    if (existingInvoice.id.isNotEmpty) {
-      final prevPaid = existingInvoice.paidAmount;
-      final newPaidTotal = prevPaid + paidAmount;
-
-      await cubit.updatePaidAmount(
-        invoiceId: existingInvoice.id,
-        newPaidAmount: newPaidTotal,
-        paymentMethod: _paymentMethod,
-      );
-    } else {
-      await cubit.createInvoice(
-        patientId: _selectedPatientId!,
-        patientName: _selectedPatientName!,
-        appointmentType: _selectedAppointmentType ?? AppStrings.normalCheckup,
-        sourceId: _selectedAppointmentId ??
-            'manual-${DateTime.now().millisecondsSinceEpoch}',
-        totalAmount: totalAmount,
-        paidAmount: paidAmount,
-        paymentMethod: _paymentMethod,
-      );
-    }
 
     setState(() => _isLoading = false);
 
-    if (context.mounted) {
+    if (success && context.mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -367,11 +350,9 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
               child: Center(child: CircularProgressIndicator()),
             )
           else
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
                     if (_showPatientSearch) ...[
                       Text(
                         AppStrings.patient,
@@ -405,7 +386,13 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                             horizontal: AppConstants.spaceMd,
                             vertical: 13,
                           ),
+                          errorText: _patientError,
                         ),
+                        onTap: () {
+                          if (_showPatientSearch) {
+                            _searchPatients(_patientSearchController.text);
+                          }
+                        },
                         onChanged: _searchPatients,
                       ),
                       if (_searchResults.isNotEmpty)
@@ -424,19 +411,21 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                   radius: 16,
                                   backgroundColor: context.primaryLightColor,
                                   child: Text(
-                                    (p['name'] as String).substring(0, 1),
-                                    style: TextStyle(
-                                        color: context.primary, fontSize: 12),
+                                    p.initials,
+                                    style: AppTextStyles.caption(context).copyWith(
+                                        color: context.primary, fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 title: Text(
-                                  p['name'] as String,
+                                  p.name,
                                   style: AppTextStyles.bodyMedium(context),
                                 ),
-                                subtitle: Text(
-                                  p['phone'] as String,
-                                  style: AppTextStyles.caption(context),
-                                ),
+                                subtitle: p.phone != null && p.phone!.isNotEmpty
+                                    ? Text(
+                                        p.phone!,
+                                        style: AppTextStyles.caption(context),
+                                      )
+                                    : null,
                                 onTap: () => _selectPatient(p),
                               );
                             }).toList(),
@@ -523,221 +512,319 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: context.border),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedAppointmentId,
-                          hint: Text(
-                            _patientAppointments.isEmpty
-                                ? AppStrings.isArabic
-                                    ? 'لا توجد مواعيد غير مدفوعة'
-                                    : 'No unpaid appointments'
-                                : AppStrings.isArabic
-                                    ? 'اختر الموعد'
-                                    : 'Select Appointment',
-                            style: AppTextStyles.bodyMedium(context)
-                                .copyWith(color: context.textHint),
+                    BlocBuilder<InvoicesCubit, InvoicesState>(
+                      builder: (context, state) {
+                        final unpaid = state.patientUnpaidAppointments;
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: context.surface,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: context.border),
                           ),
-                          isExpanded: true,
-                          icon: Icon(Icons.expand_more,
-                              color: context.textHint, size: 20),
-                          items: _patientAppointments.map((a) {
-                            final typeName =
-                                a['appointment_types']['name'] as String;
-                            final date = a['date'] as String;
-                            final time = (a['time'] as String).substring(0, 5);
-                            final doctorName = a['doctor_name'] as String? ??
-                                AppStrings.generalPractitioner;
-                            final dateTime = DateTime.tryParse(date);
-                            String displayDate = date;
-                            if (dateTime != null) {
-                              final months = AppStrings.fullMonths;
-                              displayDate =
-                                  '${dateTime.day} ${months[dateTime.month - 1]}';
-                            }
-                            final label = '$typeName • $displayDate • $time';
-                            return DropdownMenuItem(
-                              value: a['id'] as String,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(label,
-                                      style: AppTextStyles.bodyMedium(context)
-                                          .copyWith(
-                                              fontWeight: FontWeight.bold)),
-                                  Text(doctorName,
-                                      style: AppTextStyles.caption(context)
-                                          .copyWith(
-                                              color: context.textSecondary)),
-                                ],
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _selectedAppointmentId,
+                              hint: Text(
+                                unpaid.isEmpty
+                                    ? AppStrings.isArabic
+                                        ? 'لا توجد مواعيد غير مدفوعة'
+                                        : 'No unpaid appointments'
+                                    : AppStrings.isArabic
+                                        ? 'اختر الموعد'
+                                        : 'Select Appointment',
+                                style: AppTextStyles.bodyMedium(context)
+                                    .copyWith(color: context.textHint),
                               ),
-                            );
-                          }).toList(),
-                          onChanged: _patientAppointments.isEmpty
-                              ? null
-                              : (v) {
-                                  final appointment = _patientAppointments
-                                      .firstWhere((a) => a['id'] == v);
-                                  _selectAppointment(appointment);
-                                },
-                        ),
-                      ),
+                              isExpanded: true,
+                              icon: Icon(Icons.expand_more,
+                                  color: context.textHint, size: 20),
+                              items: unpaid.map((a) {
+                                final label =
+                                    '${a.appointmentTypeName ?? "كشف"} • ${a.date} • ${a.time}';
+                                return DropdownMenuItem(
+                                  value: a.id,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(label,
+                                          style:
+                                              AppTextStyles.bodyMedium(context)
+                                                  .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                      Text(
+                                          '${AppStrings.isArabic ? "السعر المتوقع" : "Expected Price"}: ${a.expectedPrice.toStringAsFixed(0)}',
+                                          style: AppTextStyles.caption(context)
+                                              .copyWith(
+                                                  color:
+                                                      context.textSecondary)),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: unpaid.isEmpty
+                                  ? null
+                                  : (v) {
+                                      final appointment = unpaid
+                                          .firstWhere((a) => a.id == v);
+                                      _selectAppointment({
+                                        'id': appointment.id,
+                                        'price': appointment.expectedPrice,
+                                      }, paidSoFar: appointment.paidSoFar);
+                                    },
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.info_outline,
-                            size: 14, color: context.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          _patientAppointments.isEmpty
-                              ? AppStrings.isArabic
-                                  ? 'لا توجد مواعيد غير مدفوعة لهذا المريض'
-                                  : 'No unpaid appointments for this patient'
-                              : AppStrings.isArabic
-                                  ? 'يظهر فقط المواعيد غير المدفوعة بالكامل'
-                                  : 'Only showing unpaid appointments',
-                          style: AppTextStyles.caption(context)
-                              .copyWith(color: context.textSecondary),
+                    BlocBuilder<InvoicesCubit, InvoicesState>(
+                      builder: (context, state) {
+                        final unpaid = state.patientUnpaidAppointments;
+                        return Row(
+                          children: [
+                            Icon(Icons.info_outline,
+                                size: 14, color: context.textSecondary),
+                            const SizedBox(width: 4),
+                            Text(
+                              unpaid.isEmpty
+                                  ? AppStrings.isArabic
+                                      ? 'لا توجد مواعيد غير مدفوعة لهذا المريض'
+                                      : 'No unpaid appointments for this patient'
+                                  : AppStrings.isArabic
+                                      ? 'يظهر فقط المواعيد غير المدفوعة بالكامل'
+                                      : 'Only showing unpaid appointments',
+                              style: AppTextStyles.caption(context)
+                                  .copyWith(color: context.textSecondary),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    // 1. حقل المبلغ الإجمالي (كامل العرض)
+                    Text(
+                      AppStrings.total,
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _totalAmountController,
+                      enabled: _selectedAppointmentId == null,
+                      keyboardType: TextInputType.number,
+                      textDirection: TextDirection.ltr,
+                      onChanged: (_) {
+                        if (_totalAmountError != null) {
+                          setState(() => _totalAmountError = null);
+                        }
+                      },
+                      decoration: InputDecoration(
+                        hintText: '0',
+                        hintStyle: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
+                        // suffixIcon: SizedBox(
+                        //   width: 40,
+                        //   child: Center(
+                        //     child: Text(
+                        //       AppStrings.egp,
+                        //       style: AppTextStyles.caption(context).copyWith(
+                        //         color: context.textSecondary,
+                        //         fontWeight: FontWeight.bold,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                        fillColor: context.surface,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.border),
+                        ),
+                        disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.border.withOpacity(0.5)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.primary),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppConstants.spaceMd,
+                          vertical: 13,
+                        ),
+                        errorText: _totalAmountError,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppStrings.total,
-                                style:
-                                    AppTextStyles.bodyMedium(context).copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              TextField(
-                                controller: _totalAmountController,
-                                keyboardType: TextInputType.number,
-                                textDirection: TextDirection.ltr,
-                                decoration: InputDecoration(
-                                  hintText: '0',
-                                  hintStyle: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  suffixIcon: SizedBox(
-                                    width: 40,
-                                    child: Center(
-                                      child: Text(
-                                        AppStrings.egp,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: context.textSecondary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  fillColor: context.surface,
-                                  filled: true,
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        AppConstants.radiusInput),
-                                    borderSide:
-                                        BorderSide(color: context.border),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        AppConstants.radiusInput),
-                                    borderSide: BorderSide(
-                                        color: context.primary, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        AppConstants.radiusInput),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: AppConstants.spaceMd,
-                                    vertical: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
+                    if (_alreadyPaidForAppointment > 0) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        AppStrings.isArabic ? 'المبلغ المدفوع سابقاً' : 'Previously Paid Amount',
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: TextEditingController(text: _alreadyPaidForAppointment.toStringAsFixed(0)),
+                        enabled: false,
+                        textDirection: TextDirection.ltr,
+                        decoration: InputDecoration(
+                          // suffixIcon: SizedBox(
+                          //   width: 40,
+                          //   child: Center(
+                          //     child: Text(
+                          //       AppStrings.egp,
+                          //       style: AppTextStyles.caption(context).copyWith(
+                          //         color: context.textSecondary,
+                          //         fontWeight: FontWeight.bold,
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
+                          fillColor: context.surface.withOpacity(0.5),
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.border),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.border.withOpacity(0.5)),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.spaceMd,
+                            vertical: 13,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppStrings.paid,
-                                style:
-                                    AppTextStyles.bodyMedium(context).copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              TextField(
-                                controller: _paidAmountController,
-                                keyboardType: TextInputType.number,
-                                textDirection: TextDirection.ltr,
-                                
-                                decoration: InputDecoration(
-                                
-                                  hintText: '0',
-                                  hintStyle: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  suffixIcon: SizedBox(
-                                    width: 40,
-                                    child: Center(
-                                      child: Text(
-                                        AppStrings.egp,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: context.textSecondary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  fillColor: context.surface,
-                                  filled: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide:
-                                        BorderSide(color: context.border),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide:
-                                        BorderSide(color: context.border),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide:
-                                        BorderSide(color: context.primary),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: AppConstants.spaceMd,
-                                    vertical: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        AppStrings.isArabic ? 'المبلغ المدفوع الآن' : 'Amount Paid Now',
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _paidAmountController,
+                        keyboardType: TextInputType.number,
+                        textDirection: TextDirection.ltr,
+                        onChanged: (_) {
+                          if (_paidAmountError != null) {
+                            setState(() => _paidAmountError = null);
+                          }
+                        },
+                        decoration: InputDecoration(
+                          hintText: '0',
+                          hintStyle: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.bold,
+                          ),
+                          // suffixIcon: SizedBox(
+                          //   width: 40,
+                          //   child: Center(
+                          //     child: Text(
+                          //       AppStrings.egp,
+                          //       style: AppTextStyles.caption(context).copyWith(
+                          //         color: context.textSecondary,
+                          //         fontWeight: FontWeight.bold,
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
+                          fillColor: context.surface,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.border),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.primary),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.spaceMd,
+                            vertical: 13,
+                          ),
+                          errorText: _paidAmountError,
+                        ),
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        AppStrings.paid,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _paidAmountController,
+                        keyboardType: TextInputType.number,
+                        textDirection: TextDirection.ltr,
+                        onChanged: (_) {
+                          if (_paidAmountError != null) {
+                            setState(() => _paidAmountError = null);
+                          }
+                        },
+                        decoration: InputDecoration(
+                          hintText: '0',
+                          hintStyle: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.bold,
+                          ),
+                          // suffixIcon: SizedBox(
+                          //   width: 40,
+                          //   child: Center(
+                          //     child: Text(
+                          //       AppStrings.egp,
+                          //       style: AppTextStyles.caption(context).copyWith(
+                          //         color: context.textSecondary,
+                          //         fontWeight: FontWeight.bold,
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
+                          fillColor: context.surface,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.border),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: context.primary),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.spaceMd,
+                            vertical: 13,
+                          ),
+                          errorText: _paidAmountError,
+                        ),
+                      ),
+                    ],
                     if (_expectedPrice > 0) ...[
                       const SizedBox(height: 12),
                       Container(
@@ -762,7 +849,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'السعر المتوقع: $_expectedPrice ${AppStrings.egp}',
+                              '${AppStrings.isArabic ? "السعر المتوقع" : "Expected Price"}: $_expectedPrice',
                               style: AppTextStyles.bodyMedium(context).copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: context.warningText,
@@ -806,9 +893,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                 setState(() => _paymentMethod = m.$1),
                             selectedColor: context.primary,
                             backgroundColor: context.surface,
-                            labelStyle: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 12,
+                            labelStyle: AppTextStyles.caption(context).copyWith(
                               color: isSelected
                                   ? Colors.white
                                   : context.textSecondary,
@@ -854,8 +939,6 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                     ),
                   ],
                 ),
-              ),
-            ),
         ],
       ),
     );

@@ -41,19 +41,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
         final appointments = state.allAppointments;
         final appointment = appointments.firstWhere(
           (a) => a.id == id,
-          orElse: () => AppointmentEntity(
-            id: '',
-            clinicId: '',
-            doctorId: '',
-            patientId: '',
-            typeId: '',
-            date: '',
-            status: '',
-            price: 0,
-            isUrgent: false,
-            createdBy: '',
-            createdAt: DateTime.now(),
-          ),
+          
         );
 
         if (appointment.id.isEmpty) {
@@ -66,7 +54,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
         }
 
         final canCancel =
-            appointment.status != 'done' && appointment.status != 'cancelled';
+            appointment.status != AppointmentStatus.done && appointment.status != AppointmentStatus.cancelled;
 
         return Scaffold(
           backgroundColor: context.backgroundColor,
@@ -113,6 +101,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
                   amount: appointment.invoiceAmount,
                   status: appointment.invoiceStatus,
                   invoiceNumber: appointment.invoiceNumber,
+                  appointmentId: appointment.id,
                 ),
                 if (canCancel) ...[
                   const SizedBox(height: AppConstants.spaceLg),

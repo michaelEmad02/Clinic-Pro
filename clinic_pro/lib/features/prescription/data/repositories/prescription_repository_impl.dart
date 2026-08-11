@@ -383,7 +383,9 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
     PatientEntity? patient,
     PrintingSettingsEntity? printingSettings,
     bool includeHeader = true,
-    bool isA5Format = false,
+    String pageFormat = 'A4',
+    double? customWidth,
+    double? customHeight,
   }) async {
     try {
       final pdfBytes = await _remoteDataSource.generatePrescriptionPdf(
@@ -393,7 +395,9 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         patient: patient,
         printingSettings: printingSettings,
         includeHeader: includeHeader,
-        isA5Format: isA5Format,
+        pageFormat: pageFormat,
+        customWidth: customWidth,
+        customHeight: customHeight,
       );
       return Right(pdfBytes);
     } catch (e) {

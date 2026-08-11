@@ -16,6 +16,8 @@ class PrintingSettingsModel extends PrintingSettingsEntity {
     super.footerLine2,
     super.footerLine3,
     super.defaultPageFormat,
+    super.customWidth,
+    super.customHeight,
   });
 
   factory PrintingSettingsModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,8 @@ class PrintingSettingsModel extends PrintingSettingsEntity {
       footerLine2: json['footer_line2'] as String? ?? '',
       footerLine3: json['footer_line3'] as String? ?? '',
       defaultPageFormat: json['default_page_format'] as String? ?? 'A5',
+      customWidth: (json['custom_width'] as num?)?.toDouble() ?? 15.0,
+      customHeight: (json['custom_height'] as num?)?.toDouble() ?? 20.0,
     );
   }
 
@@ -46,6 +50,8 @@ class PrintingSettingsModel extends PrintingSettingsEntity {
       'footer_line2': footerLine2,
       'footer_line3': footerLine3,
       'default_page_format': defaultPageFormat,
+      'custom_width': customWidth,
+      'custom_height': customHeight,
     };
   }
 
@@ -61,6 +67,8 @@ class PrintingSettingsModel extends PrintingSettingsEntity {
       footerLine2: entity.footerLine2,
       footerLine3: entity.footerLine3,
       defaultPageFormat: entity.defaultPageFormat,
+      customWidth: entity.customWidth,
+      customHeight: entity.customHeight,
     );
   }
 }

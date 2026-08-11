@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
+import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+@LazySingleton(as: ICloudService)
 class SupabaseServices extends ICloudService {
   final SupabaseClient supabase;
 

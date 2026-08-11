@@ -20,6 +20,8 @@ abstract class IPrescriptionPdfService {
     PatientEntity? patient,
     PrintingSettingsEntity? printingSettings,
     bool includeHeader = true,
-    bool isA5Format = false,
+    String pageFormat = 'A4',
+    double? customWidth,
+    double? customHeight,
   });
 }

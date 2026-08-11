@@ -2,28 +2,32 @@
 // شاشة الفواتير — عرض الفواتير وإدارتها
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/di/injection_container.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/widgets/shimmer_list.dart';
+import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
+import 'package:clinic_pro/features/invoices/presentation/manager/invoices_cubit.dart';
+import 'package:clinic_pro/features/invoices/presentation/manager/invoices_state.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../manager/invoices_cubit.dart';
-import '../manager/invoices_state.dart';
 import 'widgets/add_invoice_sheet.dart';
 import 'widgets/invoice_action_sheet.dart';
+import 'widgets/invoices_date_range_chips.dart';
 import 'widgets/invoices_list.dart';
 import 'widgets/invoices_summary_bar.dart';
-import 'widgets/invoices_date_range_chips.dart';
-import '../../../../core/themes/app_colors.dart';
-import '../../../../core/themes/app_text_styles.dart';
-import '../../../../core/widgets/shimmer_list.dart';
-import '../../../../core/strings/app_strings.dart';
-import '../../../../core/di/injection_container.dart';
 
 class InvoicesScreen extends StatelessWidget {
   const InvoicesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
     return BlocProvider(
-      create: (_) => sl<InvoicesCubit>()..loadInvoices(),
+      create: (_) => sl<InvoicesCubit>()..loadInvoices(clinicId),
       child: const _InvoicesBody(),
     );
   }
@@ -34,6 +38,8 @@ class _InvoicesBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
@@ -55,72 +61,76 @@ class _InvoicesBody extends StatelessWidget {
       ),
       body: BlocBuilder<InvoicesCubit, InvoicesState>(
         builder: (context, state) {
-          if (state is InvoicesLoading) {
+          if (state.status == InvoicesStatus.loading && state.invoices.isEmpty) {
             return const Padding(
               padding: EdgeInsets.all(16),
               child: ShimmerList(itemCount: 5),
             );
           }
-          if (state is InvoicesError) {
+          if (state.status == InvoicesStatus.failure && state.invoices.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(state.message),
+                  Text(state.errorMessage ?? AppStrings.error),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () =>
-                        context.read<InvoicesCubit>().loadInvoices(),
+                        context.read<InvoicesCubit>().loadInvoices(clinicId),
                     child: Text(AppStrings.retry),
                   ),
                 ],
               ),
             );
           }
-          if (state is InvoicesLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<InvoicesCubit>().loadInvoices();
-                await Future.delayed(const Duration(milliseconds: 600));
-              },
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<InvoicesCubit>().loadInvoices(clinicId);
+            },
+            child: ResponsiveHelper.responsiveCenter(
+              maxWidth: 1100,
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                children: [
-                  InvoicesSummaryBar(state: state),
-                  const SizedBox(height: 12),
-                  InvoicesDateRangeChips(
-                    activeRange: state.activeRange,
-                    onChanged: (range) async {
-                      if (range == InvoicesDateRange.custom) {
-                        final picked = await showDateRangePicker(
-                          context: context,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now(),
-                        );
-                        if (picked != null && context.mounted) {
-                          context.read<InvoicesCubit>().changeDateRange(
-                                range,
-                                start: picked.start,
-                                end: picked.end,
-                              );
-                        }
-                      } else {
-                        context.read<InvoicesCubit>().changeDateRange(range);
+              children: [
+                InvoicesSummaryBar(state: state),
+                const SizedBox(height: 12),
+                InvoicesDateRangeChips(
+                  activeDateRange: state.activeDateRange,
+                  activeStatusFilter: state.activeStatusFilter,
+                  onDateRangeChanged: (range) async {
+                    if (range == InvoicesDateRange.custom) {
+                      final picked = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null && context.mounted) {
+                        context.read<InvoicesCubit>().filterInvoices(
+                              dateRange: range,
+                              customStart: picked.start,
+                              customEnd: picked.end,
+                            );
                       }
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  InvoicesList(
-                    invoices: state.filteredInvoices,
-                    onItemTap: (inv) => _showActions(context, inv),
-                    onItemMore: (inv) => _showActions(context, inv),
-                  ),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                    } else {
+                      context.read<InvoicesCubit>().filterInvoices(dateRange: range);
+                    }
+                  },
+                  onStatusFilterChanged: (status) {
+                    context.read<InvoicesCubit>().filterInvoices(statusFilter: status);
+                  },
+                ),
+                const SizedBox(height: 12),
+                InvoicesList(
+                  invoices: state.filteredInvoices,
+                  onItemTap: (inv) => _showActions(context, inv),
+                  onItemMore: (inv) => _showActions(context, inv),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => AddInvoiceSheet.show(context),
@@ -135,10 +145,11 @@ class _InvoicesBody extends StatelessWidget {
     );
   }
 
-  void _showActions(BuildContext context, InvoiceItem invoice) {
+  void _showActions(BuildContext context, InvoiceEntity invoice) {
     InvoiceActionSheet.show(
       context: context,
       invoice: invoice,
     );
   }
 }
+

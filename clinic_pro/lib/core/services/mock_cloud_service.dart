@@ -1,8 +1,8 @@
-import 'package:injectable/injectable.dart';
+
 import 'i_cloud_service.dart';
 import '../mocks/mock_data.dart';
 
- @LazySingleton(as: ICloudService)
+
 class MockCloudService implements ICloudService {
   @override
   Future<List<Map<String, dynamic>>> select({

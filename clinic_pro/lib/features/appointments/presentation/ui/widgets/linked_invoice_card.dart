@@ -2,18 +2,25 @@
 // بطاقة الفاتورة المرتبطة بالموعد — مطابق لتصميم Stitch
 // ────────────────────────────────────────────────────────
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/status_badge.dart';
+import '../../../../invoices/presentation/ui/widgets/add_invoice_sheet.dart';
+import '../../manager/appointments_bloc.dart';
+import '../../manager/appointments_event.dart';
+import '../../manager/appointments_state.dart';
 
 class LinkedInvoiceCard extends StatelessWidget {
   final bool hasInvoice;
   final String? amount;
   final String? status;
   final String? invoiceNumber;
+  final String? appointmentId;
 
   const LinkedInvoiceCard({
     super.key,
@@ -21,11 +28,19 @@ class LinkedInvoiceCard extends StatelessWidget {
     this.amount,
     this.status,
     this.invoiceNumber,
+    this.appointmentId,
   });
 
   @override
   Widget build(BuildContext context) {
     final isPaid = status == 'paid';
+
+    List<dynamic> invoicesList = [];
+    if (invoiceNumber != null && invoiceNumber!.isNotEmpty) {
+      try {
+        invoicesList = jsonDecode(invoiceNumber!);
+      } catch (_) {}
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
@@ -58,44 +73,105 @@ class LinkedInvoiceCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (hasInvoice && isPaid)
-                StatusBadge(text: AppStrings.paid, status: BadgeStatus.success),
+              if (hasInvoice)
+                StatusBadge(
+                  text: isPaid ? AppStrings.paid : (AppStrings.isArabic ? 'جزئي' : 'Partial'),
+                  status: isPaid ? BadgeStatus.success : BadgeStatus.warning,
+                ),
             ],
           ),
           const SizedBox(height: 12),
           if (hasInvoice) ...[
-            if (amount != null)
-              Text(
-                '$amount ${AppStrings.sar}',
-                style: AppTextStyles.dataNumeric(context).copyWith(fontSize: 18),
-              ),
-            if (invoiceNumber != null) ...[
-              const SizedBox(height: 6),
-              Text(
-                '${AppStrings.invoiceNumber} $invoiceNumber',
-                style: AppTextStyles.caption(context).copyWith(
-                  color: context.textSecondary,
-                ),
+            if (invoicesList.isNotEmpty) ...[
+              ...invoicesList.map((inv) {
+                final total = (inv['total_amount'] as num?)?.toDouble() ?? 0.0;
+                final paid = (inv['paid_amount'] as num?)?.toDouble() ?? 0.0;
+                final createdAtStr = inv['created_at'] as String? ?? '';
+                final parsedDate = DateTime.tryParse(createdAtStr);
+                final dateFormatted = parsedDate != null
+                    ? '${parsedDate.toLocal().day}/${parsedDate.toLocal().month}/${parsedDate.toLocal().year}'
+                    : '';
+                final creatorName = inv['creator_name'] as String? ?? (AppStrings.isArabic ? 'غير معروف' : 'Unknown');
+                
+                final statusStr = paid >= total
+                    ? (AppStrings.isArabic ? 'مدفوعة' : 'Paid')
+                    : (paid > 0 ? (AppStrings.isArabic ? 'جزئية' : 'Partial') : (AppStrings.isArabic ? 'معلقة' : 'Pending'));
+                final localStatusColor = paid >= total
+                    ? context.success
+                    : (paid > 0 ? context.warning : context.danger);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            dateFormatted,
+                            style: AppTextStyles.bodyMedium(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${paid.toStringAsFixed(0)} / ${total.toStringAsFixed(0)} ${AppStrings.egp}',
+                            style: AppTextStyles.dataNumeric(context).copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: localStatusColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              statusStr,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: localStatusColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${AppStrings.isArabic ? "بواسطة" : "By"}: $creatorName',
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: context.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              const Divider(height: 16),
+            ],
+            if (amount != null) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppStrings.isArabic ? 'الإجمالي الكلي:' : 'Total Aggregate:',
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    '$amount ${AppStrings.egp}',
+                    style: AppTextStyles.dataNumeric(context).copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isPaid ? context.success : context.warning,
+                    ),
+                  ),
+                ],
               ),
             ],
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppStrings.invoiceInFinancialModule)),
-            );
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: context.primary,
-                side: BorderSide(color: context.primary.withOpacity(0.2)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusButton),
-                ),
-              ),
-              child: Text(AppStrings.viewInvoice),
-            ),
           ] else ...[
             Text(
               AppStrings.noInvoiceYet,
@@ -103,23 +179,35 @@ class LinkedInvoiceCard extends StatelessWidget {
                 color: context.textSecondary,
               ),
             ),
+          ],
+          if (!isPaid) ...[
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppStrings.invoiceRegistrationInFinancialModule)),
-                );
+              onPressed: () async {
+                if (appointmentId != null) {
+                  await AddInvoiceSheet.show(context, initialAppointmentId: appointmentId);
+                  if (context.mounted) {
+                    final bloc = context.read<AppointmentsBloc>();
+                    final state = bloc.state;
+                    if (state is AppointmentsLoaded) {
+                      final appt = state.allAppointments.firstWhere((a) => a.id == appointmentId);
+                      bloc.add(LoadAppointmentsEvent(
+                        doctorId: appt.doctorId,
+                        clinicId: appt.clinicId,
+                      ));
+                    }
+                  }
+                }
               },
               icon: const Icon(Icons.add, size: 18),
-              label: Text(AppStrings.createInvoice),
+              label: Text(hasInvoice ? (AppStrings.isArabic ? 'تسجيل فاتورة إضافية' : 'Create Additional Invoice') : AppStrings.createInvoice),
               style: OutlinedButton.styleFrom(
                 foregroundColor: context.primary,
                 side: BorderSide(color: context.primary.withOpacity(0.2)),
                 backgroundColor: context.primaryLightColor,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusButton),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                 ),
               ),
             ),

@@ -1,18 +1,38 @@
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/invoices_state.dart';
 import 'invoice_action_sheet.dart';
 
 class InvoiceListItem extends StatelessWidget {
-  final InvoiceItem invoice;
+  final InvoiceEntity invoice;
 
   const InvoiceListItem({super.key, required this.invoice});
 
   @override
   Widget build(BuildContext context) {
+    final dateStr = invoice.createdAt.toIso8601String().length >= 10
+        ? invoice.createdAt.toIso8601String().substring(0, 10)
+        : invoice.createdAt.toIso8601String();
+
+    Color statusColor = context.primary;
+    if (invoice.status == InvoiceStatus.pending) {
+      statusColor = context.danger;
+    } else if (invoice.status == InvoiceStatus.partial) {
+      statusColor = context.warning;
+    } else {
+      statusColor = context.accent;
+    }
+
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final margin = isMobile
+        ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
+        : EdgeInsets.zero;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: margin,
       decoration: BoxDecoration(
         color: context.surface,
         borderRadius: BorderRadius.circular(12),
@@ -29,45 +49,56 @@ class InvoiceListItem extends StatelessWidget {
         padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 12, 12),
         child: Row(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  invoice.patientName,
-                  style: AppTextStyles.headlineSmall(context).copyWith(
-                    fontWeight: FontWeight.bold,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    invoice.patientName ?? AppStrings.unknownPatient,
+                    style: AppTextStyles.headlineSmall(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${invoice.formattedDate} • ${invoice.appointmentType}',
-                  style: AppTextStyles.caption(context).copyWith(
-                    color: context.textSecondary,
+                  const SizedBox(height: 2),
+                  Text(
+                    '$dateStr • ${invoice.appointmentTypeName ?? (AppStrings.isArabic ? "كشف عام" : "General Checkup")}',
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: context.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
-            const Spacer(),
+            const SizedBox(width: 8),
             Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  invoice.totalAmount.toStringAsFixed(0),
+                  '${invoice.paidAmount.toStringAsFixed(0)} / ${invoice.totalAmount.toStringAsFixed(0)} ${AppStrings.egp}',
                   style: AppTextStyles.dataNumeric(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  invoice.paidAmount.toStringAsFixed(0),
-                  style: AppTextStyles.dataNumeric(context).copyWith(
-                    fontWeight: FontWeight.normal,
-                    color: context.accent,
+                const SizedBox(height: 4),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    _getLocalStatusText(invoice.status),
+                    style: AppTextStyles.caption(context).copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: statusColor,
+                    ),
                   ),
                 ),
               ],
@@ -92,5 +123,27 @@ class InvoiceListItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getLocalStatusText(InvoiceStatus status) {
+    if (AppStrings.isArabic) {
+      switch (status) {
+        case InvoiceStatus.pending:
+          return 'معلق';
+        case InvoiceStatus.partial:
+          return 'جزئي';
+        case InvoiceStatus.paid:
+          return 'مدفوع';
+      }
+    } else {
+      switch (status) {
+        case InvoiceStatus.pending:
+          return 'Pending';
+        case InvoiceStatus.partial:
+          return 'Partial';
+        case InvoiceStatus.paid:
+          return 'Paid';
+      }
+    }
   }
 }

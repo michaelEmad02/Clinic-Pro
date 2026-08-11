@@ -249,36 +249,126 @@ class PrintingSettingsSheet extends StatelessWidget {
 
                 // ─── مقاس الورق الافتراضي ───
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       AppStrings.defaultPageFormatLabel,
                       style: AppTextStyles.bodyMedium(context),
                     ),
                     const SizedBox(width: 12),
-                    ChoiceChip(
-                      label: const Text('A5'),
-                      selected: settings.defaultPageFormat == 'A5',
-                      onSelected: (selected) {
-                        if (selected) {
-                          cubit.updateDraft(
-                              settings.copyWith(defaultPageFormat: 'A5'));
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('A4'),
-                      selected: settings.defaultPageFormat == 'A4',
-                      onSelected: (selected) {
-                        if (selected) {
-                          cubit.updateDraft(
-                              settings.copyWith(defaultPageFormat: 'A4'));
-                        }
-                      },
+                    Expanded(
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ChoiceChip(
+                            label: const Text('A4'),
+                            selected: settings.defaultPageFormat == 'A4',
+                            onSelected: (selected) {
+                              if (selected) {
+                                cubit.updateDraft(
+                                    settings.copyWith(defaultPageFormat: 'A4'));
+                              }
+                            },
+                          ),
+                          ChoiceChip(
+                            label: const Text('A5'),
+                            selected: settings.defaultPageFormat == 'A5',
+                            onSelected: (selected) {
+                              if (selected) {
+                                cubit.updateDraft(
+                                    settings.copyWith(defaultPageFormat: 'A5'));
+                              }
+                            },
+                          ),
+                          ChoiceChip(
+                            label: const Text('A6'),
+                            selected: settings.defaultPageFormat == 'A6',
+                            onSelected: (selected) {
+                              if (selected) {
+                                cubit.updateDraft(
+                                    settings.copyWith(defaultPageFormat: 'A6'));
+                              }
+                            },
+                          ),
+                          ChoiceChip(
+                            label: const Text('تخصيص'),
+                            selected: settings.defaultPageFormat == 'custom',
+                            onSelected: (selected) {
+                              if (selected) {
+                                cubit.updateDraft(
+                                    settings.copyWith(defaultPageFormat: 'custom'));
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
+                if (settings.defaultPageFormat == 'custom') ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: settings.customWidth.toString(),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(
+                            labelText: 'عرض الورقة (سم)',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                              borderSide: BorderSide(color: context.border),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                              borderSide: BorderSide(color: context.primary, width: 1.5),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                            ),
+                            isDense: true,
+                          ),
+                          onChanged: (val) {
+                            final parsed = double.tryParse(val);
+                            if (parsed != null) {
+                              cubit.updateDraft(settings.copyWith(customWidth: parsed));
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: settings.customHeight.toString(),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(
+                            labelText: 'ارتفاع الورقة (سم)',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                              borderSide: BorderSide(color: context.border),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                              borderSide: BorderSide(color: context.primary, width: 1.5),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                            ),
+                            isDense: true,
+                          ),
+                          onChanged: (val) {
+                            final parsed = double.tryParse(val);
+                            if (parsed != null) {
+                              cubit.updateDraft(settings.copyWith(customHeight: parsed));
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
 
                 // ─── زر الحفظ ───
                 SizedBox(

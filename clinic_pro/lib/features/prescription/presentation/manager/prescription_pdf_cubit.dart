@@ -33,7 +33,9 @@ class PrescriptionPdfCubit extends Cubit<PrescriptionPdfState> {
     PatientEntity? patient,
     PrintingSettingsEntity? printingSettings,
     bool includeHeader = true,
-    bool isA5Format = false,
+    String pageFormat = 'A4',
+    double? customWidth,
+    double? customHeight,
   }) async {
     emit(state.copyWith(status: PrescriptionPdfStatus.loading));
 
@@ -47,7 +49,10 @@ class PrescriptionPdfCubit extends Cubit<PrescriptionPdfState> {
             await _getOwnerPrintingSettingsUseCase(ownerId, false);
         settingsResult.fold(
           (_) {},
-          (settings) => finalPrintingSettings = settings,
+          (settings) {
+            finalPrintingSettings = settings;
+            emit(state.copyWith(printingSettings: settings));
+          },
         );
       }
     }
@@ -59,7 +64,9 @@ class PrescriptionPdfCubit extends Cubit<PrescriptionPdfState> {
       patient: patient,
       printingSettings: finalPrintingSettings,
       includeHeader: includeHeader,
-      isA5Format: isA5Format,
+      pageFormat: pageFormat,
+      customWidth: customWidth,
+      customHeight: customHeight,
     );
 
     return result.fold(
@@ -77,6 +84,23 @@ class PrescriptionPdfCubit extends Cubit<PrescriptionPdfState> {
         ));
         return pdfBytes;
       },
+    );
+  }
+
+  /// تحميل إعدادات الطباعة الخاصة بالمالك وتحديث الحالة
+  Future<void> loadPrintingSettings(String ownerId) async {
+    if (ownerId.isEmpty) return;
+    emit(state.copyWith(status: PrescriptionPdfStatus.loading));
+    final result = await _getOwnerPrintingSettingsUseCase(ownerId, false);
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: PrescriptionPdfStatus.error,
+        errorMessage: failure.message,
+      )),
+      (settings) => emit(state.copyWith(
+        status: PrescriptionPdfStatus.initial,
+        printingSettings: settings,
+      )),
     );
   }
 }

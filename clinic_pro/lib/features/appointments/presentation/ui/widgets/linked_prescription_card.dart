@@ -9,6 +9,9 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../domain/entities/appointment_entity.dart';
+import '../../../../prescription/domain/entities/prescription_entity.dart';
+import '../../../../patients/domain/entities/patient_entity.dart';
+import '../../../../prescription/presentation/ui/widgets/prescription_print_dialog.dart';
 
 class PrescriptionDrugItem {
   final String name;
@@ -158,9 +161,33 @@ class LinkedPrescriptionCard extends StatelessWidget {
             const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppStrings.noData)),
-                );
+                if (appointment != null) {
+                  final prescription = PrescriptionEntity(
+                    id: appointment!.prescriptionDrugs?.firstOrNull?.prescriptionId ?? '',
+                    createdAt: appointment!.createdAt.toIso8601String(),
+                    clinicId: appointment!.clinicId,
+                    doctorId: appointment!.doctorId,
+                    patientId: appointment!.patientId,
+                    appointmentId: appointment!.id,
+                    diagnosis: appointment!.prescriptionDiagnosis ?? diagnosis,
+                    notes: '',
+                    items: appointment!.prescriptionDrugs ?? [],
+                  );
+
+                  final patientEntity = PatientEntity(
+                    id: appointment!.patientId,
+                    clinicId: appointment!.clinicId,
+                    name: appointment!.patientName ?? 'مريض العيادة',
+                    phone: appointment!.patientPhone,
+                    gender: 'male',
+                  );
+
+                  PrescriptionPrintDialog.show(
+                    context,
+                    prescription: prescription,
+                    patient: patientEntity,
+                  );
+                }
               },
               icon: const Icon(Icons.print_outlined, size: 18),
               label: Text(AppStrings.printPrescription),

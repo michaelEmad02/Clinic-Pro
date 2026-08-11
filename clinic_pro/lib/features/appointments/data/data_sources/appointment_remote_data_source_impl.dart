@@ -345,6 +345,21 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
         table: SupabaseTables.invoices,
         eq: {'source_id': raw['id']},
       );
+
+      for (final inv in invoices) {
+        final creatorId = inv['created_by'];
+        if (creatorId != null && (creatorId as String).isNotEmpty) {
+          try {
+            final userRes = await _cloud.select(
+              table: SupabaseTables.users,
+              eq: {'id': creatorId},
+            );
+            if (userRes.isNotEmpty) {
+              inv['creator_name'] = userRes.first['name'] as String?;
+            }
+          } catch (_) {}
+        }
+      }
     }
 
     return {

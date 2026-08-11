@@ -430,6 +430,8 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
             'doctor_id': doctorId,
             'is_active': schedule['is_active'] as bool? ?? false,
             'name': docResults.first['name'] as String? ?? '',
+            'email': docResults.first['email'] as String? ?? '',
+            'phone': docResults.first['phone'] as String? ?? '',
             'specialty': docResults.first['specialty'] as String? ?? '',
             'avatar_url':
                 docResults.first['image_url'] ?? docResults.first['avatar_url'],

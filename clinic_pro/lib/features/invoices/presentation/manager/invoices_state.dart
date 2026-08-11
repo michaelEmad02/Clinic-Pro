@@ -1,239 +1,118 @@
 // ────────────────────────────────────────────────────────
-// حالات شاشة الفواتير — نماذج InvoiceItem وفلاترها
+// InvoicesState — حالة إدارة الفواتير بـ Presentation Layer
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
+import 'package:clinic_pro/features/invoices/domain/entities/unpaid_appointment_entity.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/strings/app_strings.dart';
 
-enum InvoiceFilter { all, paid, pending, partial }
+enum InvoicesStatus { initial, loading, success, failure, saving, deleting }
 
-class InvoiceItem extends Equatable {
-  final String id;
-  final String clinicId;
-  final String patientId;
-  final String patientName;
-  final String appointmentType;
-  final String sourceId;
-  final String sourceType;
-  final double totalAmount;
-  final double paidAmount;
-  final String? paymentMethod;
-  final String createdAt;
-  final String createdBy;
+enum InvoicesDateRange { today, thisWeek, thisMonth, threeMonths, all, custom }
 
-  const InvoiceItem({
-    required this.id,
-    this.clinicId = 'c-1',
-    required this.patientId,
-    required this.patientName,
-    required this.appointmentType,
-    required this.sourceId,
-    this.sourceType = 'appointment',
-    required this.totalAmount,
-    required this.paidAmount,
-    this.paymentMethod,
-    required this.createdAt,
-    required this.createdBy,
+class InvoicesState extends Equatable {
+  final InvoicesStatus status;
+  final List<InvoiceEntity> invoices;
+  final List<InvoiceEntity> filteredInvoices;
+  final List<UnpaidAppointmentEntity> patientUnpaidAppointments;
+  final String activeStatusFilter; // 'الكل', 'معلق', 'جزئي', 'مدفوع'
+  final InvoicesDateRange activeDateRange;
+  final DateTime? customStartDate;
+  final DateTime? customEndDate;
+  final String searchQuery;
+  final String? errorMessage;
+  final String? successMessage;
+
+  const InvoicesState({
+    this.status = InvoicesStatus.initial,
+    this.invoices = const [],
+    this.filteredInvoices = const [],
+    this.patientUnpaidAppointments = const [],
+    this.activeStatusFilter = 'الكل',
+    this.activeDateRange = InvoicesDateRange.all,
+    this.customStartDate,
+    this.customEndDate,
+    this.searchQuery = '',
+    this.errorMessage,
+    this.successMessage,
   });
 
-  String get status {
-    if (paidAmount <= 0) return 'pending';
-    if (paidAmount < totalAmount) return 'partial';
-    return 'paid';
-  }
+  /// حساب إجمالي الإيرادات المسجلة (المبالغ المحصلة فعلياً) للفواتير المفلترة
+  double get totalRevenue =>
+      filteredInvoices.fold(0.0, (sum, inv) => sum + inv.paidAmount);
 
-  String get statusLabel {
-    switch (status) {
-      case 'paid':
-        return AppStrings.isArabic ? 'مدفوع' : 'Paid';
-      case 'pending':
-        return AppStrings.isArabic ? 'معلق' : 'Pending';
-      case 'partial':
-        return AppStrings.isArabic ? 'جزئي' : 'Partial';
-      default:
-        return status;
+  /// حساب إجمالي المبالغ المعلقة المتأخرة للفواتير المفلترة مع مراعاة الفواتير المتعددة لنفس الموعد
+  double get totalPending {
+    final Map<String, List<InvoiceEntity>> grouped = {};
+    final List<InvoiceEntity> nonAppointmentInvoices = [];
+
+    for (final inv in filteredInvoices) {
+      if (inv.sourceType == 'appointment' && inv.sourceId.isNotEmpty) {
+        grouped.putIfAbsent(inv.sourceId, () => []).add(inv);
+      } else {
+        nonAppointmentInvoices.add(inv);
+      }
     }
-  }
 
-  String get paymentMethodLabel {
-    switch (paymentMethod) {
-      case 'cash':
-        return AppStrings.isArabic ? 'نقدي' : 'Cash';
-      case 'card':
-        return AppStrings.isArabic ? 'بطاقة' : 'Card';
-      case 'bank':
-        return AppStrings.isArabic ? 'تحويل بنكي' : 'Bank Transfer';
-      default:
-        return '—';
+    double pending = 0.0;
+    for (final entry in grouped.entries) {
+      final list = entry.value;
+      if (list.isEmpty) continue;
+
+      final visitPrice = list.first.totalAmount;
+      final totalPaid = list.fold<double>(0.0, (sum, inv) => sum + inv.paidAmount);
+      final remaining = (visitPrice - totalPaid) > 0 ? (visitPrice - totalPaid) : 0.0;
+      pending += remaining;
     }
+
+    for (final inv in nonAppointmentInvoices) {
+      pending += inv.remainingAmount;
+    }
+
+    return pending;
   }
 
-  String get formattedDate {
-    final date = DateTime.tryParse(createdAt);
-    if (date == null) return createdAt;
-    final arabicMonths = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-    ];
-    final englishMonths = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    final months = AppStrings.isArabic ? arabicMonths : englishMonths;
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
-  }
-
-  InvoiceItem copyWith({
-    double? totalAmount,
-    double? paidAmount,
-    String? paymentMethod,
+  InvoicesState copyWith({
+    InvoicesStatus? status,
+    List<InvoiceEntity>? invoices,
+    List<InvoiceEntity>? filteredInvoices,
+    List<UnpaidAppointmentEntity>? patientUnpaidAppointments,
+    String? activeStatusFilter,
+    InvoicesDateRange? activeDateRange,
+    DateTime? customStartDate,
+    DateTime? customEndDate,
+    String? searchQuery,
+    String? errorMessage,
+    String? successMessage,
   }) {
-    return InvoiceItem(
-      id: id,
-      clinicId: clinicId,
-      patientId: patientId,
-      patientName: patientName,
-      appointmentType: appointmentType,
-      sourceId: sourceId,
-      sourceType: sourceType,
-      totalAmount: totalAmount ?? this.totalAmount,
-      paidAmount: paidAmount ?? this.paidAmount,
-      paymentMethod: paymentMethod ?? this.paymentMethod,
-      createdAt: createdAt,
-      createdBy: createdBy,
-    );
-  }
-
-  @override
-  List<Object?> get props =>
-      [id, clinicId, patientName, totalAmount, paidAmount, status, sourceType];
-}
-
-enum InvoicesDateRange { today, thisWeek, thisMonth, threeMonths, custom, all }
-
-abstract class InvoicesState extends Equatable {
-  const InvoicesState();
-  @override
-  List<Object?> get props => [];
-}
-
-class InvoicesInitial extends InvoicesState {}
-
-class InvoicesLoading extends InvoicesState {}
-
-class InvoicesLoaded extends InvoicesState {
-  final List<InvoiceItem> allInvoices;
-  final InvoiceFilter activeFilter;
-  final InvoicesDateRange activeRange;
-  final DateTime? customStart;
-  final DateTime? customEnd;
-
-  const InvoicesLoaded({
-    required this.allInvoices,
-    this.activeFilter = InvoiceFilter.all,
-    this.activeRange = InvoicesDateRange.thisMonth,
-    this.customStart,
-    this.customEnd,
-  });
-
-  List<InvoiceItem> get filteredInvoices {
-    final now = DateTime.now();
-    DateTime start;
-    DateTime end = DateTime.now();
-
-    switch (activeRange) {
-      case InvoicesDateRange.today:
-        start = DateTime(now.year, now.month, now.day);
-        break;
-      case InvoicesDateRange.thisWeek:
-        start = now.subtract(const Duration(days: 7));
-        break;
-      case InvoicesDateRange.thisMonth:
-        start = DateTime(now.year, now.month, 1);
-        break;
-      case InvoicesDateRange.threeMonths:
-        start = now.subtract(const Duration(days: 90));
-        break;
-      case InvoicesDateRange.custom:
-        start = customStart ?? DateTime(2000);
-        end = customEnd ?? DateTime.now();
-        break;
-      case InvoicesDateRange.all:
-        start = DateTime(2000);
-        break;
-    }
-
-    final dateFiltered = allInvoices.where((inv) {
-      final date = DateTime.tryParse(inv.createdAt);
-      if (date == null) return true;
-      return date.isAfter(start.subtract(const Duration(seconds: 1))) &&
-          date.isBefore(end.add(const Duration(days: 1)));
-    }).toList();
-
-    switch (activeFilter) {
-      case InvoiceFilter.all:
-        return dateFiltered;
-      case InvoiceFilter.paid:
-        return dateFiltered.where((inv) => inv.status == 'paid').toList();
-      case InvoiceFilter.pending:
-        return dateFiltered.where((inv) => inv.status == 'pending').toList();
-      case InvoiceFilter.partial:
-        return dateFiltered.where((inv) => inv.status == 'partial').toList();
-    }
-  }
-
-  double get todayRevenue {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    return allInvoices
-        .where((inv) =>
-            inv.status == 'paid' &&
-            inv.createdAt.startsWith(today))
-        .fold(0.0, (sum, inv) => sum + inv.paidAmount);
-  }
-
-  int get pendingCount =>
-      allInvoices.where((inv) => inv.status == 'pending').length;
-
-  double get monthRevenue {
-    final now = DateTime.now();
-    final monthStart = DateTime(now.year, now.month, 1)
-        .toIso8601String()
-        .substring(0, 10);
-    return allInvoices
-        .where((inv) =>
-            inv.status == 'paid' && inv.createdAt.compareTo(monthStart) >= 0)
-        .fold(0.0, (sum, inv) => sum + inv.paidAmount);
-  }
-
-  InvoicesLoaded copyWith({
-    List<InvoiceItem>? allInvoices,
-    InvoiceFilter? activeFilter,
-    InvoicesDateRange? activeRange,
-    DateTime? customStart,
-    DateTime? customEnd,
-  }) {
-    return InvoicesLoaded(
-      allInvoices: allInvoices ?? this.allInvoices,
-      activeFilter: activeFilter ?? this.activeFilter,
-      activeRange: activeRange ?? this.activeRange,
-      customStart: customStart ?? this.customStart,
-      customEnd: customEnd ?? this.customEnd,
+    return InvoicesState(
+      status: status ?? this.status,
+      invoices: invoices ?? this.invoices,
+      filteredInvoices: filteredInvoices ?? this.filteredInvoices,
+      patientUnpaidAppointments:
+          patientUnpaidAppointments ?? this.patientUnpaidAppointments,
+      activeStatusFilter: activeStatusFilter ?? this.activeStatusFilter,
+      activeDateRange: activeDateRange ?? this.activeDateRange,
+      customStartDate: customStartDate ?? this.customStartDate,
+      customEndDate: customEndDate ?? this.customEndDate,
+      searchQuery: searchQuery ?? this.searchQuery,
+      errorMessage: errorMessage,
+      successMessage: successMessage,
     );
   }
 
   @override
   List<Object?> get props => [
-        allInvoices,
-        activeFilter,
-        activeRange,
-        customStart,
-        customEnd,
+        status,
+        invoices,
+        filteredInvoices,
+        patientUnpaidAppointments,
+        activeStatusFilter,
+        activeDateRange,
+        customStartDate,
+        customEndDate,
+        searchQuery,
+        errorMessage,
+        successMessage,
       ];
-}
-
-class InvoicesError extends InvoicesState {
-  final String message;
-  const InvoicesError(this.message);
-  @override
-  List<Object?> get props => [message];
 }

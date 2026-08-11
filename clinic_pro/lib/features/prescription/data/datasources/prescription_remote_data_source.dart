@@ -55,7 +55,9 @@ abstract class IPrescriptionRemoteDataSource {
     PatientEntity? patient,
     PrintingSettingsEntity? printingSettings,
     bool includeHeader = true,
-    bool isA5Format = false,
+    String pageFormat = 'A4',
+    double? customWidth,
+    double? customHeight,
   });
 }
 
@@ -311,7 +313,9 @@ class PrescriptionRemoteDataSourceImpl
     PatientEntity? patient,
     PrintingSettingsEntity? printingSettings,
     bool includeHeader = true,
-    bool isA5Format = false,
+    String pageFormat = 'A4',
+    double? customWidth,
+    double? customHeight,
   }) async {
     // 1. جلب بيانات المريض إذا لم تكن ممررة
     PatientEntity? currentPatient = patient;
@@ -329,7 +333,9 @@ class PrescriptionRemoteDataSourceImpl
       patient: currentPatient,
       printingSettings: printingSettings,
       includeHeader: includeHeader,
-      isA5Format: isA5Format,
+      pageFormat: pageFormat,
+      customWidth: customWidth,
+      customHeight: customHeight,
     );
   }
 }

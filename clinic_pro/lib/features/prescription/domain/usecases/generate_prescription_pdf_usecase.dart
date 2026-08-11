@@ -23,7 +23,9 @@ class GeneratePrescriptionPdfUseCase {
     PatientEntity? patient,
     PrintingSettingsEntity? printingSettings,
     bool includeHeader = true,
-    bool isA5Format = false,
+    String pageFormat = 'A4',
+    double? customWidth,
+    double? customHeight,
   }) {
     return _repository.generatePrescriptionPdf(
       prescription: prescription,
@@ -32,7 +34,9 @@ class GeneratePrescriptionPdfUseCase {
       patient: patient,
       printingSettings: printingSettings,
       includeHeader: includeHeader,
-      isA5Format: isA5Format,
+      pageFormat: pageFormat,
+      customWidth: customWidth,
+      customHeight: customHeight,
     );
   }
 }
