@@ -183,6 +183,8 @@ import '../../features/prescription/domain/usecases/drugs_usecases.dart'
     as _i628;
 import '../../features/prescription/domain/usecases/generate_prescription_pdf_usecase.dart'
     as _i880;
+import '../../features/prescription/domain/usecases/increment_template_usage_usecase.dart'
+    as _i372;
 import '../../features/prescription/domain/usecases/load_prescription_data_usecase.dart'
     as _i85;
 import '../../features/prescription/domain/usecases/save_prescription_usecase.dart'
@@ -555,6 +557,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i880.GeneratePrescriptionPdfUseCase>(() =>
         _i880.GeneratePrescriptionPdfUseCase(
             gh<_i845.IPrescriptionRepository>()));
+    gh.factory<_i372.IncrementTemplateUsageUseCase>(() =>
+        _i372.IncrementTemplateUsageUseCase(
+            gh<_i845.IPrescriptionRepository>()));
     gh.factory<_i392.AddPatientUseCase>(
         () => _i392.AddPatientUseCase(gh<_i69.IPatientsRepository>()));
     gh.factory<_i774.DeletePatientUseCase>(
@@ -570,6 +575,13 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i986.LoadPatientsUseCase(gh<_i69.IPatientsRepository>()));
     gh.factory<_i256.UpdatePatientUseCase>(
         () => _i256.UpdatePatientUseCase(gh<_i69.IPatientsRepository>()));
+    gh.factory<_i329.PrescriptionBloc>(() => _i329.PrescriptionBloc(
+          gh<_i85.LoadPrescriptionDataUseCase>(),
+          gh<_i712.SavePrescriptionUseCase>(),
+          gh<_i274.CopyPreviousPrescriptionUseCase>(),
+          gh<_i535.GetTemplateDataUseCase>(),
+          gh<_i372.IncrementTemplateUsageUseCase>(),
+        ));
     gh.factory<_i780.AppointmentsBloc>(() => _i780.AppointmentsBloc(
           gh<_i228.GetAppointmentsUseCase>(),
           gh<_i431.ConfirmArrivalUseCase>(),
@@ -647,12 +659,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i392.AddPatientUseCase>(),
           gh<_i256.UpdatePatientUseCase>(),
           gh<_i774.DeletePatientUseCase>(),
-        ));
-    gh.factory<_i329.PrescriptionBloc>(() => _i329.PrescriptionBloc(
-          gh<_i85.LoadPrescriptionDataUseCase>(),
-          gh<_i712.SavePrescriptionUseCase>(),
-          gh<_i274.CopyPreviousPrescriptionUseCase>(),
-          gh<_i535.GetTemplateDataUseCase>(),
         ));
     gh.factory<_i534.TemplatesCubit>(() => _i534.TemplatesCubit(
           gh<_i535.GetTemplatesUseCase>(),

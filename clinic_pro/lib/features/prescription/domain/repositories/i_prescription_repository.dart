@@ -86,4 +86,7 @@ abstract class IPrescriptionRepository {
 
   /// حذف دواء
   Future<Either<Failure, void>> deleteDrug(String id);
+
+  /// زيادة عدد مرات استخدام قالب الروشتة بمقدار 1
+  Future<Either<Failure, void>> incrementTemplateUsage(String templateId);
 }

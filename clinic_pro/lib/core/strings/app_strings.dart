@@ -103,7 +103,7 @@ class AppStrings {
   static String get updatedSuccess =>
       isArabic ? 'تم تحديث بيانات العيادة' : 'Clinic details updated';
   static String get addedSuccess =>
-      isArabic ? 'تم إضافة العيادة' : 'Clinic added successfully';
+      isArabic ? 'تم الاضافه بنجاح' : 'added successfully';
 
   // Staff
   static String get staff => isArabic ? 'الطاقم الطبي' : 'Staff';
@@ -214,6 +214,10 @@ class AppStrings {
   static String get egp => isArabic ? 'ج.م' : 'EGP';
   static String get monthlyRevenue =>
       isArabic ? 'إيرادات الشهر' : 'Monthly Revenue';
+  static String get monthlyExpenses =>
+      isArabic ? 'مصروفات الشهر' : 'Monthly Expenses';
+  static String get netProfit =>
+      isArabic ? 'صافي الربح' : 'Net Profit';
   static String get completedAppointments =>
       isArabic ? 'المواعيد المكتملة' : 'Completed Appointments';
   static String get overallRating =>
@@ -481,7 +485,8 @@ class AppStrings {
   static String get confirmed => isArabic ? 'مؤكد' : 'Confirmed';
   static String get inProgress => isArabic ? 'قيد الكشف' : 'In Progress';
   static String get completed => isArabic ? 'منتهي' : 'Completed';
-  static String get completeVisit => isArabic ? 'إتمام الزيارة' : 'Complete Visit';
+  static String get completeVisit =>
+      isArabic ? 'إتمام الزيارة' : 'Complete Visit';
   static String get cancelled => isArabic ? 'ملغي' : 'Cancelled';
   static String get booked => isArabic ? 'حُجز' : 'Booked';
   static String get arrived => isArabic ? 'وصل' : 'Arrived';
@@ -592,7 +597,8 @@ class AppStrings {
   static String get appVersion => 'v1.0.0 — ClinicPro';
   static String get arabic => isArabic ? 'العربية' : 'Arabic';
   static String get english => isArabic ? 'الإنجليزية' : 'English';
-  static String get planFeatures => isArabic ? 'ميزات الخطة:' : 'Plan Features:';
+  static String get planFeatures =>
+      isArabic ? 'ميزات الخطة:' : 'Plan Features:';
 
   // Auth
   static String get login => isArabic ? 'تسجيل الدخول' : 'Login';
@@ -813,45 +819,76 @@ class AppStrings {
 
   static String get bookingOrder => isArabic ? 'ترتيب الحجز' : 'Booking Order';
   static String get customPattern => isArabic ? 'نمط مخصص' : 'Custom Pattern';
-  static String get scheduledAppointments => isArabic ? 'مواعيد بوقت محدد' : 'Scheduled Appointments';
+  static String get scheduledAppointments =>
+      isArabic ? 'مواعيد بوقت محدد' : 'Scheduled Appointments';
   static String get arrivalOrder => isArabic ? 'ترتيب الحضور' : 'Arrival Order';
   static String get gallery => isArabic ? 'المعرض' : 'Gallery';
   static String get cameraLabel => isArabic ? 'الكاميرا' : 'Camera';
-  static String get workingHoursSaved => isArabic ? 'تم حفظ مواعيد العمل بنجاح ✓' : 'Working hours saved successfully ✓';
-  static String get visitTypesSaved => isArabic ? 'تم حفظ أنواع الزيارات بنجاح ✓' : 'Visit types saved successfully ✓';
-  static String get patternSaved => isArabic ? 'تم حفظ النمط بنجاح' : 'Pattern saved successfully';
-  static String get dragToReorder => isArabic ? 'اسحب لإعادة ترتيب الأنواع' : 'Drag to reorder types';
-  static String get unsavedChanges => isArabic ? '(توجد تغييرات غير محفوظة)' : '(Unsaved changes)';
-  static String get avgVisitTime => isArabic ? 'متوسط وقت الزيارة (بالدقائق):' : 'Average visit time (minutes):';
-  static String get noTypesAdded => isArabic ? 'لم يتم إضافة أنواع بعد، أضف أول نوع' : 'No types added yet, add the first type';
+  static String get workingHoursSaved => isArabic
+      ? 'تم حفظ مواعيد العمل بنجاح ✓'
+      : 'Working hours saved successfully ✓';
+  static String get visitTypesSaved => isArabic
+      ? 'تم حفظ أنواع الزيارات بنجاح ✓'
+      : 'Visit types saved successfully ✓';
+  static String get patternSaved =>
+      isArabic ? 'تم حفظ النمط بنجاح' : 'Pattern saved successfully';
+  static String get dragToReorder =>
+      isArabic ? 'اسحب لإعادة ترتيب الأنواع' : 'Drag to reorder types';
+  static String get unsavedChanges =>
+      isArabic ? '(توجد تغييرات غير محفوظة)' : '(Unsaved changes)';
+  static String get avgVisitTime => isArabic
+      ? 'متوسط وقت الزيارة (بالدقائق):'
+      : 'Average visit time (minutes):';
+  static String get noTypesAdded => isArabic
+      ? 'لم يتم إضافة أنواع بعد، أضف أول نوع'
+      : 'No types added yet, add the first type';
   static String get addType => isArabic ? 'أضف نوع' : 'Add Type';
   static String get preview => isArabic ? 'معاينة' : 'Preview';
   static String get activeLabel => isArabic ? 'مباشر' : 'Active';
   static String get inactiveLabel => isArabic ? 'غير نشط' : 'Inactive';
-  static String get newCycle => isArabic ? '── 🔁 دورة جديدة ──' : '── 🔁 New Cycle ──';
+  static String get newCycle =>
+      isArabic ? '── 🔁 دورة جديدة ──' : '── 🔁 New Cycle ──';
   static String get savePattern => isArabic ? 'حفظ النمط' : 'Save Pattern';
-  static String get addVisitTypesFirst => isArabic ? 'يرجى إضافة أنواع الزيارات أولاً من الإعدادات' : 'Please add visit types first from settings';
+  static String get addVisitTypesFirst => isArabic
+      ? 'يرجى إضافة أنواع الزيارات أولاً من الإعدادات'
+      : 'Please add visit types first from settings';
   static String get selectTypeTitle => isArabic ? 'اختيار نوع' : 'Select Type';
   static String get patientHashPrefix => isArabic ? 'مريض #' : 'Patient #';
-  static String get dayClosed => isArabic ? 'يوم مغلق - لا يوجد مواعيد' : 'Closed day - no appointments';
+  static String get dayClosed =>
+      isArabic ? 'يوم مغلق - لا يوجد مواعيد' : 'Closed day - no appointments';
   static String get fromLabel => isArabic ? 'من' : 'From';
   static String get toLabel => isArabic ? 'إلى' : 'To';
   static String get addedTypes => isArabic ? 'الأنواع المضافة' : 'Added Types';
-  static String get addVisitTypeLabel => isArabic ? 'أضف نوع زيارة' : 'Add Visit Type';
-  static String get addNewTypeLabel => isArabic ? 'إضافة نوع جديد' : 'Add New Type';
+  static String get addVisitTypeLabel =>
+      isArabic ? 'أضف نوع زيارة' : 'Add Visit Type';
+  static String get addNewTypeLabel =>
+      isArabic ? 'إضافة نوع جديد' : 'Add New Type';
   static String get selectTypeHint => isArabic ? 'اختر النوع' : 'Select type';
   static String get priceHint => isArabic ? 'السعر' : 'Price';
-  static String get upgradeTitle => isArabic ? 'ارتقِ بعيادتك إلى المستوى التالي' : 'Elevate your clinic to the next level';
-  static String get upgradeDesc => isArabic ? 'احصل على مساحة تخزين غير محدودة، فروع متعددة، وميزات الذكاء الاصطناعي المتقدمة.' : 'Get unlimited storage, multiple branches, and advanced AI features.';
-  static String get upgradeNow => isArabic ? 'ترقية الخطة الآن' : 'Upgrade Plan Now';
-  static String get trialEndingSoon => isArabic ? 'تنتهي الفترة التجريبية قريباً' : 'Trial period ending soon';
-  static String get trialDesc => isArabic ? 'قم بترقية باقتك الآن لضمان استمرارية الوصول إلى جميع بيانات مرضاك بدون انقطاع.' : 'Upgrade your plan now to ensure uninterrupted access to all your patient data.';
-  static String get daysRemaining => isArabic ? 'أيام متبقية' : 'Days remaining';
+  static String get upgradeTitle => isArabic
+      ? 'ارتقِ بعيادتك إلى المستوى التالي'
+      : 'Elevate your clinic to the next level';
+  static String get upgradeDesc => isArabic
+      ? 'احصل على مساحة تخزين غير محدودة، فروع متعددة، وميزات الذكاء الاصطناعي المتقدمة.'
+      : 'Get unlimited storage, multiple branches, and advanced AI features.';
+  static String get upgradeNow =>
+      isArabic ? 'ترقية الخطة الآن' : 'Upgrade Plan Now';
+  static String get trialEndingSoon =>
+      isArabic ? 'تنتهي الفترة التجريبية قريباً' : 'Trial period ending soon';
+  static String get trialDesc => isArabic
+      ? 'قم بترقية باقتك الآن لضمان استمرارية الوصول إلى جميع بيانات مرضاك بدون انقطاع.'
+      : 'Upgrade your plan now to ensure uninterrupted access to all your patient data.';
+  static String get daysRemaining =>
+      isArabic ? 'أيام متبقية' : 'Days remaining';
   static String get remainingCount => isArabic ? 'متبقي' : 'Remaining';
-  static String get overLimit => isArabic ? 'تجاوز الحد المسموح' : 'Over the allowed limit';
-  static String get addVisitType => isArabic ? 'أضف نوع زيارة' : 'Add Visit Type';
-  static String get addNewVisitType => isArabic ? 'إضافة نوع جديد' : 'Add New Type';
-  static String enterLabel(String label) => isArabic ? 'أدخل $label' : 'Enter $label';
+  static String get overLimit =>
+      isArabic ? 'تجاوز الحد المسموح' : 'Over the allowed limit';
+  static String get addVisitType =>
+      isArabic ? 'أضف نوع زيارة' : 'Add Visit Type';
+  static String get addNewVisitType =>
+      isArabic ? 'إضافة نوع جديد' : 'Add New Type';
+  static String enterLabel(String label) =>
+      isArabic ? 'أدخل $label' : 'Enter $label';
   static String mapSlotTypeToLabel(String slotType) {
     switch (slotType) {
       case 'urgent':
@@ -894,20 +931,35 @@ class AppStrings {
 
   // Appointments extra
   static String get back => isArabic ? 'تراجع' : 'Back';
-  static String get confirmCancel => isArabic ? 'تأكيد الإلغاء' : 'Confirm Cancel';
-  static String get appointmentNotFound => isArabic ? 'الموعد غير موجود' : 'Appointment not found';
-  static String get treatingDoctor => isArabic ? 'الطبيب المعالج' : 'Treating Doctor';
-  static String get fillRequiredFields => isArabic ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields';
+  static String get confirmCancel =>
+      isArabic ? 'تأكيد الإلغاء' : 'Confirm Cancel';
+  static String get appointmentNotFound =>
+      isArabic ? 'الموعد غير موجود' : 'Appointment not found';
+  static String get treatingDoctor =>
+      isArabic ? 'الطبيب المعالج' : 'Treating Doctor';
+  static String get fillRequiredFields => isArabic
+      ? 'يرجى ملء جميع الحقول المطلوبة'
+      : 'Please fill all required fields';
   static String get notSpecified => isArabic ? 'غير محدد' : 'Not specified';
   static String get time => isArabic ? 'الوقت' : 'Time';
-  static String get noAppointmentsMatchFilter => isArabic ? 'لا يوجد مواعيد تطابق الفلتر الحالي.' : 'No appointments match the current filter.';
-  static String get noPatientsFound => isArabic ? 'لا يوجد مرضى' : 'No patients found';
-  static String get confirmArrivalAction => isArabic ? 'تأكيد الحضور' : 'Confirm Arrival';
-  static String get markAsUrgent => isArabic ? 'تحديد كحالة طارئة' : 'Mark as Urgent';
-  static String get cancelEmergencyStatus => isArabic ? 'إلغاء حالة الطوارئ' : 'Cancel Emergency Status';
-  static String get deletePermanentlyAction => isArabic ? 'حذف نهائياً' : 'Delete Permanently';
-  static String get deleteAppointmentTitle => isArabic ? 'حذف الموعد نهائياً' : 'Delete Appointment Permanently';
-  static String get confirmDeleteAppointmentMsg => isArabic ? 'هل أنت متأكد من حذف هذا الموعد نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this appointment? This action cannot be undone.';
+  static String get noAppointmentsMatchFilter => isArabic
+      ? 'لا يوجد مواعيد تطابق الفلتر الحالي.'
+      : 'No appointments match the current filter.';
+  static String get noPatientsFound =>
+      isArabic ? 'لا يوجد مرضى' : 'No patients found';
+  static String get confirmArrivalAction =>
+      isArabic ? 'تأكيد الحضور' : 'Confirm Arrival';
+  static String get markAsUrgent =>
+      isArabic ? 'تحديد كحالة طارئة' : 'Mark as Urgent';
+  static String get cancelEmergencyStatus =>
+      isArabic ? 'إلغاء حالة الطوارئ' : 'Cancel Emergency Status';
+  static String get deletePermanentlyAction =>
+      isArabic ? 'حذف نهائياً' : 'Delete Permanently';
+  static String get deleteAppointmentTitle =>
+      isArabic ? 'حذف الموعد نهائياً' : 'Delete Appointment Permanently';
+  static String get confirmDeleteAppointmentMsg => isArabic
+      ? 'هل أنت متأكد من حذف هذا الموعد نهائياً؟ لا يمكن التراجع عن هذا الإجراء.'
+      : 'Are you sure you want to permanently delete this appointment? This action cannot be undone.';
   static String cancelAppointmentWithInvoice(bool hasInvoice) => isArabic
       ? hasInvoice
           ? 'هذا الموعد لديه فاتورة مسجلة. هل أنت متأكد من إلغاء الموعد؟ سيتم حذف الفاتورة المرتبطة به نهائياً واسترجاع المبلغ.'
@@ -915,11 +967,16 @@ class AppStrings {
       : hasInvoice
           ? 'This appointment has a registered invoice. Are you sure you want to cancel? The associated invoice will be permanently deleted and the amount refunded.'
           : 'Are you sure you want to cancel this appointment?';
-  static String get invoiceInFinancialModule => isArabic ? 'سيتم فتح الفاتورة في المرحلة المالية' : 'Invoice will be opened in the financial module';
-  static String get invoiceRegistrationInFinancialModule => isArabic ? 'سيتم تفعيل تسجيل الفاتورة في المرحلة المالية' : 'Invoice registration will be available in the financial module';
+  static String get invoiceInFinancialModule => isArabic
+      ? 'سيتم فتح الفاتورة في المرحلة المالية'
+      : 'Invoice will be opened in the financial module';
+  static String get invoiceRegistrationInFinancialModule => isArabic
+      ? 'سيتم تفعيل تسجيل الفاتورة في المرحلة المالية'
+      : 'Invoice registration will be available in the financial module';
 
   // Visit Types & Duration
-  static String get durationInMinutesHint => isArabic ? 'المدة (د)' : 'Duration (min)';
+  static String get durationInMinutesHint =>
+      isArabic ? 'المدة (د)' : 'Duration (min)';
   static String get minutesShort => isArabic ? 'دقيقة' : 'min';
 
   // Printing Settings
@@ -934,9 +991,8 @@ class AppStrings {
       : 'Suitable for pre-printed letterhead paper';
   static String get hideLogoTitle =>
       isArabic ? 'إخفاء الشعار (Logo)' : 'Hide Logo';
-  static String get hideDoctorInfoTitle => isArabic
-      ? 'إخفاء بيانات الطبيب بالترويسة'
-      : 'Hide Doctor Info in Header';
+  static String get hideDoctorInfoTitle =>
+      isArabic ? 'إخفاء بيانات الطبيب بالترويسة' : 'Hide Doctor Info in Header';
   static String get hideSignatureTitle => isArabic
       ? 'إخفاء توقيع الطبيب في التذييل (Signature)'
       : 'Hide Doctor Signature in Footer';
@@ -949,21 +1005,16 @@ class AppStrings {
   static String get footerLinesSection => isArabic
       ? 'أسطر التذييل المخصصة (Footer Lines):'
       : 'Custom Footer Lines:';
-  static String get footerLine1Label => isArabic
-      ? 'السطر الأول'
-      : 'First Line';
-  static String get footerLine2Label => isArabic
-      ? 'السطر الثاني'
-      : 'Second Line';
-  static String get footerLine3Label => isArabic
-      ? 'السطر الثالث'
-      : 'Third Line';
+  static String get footerLine1Label => isArabic ? 'السطر الأول' : 'First Line';
+  static String get footerLine2Label =>
+      isArabic ? 'السطر الثاني' : 'Second Line';
+  static String get footerLine3Label =>
+      isArabic ? 'السطر الثالث' : 'Third Line';
   static String get defaultPageFormatLabel =>
       isArabic ? 'المقاس الافتراضي:' : 'Default Page Size:';
   static String get saveSettings =>
       isArabic ? 'حفظ الإعدادات' : 'Save Settings';
-  static String get savingSettings =>
-      isArabic ? 'جاري الحفظ...' : 'Saving...';
+  static String get savingSettings => isArabic ? 'جاري الحفظ...' : 'Saving...';
   static String get printingSettingsSavedSuccess => isArabic
       ? 'تم حفظ إعدادات الطباعة بنجاح'
       : 'Printing settings saved successfully';

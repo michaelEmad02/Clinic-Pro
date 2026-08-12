@@ -71,19 +71,19 @@ class _ClinicDetailsBody extends StatelessWidget {
           AppStrings.clinicDetails,
           style: AppTextStyles.headlineMedium(context),
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsetsDirectional.only(end: AppConstants.spaceSm),
-            decoration: BoxDecoration(
-              color: context.primaryLightColor,
-              borderRadius: BorderRadius.circular(AppConstants.radiusChip),
-            ),
-            child: IconButton(
-              icon: Icon(Icons.edit_outlined, color: context.primary, size: 20),
-              onPressed: () {},
-            ),
-          ),
-        ],
+        // actions: [
+        //   Container(
+        //     margin: const EdgeInsetsDirectional.only(end: AppConstants.spaceSm),
+        //     decoration: BoxDecoration(
+        //       color: context.primaryLightColor,
+        //       borderRadius: BorderRadius.circular(AppConstants.radiusChip),
+        //     ),
+        //     child: IconButton(
+        //       icon: Icon(Icons.edit_outlined, color: context.primary, size: 20),
+        //       onPressed: () {},
+        //     ),
+        //   ),
+        // ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: context.border, height: 1),

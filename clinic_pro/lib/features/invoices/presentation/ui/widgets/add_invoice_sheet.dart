@@ -593,9 +593,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                   ? AppStrings.isArabic
                                       ? 'لا توجد مواعيد غير مدفوعة لهذا المريض'
                                       : 'No unpaid appointments for this patient'
-                                  : AppStrings.isArabic
-                                      ? 'يظهر فقط المواعيد غير المدفوعة بالكامل'
-                                      : 'Only showing unpaid appointments',
+                                  : '',
                               style: AppTextStyles.caption(context)
                                   .copyWith(color: context.textSecondary),
                             ),

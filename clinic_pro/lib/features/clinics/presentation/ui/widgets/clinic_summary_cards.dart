@@ -23,7 +23,7 @@ class ClinicSummaryCards extends StatelessWidget {
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: isWide ? 4 : 2,
+          crossAxisCount: isWide ? 3 : 2,
           crossAxisSpacing: AppConstants.spaceSm,
           mainAxisSpacing: AppConstants.spaceSm,
           childAspectRatio: 1.3,
@@ -35,9 +35,7 @@ class ClinicSummaryCards extends StatelessWidget {
               iconColor: context.warningText,
               value: _formatNumber(statistics.dayAppointments),
               label: AppStrings.todayAppointments,
-              change: AppStrings.remainingAppointments(
-                  statistics.dayAppointments -
-                      statistics.numberOfFinishedAppointments),
+              change: "",
               changeColor: context.textSecondary,
             ),
             // عدد الأطباء
@@ -60,8 +58,30 @@ class ClinicSummaryCards extends StatelessWidget {
               value:
                   '${_formatNumber(statistics.monthlyRevenue.toInt())} ${AppStrings.egp}',
               label: AppStrings.monthlyRevenue,
-              change: AppStrings.active,
+              change: "",
               changeColor: context.successText,
+            ),
+            // مصروفات الشهر
+            _SummaryCard(
+              icon: Icons.money_off_outlined,
+              iconBg: context.dangerBg,
+              iconColor: context.dangerText,
+              value:
+                  '${_formatNumber(statistics.monthlyExpenses.toInt())} ${AppStrings.egp}',
+              label: AppStrings.monthlyExpenses,
+              change: "",
+              changeColor: context.dangerText,
+            ),
+            // صافي الربح
+            _SummaryCard(
+              icon: Icons.account_balance_wallet_outlined,
+              iconBg: statistics.netProfit >= 0 ? context.successBg : context.dangerBg,
+              iconColor: statistics.netProfit >= 0 ? context.successText : context.dangerText,
+              value:
+                  '${_formatNumber(statistics.netProfit.toInt())} ${AppStrings.egp}',
+              label: AppStrings.netProfit,
+              change: "",
+              changeColor: statistics.netProfit >= 0 ? context.successText : context.dangerText,
             ),
             // المواعيد المكتملة
             _SummaryCard(
@@ -70,7 +90,7 @@ class ClinicSummaryCards extends StatelessWidget {
               iconColor: context.primary,
               value: '${statistics.numberOfFinishedAppointments}',
               label: AppStrings.completedAppointments,
-              change: AppStrings.today,
+              change: AppStrings.monthlyLabel,
               changeColor: context.textSecondary,
             ),
           ],
@@ -81,10 +101,12 @@ class ClinicSummaryCards extends StatelessWidget {
 }
 
 String _formatNumber(int value) {
-  return value.toString().replaceAllMapped(
+  final absVal = value.abs();
+  final formatted = absVal.toString().replaceAllMapped(
         RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
         (m) => '${m[1]},',
       );
+  return value < 0 ? '-$formatted' : formatted;
 }
 
 class _SummaryCard extends StatelessWidget {

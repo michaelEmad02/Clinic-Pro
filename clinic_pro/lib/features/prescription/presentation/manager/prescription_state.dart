@@ -78,6 +78,7 @@ class PrescriptionState extends Equatable {
   final String notes;
   final String prescriptionId;
   final String? errorMessage;
+  final List<String> appliedTemplateIds;
 
   const PrescriptionState({
     this.status = PrescriptionStatus.initial,
@@ -97,6 +98,7 @@ class PrescriptionState extends Equatable {
     this.notes = '',
     this.prescriptionId = '',
     this.errorMessage,
+    this.appliedTemplateIds = const [],
   });
 
   PrescriptionState copyWith({
@@ -117,6 +119,7 @@ class PrescriptionState extends Equatable {
     String? notes,
     String? prescriptionId,
     String? errorMessage,
+    List<String>? appliedTemplateIds,
   }) {
     return PrescriptionState(
       status: status ?? this.status,
@@ -136,6 +139,7 @@ class PrescriptionState extends Equatable {
       notes: notes ?? this.notes,
       prescriptionId: prescriptionId ?? this.prescriptionId,
       errorMessage: errorMessage ?? this.errorMessage,
+      appliedTemplateIds: appliedTemplateIds ?? this.appliedTemplateIds,
     );
   }
 
@@ -158,5 +162,6 @@ class PrescriptionState extends Equatable {
         notes,
         prescriptionId,
         errorMessage,
+        appliedTemplateIds,
       ];
 }

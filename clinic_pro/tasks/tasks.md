@@ -20,7 +20,7 @@
 
 ## appointments
 
-- [ ] تنفيذ العمليات المعتمده علي ال features  الاخري
+- [x] تنفيذ العمليات المعتمده علي ال features  الاخري
 
 
 ## patients
@@ -44,7 +44,7 @@
 - [x] patients
 - [x] appointments
 - [x] prescriptions
-- [ ] invoices
+- [x] invoices
 - [ ] expenses
 - [ ] reports
 - [ ] dashboard

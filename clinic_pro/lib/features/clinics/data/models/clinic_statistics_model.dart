@@ -6,7 +6,9 @@ class ClinicStatisticsModel extends ClinicStatisticsEntity {
       {required super.dayAppointments,
       required super.numberOfDoctors,
       required super.monthlyRevenue,
-      required super.numberOfFinishedAppointments});
+      required super.numberOfFinishedAppointments,
+      required super.monthlyExpenses,
+      required super.netProfit});
 
   factory ClinicStatisticsModel.fromJson(Map<String, dynamic> data) {
     var performance =
@@ -18,6 +20,8 @@ class ClinicStatisticsModel extends ClinicStatisticsEntity {
         dayAppointments: data["day_appointments"],
         numberOfDoctors: data["number_of_doctors"],
         monthlyRevenue: data["monthly_revenue"],
-        numberOfFinishedAppointments: data["number_of_finished_appointments"]);
+        numberOfFinishedAppointments: data["number_of_finished_appointments"],
+        monthlyExpenses: data["monthly_expenses"] ?? 0.0,
+        netProfit: data["net_profit"] ?? 0.0);
   }
 }

@@ -53,7 +53,7 @@ class ClinicPerformanceChart extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: performanceStatistics.map((data) {
-                final monthName = AppStrings.fullMonths[data.month.month];
+                final monthName = AppStrings.fullMonths[data.month.month - 1];
                 final value = data.amount;
                 final percentage = maxVal > 0 ? value / maxVal : 0.0;
                 final barHeight =
@@ -63,7 +63,7 @@ class ClinicPerformanceChart extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      '${(value / 1000).toStringAsFixed(0)}k',
+                      (value).toStringAsFixed(0),
                       style: AppTextStyles.caption(context).copyWith(
                         color: context.textSecondary,
                         fontWeight: FontWeight.bold,

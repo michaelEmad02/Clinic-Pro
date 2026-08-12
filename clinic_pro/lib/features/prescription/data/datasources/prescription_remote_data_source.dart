@@ -59,6 +59,8 @@ abstract class IPrescriptionRemoteDataSource {
     double? customWidth,
     double? customHeight,
   });
+
+  Future<void> incrementTemplateUsage(String templateId);
 }
 
 @LazySingleton(as: IPrescriptionRemoteDataSource)
@@ -215,6 +217,8 @@ class PrescriptionRemoteDataSourceImpl
     final results = await _cloud.select(
       table: SupabaseTables.prescriptionTemplates,
       eq: {'doctor_id': doctorId},
+      order: 'user_count',
+      ascending: false,
     );
     return results.map((e) => PrescriptionTemplateModel.fromJson(e)).toList();
   }
@@ -337,5 +341,22 @@ class PrescriptionRemoteDataSourceImpl
       customWidth: customWidth,
       customHeight: customHeight,
     );
+  }
+
+  @override
+  Future<void> incrementTemplateUsage(String templateId) async {
+    final results = await _cloud.select(
+      table: SupabaseTables.prescriptionTemplates,
+      eq: {'id': templateId},
+    );
+    if (results.isNotEmpty) {
+      final currentCount = results.first['user_count'] as int? ?? 0;
+      await _cloud.update(
+        table: SupabaseTables.prescriptionTemplates,
+        data: {'user_count': currentCount + 1},
+        matchColumn: 'id',
+        matchValue: templateId,
+      );
+    }
   }
 }

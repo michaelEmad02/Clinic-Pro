@@ -7,6 +7,7 @@ import '../../domain/usecases/copy_previous_prescription_usecase.dart';
 import '../../domain/usecases/load_prescription_data_usecase.dart';
 import '../../domain/usecases/save_prescription_usecase.dart';
 import '../../domain/usecases/templates_usecases.dart';
+import '../../domain/usecases/increment_template_usage_usecase.dart';
 import 'prescription_event.dart';
 import 'prescription_state.dart';
 
@@ -16,12 +17,14 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
   final SavePrescriptionUseCase _savePrescriptionUseCase;
   final CopyPreviousPrescriptionUseCase _copyPreviousPrescriptionUseCase;
   final GetTemplateDataUseCase _getTemplateDataUseCase;
+  final IncrementTemplateUsageUseCase _incrementTemplateUsageUseCase;
 
   PrescriptionBloc(
     this._loadPrescriptionDataUseCase,
     this._savePrescriptionUseCase,
     this._copyPreviousPrescriptionUseCase,
     this._getTemplateDataUseCase,
+    this._incrementTemplateUsageUseCase,
   ) : super(const PrescriptionState()) {
     on<LoadPrescriptionDataEvent>(_onLoad);
     on<ToggleDiagnosisEvent>(_onToggleDiagnosis);
@@ -181,10 +184,8 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     Emitter<PrescriptionState> emit,
   ) async {
     // إذا ضغط المستخدم حفظ بدون إدخال أي بيانات، يتم الخروج من الشاشة دون حفظ روشتة فارغة
-    if (state.selectedDrugs.isEmpty &&
-        state.finalDiagnosis.trim().isEmpty &&
-        state.selectedDiagnosis.isEmpty) {
-      emit(state.copyWith(status: PrescriptionStatus.success));
+    if (state.selectedDrugs.isEmpty) {
+      emit(state.copyWith(status: PrescriptionStatus.error, errorMessage: 'لا يمكن حفظ روشتة فارغة'));
       return;
     }
 
@@ -236,12 +237,19 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
 
     final result = await _savePrescriptionUseCase(prescription, doctorId);
 
-    result.fold(
-      (failure) => emit(state.copyWith(
+    await result.fold(
+      (failure) async => emit(state.copyWith(
         status: PrescriptionStatus.error,
         errorMessage: failure.message,
       )),
-      (_) => emit(state.copyWith(status: PrescriptionStatus.success)),
+      (_) async {
+        for (final templateId in state.appliedTemplateIds) {
+          try {
+            await _incrementTemplateUsageUseCase(templateId);
+          } catch (_) {}
+        }
+        emit(state.copyWith(status: PrescriptionStatus.success));
+      },
     );
   }
 
@@ -325,6 +333,11 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           }
         }
 
+        final updatedAppliedTemplates = List<String>.from(state.appliedTemplateIds);
+        if (!updatedAppliedTemplates.contains(event.templateId)) {
+          updatedAppliedTemplates.add(event.templateId);
+        }
+
         // في وضع التعديل لا نضيف اسم القالب للتشخيص
         if (state.prescriptionId.isEmpty) {
           final updatedDiagnosis = List<String>.from(state.selectedDiagnosis);
@@ -334,10 +347,12 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           emit(state.copyWith(
             selectedDrugs: updatedDrugs,
             selectedDiagnosis: updatedDiagnosis,
+            appliedTemplateIds: updatedAppliedTemplates,
           ));
         } else {
           emit(state.copyWith(
             selectedDrugs: updatedDrugs,
+            appliedTemplateIds: updatedAppliedTemplates,
           ));
         }
       },

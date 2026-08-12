@@ -50,7 +50,7 @@ class PrescriptionView extends StatelessWidget {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${AppStrings.prescription} ${AppStrings.success} ✓'),
+              content: Text('${AppStrings.addedSuccess} ✓'),
               backgroundColor: context.accent,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(

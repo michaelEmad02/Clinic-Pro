@@ -276,6 +276,10 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
   Future<Either<Failure, (List<PrescriptionItemEntity>, String)>>
       getTemplateData(String templateId, String doctorId) async {
     try {
+      final templates = await _remoteDataSource.getTemplates(doctorId);
+      final template = templates.firstWhere((t) => t.id == templateId);
+      final templateName = template.name;
+
       final itemModels =
           await _remoteDataSource.getTemplateItems(templateId);
       final drugs = await _remoteDataSource.getDrugList();
@@ -302,7 +306,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         );
       }).toList();
 
-      return Right((items, ''));
+      return Right((items, templateName));
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));
     }
@@ -463,6 +467,16 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
   Future<Either<Failure, void>> deleteDrug(String id) async {
     try {
       await _remoteDataSource.deleteDrug(id);
+      return const Right(null);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> incrementTemplateUsage(String templateId) async {
+    try {
+      await _remoteDataSource.incrementTemplateUsage(templateId);
       return const Right(null);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));

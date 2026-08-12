@@ -15,9 +15,6 @@ class SavePrescriptionUseCase {
   SavePrescriptionUseCase(this._repository);
 
   Future<Either<Failure, void>> call(PrescriptionEntity prescription, String doctorId) {
-    if (prescription.diagnosis == null || prescription.diagnosis!.trim().isEmpty) {
-      return Future.value(const Left(ValidationFailure('التشخيص الطبي مطلوب لحفظ الروشتة')));
-    }
     if (prescription.items.isEmpty) {
       return Future.value(const Left(ValidationFailure('يجب إضافة دواء واحد على الأقل للروشتة')));
     }

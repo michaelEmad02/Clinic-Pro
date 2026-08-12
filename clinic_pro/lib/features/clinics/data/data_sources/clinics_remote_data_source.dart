@@ -175,18 +175,28 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
     );
     final numberOfDoctors = staffList.length;
 
-    // 2. جلب مواعيد اليوم للعيادة (appointments)
-    final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+    // 2. جلب مواعيد العيادة (appointments)
     final appointmentsList = await iCloudService.select(
       table: SupabaseTables.appointments,
-      eq: {'clinic_id': clinicId, 'date': todayStr},
+      eq: {'clinic_id': clinicId},
     );
-    final dayAppointments = appointmentsList.length;
 
-    // 3. حساب عدد المواعيد المنتهية اليوم (status = 'done')
-    final numberOfFinishedAppointments = appointmentsList
-        .where((appt) => appt['status'] == AppointmentStatus.done)
+    final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+    final dayAppointments = appointmentsList
+        .where((appt) => appt['date'] == todayStr)
         .length;
+
+    // 3. حساب عدد المواعيد المنتهية هذا الشهر (status = 'done')
+    final now = DateTime.now();
+    final numberOfFinishedAppointments = appointmentsList.where((appt) {
+      final dateStr = appt['date'] as String?;
+      if (dateStr == null || dateStr.length < 7) return false;
+      final year = int.tryParse(dateStr.substring(0, 4)) ?? 0;
+      final month = int.tryParse(dateStr.substring(5, 7)) ?? 0;
+      return year == now.year &&
+          month == now.month &&
+          appt['status'] == AppointmentStatus.done;
+    }).length;
 
     // 4. جلب الفواتير لحساب إيرادات الأشهر الأخيرة (invoices)
     final invoicesList = await iCloudService.select(
@@ -194,7 +204,12 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
       eq: {'clinic_id': clinicId},
     );
 
-    final now = DateTime.now();
+    // 5. جلب المصروفات لحساب مصروفات الشهر وصافي الربح (expenses)
+    final expensesList = await iCloudService.select(
+      table: SupabaseTables.expenses,
+      eq: {'clinic_id': clinicId},
+    );
+
     final List<PerformanceStatistics> performance = [];
 
     // حساب الإيرادات لآخر 5 أشهر (بدءاً من الشهر الحالي)
@@ -224,12 +239,28 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
     // إيرادات الشهر الحالي هي القيمة الأولى في القائمة (الشهر الحالي)
     final monthlyRevenue = performance.first.amount;
 
+    // حساب مصروفات الشهر الحالي
+    final monthlyExpenses = expensesList.where((exp) {
+      final dateStr = exp['date'] as String?;
+      if (dateStr == null || dateStr.length < 7) return false;
+      final year = int.tryParse(dateStr.substring(0, 4)) ?? 0;
+      final month = int.tryParse(dateStr.substring(5, 7)) ?? 0;
+      return year == now.year && month == now.month;
+    }).fold<double>(
+      0.0,
+      (sum, exp) => sum + ((exp['amount'] ?? 0.0) as num).toDouble(),
+    );
+
+    final netProfit = monthlyRevenue - monthlyExpenses;
+
     return ClinicStatisticsModel(
       performance,
       dayAppointments: dayAppointments,
       numberOfDoctors: numberOfDoctors,
       monthlyRevenue: monthlyRevenue,
       numberOfFinishedAppointments: numberOfFinishedAppointments,
+      monthlyExpenses: monthlyExpenses,
+      netProfit: netProfit,
     );
   }
 
