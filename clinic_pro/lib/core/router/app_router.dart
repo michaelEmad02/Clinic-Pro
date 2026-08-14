@@ -32,6 +32,7 @@ import '../../features/clinics/presentation/ui/clinic_details_screen.dart';
 import '../../features/invoices/presentation/ui/invoices_screen.dart';
 import '../../features/expenses/presentation/ui/expenses_screen.dart';
 import '../../features/reports/presentation/ui/reports_screen.dart';
+import '../../features/reports/presentation/ui/doctor_my_reports_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: RouteConstants.splash,
@@ -201,6 +202,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteConstants.reports,
       builder: (context, state) => const ReportsScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.doctorMyReports,
+      builder: (context, state) => const DoctorMyReportsScreen(),
     ),
   ],
 );

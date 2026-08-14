@@ -1,120 +1,190 @@
-# Reports Feature — Implementation Spec
+# Reports Feature — Implementation Spec & Current Architecture
 
-## Context
+## Overview & System Architecture
 
-You are implementing the **Reports Screen** for **ClinicPro** — a multi-tenant
-medical clinic management SaaS built with Flutter.
-
-Read and follow these rules **before writing any code:**
-- `rules.md` — coding standards, widget splitting, mock data rules
-- `architecture.md` — Clean Architecture, layer boundaries, ICloudService pattern
-- `features/financial/schema.md` — invoices, expenses tables
-- `features/appointments_queue/schema.md` — appointments table
-- `features/patients/schema.md` — patients table
-- `features/prescriptions/schema.md` — prescriptions table
-
+The **Reports & Statistics Module** in **ClinicPro** is designed following strict **Clean Architecture** principles and multi-tenant scoping. It provides comprehensive financial, operational, and clinical analytics for clinic owners and individual doctors.
 
 ---
 
-## Design System (use exactly — no deviations)
- استخدم نفس الالوان و قواعد و ثيمات التصميم الموجوده في باقي المشروع.
- انظر الي
- - lib/core/theme/app_theme.dart
- - lib/core/theme/app_colors.dart
- - lib/core/strings/app_strings.dart
- - lib/core/theme/app_text_styles.dart
+## 🏗️ Architecture & Component Hierarchy
 
- ** Responsive & Adaptive UI Rules
-```dart
-// ✅ Always use ResponsiveHelper for screen classification and responsive layouts
-// ✅ Mobile (< 600px):
-//    - Centered card containers (maxWidth: 440–480px)
-//    - Single-column vertical lists with touch-friendly spacing
-//    - Standard Modal BottomSheet for dialogs/forms
-//    - BottomNavigationBar for main navigation
-
-// ✅ Tablet & Desktop (>= 600px):
-//    - ResponsiveCenter container (maxWidth: 720px for settings/forms, 1100–1200px for dashboards/lists)
-//    - Multi-column grid layouts (Grid 2/3 Columns) for lists and Bento cards
-//    - Navigation Rail (Sidebar) replacing BottomNavigationBar
-//    - Centered Dialogs (maxDialogWidth: 560px) replacing Modal BottomSheet
-//    - Auth Split-Screen: Branding panel on the right (flex: 5) + Form on the left (flex: 6)
-
-// ❌ Never hardcode dimensions, padding, or fixed screen offsets
-// ❌ Never use raw pixel values without AppConstants
-// ❌ Always secure buttons and text in Rows/Grids with Flexible and TextOverflow.ellipsis to prevent Red Overflow
-
-read :
-- lib/core/utils/responsive_helper.dart
-- lib/core/widgets/app_responsive_scaffold.dart
-```
-for more info , read "rules.md"
----
-
-## Architecture Rules
-
-```
-✅ Screen file → thin, delegates to subwidgets
-✅ Each chart/section → separate widget file in widgets/
-✅ Mock data → in MockCloudService, NOT in widgets
-✅ Numbers/amounts → Inter Bold always
-✅ All widgets → const constructors where possible
-✅ No setState → use ReportsCubit
-✅ Widget > 200 lines → split further
-✅ Comments in Arabic with English technical terms
-```
+### 1. Presentation & Navigation Layout
+- **Main Category Hub (`ReportsScreen`)**:
+  - Displays a grid/list of report categories:
+    1. Financial Reports
+    2. Appointment Reports
+    3. Patient Reports
+    4. Doctor Performance Reports (Exclusive to Clinic Owners)
+    5. Prescription & Drug Reports
+- **Doctor My Reports Hub (`DoctorMyReportsScreen`)**:
+  - Accessible via Doctor Dashboard Quick Actions or Navigation.
+  - Allows doctors to view their personal reports (Financial, Appointments, Patients, Drugs) pre-filtered by their `doctorId`.
+- **Reusable Dedicated Report Screens**:
+  - `FinancialReportsScreen`: Revenue, collected, expenses, and net profit.
+  - `AppointmentReportsScreen`: Attendance, wait times, no-shows, peak hours/days.
+  - `PatientReportsScreen`: Demographic breakdown, new vs returning ratio, visit frequency, avg spend/LTV, inactive list.
+  - `DoctorReportsScreen`: Doctor performance comparison (revenue, visits, rating, trend) with clinic filter.
+  - `DrugReportsScreen`: Top prescribed drugs and prescription statistics.
 
 ---
 
-## File Structure
+## 📁 File Structure
 
 ```
 lib/features/reports/
 ├── data/
-│   ├── data_sources/
-│   │   ├── i_reports_data_source.dart
-│   │   ├── reports_remote_data_source.dart   // calls ICloudService
+│   ├── datasources/
+│   │   ├── i_reports_remote_data_source.dart
+│   │   └── reports_remote_data_source_impl.dart
 │   ├── models/
 │   │   ├── revenue_summary_model.dart
 │   │   ├── appointment_stats_model.dart
 │   │   ├── doctor_performance_model.dart
-│   │   ├── diagnosis_stats_model.dart
+│   │   ├── drug_stats_model.dart
 │   │   └── patient_stats_model.dart
 │   └── repositories/
 │       └── reports_repository_impl.dart
 ├── domain/
 │   ├── entities/
-│   │   ├── revenue_summary_entity.dart
-│   │   ├── appointment_stats_entity.dart
-│   │   ├── doctor_performance_entity.dart
-│   │   ├── diagnosis_stats_entity.dart
-│   │   └── patient_stats_entity.dart
+│   │   └── reports_entities.dart
 │   ├── repositories/
 │   │   └── i_reports_repository.dart
 │   └── usecases/
 │       ├── get_revenue_summary_usecase.dart
 │       ├── get_appointment_stats_usecase.dart
 │       ├── get_doctor_performance_usecase.dart
-│       ├── get_diagnosis_stats_usecase.dart
+│       ├── get_drug_stats_usecase.dart
 │       └── get_patient_stats_usecase.dart
 └── presentation/
     ├── manager/
-    │   ├── reports_cubit.dart
-    │   └── reports_state.dart
+    │   ├── financial_reports_cubit.dart
+    │   ├── appointment_reports_cubit.dart
+    │   ├── patient_reports_cubit.dart
+    │   ├── doctor_performance_cubit.dart
+    │   ├── drug_reports_cubit.dart
+    │   └── doctor_my_reports_cubit.dart
     └── ui/
-        ├── reports_screen.dart              // thin — assembles sections
+        ├── reports_screen.dart
+        ├── doctor_my_reports_screen.dart
+        ├── financial_reports_screen.dart
+        ├── appointment_reports_screen.dart
+        ├── patient_reports_screen.dart
+        ├── doctor_reports_screen.dart
+        ├── drug_reports_screen.dart
         └── widgets/
-            ├── reports_date_filter.dart     // date range chips
-            ├── revenue_summary_section.dart
-            ├── revenue_chart.dart           // bar chart
-            ├── expenses_breakdown_section.dart
-            ├── expenses_chart.dart          // pie/donut chart
+            ├── reports_date_range_chips.dart
+            ├── reports_summary_grid.dart
+            ├── revenue_vs_expenses_chart.dart
+            ├── expenses_chart.dart
             ├── appointment_stats_section.dart
-            ├── peak_hours_chart.dart        // bar chart
+            ├── patient_stats_section.dart
+            ├── doctor_performance_list.dart
+            └── drug_stats_section.dart
+```
+
+---
+
+## ⚡ Multi-Cubit State Management
+
+Unlike a single monolithic Cubit, each report module utilizes a dedicated **BLoC/Cubit** to ensure modularity, independent state reloading, and isolated error boundaries:
+
+- `FinancialReportsCubit`: Handles `RevenueSummaryEntity` loading, date range switching, and clinic filtering.
+- `AppointmentReportsCubit`: Manages `AppointmentStatsEntity` with attendance rates and peak metrics.
+- `PatientReportsCubit`: Processes `PatientStatsEntity`, age/gender distributions, visit frequency, and inactive patient lists.
+- `DoctorPerformanceCubit`: Handles owner-level performance comparison across clinic doctors.
+- `DrugReportsCubit`: Manages `DrugStatsEntity` and top prescribed drugs.
+- `DoctorMyReportsCubit`: Aggregates quick statistics for the Doctor My Reports dashboard.
+
+---
+
+## 🏥 Clinic & Doctor Filtering Rules
+
+1. **Clinic Filter (`clinicId`)**:
+   - Integrated across all report screens (`Financial`, `Appointment`, `Patient`, `Doctor Performance`, `Drug`).
+   - Powered by `ClinicsCubit.fetchClinics(userId)` using `FetchClinicsUseCase`.
+   - Automatically queries clinics where the user is an **Owner** or a **Staff Member (Doctor)**.
+   - Automatically hides the dropdown if the user only belongs to a single clinic.
+
+2. **Doctor Scoping (`doctorId`)**:
+   - Passed to report screens when navigating from "Doctor My Reports".
+   - Filters appointments, patients, and drug statistics by `doctorId`.
+   - Filters financial invoices by matching invoice `sourceId` against doctor appointment IDs.
+
+---
+
+## 📊 Detailed Metrics & Data Points
+
+### 1. Financial Reports (`FinancialReportsScreen`)
+- **Total Revenue & Collected Amount**: Total invoiced revenue vs. actual cash collected.
+- **Expenses & Net Profit**: Categorized expenses and net operating margin.
+- **Revenue vs Expenses Chart**: Bar/Line chart comparing earnings vs operational costs over time.
+- **Expenses Breakdown Chart**: Donut style distribution of clinic expenditures.
+
+### 2. Appointment Reports (`AppointmentReportsScreen`)
+- **Total, Completed & Cancelled Appointments**.
+- **Attendance Rate & No-Show Rate**: Percentage of patients showing up vs no-shows.
+- **Average Wait Time**: Time elapsed from arrival (`arrivedAt`) to consultation (`calledAt`).
+- **Urgent Cases Percentage**: Ratio of emergency/urgent walk-ins.
+- **Peak Hours & Peak Days Charts**: Busiest times of day and days of week for clinic capacity optimization.
+
+### 3. Patient Reports (`PatientReportsScreen`)
+- **Demographic Distribution**: Gender split (Male/Female) & Age groups (`0-18`, `19-35`, `36-50`, `51-65`, `65+`).
+- **New vs. Returning Patients**: Comparison ratio between first-time patients (🆕) and returning patients (🔄).
+- **Average Visits per Patient**: Frequency metric (`total visits / total patients`).
+- **Average Revenue per Patient (LTV)**: Monetary value generated per patient (`total revenue / total patients`).
+- **Inactive & At-Risk Patient List**: Patients with no visits for over 60 days for retention campaigns.
+
+### 4. Doctor Performance Reports (`DoctorReportsScreen`) - *Owner Only*
+- **Doctor Comparison List**:
+  - Completed appointments and visit volume per doctor.
+  - Revenue generated by each doctor.
+  - Performance rating and trend indicator (`up`, `stable`, `down`).
+
+### 5. Drug & Prescription Reports (`DrugReportsScreen`)
+- **Top Prescribed Medications**: Most frequently prescribed drugs with usage counts and percentages.
+- **Prescription Usage Stats**: Breakdown of prescribed medication categories.
+
+---
+
+## 🛠️ Package & Chart Specification
+
+```
+fl_chart: ^0.68.0
+
+Applied Usage:
+  BarChart  → Revenue vs Expenses, Peak Hours, Peak Days
+  PieChart  → Expenses Breakdown (Donut Style), Gender & Patient Ratios
+```
+
+---
+
+## ✅ Implementation Checklist
+
+- [x] Main hub (`ReportsScreen`) displays category cards for modular navigation.
+- [x] "Doctor My Reports" hub (`DoctorMyReportsScreen`) reuses existing report screens with `doctorId` scoping.
+- [x] Doctor Performance Reports screen is restricted to Owner roles.
+- [x] Multi-Cubit state management implemented per report type for clean state isolation.
+- [x] Clinic Filter (`clinicId`) supported across all reports with Clean Architecture `ClinicsCubit`.
+- [x] Invoices correctly linked to doctor appointments via `sourceId`.
+- [x] Advanced Patient Metrics added (New vs Returning Chart, Avg Visits/Patient, Avg Revenue/Patient).
+- [x] Full RTL support, localized Arabic/English strings, and Inter Bold typography for monetary values.�شة الرئيسية للأقسام
+        ├── financial_reports_screen.dart    // الشاشة المالية
+        ├── appointment_reports_screen.dart  // شاشة المواعيد
+        ├── patient_reports_screen.dart      // شاشة المرضى
+        ├── doctor_reports_screen.dart       // شاشة أداء الأطباء (Owner)
+        ├── drug_reports_screen.dart         // شاشة الأدوية (New)
+        └── widgets/
+            ├── reports_date_filter.dart
+            ├── revenue_summary_section.dart
+            ├── revenue_chart.dart
+            ├── expenses_breakdown_section.dart
+            ├── expenses_chart.dart
+            ├── appointment_stats_section.dart
+            ├── peak_hours_chart.dart
             ├── patient_stats_section.dart
             ├── doctor_performance_section.dart
-            ├── diagnosis_stats_section.dart
-            └── report_summary_card.dart     // reusable stat card
+            ├── drug_stats_section.dart      // جديد
+            └── report_summary_card.dart
 ```
 
 ---
@@ -508,7 +578,59 @@ supabase.from('appointments')
 
 
 ```
+## Screen Specs
 
+### ① Financial Reports Screen
+- **الملخص المالي** (RevenueSummaryEntity): بطاقات الإيرادات، المصروفات، صافي الربح، المبالغ المعلقة.
+- **رسم بياني** (Revenue vs Expenses Bar Chart).
+- **تفاصيل المصروفات** (Expenses Breakdown Donut Chart & Category List).
+
+### ② Appointment Reports Screen
+- **إحصائيات المواعيد** (AppointmentStatsEntity): إجمالي، مكتمل، ملغي، ومعدل الحضور.
+- **رسم بياني لأوقات الذروة** (Peak Hours Bar Chart) والأيام الأكثر ازدحاماً.
+- **تفاصيل أنواع الزيارات**.
+
+### ③ Patient Reports Screen
+- **إحصائيات المرضى** (PatientStatsEntity): إجمالي المرضى، المرضى الجدد، معدل العودة.
+- **توزيع الجنس والفئات العمرية**.
+- **قائمة المرضى غير النشطين** الذين لم يزوروا العيادة منذ 3 أشهر.
+
+### ④ Doctor Performance Reports Screen (Owner Only)
+- **مقارنة أداء الأطباء** (DoctorPerformanceEntity): يعرض كروت الأطباء متضمنة المواعيد، الإيرادات، ونسب الحضور.
+
+### ⑤ Drug Reports Screen (NEW)
+- **إحصائيات الأدوية العامة** (DrugStatsEntity):
+  - **التصنيف الدوائي** (Drug Categories Donut Chart): يعرض نسبة توزيع الأدوية حسب الفئة (Antibiotic, Antipyretic, Chronic, etc.).
+  - **الأدوية الأكثر وصفاً بالعيادة** (Top Prescribed Drugs): قائمة بأكثر 10 أدوية تم استخدامها في الروشتات مع عدد الوصفات ونسبتها المئوية.
+
+---
+
+## Doctor Reports Screen Spec (شاشة تقارير الطبيب في الـ Bottom Nav)
+
+تظهر هذه الشاشة للطبيب عند الضغط على تبويب "تقاريري" في شريط التنقل السفلي، وتعرض الإحصائيات الآتية الخاصة به فقط:
+
+### ① المواعيد الخاصة بالطبيب (Doctor Appointments Stats):
+- إجمالي المواعيد، المواعيد المكتملة (done)، والملغاة (cancelled).
+- معدل حضور المرضى الخاص به (Attendance Rate).
+- رسم بياني لأوقات الذروة (Peak Hours) والأيام الأكثر ازدحاماً لمرضاه.
+- توزيع المواعيد حسب نوع الزيارة (كشف، استشارة، إعادة كشف).
+
+### ② الإيرادات الخاصة بالطبيب (Doctor Revenue Stats):
+- إجمالي الإيرادات المحصلة من كشوفات هذا الطبيب.
+- رسم بياني لتطور الإيرادات شهراً بشهر.
+- المبالغ المعلقة الخاصة بمرضاه.
+
+### ③ المرضى الخاصين بالطبيب (Doctor Patients Stats):
+- إجمالي عدد المرضى الفريدين الذين عاينهم الطبيب.
+- نسبة عودة المرضى للطبيب (Return Rate).
+- توزيع المرضى حسب الجنس (ذكور/إناث) والفئات العمرية.
+
+### ④ الأدوية الأكثر وصفاً بواسطة الطبيب (Doctor Top Prescribed Drugs):
+- رسم بياني دائري (Donut Chart) لتوزيع فئات الأدوية الموصوفة من قبل الطبيب (Antibiotic, Antipyretic, etc.).
+- قائمة بأكثر 10 أدوية يصفها الطبيب في روشتاته مرتبة تنازلياً.
+
+### ⑤ قوالب الروشتات الأكثر استخداماً (Doctor Top Prescription Templates):
+- إحصائية القوالب الخاصة بالطبيب مرتبة تنازلياً حسب عدد مرات استخدامها (`user_count`).
 ---
 
 ## Mock Data Structure
@@ -593,7 +715,23 @@ class MockReportsData {
       {'name': 'أحمد سامي',  'last_visit': '2024-10-05', 'days': 88},
     ],
   };
-
+    static final drugStats = {
+    'by_category': [
+      {'category': 'مضاد حيوي', 'count': 120, 'percentage': 40.0},
+      {'category': 'خافض حرارة', 'count': 90, 'percentage': 30.0},
+      {'category': 'أمراض صدر', 'count': 45, 'percentage': 15.0},
+      {'category': 'أدوية مزمنة', 'count': 30, 'percentage': 10.0},
+      {'category': 'أخرى', 'count': 15, 'percentage': 5.0},
+    ],
+    'top_drugs': [
+      {'name': 'Amoxicillin 500mg', 'count': 64, 'percentage': 21.3},
+      {'name': 'Paracetamol 500mg', 'count': 58, 'percentage': 19.3},
+      {'name': 'Ibuprofen 400mg', 'count': 42, 'percentage': 14.0},
+      {'name': 'Panadol Joint', 'count': 35, 'percentage': 11.6},
+      ...
+    ]
+  };
+  
   static final doctorPerformance = [
     {
       'doctor_id':        'doc-1',
@@ -623,7 +761,7 @@ class MockReportsData {
     {'name': 'إجهاد عام',            'count': 14, 'percentage': 6.0},
     {'name': 'التهاب المعدة',        'count': 12, 'percentage': 5.0},
     {'name': 'حساسية موسمية',        'count': 11, 'percentage': 5.0},
-    {'name': 'أخرى',                 'count': 19, 'percentage': 9.0},
+    {'diagnosis': 'أخرى',                 'count': 19, 'percentage': 9.0},
   ];
 }
 ```
@@ -681,19 +819,41 @@ Usage:
 
 ## Checklist Before Submitting
 
-```
-□ reports_screen.dart is thin — no business logic inline
-□ Each section is a separate widget file
-□ All numbers use Inter Bold font
-□ All amounts show "ج.م" suffix
-□ Percentages show "%" with Inter Bold for the number
-□ Mock data in MockReportsData class — not inline in widgets
-□ ShimmerList shown while loading
-□ Error state with retry button
-□ Date filter defaults to "هذا الشهر"
-□ Doctor performance section hidden if clinic has 1 doctor
-□ Diagnosis section note: "free text grouping — not FK-based"
-□ Export PDF button wired (can be TODO for Phase 2)
-□ RTL layout throughout
-□ Responsive: 2-column grid for summary cards on tablet
-```
+- [ ] الشاشة الرئيسية تعرض كروت الأقسام (مالي، مواعيد، مرضى، أداء أطباء، أدوية).
+- [ ] عند الضغط على كرت يتم الانتقال للشاشة التفصيلية للقسم المحدد.
+- [ ] شاشة أداء الأطباء تظهر فقط للمستخدم المالك (Owner).
+- [ ] لوحة تحكم الطبيب تحتوي على إحصائياته الفردية وتصنيفاته الدوائية وقوالبه الأكثر استخداماً (`user_count`).
+- [ ] جميع الرسوم البيانية تستخدم حزمة `fl_chart`.
+- [ ] تدعم واجهات التقارير بالكامل الاتجاه من اليمين لليسار (RTL) والأرقام بخط Inter Bold.
+
+---
+
+## 7. تنفيذ قسم تقارير العيادات ومقارنة الفروع (Clinic Reports) 🏥 *(خاص بالمالك)*
+
+تم تخصيص هذا القسم لمالك النظام (isOwner = true) لعرض إحصائيات ومقارنات تفاعلية بين الفروع المملوكة له فقط (owner_id).
+
+### 🛠️ المكونات الفنية وطبقات النظام (Clean Architecture):
+
+1. **Domain Layer**:
+   - ClinicReportEntity: يحتوي على الكيانات الكلية للمالك (	otalActiveClinics, 	otalExpectedRevenue, 	otalCollectedAmount, 	otalExpenses, 	otalNetProfit, 	otalAppointmentsToday, 	otalDoctors, clinics).
+   - ClinicComparisonItem: يحتوي على إحصائيات كل فرع مستقلة (expectedRevenue من ppointments, collectedAmount من invoices, monthlyExpenses من expenses, 
+etProfit, profitMargin, evenuePerDoctor, monthlyPerformance, monthlyExpectedPerformance).
+   - GetClinicReportUseCase: تنفيذ استدعاء التقرير بحسب ownerId.
+   - IReportsRepository: إضافة getClinicReport(String ownerId).
+
+2. **Data Layer**:
+   - IReportsRemoteDataSource.fetchClinicReport(String ownerId):
+     - يتم الاستعلام عن العيادات المفلترة بشرط owner_id = ownerId.
+     - يتم حساب **الإيراد المتوقع** للشهر الحالي والأشهر الـ 5 الماضية من جدول ppointments (مجموع price).
+     - يتم حساب **المحصل الفعلي** للشهر الحالي والأشهر الـ 5 الماضية من جدول invoices (مجموع paid_amount).
+     - يتم حساب المصروفات ونسبة هامش الربح ومعدل إيراد الطبيب (collectedAmount / numberOfDoctors).
+   - ReportsRepositoryImpl: معالجة الأخطاء وإعادة Either<Failure, ClinicReportEntity>.
+
+3. **Presentation Layer**:
+   - ClinicReportsCubit: إدارة حالات تحميل التقرير (ClinicReportsLoading, ClinicReportsLoaded, ClinicReportsError).
+   - ClinicReportsScreen: الشاشة الرئيسية التي تجمع مكونات التقرير.
+   - **الودجتس المخصصة**:
+     - ClinicSummaryCards: عرض بطاقات KPI الرئيسية (الإيراد المتوقع من الحجوزات، المحصل الفعلي من الفواتير، المصروفات، صافي الربح، العيادات النشطة، الأطباء).
+     - ClinicComparisonBarChart: رسم بياني عمودي شريطي مزدوج يقارن بين **الإيراد المتوقع** و**المحصل الفعلي** لكل فرع.
+     - ClinicTrendLineChart: رسم خطي تفاعلي لآخر 5 أشهر مع منحنيين لكل فرع (**خط متصل للمحصل الفعلي** و**خط منقط برتقالي للمتوقع**).
+     - ClinicLeaderboardTable: جدول تفاعلي يرتب العيادات بحسب المحصل الفعلي مع إظهار عمود مستقل لـ إيراد/طبيب وهامش الربح.

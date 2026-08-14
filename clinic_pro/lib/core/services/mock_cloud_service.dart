@@ -11,6 +11,7 @@ class MockCloudService implements ICloudService {
     Map<String, dynamic>? eq,
     Map<String, dynamic>? neq,
     Map<String, dynamic>? gte,
+    Map<String, dynamic>? lte,
     String? notIsNull,
     String? order,
     bool ascending = true,
@@ -31,6 +32,17 @@ class MockCloudService implements ICloudService {
           final val = item[entry.key];
           if (val == null) return false;
           return val.toString().compareTo(entry.value.toString()) >= 0;
+        });
+      }).toList();
+    }
+
+    // Filtering (lte)
+    if (lte != null) {
+      data = data.where((item) {
+        return lte.entries.every((entry) {
+          final val = item[entry.key];
+          if (val == null) return false;
+          return val.toString().compareTo(entry.value.toString()) <= 0;
         });
       }).toList();
     }
@@ -202,6 +214,10 @@ class MockCloudService implements ICloudService {
         return MockData.plans;
       case 'plans_features':
         return MockData.plansFeatures;
+      case 'drug_category_stats':
+        return MockData.drugCategoryStats;
+      case 'top_drugs_stats':
+        return MockData.topDrugsStats;
       default:
         return [];
     }

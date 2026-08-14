@@ -1,177 +1,255 @@
 // ────────────────────────────────────────────────────────
-// شاشة التقارير المالية والأداء — نظرة شاملة على أداء العيادة
+// الشاشة الرئيسية للتقارير — عرض أقسام التقارير المختلفة
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
-import '../../../../core/localization/language_cubit.dart';
-import '../../../../core/widgets/shimmer_list.dart';
-import '../manager/reports_cubit.dart';
-import '../manager/reports_state.dart';
-import 'widgets/doctor_performance_list.dart';
-import 'widgets/patients_count_chart.dart';
-import 'widgets/reports_date_range_chips.dart';
-import 'widgets/reports_summary_grid.dart';
-import 'widgets/revenue_vs_expenses_chart.dart';
-import 'widgets/top_services_list.dart';
+import '../../../../core/constants/app_constants.dart';
+import 'financial_reports_screen.dart';
+import 'appointment_reports_screen.dart';
+import 'patient_reports_screen.dart';
+import 'doctor_reports_screen.dart';
+import 'drug_reports_screen.dart';
+import 'clinic_reports_screen.dart';
 
 class ReportsScreen extends StatelessWidget {
-  const ReportsScreen({super.key});
+  final bool isOwner;
+
+  const ReportsScreen({super.key, this.isOwner = true});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ReportsCubit>()..loadReports(),
-      child: const _ReportsBody(),
-    );
+    return _ReportsCategoryBody(isOwner: isOwner);
   }
 }
 
-class _ReportsBody extends StatelessWidget {
-  const _ReportsBody();
+class _ReportsCategoryBody extends StatelessWidget {
+  final bool isOwner;
+
+  const _ReportsCategoryBody({required this.isOwner});
 
   @override
   Widget build(BuildContext context) {
+    final categories = [
+      _ReportCategoryItem(
+        title: AppStrings.isArabic ? 'التقارير المالية' : 'Financial Reports',
+        subtitle: AppStrings.isArabic
+            ? 'الملخص المالي والإيرادات والمصروفات'
+            : 'Financial summary, revenue & expenses',
+        icon: Icons.payments_outlined,
+        color: context.primary,
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const FinancialReportsScreen(),
+          ),
+        ),
+      ),
+      _ReportCategoryItem(
+        title: AppStrings.isArabic ? 'تقارير المواعيد' : 'Appointment Reports',
+        subtitle: AppStrings.isArabic
+            ? 'نسب الحضور وأوقات الذروة والتوزيع'
+            : 'Attendance rate, peak hours & distribution',
+        icon: Icons.calendar_month_outlined,
+        color: context.warningText,
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const AppointmentReportsScreen(),
+          ),
+        ),
+      ),
+      if (isOwner)
+        _ReportCategoryItem(
+          title: AppStrings.isArabic ? 'تقارير العيادات' : 'Clinic Reports',
+          subtitle: AppStrings.isArabic
+              ? 'مقارنة أداء وإيرادات العيادات والفروع'
+              : 'Compare clinics performance & revenue',
+          icon: Icons.business_outlined,
+          color: Colors.indigo,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ClinicReportsScreen(),
+            ),
+          ),
+        ),
+      _ReportCategoryItem(
+        title: AppStrings.isArabic ? 'تقارير المرضى' : 'Patient Reports',
+        subtitle: AppStrings.isArabic
+            ? 'توزيع الأعمار والجنس والمرضى غير النشطين'
+            : 'Age, gender distribution & inactive patients',
+        icon: Icons.people_outline,
+        color: context.successText,
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PatientReportsScreen(),
+          ),
+        ),
+      ),
+      if (isOwner)
+        _ReportCategoryItem(
+          title: AppStrings.isArabic
+              ? 'تقارير أداء الأطباء'
+              : 'Doctor Performance Reports',
+          subtitle: AppStrings.isArabic
+              ? 'مقارنة أداء وإيرادات أطباء العيادة'
+              : 'Compare doctors performance & revenue',
+          icon: Icons.badge_outlined,
+          color: Colors.purple,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const DoctorReportsScreen(),
+            ),
+          ),
+        ),
+      if (!isOwner)
+        _ReportCategoryItem(
+          title: AppStrings.isArabic ? 'تقارير الأدوية' : 'Drugs Reports',
+          subtitle: AppStrings.isArabic
+              ? 'توزيع الأدوية وتصنيفاتها والأكثر وصفاً'
+              : 'Drug categories breakdown & top prescribed',
+          icon: Icons.medication_outlined,
+          color: Colors.teal,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const DrugReportsScreen(),
+            ),
+          ),
+        ),
+    ];
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
         toolbarHeight: 64,
-        backgroundColor: context.background,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppStrings.reports,
-              style: AppTextStyles.headlineMedium(context).copyWith(
-                fontWeight: FontWeight.bold,
-                color: context.primary,
-              ),
-            ),
-            Text(
-              AppStrings.financialReports,
-              style: AppTextStyles.caption(context).copyWith(
-                color: context.textSecondary,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf_outlined),
+        title: Text(
+          AppStrings.reports,
+          style: AppTextStyles.headlineMedium(context).copyWith(
+            fontWeight: FontWeight.bold,
             color: context.primary,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(AppStrings.reportExported),
-                ),
-              );
-            },
           ),
-        ],
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: context.border, height: 1),
+          child: Container(color: context.borderColor, height: 1),
         ),
       ),
-      body: BlocBuilder<ReportsCubit, ReportsState>(
-        builder: (context, state) {
-          if (state is ReportsLoading) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: ShimmerList(itemCount: 6),
-            );
-          }
-          if (state is ReportsError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<ReportsCubit>().loadReports(),
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
-              ),
-            );
-          }
-          if (state is ReportsLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<ReportsCubit>().loadReports();
-                await Future.delayed(const Duration(milliseconds: 600));
-              },
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                children: [
-                  ReportsDateRangeChips(
-                    activeRange: state.activeRange,
-                    onChanged: (r) {
-                      final cubit = context.read<ReportsCubit>();
-                      if (r == ReportsDateRange.custom) {
-                        _pickCustomRange(context, cubit);
-                      } else {
-                        cubit.changeRange(r);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  ReportsSummaryGrid(summary: state.summary),
-                  const SizedBox(height: 12),
-                  RevenueVsExpensesChart(data: state.weeklyData),
-                  const SizedBox(height: 12),
-                  PatientsCountChart(doctors: state.doctorPerformance),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TopServicesList(services: state.topServices),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DoctorPerformanceList(
-                              doctors: state.doctorPerformance),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 600;
+          return GridView.builder(
+            padding: const EdgeInsets.all(AppConstants.spaceMd),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: isWide ? 3 : 1,
+              crossAxisSpacing: AppConstants.spaceMd,
+              mainAxisSpacing: AppConstants.spaceMd,
+              childAspectRatio: isWide ? 1.4 : 2.5,
+            ),
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final cat = categories[index];
+              return _CategoryCard(item: cat);
+            },
+          );
         },
       ),
     );
   }
+}
 
-  Future<void> _pickCustomRange(
-      BuildContext context, ReportsCubit cubit) async {
-    final picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      builder: (ctx, child) => BlocBuilder<LanguageCubit, Locale>(
-        builder: (context, locale) => Directionality(
-          textDirection: locale.languageCode == 'ar'
-              ? TextDirection.rtl
-              : TextDirection.ltr,
-          child: child!,
+class _ReportCategoryItem {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  _ReportCategoryItem({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+}
+
+class _CategoryCard extends StatelessWidget {
+  final _ReportCategoryItem item;
+
+  const _CategoryCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: context.surfaceColor,
+      borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+      elevation: 0,
+      child: InkWell(
+        onTap: item.onTap,
+        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+        child: Container(
+          padding: const EdgeInsets.all(AppConstants.spaceMd),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+            border: Border.all(color: context.borderColor, width: 0.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: item.color.withOpacity(0.12),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radiusButton),
+                ),
+                child: Icon(item.icon, color: item.color, size: 28),
+              ),
+              const SizedBox(width: AppConstants.spaceMd),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: AppTextStyles.headlineSmall(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.subtitle,
+                      style: AppTextStyles.caption(context).copyWith(
+                        color: context.textSecondary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: context.textSecondary,
+              ),
+            ],
+          ),
         ),
       ),
     );
-    if (picked != null) {
-      cubit.changeCustomRange(picked.start, picked.end);
-    }
   }
 }

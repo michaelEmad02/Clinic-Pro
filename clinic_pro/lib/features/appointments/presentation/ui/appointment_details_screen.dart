@@ -10,7 +10,6 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/utils/responsive_helper.dart';
-import '../../domain/entities/appointment_entity.dart';
 import '../manager/appointments_bloc.dart';
 import '../manager/appointments_event.dart';
 import '../manager/appointments_state.dart';

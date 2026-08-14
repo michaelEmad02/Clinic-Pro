@@ -11,6 +11,7 @@ abstract class ICloudService {
     Map<String, dynamic>? eq,
     Map<String, dynamic>? neq,
     Map<String, dynamic>? gte,
+    Map<String, dynamic>? lte,
     String? notIsNull,
     String? order,
     bool ascending = true,

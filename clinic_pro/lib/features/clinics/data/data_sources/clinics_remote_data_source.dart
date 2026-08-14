@@ -266,9 +266,33 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
 
   @override
   Future<List<ClinicModel>> fetchClinics(String ownerId) async {
-    var data = await iCloudService
+    // 1. العيادات المملوكة للمستخدم
+    final ownedData = await iCloudService
         .select(table: SupabaseTables.clinics, eq: {'owner_id': ownerId});
-    return data.map((clinic) => ClinicModel.fromJson(clinic)).toList();
+    
+    // 2. العيادات التي يعمل بها المستخدم كطاقم (طبيب/سكرتير/إلخ)
+    final staffRows = await iCloudService
+        .select(table: SupabaseTables.clinicStaff, eq: {'user_id': ownerId});
+    
+    final Set<String> staffClinicIds = staffRows
+        .map((row) => row['clinic_id'] as String? ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+
+    final List<Map<String, dynamic>> staffClinicsData = [];
+    for (final clinicId in staffClinicIds) {
+      // تفادي التكرار إذا كان المالك عضواً في نفس الوقت
+      if (!ownedData.any((c) => c['id'] == clinicId)) {
+        final clinicData = await iCloudService
+            .select(table: SupabaseTables.clinics, eq: {'id': clinicId});
+        if (clinicData.isNotEmpty) {
+          staffClinicsData.add(clinicData.first);
+        }
+      }
+    }
+
+    final allClinicsData = [...ownedData, ...staffClinicsData];
+    return allClinicsData.map((clinic) => ClinicModel.fromJson(clinic)).toList();
   }
 
   @override

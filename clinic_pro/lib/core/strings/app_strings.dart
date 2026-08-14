@@ -241,22 +241,22 @@ class AppStrings {
   static String get closed => isArabic ? 'مغلق' : 'Closed';
   static List<String> get dayNames => isArabic
       ? [
+          'السبت',
           'الأحد',
           'الإثنين',
           'الثلاثاء',
           'الأربعاء',
           'الخميس',
           'الجمعة',
-          'السبت'
         ]
       : [
-          'Sunday',
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday'
+          'Sat',
+          'Sun',
+          'Mon',
+          'Tue',
+          'Wed',
+          'Thu',
+          'Fri',
         ];
   static const List<String> dayKeys = [
     'sunday',

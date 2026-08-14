@@ -22,23 +22,22 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
 
   /// معرف المالك الحالي — في مرحلة الـ Mock يُستخدم固定
   /// عند الربط بـ Supabase سيتم جلبه من AuthState
-  static const String _currentOwnerId = 'u-owner-1';
 
   /// جلب جميع بيانات لوحة التحكم
-  void loadDashboardData() async {
+  void loadDashboardData(String ownerId) async {
     emit(OwnerDashboardLoading());
     try {
       // 1. جلب بيانات المالك
-      final ownerData = await _fetchOwnerData();
+      final ownerData = await _fetchOwnerData(ownerId);
 
       // 2. جلب العيادات المرتبطة بالمالك
-      final clinics = await _fetchOwnerClinics();
+      final clinics = await _fetchOwnerClinics(ownerId);
 
       // 3. جلب إحصائيات كل عيادة وحساب المجاميع
       final stats = await _aggregateClinicStats(clinics);
 
       // 4. جلب تنبيهات الاشتراك والدعوات المعلقة
-      final alerts = await _fetchAlerts();
+      final alerts = await _fetchAlerts(ownerId);
 
       // 5. جلب بيانات الإيرادات الأسبوعية
       final weeklyRevenue = await _fetchWeeklyRevenue(clinics);
@@ -70,10 +69,10 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
   }
 
   /// جلب بيانات المالك من جدول المستخدمين
-  Future<Map<String, dynamic>> _fetchOwnerData() async {
+  Future<Map<String, dynamic>> _fetchOwnerData(String ownerId) async {
     final results = await _cloudService.select(
       table: SupabaseTables.owners,
-      eq: {'id': _currentOwnerId},
+      eq: {'id': ownerId},
     );
     if (results.isEmpty) {
       return {'name': AppStrings.ownerRoleLabel};
@@ -82,69 +81,69 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
   }
 
   /// جلب جميع العيادات المرتبطة بالمالك
-  Future<List<Map<String, dynamic>>> _fetchOwnerClinics() async {
+  Future<List<Map<String, dynamic>>> _fetchOwnerClinics(String ownerId) async {
     return await _cloudService.select(
       table: SupabaseTables.clinics,
-      eq: {'owner_id': _currentOwnerId},
+      eq: {'owner_id': ownerId},
     );
   }
 
   /// تجميع إحصائيات جميع العيادات
   Future<Map<String, dynamic>> _aggregateClinicStats(
       List<Map<String, dynamic>> clinics) async {
-    int totalPatients = 0;
-    int todayAppointments = 0;
-    num totalRevenue = 0;
-    final Map<String, int> clinicDoctorsCount = {};
-    final Map<String, int> clinicPatientsCount = {};
+    // int totalPatients = 0;
+    // int todayAppointments = 0;
+    // num totalRevenue = 0;
+    // final Map<String, int> clinicDoctorsCount = {};
+    // final Map<String, int> clinicPatientsCount = {};
 
-    for (final clinic in clinics) {
-      final clinicId = clinic['id'] as String;
+    // for (final clinic in clinics) {
+    //   final clinicId = clinic['id'] as String;
 
-      // جلب إحصائيات العيادة من جدول clinic_stats
-      final statsResults = await _cloudService.select(
-        table: 'clinic_stats',
-        eq: {'clinic_id': clinicId},
-      );
+    //   // جلب إحصائيات العيادة من جدول clinic_stats
+    //   final statsResults = await _cloudService.select(
+    //     table: 'clinic_stats',
+    //     eq: {'clinic_id': clinicId},
+    //   );
 
-      if (statsResults.isNotEmpty) {
-        final clinicStat = statsResults.first;
-        final patients = (clinicStat['total_patients'] as num?)?.toInt() ?? 0;
-        final appointments =
-            (clinicStat['today_appointments'] as num?)?.toInt() ?? 0;
-        final revenue = (clinicStat['monthly_revenue'] as num?) ?? 0;
+    //   if (statsResults.isNotEmpty) {
+    //     final clinicStat = statsResults.first;
+    //     final patients = (clinicStat['total_patients'] as num?)?.toInt() ?? 0;
+    //     final appointments =
+    //         (clinicStat['today_appointments'] as num?)?.toInt() ?? 0;
+    //     final revenue = (clinicStat['monthly_revenue'] as num?) ?? 0;
 
-        totalPatients += patients;
-        todayAppointments += appointments;
-        totalRevenue += revenue;
-        clinicPatientsCount[clinicId] = patients;
-      }
+    //     totalPatients += patients;
+    //     todayAppointments += appointments;
+    //     totalRevenue += revenue;
+    //     clinicPatientsCount[clinicId] = patients;
+    //   }
 
-      // جلب عدد الأطباء في العيادة من جدول clinic_staff
-      final staffResults = await _cloudService.select(
-        table: SupabaseTables.clinicStaff,
-        eq: {'clinic_id': clinicId, 'role': 'doctor', 'is_active': true},
-      );
-      clinicDoctorsCount[clinicId] = staffResults.length;
-    }
+    //   // جلب عدد الأطباء في العيادة من جدول clinic_staff
+    //   final staffResults = await _cloudService.select(
+    //     table: SupabaseTables.clinicStaff,
+    //     eq: {'clinic_id': clinicId, 'role': 'doctor', 'is_active': true},
+    //   );
+    //   clinicDoctorsCount[clinicId] = staffResults.length;
+    // }
 
     return {
-      'totalPatients': totalPatients,
-      'todayAppointments': todayAppointments,
-      'totalRevenue': totalRevenue,
-      'clinicDoctorsCount': clinicDoctorsCount,
-      'clinicPatientsCount': clinicPatientsCount,
+      'totalPatients': 0,
+      'todayAppointments': 0,
+      'totalRevenue': 0,
+      'clinicDoctorsCount': {},
+      'clinicPatientsCount': {},
     };
   }
 
   /// جلب التنبيهات من حالة الاشتراك والدعوات المعلقة
-  Future<List<DashboardAlertEntity>> _fetchAlerts() async {
+  Future<List<DashboardAlertEntity>> _fetchAlerts(String ownerId) async {
     final alerts = <DashboardAlertEntity>[];
 
     // فحص حالة الاشتراك
     final subscriptions = await _cloudService.select(
       table: SupabaseTables.subscriptions,
-      eq: {'owner_id': _currentOwnerId},
+      eq: {'owner_id': ownerId},
     );
 
     if (subscriptions.isNotEmpty) {
@@ -187,7 +186,7 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
     // فحص الدعوات المعلقة
     final invitations = await _cloudService.select(
       table: 'invitations',
-      eq: {'owner_id': _currentOwnerId, 'status': 'pending'},
+      eq: {'owner_id': ownerId, 'status': 'pending'},
     );
 
     if (invitations.isNotEmpty) {

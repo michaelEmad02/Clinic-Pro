@@ -16,7 +16,7 @@ class PatientsCountChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxPatients = doctors.fold<int>(
-        0, (max, d) => d.patientCount > max ? d.patientCount : max);
+        0, (max, d) => d.visitCount > max ? d.visitCount : max);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -44,7 +44,7 @@ class PatientsCountChart extends StatelessWidget {
           const SizedBox(height: 16),
           ...doctors.map((doctor) {
             final ratio =
-                maxPatients > 0 ? doctor.patientCount / maxPatients : 0.0;
+                maxPatients > 0 ? doctor.visitCount / maxPatients : 0.0;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Column(
@@ -60,7 +60,7 @@ class PatientsCountChart extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${doctor.patientCount}',
+                        '${doctor.visitCount}',
                         style: AppTextStyles.dataNumeric(context).copyWith(
                           color: context.primary,
                         ),

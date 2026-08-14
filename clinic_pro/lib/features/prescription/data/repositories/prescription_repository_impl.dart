@@ -205,8 +205,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         notes: prescription.notes,
       );
 
-      final savedModel =
-          await _remoteDataSource.insertPrescription(model);
+      final savedModel = await _remoteDataSource.insertPrescription(model);
 
       for (final item in prescription.items) {
         final itemModel = PrescriptionItemModel(
@@ -280,8 +279,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       final template = templates.firstWhere((t) => t.id == templateId);
       final templateName = template.name;
 
-      final itemModels =
-          await _remoteDataSource.getTemplateItems(templateId);
+      final itemModels = await _remoteDataSource.getTemplateItems(templateId);
       final drugs = await _remoteDataSource.getDrugList();
       final drugsMap = {for (var d in drugs) d.id: d};
 
@@ -360,7 +358,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       final model = PrescriptionTemplateModel(
         id: template.id,
         name: template.name,
-        doctorId: template.doctorId ?? '',
+        doctorId: template.doctorId,
       );
       await _remoteDataSource.updateTemplate(model);
       return const Right(null);
@@ -474,7 +472,8 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
   }
 
   @override
-  Future<Either<Failure, void>> incrementTemplateUsage(String templateId) async {
+  Future<Either<Failure, void>> incrementTemplateUsage(
+      String templateId) async {
     try {
       await _remoteDataSource.incrementTemplateUsage(templateId);
       return const Right(null);

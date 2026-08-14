@@ -1,4 +1,5 @@
 import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -31,19 +32,19 @@ class OwnerDashboardScreen extends StatefulWidget {
 
 class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
+    var ownerId = context.read<AuthCubit>().state.user!.id;
     return BlocProvider(
       create: (context) =>
-          OwnerDashboardCubit(sl<ICloudService>())..loadDashboardData(),
+          OwnerDashboardCubit(sl<ICloudService>())..loadDashboardData(ownerId),
       child: BlocListener<SettingsCubit, SettingsState>(
         listenWhen: (SettingsState previous, SettingsState current) =>
             previous.clinicEntity?.id != current.clinicEntity?.id,
         listener: (context, settingsState) {
           if (settingsState.clinicEntity != null) {
             // إعادة تحميل إحصائيات المالك للعيادة الجديدة
-            context.read<OwnerDashboardCubit>().loadDashboardData();
+            context.read<OwnerDashboardCubit>().loadDashboardData(ownerId);
           }
         },
         child: AppResponsiveScaffold(
@@ -54,43 +55,44 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             });
           },
           destinations: [
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.smart_home),
-            label: Text(AppStrings.home),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.building_hospital),
-            label: Text(AppStrings.clinics),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.wallet),
-            label: Text(AppStrings.expenses),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.chart_bar),
-            label: Text(AppStrings.reports),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(TablerIcons.settings),
-            label: Text(AppStrings.settings),
-          ),
-        ],
-        appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
-        body: LazyIndexedStack(
-          index: _currentIndex,
-          children: [
-            _buildMainDashboardTab(),
-            const ClinicsScreen(),
-            const ExpensesScreen(),
-            const ReportsScreen(),
-            const SettingsScreen(role: StaffRoles.owner, showBottomNav: false),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.smart_home),
+              label: Text(AppStrings.home),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.building_hospital),
+              label: Text(AppStrings.clinics),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.wallet),
+              label: Text(AppStrings.expenses),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.chart_bar),
+              label: Text(AppStrings.reports),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.settings),
+              label: Text(AppStrings.settings),
+            ),
           ],
+          appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
+          body: LazyIndexedStack(
+            index: _currentIndex,
+            children: [
+              _buildMainDashboardTab(ownerId),
+              const ClinicsScreen(),
+              const ExpensesScreen(),
+              const ReportsScreen(),
+              const SettingsScreen(
+                  role: StaffRoles.owner, showBottomNav: false),
+            ],
+          ),
+          bottomNavigationBar: _buildBottomNav(),
         ),
-        bottomNavigationBar: _buildBottomNav(),
       ),
-    ),
-  );
-}
+    );
+  }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
@@ -158,7 +160,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  Widget _buildMainDashboardTab() {
+  Widget _buildMainDashboardTab(String ownerId) {
     return BlocBuilder<OwnerDashboardCubit, OwnerDashboardState>(
       builder: (context, state) {
         if (state is OwnerDashboardLoading) {
@@ -170,7 +172,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
         if (state is OwnerDashboardLoaded) {
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<OwnerDashboardCubit>().loadDashboardData();
+              context.read<OwnerDashboardCubit>().loadDashboardData(ownerId);
             },
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 20),

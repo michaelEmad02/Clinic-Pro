@@ -4,6 +4,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:clinic_pro/core/constants/route_constants.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
@@ -55,6 +56,13 @@ class DoctorQuickActions extends StatelessWidget {
                 label: AppStrings.visitTypes,
                 icon: Icons.loyalty_outlined,
                 onTap: () => EditVisitTypesSheet.show(context),
+              ),
+              const SizedBox(width: 12),
+              _buildActionCard(
+                context: context,
+                label: AppStrings.isArabic ? 'تقاريري' : 'My Reports',
+                icon: TablerIcons.chart_bar,
+                onTap: () => context.push(RouteConstants.doctorMyReports),
               ),
             ],
           ),

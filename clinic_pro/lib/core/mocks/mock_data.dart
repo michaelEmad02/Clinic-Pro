@@ -1629,4 +1629,84 @@ class MockData {
       'created_at': '2023-10-15T12:00:00.000Z',
     },
   ];
+
+  static final List<Map<String, dynamic>> expensesBreakdown = [
+    {'category': 'رواتب', 'amount': 2000.0, 'percentage': 47.6},
+    {'category': 'إيجار', 'amount': 1200.0, 'percentage': 28.6},
+    {'category': 'كهرباء', 'amount': 340.0, 'percentage': 8.1},
+    {'category': 'مستلزمات', 'amount': 280.0, 'percentage': 6.7},
+    {'category': 'صيانه', 'amount': 180.0, 'percentage': 4.3},
+    {'category': 'أخرى', 'amount': 200.0, 'percentage': 4.8},
+  ];
+
+  static final List<Map<String, dynamic>> drugCategoryStats = [
+    {'category': 'مضاد حيوي', 'count': 120, 'percentage': 40.0},
+    {'category': 'خافض حرارة', 'count': 90, 'percentage': 30.0},
+    {'category': 'أمراض صدر', 'count': 45, 'percentage': 15.0},
+    {'category': 'أدوية مزمنة', 'count': 30, 'percentage': 10.0},
+    {'category': 'أخرى', 'count': 15, 'percentage': 5.0},
+  ];
+
+  static final List<Map<String, dynamic>> topDrugsStats = [
+    {'name': 'Amoxicillin 500mg', 'count': 64, 'percentage': 21.3},
+    {'name': 'Paracetamol 500mg', 'count': 58, 'percentage': 19.3},
+    {'name': 'Ibuprofen 400mg', 'count': 42, 'percentage': 14.0},
+    {'name': 'Panadol Joint', 'count': 35, 'percentage': 11.6},
+    {'name': 'Cataflam 50mg', 'count': 28, 'percentage': 9.3},
+    {'name': 'Augmentin 1g', 'count': 24, 'percentage': 8.0},
+    {'name': 'Congestal', 'count': 19, 'percentage': 6.3},
+    {'name': 'Omez 20mg', 'count': 15, 'percentage': 5.0},
+    {'name': 'Brufen 600mg', 'count': 10, 'percentage': 3.3},
+    {'name': 'Vitamin C 1000mg', 'count': 5, 'percentage': 1.9},
+  ];
+
+  static final Map<String, dynamic> appointmentStatsData = {
+    'total': 248,
+    'completed': 201,
+    'cancelled': 47,
+    'attendance_rate': 81.0,
+    'peak_hours': [
+      {'hour': 9, 'count': 42},
+      {'hour': 10, 'count': 58},
+      {'hour': 11, 'count': 51},
+      {'hour': 12, 'count': 38},
+      {'hour': 16, 'count': 45},
+      {'hour': 17, 'count': 39},
+    ],
+    'peak_days': [
+      {'day': 'السبت', 'count': 52},
+      {'day': 'الاثنين', 'count': 48},
+      {'day': 'الثلاثاء', 'count': 44},
+      {'day': 'الأربعاء', 'count': 41},
+      {'day': 'الأحد', 'count': 38},
+      {'day': 'الخميس', 'count': 25},
+    ],
+    'by_type': [
+      {'name': 'كشف عادي', 'count': 180},
+      {'name': 'إعادة كشف', 'count': 45},
+      {'name': 'استشارة', 'count': 23},
+    ],
+  };
+
+  static final Map<String, dynamic> patientStatsData = {
+    'total': 412,
+    'new': 28,
+    'returning': 276,
+    'return_rate': 67.0,
+    'by_gender': {'male': 255, 'female': 157},
+    'by_age': {
+      '0-18': 33,
+      '19-35': 144,
+      '36-50': 115,
+      '51-65': 74,
+      '65+': 46,
+    },
+    'inactive': [
+      {'name': 'محمد أحمد', 'last_visit': '2024-09-15', 'days': 108},
+      {'name': 'سارة علي', 'last_visit': '2024-09-20', 'days': 103},
+      {'name': 'خالد حسن', 'last_visit': '2024-09-28', 'days': 95},
+      {'name': 'نورا محمود', 'last_visit': '2024-10-01', 'days': 92},
+      {'name': 'أحمد سامي', 'last_visit': '2024-10-05', 'days': 88},
+    ],
+  };
 }

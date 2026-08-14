@@ -36,6 +36,13 @@
 ## improvements 
  - improve search (easy_debounce)
 
+## reports
+ - [x] عمل refresh indecator in reports
+ - implement date filters
+ - تحسين التقارير و المعلومات اللي بتظهر
+ - 
+
+
 ## features
 - [x] auth
 - [x] settings

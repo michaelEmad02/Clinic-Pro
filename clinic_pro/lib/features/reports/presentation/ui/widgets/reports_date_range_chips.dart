@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────
-// فلاتر النطاق الزمني للتقارير — أسبوع، شهر، 3 أشهر، مخصص
+// فلاتر النطاق الزمني للتقارير — أسبوع، شهر، 3 أشهر، مخصص (مع DatePicker)
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -10,11 +10,15 @@ import '../../manager/reports_state.dart';
 class ReportsDateRangeChips extends StatelessWidget {
   final ReportsDateRange activeRange;
   final ValueChanged<ReportsDateRange> onChanged;
+  final ValueChanged<DateTimeRange>? onCustomRangeSelected;
+  final DateTimeRange? customDateRange;
 
   const ReportsDateRangeChips({
     super.key,
     required this.activeRange,
     required this.onChanged,
+    this.onCustomRangeSelected,
+    this.customDateRange,
   });
 
   static List<(ReportsDateRange, String)> get _ranges => [
@@ -51,11 +55,48 @@ class ReportsDateRangeChips extends StatelessWidget {
                     const Icon(Icons.calendar_month, size: 14),
                     const SizedBox(width: 4),
                   ],
-                  Text(r.$2),
+                  Text(
+                    r.$1 == ReportsDateRange.custom && isSelected && customDateRange != null
+                        ? '${customDateRange!.start.day}/${customDateRange!.start.month} - ${customDateRange!.end.day}/${customDateRange!.end.month}'
+                        : r.$2,
+                  ),
                 ],
               ),
               selected: isSelected,
-              onSelected: (_) => onChanged(r.$1),
+              onSelected: (_) async {
+                if (r.$1 == ReportsDateRange.custom) {
+                  final now = DateTime.now();
+                  final picked = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                    initialDateRange: customDateRange ??
+                        DateTimeRange(
+                          start: now.subtract(const Duration(days: 30)),
+                          end: now,
+                        ),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: ColorScheme.light(
+                            primary: context.primary,
+                            onPrimary: Colors.white,
+                            surface: context.surface,
+                            onSurface: context.textPrimary,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+
+                  if (picked != null) {
+                    onCustomRangeSelected?.call(picked);
+                  }
+                } else {
+                  onChanged(r.$1);
+                }
+              },
               selectedColor: context.primaryLightColor,
               backgroundColor: context.surface,
               labelStyle: TextStyle(

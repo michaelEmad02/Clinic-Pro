@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/utils/responsive_helper.dart';
 import '../../manager/reports_state.dart';
 
 class ReportsSummaryGrid extends StatelessWidget {
@@ -15,150 +16,168 @@ class ReportsSummaryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _SummaryCard(
-                  label: AppStrings.revenue,
-                  value: summary.revenue.toStringAsFixed(0),
-                  currency: AppStrings.egp,
-                  change: summary.revenueChange,
-                  changeColor: context.successText,
-                  icon: Icons.trending_up,
-                  iconBg: context.successBg,
-                  iconColor: context.successText,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _SummaryCard(
-                  label: AppStrings.expenses,
-                  value: summary.expenses.toStringAsFixed(0),
-                  currency: AppStrings.egp,
-                  change: summary.expensesChange,
-                  changeColor: context.dangerText,
-                  icon: Icons.trending_down,
-                  iconBg: context.dangerBg,
-                  iconColor: context.dangerText,
-                ),
-              ),
-            ],
+    final isWide = !ResponsiveHelper.isMobile(context);
+
+    final cardExpected = _SummaryCard(
+      label: AppStrings.isArabic ? 'الإيراد المتوقع' : 'Expected Rev.',
+      value: summary.revenue.toStringAsFixed(0),
+      currency: AppStrings.egp,
+      change: summary.revenueChange,
+      changeColor: context.primary,
+      icon: Icons.event_note_rounded,
+      iconBg: context.primaryLightColor,
+      iconColor: context.primary,
+    );
+
+    final cardCollected = _SummaryCard(
+      label: AppStrings.isArabic ? 'المُحصل الفعلي' : 'Collected',
+      value: summary.collected.toStringAsFixed(0),
+      currency: AppStrings.egp,
+      change: summary.revenueChange,
+      changeColor: context.successText,
+      icon: Icons.payments_rounded,
+      iconBg: context.successBg,
+      iconColor: context.successText,
+    );
+
+    final cardExpenses = _SummaryCard(
+      label: AppStrings.expenses,
+      value: summary.expenses.toStringAsFixed(0),
+      currency: AppStrings.egp,
+      change: summary.expensesChange,
+      changeColor: context.dangerText,
+      icon: Icons.trending_down,
+      iconBg: context.dangerBg,
+      iconColor: context.dangerText,
+    );
+
+    final cardNetProfit = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.primary,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x291A6B8A),
+            blurRadius: 16,
+            offset: Offset(0, 4),
           ),
-          const SizedBox(height: 8),
-          Row(
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -32,
+            right: -32,
+            child: Container(
+              width: 128,
+              height: 128,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -40,
+            left: -40,
+            child: Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: context.primary,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x291A6B8A),
-                        blurRadius: 16,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        top: -32,
-                        right: -32,
-                        child: Container(
-                          width: 128,
-                          height: 128,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -40,
-                        left: -40,
-                        child: Container(
-                          width: 96,
-                          height: 96,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.account_balance_wallet,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            AppStrings.isArabic ? 'الصافي' : 'Net Profit',
-                            style: AppTextStyles.bodyMedium(context).copyWith(
-                              color: context.onPrimaryContainer,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                summary.netProfit.toStringAsFixed(0),
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                AppStrings.egp,
-                                style: AppTextStyles.caption(context).copyWith(
-                                  color: context.onPrimaryContainer,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.white,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _SummaryCard(
-                  label: AppStrings.totalPatients,
-                  value: summary.totalPatients.toString(),
-                  currency: AppStrings.patientsCount,
-                  change: AppStrings.active,
-                  changeColor: context.textSecondary,
-                  icon: Icons.groups,
-                  iconBg: context.primaryLightColor,
-                  iconColor: context.primary,
+              const SizedBox(height: 12),
+              Text(
+                AppStrings.isArabic ? 'الصافي (المحصل - المصروفات)' : 'Net Profit',
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: context.onPrimaryContainer,
+                  fontSize: 11,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    summary.netProfit.toStringAsFixed(0),
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    AppStrings.egp,
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: context.onPrimaryContainer,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ],
       ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: isWide
+          ? Row(
+              children: [
+                Expanded(child: cardExpected),
+                const SizedBox(width: 8),
+                Expanded(child: cardCollected),
+                const SizedBox(width: 8),
+                Expanded(child: cardExpenses),
+                const SizedBox(width: 8),
+                Expanded(child: cardNetProfit),
+              ],
+            )
+          : Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: cardExpected),
+                    const SizedBox(width: 8),
+                    Expanded(child: cardCollected),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: cardExpenses),
+                    const SizedBox(width: 8),
+                    Expanded(child: cardNetProfit),
+                  ],
+                ),
+              ],
+            ),
     );
   }
 }

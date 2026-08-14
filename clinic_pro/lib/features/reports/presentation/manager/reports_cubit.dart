@@ -1,31 +1,59 @@
-// ────────────────────────────────────────────────────────
-// Cubit شاشة التقارير — حساب الإيرادات والمصروفات وأداء الأطباء
-// ────────────────────────────────────────────────────────
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:injectable/injectable.dart';
 import '../../../../core/strings/app_strings.dart';
-import 'reports_repository.dart';
+import '../../domain/usecases/get_appointment_stats_usecase.dart';
+import '../../domain/usecases/get_doctor_performance_usecase.dart';
+import '../../domain/usecases/get_drug_stats_usecase.dart';
+import '../../domain/usecases/get_patient_stats_usecase.dart';
+import '../../domain/usecases/get_revenue_summary_usecase.dart';
+import '../../domain/usecases/get_template_stats_usecase.dart';
 import 'reports_state.dart';
 
-@injectable
+// @injectable
 class ReportsCubit extends Cubit<ReportsState> {
-  final ReportsRepository _repository;
+  final GetRevenueSummaryUseCase _getRevenueSummary;
+  final GetAppointmentStatsUseCase _getAppointmentStats;
+  final GetPatientStatsUseCase _getPatientStats;
+  final GetDoctorPerformanceUseCase _getDoctorPerformance;
+  final GetDrugStatsUseCase _getDrugStats;
+  final GetTemplateStatsUseCase _getTemplateStats;
 
-  ReportsCubit(this._repository) : super(ReportsInitial());
+  ReportsCubit(
+    this._getRevenueSummary,
+    this._getAppointmentStats,
+    this._getPatientStats,
+    this._getDoctorPerformance,
+    this._getDrugStats,
+    this._getTemplateStats,
+  ) : super(ReportsInitial());
 
-  List<Map<String, dynamic>> _allInvoices = [];
-  List<Map<String, dynamic>> _allExpenses = [];
-  DateTime? _customStart;
-  DateTime? _customEnd;
-
-  Future<void> loadReports() async {
+  Future<void> loadReports({String? doctorId}) async {
     emit(ReportsLoading());
 
     try {
-      _allInvoices = await _repository.loadInvoices();
-      _allExpenses = await _repository.loadExpenses();
-      await _emitForRange(ReportsDateRange.thisMonth);
+      final results = await Future.wait([
+        _getRevenueSummary(doctorId: doctorId),
+        _getAppointmentStats(doctorId: doctorId),
+        _getPatientStats(doctorId: doctorId),
+        _getDoctorPerformance(),
+        _getDrugStats(doctorId: doctorId),
+        _getTemplateStats(doctorId: doctorId),
+      ]);
+
+      final revenueRes = results[0];
+      final appointmentRes = results[1];
+      final patientRes = results[2];
+      final doctorRes = results[3];
+      final drugRes = results[4];
+      final templateRes = results[5];
+
+      emit(ReportsLoaded(
+        revenueSummary: revenueRes.fold((_) => null, (r) => r as dynamic),
+        appointmentStats: appointmentRes.fold((_) => null, (r) => r as dynamic),
+        patientStats: patientRes.fold((_) => null, (r) => r as dynamic),
+        doctorPerformance: doctorRes.fold((_) => [], (r) => r as dynamic),
+        drugStats: drugRes.fold((_) => null, (r) => r as dynamic),
+        templateStats: templateRes.fold((_) => [], (r) => r as dynamic),
+      ));
     } catch (_) {
       emit(ReportsError(AppStrings.loadReportsFailed));
     }
@@ -33,140 +61,8 @@ class ReportsCubit extends Cubit<ReportsState> {
 
   void changeRange(ReportsDateRange range) {
     if (state is ReportsLoaded) {
-      _emitForRange(range);
+      final loaded = state as ReportsLoaded;
+      emit(loaded.copyWith(activeRange: range));
     }
-  }
-
-  void changeCustomRange(DateTime start, DateTime end) {
-    if (state is ReportsLoaded) {
-      _customStart = start;
-      _customEnd = end;
-      _emitForRange(ReportsDateRange.custom);
-    }
-  }
-
-  Future<void> _emitForRange(ReportsDateRange range) async {
-    final summary = _calculateSummary(range);
-    final weeklyData = _mapWeeklyData(range);
-    final topServices = await _repository.loadTopServices();
-    final doctorPerformance = await _repository.loadDoctorPerformance();
-
-    emit(ReportsLoaded(
-      summary: summary,
-      weeklyData: weeklyData,
-      topServices: topServices,
-      doctorPerformance: doctorPerformance,
-      activeRange: range,
-    ));
-  }
-
-  DateTime _rangeStart(ReportsDateRange range) {
-    final now = DateTime.now();
-    switch (range) {
-      case ReportsDateRange.thisWeek:
-        return now.subtract(const Duration(days: 7));
-      case ReportsDateRange.thisMonth:
-        return DateTime(now.year, now.month, 1);
-      case ReportsDateRange.threeMonths:
-        return now.subtract(const Duration(days: 90));
-      case ReportsDateRange.custom:
-        return _customStart ?? DateTime(2000);
-    }
-  }
-
-  DateTime _rangeEnd(ReportsDateRange range) {
-    switch (range) {
-      case ReportsDateRange.custom:
-        return _customEnd ?? DateTime.now();
-      default:
-        return DateTime.now();
-    }
-  }
-
-  ReportSummary _calculateSummary(ReportsDateRange range) {
-    final start = _rangeStart(range);
-    final end = _rangeEnd(range);
-
-    final filteredInvoices = _allInvoices.where((inv) {
-      final date = DateTime.tryParse(inv['created_at'] as String);
-      return date != null && !date.isBefore(start) && !date.isAfter(end);
-    }).toList();
-
-    final filteredExpenses = _allExpenses.where((exp) {
-      final date = DateTime.tryParse(exp['date'] as String);
-      return date != null && !date.isBefore(start) && !date.isAfter(end);
-    }).toList();
-
-    final totalRevenue = filteredInvoices.fold<double>(
-        0, (sum, inv) => sum + (inv['paid_amount'] as num).toDouble());
-
-    final totalExpenses = filteredExpenses.fold<double>(
-        0, (sum, exp) => sum + (exp['amount'] as num).toDouble());
-
-    final revenueChange = totalRevenue > 5000 ? '+12%' : '+8%';
-    final expensesChange = totalExpenses > 2000 ? '-5%' : '-3%';
-
-    return ReportSummary(
-      revenue: totalRevenue,
-      expenses: totalExpenses,
-      netProfit: totalRevenue - totalExpenses,
-      totalPatients: _allInvoices
-          .map((inv) => inv['patient_id'] as String?)
-          .whereType<String>()
-          .toSet()
-          .length,
-      revenueChange: revenueChange,
-      expensesChange: expensesChange,
-    );
-  }
-
-  List<WeeklyData> _mapWeeklyData(ReportsDateRange range) {
-    final start = _rangeStart(range);
-    final end = _rangeEnd(range);
-
-    final filteredInvoices = _allInvoices.where((inv) {
-      final date = DateTime.tryParse(inv['created_at'] as String);
-      return date != null && !date.isBefore(start) && !date.isAfter(end);
-    }).toList();
-
-    final filteredExpenses = _allExpenses.where((exp) {
-      final date = DateTime.tryParse(exp['date'] as String);
-      return date != null && !date.isBefore(start) && !date.isAfter(end);
-    }).toList();
-
-    final Map<String, double> weekRevenue = {};
-    final Map<String, double> weekExpenses = {};
-
-    for (final inv in filteredInvoices) {
-      final date = DateTime.tryParse(inv['created_at'] as String);
-      if (date == null) continue;
-      final key = _weekKey(date);
-      weekRevenue[key] =
-          (weekRevenue[key] ?? 0) + (inv['paid_amount'] as num).toDouble();
-    }
-
-    for (final exp in filteredExpenses) {
-      final date = DateTime.tryParse(exp['date'] as String);
-      if (date == null) continue;
-      final key = _weekKey(date);
-      weekExpenses[key] =
-          (weekExpenses[key] ?? 0) + (exp['amount'] as num).toDouble();
-    }
-
-    final allKeys = {...weekRevenue.keys, ...weekExpenses.keys}.toList()..sort();
-
-    return allKeys.map((key) {
-      return WeeklyData(
-        week: key,
-        revenue: weekRevenue[key] ?? 0,
-        expenses: weekExpenses[key] ?? 0,
-      );
-    }).toList();
-  }
-
-  String _weekKey(DateTime date) {
-    final monday = date.subtract(Duration(days: date.weekday - 1));
-    final months = AppStrings.fullMonths;
-    return '${monday.day} ${months[monday.month - 1]}';
   }
 }
