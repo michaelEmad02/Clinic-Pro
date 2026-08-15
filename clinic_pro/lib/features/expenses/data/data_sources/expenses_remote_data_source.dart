@@ -1,0 +1,401 @@
+import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/core/services/i_cloud_service.dart';
+import 'package:clinic_pro/features/clinics/data/models/clinic_model.dart';
+import 'package:clinic_pro/features/clinics/data/models/clinic_statistics_model.dart';
+import 'package:clinic_pro/core/enities/performance_statistics.dart';
+import 'package:clinic_pro/features/staff_and_invitations/data/models/doctor_secretaries_model.dart';
+import 'package:clinic_pro/features/staff_and_invitations/data/models/staff_model.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
+
+import 'package:injectable/injectable.dart';
+
+abstract class IClinicsRemoteDataSource {
+  Future<List<ClinicModel>> fetchClinics(String ownerId);
+  Future<ClinicModel> fetchClinicById(String id);
+  Future<List<StaffEntity>> fetchClinicStaff(String clinicId);
+  Future<String> addClinic(ClinicModel clinic);
+  Future<void> editClinic(ClinicModel clinic);
+  Future<void> deleteClinic(String id);
+  Future<void> toggleIsActive(String id, bool isActive);
+  Future<void> addStaff(
+      String clinicId,
+      String staffId,
+      String? doctorId,
+      StaffRoles
+          role); // if the staff is new , will create it by use staff feature
+  Future<void> deleteStaff(String clinicId, String staffId, [String? doctorId]);
+  Future<ClinicStatisticsModel> fetchClinicStatistics(String clinicId);
+}
+
+@LazySingleton(as: IClinicsRemoteDataSource)
+class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
+  final ICloudService iCloudService;
+
+  ClinicsRemoteDataSource({required this.iCloudService});
+  @override
+  Future<String> addClinic(ClinicModel clinic) async {
+    final inserted = await iCloudService.insert(
+        table: SupabaseTables.clinics, data: clinic.toJson());
+    return inserted['id'] as String;
+  }
+
+  @override
+  Future<void> addStaff(String clinicId, String staffId, String? doctorId,
+      StaffRoles role) async {
+    var staff = StaffModel(
+        id: "",
+        clinicId: clinicId,
+        userId: staffId,
+        name: "",
+        email: "",
+        phone: "",
+        role: role,
+        isActive: true,
+        joinedAt: DateTime.now());
+    await iCloudService.insert(
+        table: SupabaseTables.clinicStaff, data: staff.toJson());
+    if (role == StaffRoles.secretary) {
+      var secretary = DoctorSecretariesModel(
+        id: "",
+        clinicId: clinicId,
+        doctorId: doctorId ?? "",
+        secretaryId: staffId,
+        isActive: true,
+      );
+      await iCloudService.insert(
+          table: SupabaseTables.doctorSecretaries, data: secretary.toJson());
+    }
+  }
+
+  @override
+  Future<void> deleteClinic(String id) async {
+    await iCloudService.delete(
+        table: SupabaseTables.clinics, matchColumn: 'id', matchValue: id);
+  }
+
+  @override
+  Future<void> deleteStaff(String clinicId, String staffId,
+      [String? doctorId]) async {
+    // ١. الاستعلام عن بيانات الموظف في العيادة لمعرفة دوره
+    final staffRecords = await iCloudService.select(
+      table: SupabaseTables.clinicStaff,
+      eq: {
+        'clinic_id': clinicId,
+        'user_id': staffId,
+      },
+    );
+
+    if (staffRecords.isEmpty) return;
+
+    final role = staffRecords.first['role'] as String?;
+
+    if (role == 'secretary') {
+      if (doctorId != null && doctorId.isNotEmpty) {
+        // حذف الارتباط مع هذا الطبيب تحديداً
+        await iCloudService.delete(
+          table: SupabaseTables.doctorSecretaries,
+          matchMap: {
+            'clinic_id': clinicId,
+            'secretary_id': staffId,
+            'doctor_id': doctorId,
+          },
+        );
+
+        // التحقق مما إذا كان هناك ارتباطات أخرى لهذا السكرتير في العيادة
+        final remainingRelations = await iCloudService.select(
+          table: SupabaseTables.doctorSecretaries,
+          eq: {
+            'clinic_id': clinicId,
+            'secretary_id': staffId,
+          },
+        );
+
+        // إذا لم يعد لديه أطباء مرتبطين في العيادة، نحذفه من جدول clinicStaff
+        if (remainingRelations.isEmpty) {
+          await iCloudService.delete(
+            table: SupabaseTables.clinicStaff,
+            matchMap: {
+              'clinic_id': clinicId,
+              'user_id': staffId,
+            },
+          );
+        }
+      } else {
+        // إذا لم يُحدد طبيب، نحذف جميع الارتباطات والموظف نفسه
+        await iCloudService.delete(
+          table: SupabaseTables.doctorSecretaries,
+          matchMap: {
+            'clinic_id': clinicId,
+            'secretary_id': staffId,
+          },
+        );
+        await iCloudService.delete(
+          table: SupabaseTables.clinicStaff,
+          matchMap: {
+            'clinic_id': clinicId,
+            'user_id': staffId,
+          },
+        );
+      }
+    } else {
+      // للأدوار الأخرى (مثل الطبيب)، حذف عادي من طاقم العيادة
+      await iCloudService.delete(
+        table: SupabaseTables.clinicStaff,
+        matchMap: {
+          'clinic_id': clinicId,
+          'user_id': staffId,
+        },
+      );
+    }
+  }
+
+  @override
+  Future<void> editClinic(ClinicModel clinic) async {
+    await iCloudService.update(
+        table: SupabaseTables.clinics,
+        data: clinic.toJson(),
+        matchColumn: "id",
+        matchValue: clinic.id);
+  }
+
+  @override
+  Future<ClinicModel> fetchClinicById(String id) async {
+    var data = await iCloudService
+        .select(table: SupabaseTables.clinics, eq: {"id": id});
+    return data.map((clinic) => ClinicModel.fromJson(clinic)).first;
+  }
+
+  @override
+  Future<ClinicStatisticsModel> fetchClinicStatistics(String clinicId) async {
+    // 1. جلب عدد الأطباء من جدول موظفي العيادة (clinic_staff)
+    final staffList = await iCloudService.select(
+      table: SupabaseTables.clinicStaff,
+      eq: {'clinic_id': clinicId, 'role': StaffRoles.doctor.name},
+    );
+    final numberOfDoctors = staffList.length;
+
+    // 2. جلب مواعيد العيادة (appointments)
+    final appointmentsList = await iCloudService.select(
+      table: SupabaseTables.appointments,
+      eq: {'clinic_id': clinicId},
+    );
+
+    final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+    final dayAppointments = appointmentsList
+        .where((appt) => appt['date'] == todayStr)
+        .length;
+
+    // 3. حساب عدد المواعيد المنتهية هذا الشهر (status = 'done')
+    final now = DateTime.now();
+    final numberOfFinishedAppointments = appointmentsList.where((appt) {
+      final dateStr = appt['date'] as String?;
+      if (dateStr == null || dateStr.length < 7) return false;
+      final year = int.tryParse(dateStr.substring(0, 4)) ?? 0;
+      final month = int.tryParse(dateStr.substring(5, 7)) ?? 0;
+      return year == now.year &&
+          month == now.month &&
+          appt['status'] == AppointmentStatus.done;
+    }).length;
+
+    // 4. جلب الفواتير لحساب إيرادات الأشهر الأخيرة (invoices)
+    final invoicesList = await iCloudService.select(
+      table: SupabaseTables.invoices,
+      eq: {'clinic_id': clinicId},
+    );
+
+    // 5. جلب المصروفات لحساب مصروفات الشهر وصافي الربح (expenses)
+    final expensesList = await iCloudService.select(
+      table: SupabaseTables.expenses,
+      eq: {'clinic_id': clinicId},
+    );
+
+    final List<PerformanceStatistics> performance = [];
+
+    // حساب الإيرادات لآخر 5 أشهر (بدءاً من الشهر الحالي)
+    for (int i = 0; i < 5; i++) {
+      final monthDate = DateTime(now.year, now.month - i, 1);
+
+      final monthInvoices = invoicesList.where((invoice) {
+        final createdAtStr = invoice['created_at'] as String?;
+        if (createdAtStr == null) return false;
+        final createdAt = DateTime.tryParse(createdAtStr);
+        if (createdAt == null) return false;
+        return createdAt.year == monthDate.year &&
+            createdAt.month == monthDate.month;
+      });
+
+      final revenue = monthInvoices.fold<double>(
+        0.0,
+        (sum, invoice) =>
+            sum + ((invoice['paid_amount'] ?? 0.0) as num).toDouble(),
+      );
+
+      performance.add(
+        PerformanceStatistics(month: monthDate, amount: revenue),
+      );
+    }
+
+    // إيرادات الشهر الحالي هي القيمة الأولى في القائمة (الشهر الحالي)
+    final monthlyRevenue = performance.first.amount;
+
+    // حساب مصروفات الشهر الحالي
+    final monthlyExpenses = expensesList.where((exp) {
+      final dateStr = exp['date'] as String?;
+      if (dateStr == null || dateStr.length < 7) return false;
+      final year = int.tryParse(dateStr.substring(0, 4)) ?? 0;
+      final month = int.tryParse(dateStr.substring(5, 7)) ?? 0;
+      return year == now.year && month == now.month;
+    }).fold<double>(
+      0.0,
+      (sum, exp) => sum + ((exp['amount'] ?? 0.0) as num).toDouble(),
+    );
+
+    final netProfit = monthlyRevenue - monthlyExpenses;
+
+    return ClinicStatisticsModel(
+      performance,
+      dayAppointments: dayAppointments,
+      numberOfDoctors: numberOfDoctors,
+      monthlyRevenue: monthlyRevenue,
+      numberOfFinishedAppointments: numberOfFinishedAppointments,
+      monthlyExpenses: monthlyExpenses,
+      netProfit: netProfit,
+    );
+  }
+
+  @override
+  Future<List<ClinicModel>> fetchClinics(String ownerId) async {
+    // 1. العيادات المملوكة للمستخدم
+    final ownedData = await iCloudService
+        .select(table: SupabaseTables.clinics, eq: {'owner_id': ownerId});
+    
+    // 2. العيادات التي يعمل بها المستخدم كطاقم (طبيب/سكرتير/إلخ)
+    final staffRows = await iCloudService
+        .select(table: SupabaseTables.clinicStaff, eq: {'user_id': ownerId});
+    
+    final Set<String> staffClinicIds = staffRows
+        .map((row) => row['clinic_id'] as String? ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+
+    final List<Map<String, dynamic>> staffClinicsData = [];
+    for (final clinicId in staffClinicIds) {
+      // تفادي التكرار إذا كان المالك عضواً في نفس الوقت
+      if (!ownedData.any((c) => c['id'] == clinicId)) {
+        final clinicData = await iCloudService
+            .select(table: SupabaseTables.clinics, eq: {'id': clinicId});
+        if (clinicData.isNotEmpty) {
+          staffClinicsData.add(clinicData.first);
+        }
+      }
+    }
+
+    final allClinicsData = [...ownedData, ...staffClinicsData];
+    return allClinicsData.map((clinic) => ClinicModel.fromJson(clinic)).toList();
+  }
+
+  @override
+  Future<void> toggleIsActive(String id, bool isActive) async {
+    await iCloudService.update(
+        table: SupabaseTables.clinics,
+        data: {"is_active": isActive},
+        matchColumn: "id",
+        matchValue: id);
+  }
+
+  @override
+  Future<List<StaffEntity>> fetchClinicStaff(String clinicId) async {
+    // ١. جلب صفوف clinic_staff لـ clinicId المحدد
+    final staffRows = await iCloudService
+        .select(table: SupabaseTables.clinicStaff, eq: {"clinic_id": clinicId});
+
+    if (staffRows.isEmpty) return [];
+
+    // ٢. جلب جدول الربط بين السكرتير والأطباء لهذه العيادة
+    final secretaryScheduleRows = await iCloudService.select(
+        table: SupabaseTables.doctorSecretaries, eq: {"clinic_id": clinicId});
+
+    // ٣. تجميع كافة الـ user IDs المطلوبة (الموظفين + الأطباء المرتبطين)
+    final Set<String> requiredUserIds = {};
+    for (final cs in staffRows) {
+      if (cs['user_id'] != null) {
+        requiredUserIds.add(cs['user_id'] as String);
+      }
+    }
+    for (final rel in secretaryScheduleRows) {
+      if (rel['doctor_id'] != null) {
+        requiredUserIds.add(rel['doctor_id'] as String);
+      }
+    }
+
+    // ٤. جلب تفاصيل المستخدمين المطلوبة فقط لتفادي RLS وجلب جدول بالكامل
+    List<Map<String, dynamic>> userRows = [];
+    if (requiredUserIds.isNotEmpty) {
+      userRows = await iCloudService.select(
+        table: 'users',
+      );
+      userRows =
+          userRows.where((u) => requiredUserIds.contains(u['id'])).toList();
+    }
+
+    final List<StaffEntity> processedStaff = [];
+    final Set<String> processedSecretaries = {};
+
+    for (final cs in staffRows) {
+      final userId = cs['user_id'] as String;
+        final roleType = StaffRoles.fromString(cs['role'] as String?);
+
+      final userData = userRows.firstWhere(
+        (u) => u['id'] == userId,
+        orElse: () => <String, dynamic>{},
+      );
+
+      final baseJson = {
+        ...cs,
+        'users': userData,
+      };
+
+      if (roleType == StaffRoles.secretary) {
+        // إذا تمت معالجة هذا السكرتير مسبقاً، نتجاهل تكراره في clinic_staff
+        if (processedSecretaries.contains(userId)) {
+          continue;
+        }
+        processedSecretaries.add(userId);
+
+        // العثور على الأطباء المرتبطين بهذا السكرتير في العيادة
+        final secretaryRelations = secretaryScheduleRows
+            .where((rel) => rel['secretary_id'] == userId)
+            .toList();
+
+        if (secretaryRelations.isEmpty) {
+          // سكرتير غير مرتبط بطبيب بعد
+          processedStaff.add(StaffModel.fromJson(baseJson));
+        } else {
+          // تكرار السكرتير لكل طبيب مرتبط به للتمييز في قائمة العيادة
+          for (final rel in secretaryRelations) {
+            final docId = rel['doctor_id'] as String;
+            final docData = userRows.firstWhere(
+              (u) => u['id'] == docId,
+              orElse: () => <String, dynamic>{},
+            );
+            final docName = docData['name'] as String? ?? 'طبيب غير معروف';
+
+            // تعديل التخصص الفرعي ليظهر الطبيب المرتبط
+            final customJson = {
+              ...baseJson,
+              'specialty': 'سكرتير د. $docName',
+              'doctor_secretaries': [rel], // تضمين هذا الارتباط المحدد
+            };
+            processedStaff.add(StaffModel.fromJson(customJson));
+          }
+        }
+      } else {
+        // الأطباء أو أي أدوار أخرى تضاف كما هي
+        processedStaff.add(StaffModel.fromJson(baseJson));
+      }
+    }
+
+    return processedStaff;
+  }
+}

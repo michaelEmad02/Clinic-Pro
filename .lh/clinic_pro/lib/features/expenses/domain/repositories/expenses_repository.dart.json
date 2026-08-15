@@ -1,0 +1,86 @@
+{
+    "sourceFile": "clinic_pro/lib/features/expenses/domain/repositories/expenses_repository.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 17,
+            "patches": [
+                {
+                    "date": 1786733207441,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1786733217955,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,11 +5,10 @@\n import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, List<ClinicEntity>>> fetchClinics(String ownerId);\r\n-  Future<Either<Failure, ClinicEntity>> fetchClinicById(String id);\r\n \r\n+\r\n   Future<Either<Failure, List<StaffEntity>>> fetchClinicStaff(String clinicId);\r\n   Future<Either<Failure, String>> addClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n"
+                },
+                {
+                    "date": 1786733223631,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -7,9 +7,8 @@\n \r\n abstract class ExpensesRepository {\r\n \r\n \r\n-  Future<Either<Failure, List<StaffEntity>>> fetchClinicStaff(String clinicId);\r\n   Future<Either<Failure, String>> addClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n   Future<Either<Failure, void>> toggleIsActive(String id, bool isActive);\r\n"
+                },
+                {
+                    "date": 1786733234890,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,15 +10,6 @@\n \r\n   Future<Either<Failure, String>> addClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n-  Future<Either<Failure, void>> toggleIsActive(String id, bool isActive);\r\n-  Future<Either<Failure, void>> addStaff(\r\n-      String clinicId,\r\n-      String staffId,\r\n-      String? doctorId,\r\n-      StaffRoles\r\n-          role); // if the staff is new , will create it by use staff feature\r\n-  Future<Either<Failure, void>> deleteStaff(String clinicId, String staffId, [String? doctorId]);\r\n-  Future<Either<Failure, ClinicStatisticsEntity>> fetchClinicStatistics(\r\n-      String clinicId);\r\n+ \r\n }\r\n"
+                },
+                {
+                    "date": 1786733244103,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,14 +1,11 @@\n import 'package:clinic_pro/core/constants/staff_roles.dart';\r\n import 'package:clinic_pro/core/error/failures.dart';\r\n import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n import 'package:clinic_pro/features/clinics/domain/entities/clinic_statistics_entity.dart';\r\n-import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-\r\n-\r\n   Future<Either<Failure, String>> addClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n"
+                },
+                {
+                    "date": 1786733254718,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,12 +1,10 @@\n-import 'package:clinic_pro/core/constants/staff_roles.dart';\r\n import 'package:clinic_pro/core/error/failures.dart';\r\n import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n-import 'package:clinic_pro/features/clinics/domain/entities/clinic_statistics_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addClinic(ClinicEntity clinic);\r\n+  Future<Either<Failure, String>> addClinic(ex clinic);\r\n   Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733264798,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,10 +1,11 @@\n import 'package:clinic_pro/core/error/failures.dart';\r\n import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addClinic(ex clinic);\r\n+  Future<Either<Failure, String>> addClinic(ExpensesEntity clinic);\r\n   Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733271517,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addClinic(ExpensesEntity clinic);\r\n+  Future<Either<Failure, String>> addClinic(ExpensesEntity ec);\r\n   Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733281909,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addClinic(ExpensesEntity ec);\r\n-  Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n+  Future<Either<Failure, String>> addClinic(ExpensesEntity expenses);\r\n+  Future<Either<Failure, void>> editClinic(ClinicEntity expenses);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733288494,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,8 +4,8 @@\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n   Future<Either<Failure, String>> addClinic(ExpensesEntity expenses);\r\n-  Future<Either<Failure, void>> editClinic(ClinicEntity expenses);\r\n+  Future<Either<Failure, void>> editClinic(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733499164,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,11 +1,10 @@\n import 'package:clinic_pro/core/error/failures.dart';\r\n-import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addClinic(ExpensesEntity expenses);\r\n+  Future<Either<Failure, String>> addexpenses(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> editClinic(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733538642,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addexpenses(ExpensesEntity expenses);\r\n+  Future<Either<Failure, String>> addEexpenses(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> editClinic(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733572010,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addEexpenses(ExpensesEntity expenses);\r\n+  Future<Either<Failure, String>> addExpenses(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> editClinic(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733643435,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n \r\n abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addExpenses(ExpensesEntity expenses);\r\n+  Future<Either<Failure, String>> addExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> editClinic(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteClinic(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786733923988,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,7 +4,7 @@\n \r\n abstract class ExpensesRepository {\r\n   Future<Either<Failure, String>> addExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> editClinic(ExpensesEntity expenses);\r\n-  Future<Either<Failure, void>> deleteClinic(String id);\r\n+  Future<Either<Failure, void>> deleteExpense(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786734008095,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,10 @@\n+import 'package:clinic_pro/core/error/failures.dart';\r\n+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n+import 'package:dartz/dartz.dart';\r\n+\r\n+abstract class ExpensesRepository {\r\n+  Future<Either<Failure, String>> addExpense(ExpensesEntity expenses);\r\n+  Future<Either<Failure, void>> updateExpense(ExpensesEntity expenses);\r\n+  Future<Either<Failure, void>> deleteExpense(String id);\r\n+ \r\n+}\r\n"
+                },
+                {
+                    "date": 1786734094858,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,16 +5,7 @@\n abstract class ExpensesRepository {\r\n   Future<Either<Failure, String>> addExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> updateExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteExpense(String id);\r\n- \r\n-}\r\n-import 'package:clinic_pro/core/error/failures.dart';\r\n-import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n-import 'package:dartz/dartz.dart';\r\n-\r\n-abstract class ExpensesRepository {\r\n-  Future<Either<Failure, String>> addExpense(ExpensesEntity expenses);\r\n-  Future<Either<Failure, void>> editClinic(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteExpense(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786734106277,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,7 +5,7 @@\n abstract class ExpensesRepository {\r\n   Future<Either<Failure, String>> addExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> updateExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteExpense(String id);\r\n-  Future<Either<Failure, void>> fet(String id);\r\n+  Future<Either<Failure, void>> fetchExpense(String id);\r\n  \r\n }\r\n"
+                }
+            ],
+            "date": 1786733207441,
+            "name": "Commit-0",
+            "content": "import 'package:clinic_pro/core/constants/staff_roles.dart';\r\nimport 'package:clinic_pro/core/error/failures.dart';\r\nimport 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\nimport 'package:clinic_pro/features/clinics/domain/entities/clinic_statistics_entity.dart';\r\nimport 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';\r\nimport 'package:dartz/dartz.dart';\r\n\r\nabstract class ExpensesRepository {\r\n  Future<Either<Failure, List<ClinicEntity>>> fetchClinics(String ownerId);\r\n  Future<Either<Failure, ClinicEntity>> fetchClinicById(String id);\r\n\r\n  Future<Either<Failure, List<StaffEntity>>> fetchClinicStaff(String clinicId);\r\n  Future<Either<Failure, String>> addClinic(ClinicEntity clinic);\r\n  Future<Either<Failure, void>> editClinic(ClinicEntity clinic);\r\n  Future<Either<Failure, void>> deleteClinic(String id);\r\n  Future<Either<Failure, void>> toggleIsActive(String id, bool isActive);\r\n  Future<Either<Failure, void>> addStaff(\r\n      String clinicId,\r\n      String staffId,\r\n      String? doctorId,\r\n      StaffRoles\r\n          role); // if the staff is new , will create it by use staff feature\r\n  Future<Either<Failure, void>> deleteStaff(String clinicId, String staffId, [String? doctorId]);\r\n  Future<Either<Failure, ClinicStatisticsEntity>> fetchClinicStatistics(\r\n      String clinicId);\r\n}\r\n"
+        }
+    ]
+}

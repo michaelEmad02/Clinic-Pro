@@ -23,7 +23,7 @@ class ExpensesRepository {
         .toList();
   }
 
-  Future<List<ExpenseItem>> loadExpenses() async {
+  Future<List<ExpenseItem>> loadExpenses(String id) async {
     final data = await _cloud.select(table: 'expenses');
     final categories = await loadCategories();
     final catMap = {for (var c in categories) c.id: c.name};

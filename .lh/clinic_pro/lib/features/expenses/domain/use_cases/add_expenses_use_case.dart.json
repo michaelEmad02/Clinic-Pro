@@ -1,0 +1,134 @@
+{
+    "sourceFile": "clinic_pro/lib/features/expenses/domain/use_cases/add_expenses_use_case.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 29,
+            "patches": [
+                {
+                    "date": 1786733001623,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1786733010589,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,12 +4,12 @@\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n-class AddexpensesUseCase {\r\n+class AddExpensesUseCase {\r\n   final ClinicsRepository clinicsRepository;\r\n \r\n-  AddClinicUseCase({required this.clinicsRepository});\r\n+  AddExpensesUseCase({required this.clinicsRepository});\r\n   Future<Either<Failure, String>> call(ClinicEntity clinic) {\r\n     return clinicsRepository.addClinic(clinic);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733329019,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -8,8 +8,8 @@\n class AddExpensesUseCase {\r\n   final ClinicsRepository clinicsRepository;\r\n \r\n   AddExpensesUseCase({required this.clinicsRepository});\r\n-  Future<Either<Failure, String>> call(ClinicEntity clinic) {\r\n+  Future<Either<Failure, String>> call(EEntity clinic) {\r\n     return clinicsRepository.addClinic(clinic);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733345678,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,16 @@\n+import 'package:clinic_pro/core/error/failures.dart';\r\n+import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n+import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\n+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n+import 'package:dartz/dartz.dart';\r\n+import 'package:injectable/injectable.dart';\r\n+\r\n+@injectable\r\n+class AddExpensesUseCase {\r\n+  final ClinicsRepository clinicsRepository;\r\n+\r\n+  AddExpensesUseCase({required this.clinicsRepository});\r\n+  Future<Either<Failure, String>> call(ExpensesEntity clinic) {\r\n+    return clinicsRepository.addClinic(clinic);\r\n+  }\r\n+}\r\n"
+                },
+                {
+                    "date": 1786733352083,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,5 @@\n import 'package:clinic_pro/core/error/failures.dart';\r\n-import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n@@ -13,19 +12,4 @@\n   Future<Either<Failure, String>> call(ExpensesEntity clinic) {\r\n     return clinicsRepository.addClinic(clinic);\r\n   }\r\n }\r\n-import 'package:clinic_pro/core/error/failures.dart';\r\n-import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n-import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\n-import 'package:dartz/dartz.dart';\r\n-import 'package:injectable/injectable.dart';\r\n-\r\n-@injectable\r\n-class AddExpensesUseCase {\r\n-  final ClinicsRepository clinicsRepository;\r\n-\r\n-  AddExpensesUseCase({required this.clinicsRepository});\r\n-  Future<Either<Failure, String>> call(EEntity clinic) {\r\n-    return clinicsRepository.addClinic(clinic);\r\n-  }\r\n-}\r\n"
+                },
+                {
+                    "date": 1786733370029,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,9 +5,9 @@\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n class AddExpensesUseCase {\r\n-  final ClinicsRepository clinicsRepository;\r\n+  final ExpensesRepository clinicsRepository;\r\n \r\n   AddExpensesUseCase({required this.clinicsRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity clinic) {\r\n     return clinicsRepository.addClinic(clinic);\r\n"
+                },
+                {
+                    "date": 1786733375696,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,9 +5,9 @@\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n class AddExpensesUseCase {\r\n-  final ExpensesRepository clinicsRepository;\r\n+  final ExpensesRepository ExpensesRepository;\r\n \r\n   AddExpensesUseCase({required this.clinicsRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity clinic) {\r\n     return clinicsRepository.addClinic(clinic);\r\n"
+                },
+                {
+                    "date": 1786733386252,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,11 +5,11 @@\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n class AddExpensesUseCase {\r\n-  final ExpensesRepository ExpensesRepository;\r\n+  final ExpensesRepository expensesRepository;\r\n \r\n-  AddExpensesUseCase({required this.clinicsRepository});\r\n+  AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity clinic) {\r\n     return clinicsRepository.addClinic(clinic);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733397043,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,7 +9,7 @@\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity clinic) {\r\n-    return clinicsRepository.addClinic(clinic);\r\n+    return expensesRepository.addexp(clinic);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733406793,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,13 +3,15 @@\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n+import '../../presentation/manager/expenses_repository.dart';\r\n+\r\n @injectable\r\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity clinic) {\r\n-    return expensesRepository.addexp(clinic);\r\n+    return expensesRepository.addexpenses(clinic);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733420080,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,5 @@\n import 'package:clinic_pro/core/error/failures.dart';\r\n-import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n@@ -10,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<Either<Failure, String>> call(ExpensesEntity clinic) {\r\n+  Future<Either<Failure, String>> call(ExpensesEntity ex) {\r\n     return expensesRepository.addexpenses(clinic);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733426791,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<Either<Failure, String>> call(ExpensesEntity ex) {\r\n-    return expensesRepository.addexpenses(clinic);\r\n+  Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n+    return expensesRepository.addexpenses(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733511592,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,7 +10,7 @@\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n-    return expensesRepository.addexpenses(expenses);\r\n+    return expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733516943,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,7 +10,7 @@\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n-    return expensesRepository.addExpense(expenses);\r\n+    return expensesRepository.addExpenses(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733530207,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,7 +10,7 @@\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n-    return expensesRepository.addExpenses(expenses);\r\n+    return expensesRepository.addexpenses(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733565371,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,7 +10,7 @@\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n-    return expensesRepository.addexpenses(expenses);\r\n+    return expensesRepository.addExpenses(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733634181,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,7 +10,7 @@\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n-    return expensesRepository.addExpenses(expenses);\r\n+    return expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733665292,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,7 +10,7 @@\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n   Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n-    return expensesRepository.addExpense(expenses);\r\n+    return expensesRepository.addExpense(expenses, title: '', amount: null, categoryId: '', categoryLabel: '');\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733672963,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,7 @@\n import 'package:clinic_pro/core/error/failures.dart';\r\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n+import 'package:clinic_pro/features/expenses/presentation/manager/expenses_state.dart';\r\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n import '../../presentation/manager/expenses_repository.dart';\r\n@@ -9,8 +10,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n-    return expensesRepository.addExpense(expenses, title: '', amount: null, categoryId: '', categoryLabel: '');\r\n+  Future<ExpenseItem> call(ExpensesEntity expenses) {\r\n+    return expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786733679824,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,6 @@\n import 'package:clinic_pro/core/error/failures.dart';\r\n import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n-import 'package:clinic_pro/features/expenses/presentation/manager/expenses_state.dart';\r\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n import '../../presentation/manager/expenses_repository.dart';\r\n@@ -10,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<ExpenseItem> call(ExpensesEntity expenses) {\r\n+  Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n     return expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786757840988,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n+  Future<Either<Failure, String>> call(ExpensesEntity expenses)async {\r\n     return expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786757980278,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<Either<Failure, String>> call(ExpensesEntity expenses)async {\r\n-    return expensesRepository.addExpense(expenses);\r\n+  Future<Either<Failure, String>> call(ExpensesEntity expenses) async {\r\n+    return await expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786758037549,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<Either<Failure, String>> call(ExpensesEntity expenses) async {\r\n+   call(ExpensesEntity expenses) async {\r\n     return await expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786758072426,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-   call(ExpensesEntity expenses) async {\r\n+  Future<Either<Failure, String>> call(ExpensesEntity expenses) async {\r\n     return await expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786758082058,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<Either<Failure, String>> call(ExpensesEntity expenses) async {\r\n+  Future<expenses> call(ExpensesEntity expenses) async {\r\n     return await expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786758421322,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,8 +9,8 @@\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<expenses> call(ExpensesEntity expenses) async {\r\n+  Future<ExpenseItem> call(ExpensesEntity expenses) async {\r\n     return await expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786812976005,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,16 @@\n+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n+import 'package:dartz/dartz.dart';\r\n+import 'package:injectable/injectable.dart';\r\n+\r\n+import '../../presentation/manager/expenses_repository.dart';\r\n+import '../../presentation/manager/expenses_state.dart';\r\n+\r\n+@injectable\r\n+class AddExpensesUseCase {\r\n+  final ExpensesRepository expensesRepository;\r\n+\r\n+  AddExpensesUseCase({required this.expensesRepository});\r\n+  Future<ExpenseItem> call(ExpensesEntity expenses) async {\r\n+    return await expensesRepository.addExpense(expenses);\r\n+  }\r\n+}\r\n"
+                },
+                {
+                    "date": 1786812981918,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,6 @@\n-import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n-\r\n import '../../presentation/manager/expenses_repository.dart';\r\n import '../../presentation/manager/expenses_state.dart';\r\n \r\n @injectable\r\n@@ -13,20 +11,4 @@\n   Future<ExpenseItem> call(ExpensesEntity expenses) async {\r\n     return await expensesRepository.addExpense(expenses);\r\n   }\r\n }\r\n-import 'package:clinic_pro/core/error/failures.dart';\r\n-import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';\r\n-import 'package:dartz/dartz.dart';\r\n-import 'package:injectable/injectable.dart';\r\n-\r\n-import '../../presentation/manager/expenses_repository.dart';\r\n-\r\n-@injectable\r\n-class AddExpensesUseCase {\r\n-  final ExpensesRepository expensesRepository;\r\n-\r\n-  AddExpensesUseCase({required this.expensesRepository});\r\n-  Future<ExpenseItem> call(ExpensesEntity expenses) async {\r\n-    return await expensesRepository.addExpense(expenses);\r\n-  }\r\n-}\r\n"
+                },
+                {
+                    "date": 1786812990185,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,9 @@\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n import '../../presentation/manager/expenses_repository.dart';\r\n import '../../presentation/manager/expenses_state.dart';\r\n+import '../entities/expenses_entity.dart';\r\n \r\n @injectable\r\n class AddExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n"
+                },
+                {
+                    "date": 1786813004710,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-import 'package:dartz/dartz.dart';\r\n+// import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n import '../../presentation/manager/expenses_repository.dart';\r\n import '../../presentation/manager/expenses_state.dart';\r\n import '../entities/expenses_entity.dart';\r\n"
+                }
+            ],
+            "date": 1786733001623,
+            "name": "Commit-0",
+            "content": "import 'package:clinic_pro/core/error/failures.dart';\r\nimport 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\nimport 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\nimport 'package:dartz/dartz.dart';\r\nimport 'package:injectable/injectable.dart';\r\n\r\n@injectable\r\nclass AddexpensesUseCase {\r\n  final ClinicsRepository clinicsRepository;\r\n\r\n  AddClinicUseCase({required this.clinicsRepository});\r\n  Future<Either<Failure, String>> call(ClinicEntity clinic) {\r\n    return clinicsRepository.addClinic(clinic);\r\n  }\r\n}\r\n"
+        }
+    ]
+}

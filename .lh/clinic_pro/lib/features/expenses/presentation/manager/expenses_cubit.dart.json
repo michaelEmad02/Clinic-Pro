@@ -1,0 +1,86 @@
+{
+    "sourceFile": "clinic_pro/lib/features/expenses/presentation/manager/expenses_cubit.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 17,
+            "patches": [
+                {
+                    "date": 1786730587033,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1786730593194,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -19,9 +19,9 @@\n \r\n     try {\r\n       final categories = await _repository.loadCategories();\r\n       final items = await _repository.loadExpenses();\r\n-      \r\n+      print(cat)\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n         categories: categories,\r\n       ));\r\n"
+                },
+                {
+                    "date": 1786730633369,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -19,9 +19,8 @@\n \r\n     try {\r\n       final categories = await _repository.loadCategories();\r\n       final items = await _repository.loadExpenses();\r\n-      print(cat)\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n         categories: categories,\r\n       ));\r\n"
+                },
+                {
+                    "date": 1786731155816,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,8 +17,9 @@\n   Future<void> loadExpenses() async {\r\n     emit(ExpensesLoading());\r\n \r\n     try {\r\n+      print(object)\r\n       final categories = await _repository.loadCategories();\r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n"
+                },
+                {
+                    "date": 1786731161329,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,9 +17,9 @@\n   Future<void> loadExpenses() async {\r\n     emit(ExpensesLoading());\r\n \r\n     try {\r\n-      print(object)\r\n+      print(\"Loading\")\r\n       final categories = await _repository.loadCategories();\r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n"
+                },
+                {
+                    "date": 1786731167903,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,10 +17,12 @@\n   Future<void> loadExpenses() async {\r\n     emit(ExpensesLoading());\r\n \r\n     try {\r\n-      print(\"Loading\")\r\n+      print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n+      print(\"Loading ..\");\r\n+\r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n         categories: categories,\r\n"
+                },
+                {
+                    "date": 1786731173624,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -19,9 +19,9 @@\n \r\n     try {\r\n       print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n-      print(\"Loading ..\");\r\n+      print(\"Loading Cati ..\");\r\n \r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n"
+                },
+                {
+                    "date": 1786731179658,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -19,9 +19,9 @@\n \r\n     try {\r\n       print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n-      print(\"Loading Cati ..\");\r\n+      print(\"Loading Catigory..\");\r\n \r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n"
+                },
+                {
+                    "date": 1786731184700,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,8 +20,9 @@\n     try {\r\n       print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n       print(\"Loading Catigory..\");\r\n+      print(\"Loading Catigory..\");\r\n \r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n"
+                },
+                {
+                    "date": 1786731191247,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,9 +20,9 @@\n     try {\r\n       print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n       print(\"Loading Catigory..\");\r\n-      print(\"Loading Catigory..\");\r\n+      print(categories);\r\n \r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n"
+                },
+                {
+                    "date": 1786731197543,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,9 +20,9 @@\n     try {\r\n       print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n       print(\"Loading Catigory..\");\r\n-      print(categories);\r\n+      print(\"Cs\"+categories);\r\n \r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n"
+                },
+                {
+                    "date": 1786731204495,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,9 +20,9 @@\n     try {\r\n       print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n       print(\"Loading Catigory..\");\r\n-      print(\"Cs\"+categories);\r\n+      print(\"Cat: $categories);\r\n \r\n       final items = await _repository.loadExpenses();\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n"
+                },
+                {
+                    "date": 1786731210621,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,11 +20,13 @@\n     try {\r\n       print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n       print(\"Loading Catigory..\");\r\n-      print(\"Cat: $categories);\r\n+      print(\"Cat: $categories\");\r\n \r\n       final items = await _repository.loadExpenses();\r\n+      print(\"Loading Catigory..\");\r\n+\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n         categories: categories,\r\n       ));\r\n"
+                },
+                {
+                    "date": 1786731215896,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -23,9 +23,9 @@\n       print(\"Loading Catigory..\");\r\n       print(\"Cat: $categories\");\r\n \r\n       final items = await _repository.loadExpenses();\r\n-      print(\"Loading Catigory..\");\r\n+      print(\"Loading Items..\");\r\n \r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n         categories: categories,\r\n"
+                },
+                {
+                    "date": 1786731389389,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,9 +17,8 @@\n   Future<void> loadExpenses() async {\r\n     emit(ExpensesLoading());\r\n \r\n     try {\r\n-      print(\"Loading ..\");\r\n       final categories = await _repository.loadCategories();\r\n       print(\"Loading Catigory..\");\r\n       print(\"Cat: $categories\");\r\n \r\n"
+                },
+                {
+                    "date": 1786731399134,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -18,13 +18,10 @@\n     emit(ExpensesLoading());\r\n \r\n     try {\r\n       final categories = await _repository.loadCategories();\r\n-      print(\"Loading Catigory..\");\r\n-      print(\"Cat: $categories\");\r\n-\r\n+      print(\"Loading Items..\");\r\n       final items = await _repository.loadExpenses();\r\n-      print(\"Loading Items..\");\r\n \r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n         categories: categories,\r\n"
+                },
+                {
+                    "date": 1786731408151,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,9 +20,9 @@\n     try {\r\n       final categories = await _repository.loadCategories();\r\n       print(\"Loading Items..\");\r\n       final items = await _repository.loadExpenses();\r\n-\r\n+      print(\"Loading Items : \");\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n         categories: categories,\r\n       ));\r\n"
+                },
+                {
+                    "date": 1786734141852,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,9 +20,8 @@\n     try {\r\n       final categories = await _repository.loadCategories();\r\n       print(\"Loading Items..\");\r\n       final items = await _repository.loadExpenses();\r\n-      print(\"Loading Items : \");\r\n       emit(ExpensesLoaded(\r\n         allExpenses: items,\r\n         categories: categories,\r\n       ));\r\n"
+                }
+            ],
+            "date": 1786730587033,
+            "name": "Commit-0",
+            "content": "// ────────────────────────────────────────────────────────\r\n// Cubit شاشة المصروفات — تحميل وإضافة وتعديل وحذف (Repository)\r\n// ────────────────────────────────────────────────────────\r\n\r\nimport 'package:clinic_pro/core/strings/app_strings.dart';\r\nimport 'package:flutter_bloc/flutter_bloc.dart';\r\nimport 'package:injectable/injectable.dart';\r\nimport 'expenses_repository.dart';\r\nimport 'expenses_state.dart';\r\n\r\n@injectable\r\nclass ExpensesCubit extends Cubit<ExpensesState> {\r\n  final ExpensesRepository _repository;\r\n\r\n  ExpensesCubit(this._repository) : super(ExpensesInitial());\r\n\r\n  Future<void> loadExpenses() async {\r\n    emit(ExpensesLoading());\r\n\r\n    try {\r\n      final categories = await _repository.loadCategories();\r\n      final items = await _repository.loadExpenses();\r\n      \r\n      emit(ExpensesLoaded(\r\n        allExpenses: items,\r\n        categories: categories,\r\n      ));\r\n    } catch (_) {\r\n      emit(ExpensesError(AppStrings.loadFailedMsg));\r\n    }\r\n  }\r\n\r\n  void changeCategory(String? categoryId) {\r\n    if (state is ExpensesLoaded) {\r\n      final loaded = state as ExpensesLoaded;\r\n      emit(ExpensesLoaded(\r\n        allExpenses: loaded.allExpenses,\r\n        categories: loaded.categories,\r\n        activeCategoryId: categoryId,\r\n      ));\r\n    }\r\n  }\r\n\r\n  Future<void> addExpense({\r\n    required String title,\r\n    required double amount,\r\n    required String categoryId,\r\n    required String categoryLabel,\r\n    String notes = '',\r\n  }) async {\r\n    if (state is! ExpensesLoaded) return;\r\n    final loaded = state as ExpensesLoaded;\r\n\r\n    try {\r\n      final newExpense = await _repository.addExpense(\r\n        title: title,\r\n        amount: amount,\r\n        categoryId: categoryId,\r\n        categoryLabel: categoryLabel,\r\n        notes: notes,\r\n      );\r\n      emit(loaded.copyWith(allExpenses: [newExpense, ...loaded.allExpenses]));\r\n    } catch (_) {\r\n      emit(ExpensesError(AppStrings.loadFailedMsg));\r\n    }\r\n  }\r\n\r\n  Future<void> updateExpense({\r\n    required String expenseId,\r\n    required String title,\r\n    required double amount,\r\n    required String categoryId,\r\n    required String categoryLabel,\r\n    String notes = '',\r\n  }) async {\r\n    if (state is! ExpensesLoaded) return;\r\n    final loaded = state as ExpensesLoaded;\r\n\r\n    try {\r\n      final updated = await _repository.updateExpense(\r\n        expenseId: expenseId,\r\n        title: title,\r\n        amount: amount,\r\n        categoryId: categoryId,\r\n        categoryLabel: categoryLabel,\r\n        notes: notes,\r\n      );\r\n      final list = loaded.allExpenses.map((e) {\r\n        return e.id == expenseId ? updated : e;\r\n      }).toList();\r\n      emit(loaded.copyWith(allExpenses: list));\r\n    } catch (_) {\r\n      emit(ExpensesError(AppStrings.loadFailedMsg));\r\n    }\r\n  }\r\n\r\n  Future<void> deleteExpense(String expenseId) async {\r\n    if (state is! ExpensesLoaded) return;\r\n    final loaded = state as ExpensesLoaded;\r\n\r\n    try {\r\n      await _repository.deleteExpense(expenseId);\r\n      final list = loaded.allExpenses.where((e) => e.id != expenseId).toList();\r\n      emit(loaded.copyWith(allExpenses: list));\r\n    } catch (_) {\r\n      emit(ExpensesError(AppStrings.loadFailedMsg));\r\n    }\r\n  }\r\n}\r\n"
+        }
+    ]
+}

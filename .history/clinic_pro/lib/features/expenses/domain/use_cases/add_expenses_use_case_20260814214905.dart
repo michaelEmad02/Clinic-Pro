@@ -1,0 +1,16 @@
+import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
+import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
+import 'package:dartz/dartz.dart';
+import 'package:injectable/injectable.dart';
+
+@injectable
+class AddExpensesUseCase {
+  final ClinicsRepository clinicsRepository;
+
+  AddExpensesUseCase({required this.clinicsRepository});
+  Future<Either<Failure, String>> call(ExpensesEntity clinic) {
+    return clinicsRepository.addClinic(clinic);
+  }
+}

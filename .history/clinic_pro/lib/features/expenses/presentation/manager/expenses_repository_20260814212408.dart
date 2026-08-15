@@ -15,6 +15,7 @@ class ExpensesRepository {
 
   Future<List<ExpenseCategory>> loadCategories() async {
     final data = await _cloud.select(table: 'expense_categories');
+    print(data);
     return data
         .map((raw) => ExpenseCategory(
               id: raw['id'] as String,

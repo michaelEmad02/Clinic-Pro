@@ -1,0 +1,50 @@
+{
+    "sourceFile": "clinic_pro/lib/features/expenses/domain/use_cases/fetch_expenses_use_case.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 8,
+            "patches": [
+                {
+                    "date": 1786734165242,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1786735193781,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,9 +4,9 @@\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n-class FetchClinicByIdUseCase {\r\n+class FetchEUseCase {\r\n   final ClinicsRepository clinicsRepository;\r\n \r\n   FetchClinicByIdUseCase({required this.clinicsRepository});\r\n \r\n"
+                },
+                {
+                    "date": 1786735200581,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,12 +4,12 @@\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n-class FetchEUseCase {\r\n+class FetchEcpensesUseCase {\r\n   final ClinicsRepository clinicsRepository;\r\n \r\n-  FetchClinicByIdUseCase({required this.clinicsRepository});\r\n+  FetchEcpensesUseCase({required this.clinicsRepository});\r\n \r\n   Future<Either<Failure, ClinicEntity>> call(String id) {\r\n     return clinicsRepository.loadExpenses(id);\r\n   }\r\n"
+                },
+                {
+                    "date": 1786735217029,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,9 +5,9 @@\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n class FetchEcpensesUseCase {\r\n-  final ClinicsRepository clinicsRepository;\r\n+  final ExpensesRepository clinicsRepository;\r\n \r\n   FetchEcpensesUseCase({required this.clinicsRepository});\r\n \r\n   Future<Either<Failure, ClinicEntity>> call(String id) {\r\n"
+                },
+                {
+                    "date": 1786735226308,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,11 +5,11 @@\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n class FetchEcpensesUseCase {\r\n-  final ExpensesRepository clinicsRepository;\r\n+  final ExpensesRepository expensesRepository;\r\n \r\n-  FetchEcpensesUseCase({required this.clinicsRepository});\r\n+  FetchEcpensesUseCase({required this.expensesRepository});\r\n \r\n   Future<Either<Failure, ClinicEntity>> call(String id) {\r\n     return clinicsRepository.loadExpenses(id);\r\n   }\r\n"
+                },
+                {
+                    "date": 1786735236409,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,14 +3,16 @@\n import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n+import '../../presentation/manager/expenses_repository.dart';\r\n+\r\n @injectable\r\n class FetchEcpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   FetchEcpensesUseCase({required this.expensesRepository});\r\n \r\n   Future<Either<Failure, ClinicEntity>> call(String id) {\r\n-    return clinicsRepository.loadExpenses(id);\r\n+    return expensesRepository.loadExpenses(id);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786735244661,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,7 @@\n import 'package:clinic_pro/core/error/failures.dart';\r\n import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n-import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\n+import 'package:clinic_pro/features/expenses/presentation/manager/expenses_state.dart';\r\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n import '../../presentation/manager/expenses_repository.dart';\r\n@@ -11,8 +11,8 @@\n   final ExpensesRepository expensesRepository;\r\n \r\n   FetchEcpensesUseCase({required this.expensesRepository});\r\n \r\n-  Future<Either<Failure, ClinicEntity>> call(String id) {\r\n+  Future<List<ExpenseItem>> call(String id) {\r\n     return expensesRepository.loadExpenses(id);\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786735250610,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,6 @@\n import 'package:clinic_pro/core/error/failures.dart';\r\n-import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\n import 'package:clinic_pro/features/expenses/presentation/manager/expenses_state.dart';\r\n-import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n import '../../presentation/manager/expenses_repository.dart';\r\n \r\n"
+                },
+                {
+                    "date": 1786735292871,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,6 @@\n-import 'package:clinic_pro/core/error/failures.dart';\r\n import 'package:clinic_pro/features/expenses/presentation/manager/expenses_state.dart';\r\n import 'package:injectable/injectable.dart';\r\n-\r\n import '../../presentation/manager/expenses_repository.dart';\r\n \r\n @injectable\r\n class FetchEcpensesUseCase {\r\n@@ -10,7 +8,7 @@\n \r\n   FetchEcpensesUseCase({required this.expensesRepository});\r\n \r\n   Future<List<ExpenseItem>> call(String id) {\r\n-    return expensesRepository.loadExpenses(id);\r\n+    return expensesRepository.loadExpenses();\r\n   }\r\n }\r\n"
+                }
+            ],
+            "date": 1786734165242,
+            "name": "Commit-0",
+            "content": "import 'package:clinic_pro/core/error/failures.dart';\r\nimport 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';\r\nimport 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\nimport 'package:dartz/dartz.dart';\r\nimport 'package:injectable/injectable.dart';\r\n\r\n@injectable\r\nclass FetchClinicByIdUseCase {\r\n  final ClinicsRepository clinicsRepository;\r\n\r\n  FetchClinicByIdUseCase({required this.clinicsRepository});\r\n\r\n  Future<Either<Failure, ClinicEntity>> call(String id) {\r\n    return clinicsRepository.loadExpenses(id);\r\n  }\r\n}\r\n"
+        }
+    ]
+}

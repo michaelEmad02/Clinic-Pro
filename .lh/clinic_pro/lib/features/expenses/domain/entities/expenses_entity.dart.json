@@ -1,0 +1,90 @@
+{
+    "sourceFile": "clinic_pro/lib/features/expenses/domain/entities/expenses_entity.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 18,
+            "patches": [
+                {
+                    "date": 1786732572140,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1786732584860,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,11 +1,11 @@\n class ClinicEntity {\r\n   final String id;\r\n   final String clinic_id;\r\n+  final String category_id;\r\n   final String name;\r\n   final String address;\r\n   final String phone1;\r\n-  final String phone2;\r\n   final String logoUrl;\r\n   final bool isActive;\r\n   final DateTime createdAt;\r\n \r\n"
+                },
+                {
+                    "date": 1786732591094,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,9 @@\n class ClinicEntity {\r\n   final String id;\r\n   final String clinic_id;\r\n   final String category_id;\r\n-  final String name;\r\n+  final String title;\r\n   final String address;\r\n   final String phone1;\r\n   final String logoUrl;\r\n   final bool isActive;\r\n"
+                },
+                {
+                    "date": 1786732599357,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   final String id;\r\n   final String clinic_id;\r\n   final String category_id;\r\n   final String title;\r\n-  final String address;\r\n+  final String amount;\r\n   final String phone1;\r\n   final String logoUrl;\r\n   final bool isActive;\r\n   final DateTime createdAt;\r\n"
+                },
+                {
+                    "date": 1786732607281,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n   final String clinic_id;\r\n   final String category_id;\r\n   final String title;\r\n   final String amount;\r\n-  final String phone1;\r\n+  final String notes;\r\n   final String logoUrl;\r\n   final bool isActive;\r\n   final DateTime createdAt;\r\n \r\n"
+                },
+                {
+                    "date": 1786732624741,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,10 +4,10 @@\n   final String category_id;\r\n   final String title;\r\n   final String amount;\r\n   final String notes;\r\n-  final String logoUrl;\r\n-  final bool isActive;\r\n+  final String created_by;\r\n+  final bool created_at;\r\n   final DateTime createdAt;\r\n \r\n   ClinicEntity({\r\n     required this.id,\r\n"
+                },
+                {
+                    "date": 1786732636610,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,10 +5,10 @@\n   final String title;\r\n   final String amount;\r\n   final String notes;\r\n   final String created_by;\r\n-  final bool created_at;\r\n-  final DateTime createdAt;\r\n+  final String created_at;\r\n+  final DateTime date;\r\n \r\n   ClinicEntity({\r\n     required this.id,\r\n     required this.ownerId,\r\n"
+                },
+                {
+                    "date": 1786732641814,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,9 +6,9 @@\n   final String amount;\r\n   final String notes;\r\n   final String created_by;\r\n   final String created_at;\r\n-  final DateTime date;\r\n+  final String date;\r\n \r\n   ClinicEntity({\r\n     required this.id,\r\n     required this.ownerId,\r\n"
+                },
+                {
+                    "date": 1786732648692,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,7 @@\n class ClinicEntity {\r\n   final String id;\r\n-  final String clinic_id;\r\n+  final String clinicid;\r\n   final String category_id;\r\n   final String title;\r\n   final String amount;\r\n   final String notes;\r\n"
+                },
+                {
+                    "date": 1786732653824,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n class ClinicEntity {\r\n   final String id;\r\n   final String clinicid;\r\n-  final String category_id;\r\n+  final String categoryId;\r\n   final String title;\r\n   final String amount;\r\n   final String notes;\r\n   final String created_by;\r\n"
+                },
+                {
+                    "date": 1786732659868,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,7 @@\n class ClinicEntity {\r\n   final String id;\r\n-  final String clinicid;\r\n+  final String clinicId;\r\n   final String categoryId;\r\n   final String title;\r\n   final String amount;\r\n   final String notes;\r\n"
+                },
+                {
+                    "date": 1786732669430,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,15 +4,15 @@\n   final String categoryId;\r\n   final String title;\r\n   final String amount;\r\n   final String notes;\r\n-  final String created_by;\r\n-  final String created_at;\r\n+  final String createdBy;\r\n+  final String createdAt;\r\n   final String date;\r\n \r\n   ClinicEntity({\r\n     required this.id,\r\n-    required this.ownerId,\r\n+    required this.clinicId,\r\n     required this.name,\r\n     required this.address,\r\n     required this.phone1,\r\n     required this.phone2,\r\n"
+                },
+                {
+                    "date": 1786732678010,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -11,10 +11,10 @@\n \r\n   ClinicEntity({\r\n     required this.id,\r\n     required this.clinicId,\r\n-    required this.name,\r\n-    required this.address,\r\n+    required this.categoryId,\r\n+    required this.title,\r\n     required this.phone1,\r\n     required this.phone2,\r\n     required this.logoUrl,\r\n     required this.isActive,\r\n"
+                },
+                {
+                    "date": 1786732684603,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -13,10 +13,10 @@\n     required this.id,\r\n     required this.clinicId,\r\n     required this.categoryId,\r\n     required this.title,\r\n-    required this.phone1,\r\n-    required this.phone2,\r\n+    required this.amount,\r\n+    required this.notes,\r\n     required this.logoUrl,\r\n     required this.isActive,\r\n     required this.createdAt,\r\n   });\r\n"
+                },
+                {
+                    "date": 1786732690979,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -15,11 +15,11 @@\n     required this.categoryId,\r\n     required this.title,\r\n     required this.amount,\r\n     required this.notes,\r\n-    required this.logoUrl,\r\n-    required this.isActive,\r\n+    required this.createdBy,\r\n     required this.createdAt,\r\n+    required this.createdAt,\r\n   });\r\n \r\n   // أول حرف من اسم العيادة — يُستخدم كشعار افتراضي\r\n   String get initials {\r\n"
+                },
+                {
+                    "date": 1786732721944,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,38 +17,6 @@\n     required this.amount,\r\n     required this.notes,\r\n     required this.createdBy,\r\n     required this.createdAt,\r\n-    required this.createdAt,\r\n+    required this.date,\r\n   });\r\n-\r\n-  // أول حرف من اسم العيادة — يُستخدم كشعار افتراضي\r\n-  String get initials {\r\n-    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();\r\n-    if (parts.isEmpty) return '?';\r\n-    return parts.first[0];\r\n-  }\r\n-\r\n-  ClinicEntity copyWith({\r\n-    String? id,\r\n-    String? ownerId,\r\n-    String? name,\r\n-    String? address,\r\n-    String? phone1,\r\n-    String? phone2,\r\n-    String? logoUrl,\r\n-    bool? isActive,\r\n-    DateTime? createdAt,\r\n-  }) {\r\n-    return ClinicEntity(\r\n-      id: id ?? this.id,\r\n-      ownerId: ownerId ?? this.ownerId,\r\n-      name: name ?? this.name,\r\n-      address: address ?? this.address,\r\n-      phone1: phone1 ?? this.phone1,\r\n-      phone2: phone2 ?? this.phone2,\r\n-      logoUrl: logoUrl ?? this.logoUrl,\r\n-      isActive: isActive ?? this.isActive,\r\n-      createdAt: createdAt ?? this.createdAt,\r\n-    );\r\n-  }\r\n-}\r\n"
+                },
+                {
+                    "date": 1786733030844,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-class ClinicEntity {\r\n+class Entity {\r\n   final String id;\r\n   final String clinicId;\r\n   final String categoryId;\r\n   final String title;\r\n@@ -19,4 +19,5 @@\n     required this.createdBy,\r\n     required this.createdAt,\r\n     required this.date,\r\n   });\r\n+}\r\n"
+                },
+                {
+                    "date": 1786733037341,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-class Entity {\r\n+class AddExpensesEntity {\r\n   final String id;\r\n   final String clinicId;\r\n   final String categoryId;\r\n   final String title;\r\n"
+                },
+                {
+                    "date": 1786733043004,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-class AddExpensesEntity {\r\n+class ExpensesEntity {\r\n   final String id;\r\n   final String clinicId;\r\n   final String categoryId;\r\n   final String title;\r\n@@ -8,9 +8,9 @@\n   final String createdBy;\r\n   final String createdAt;\r\n   final String date;\r\n \r\n-  ClinicEntity({\r\n+  ExpensesEntity({\r\n     required this.id,\r\n     required this.clinicId,\r\n     required this.categoryId,\r\n     required this.title,\r\n"
+                }
+            ],
+            "date": 1786732572140,
+            "name": "Commit-0",
+            "content": "class ClinicEntity {\r\n  final String id;\r\n  final String clinic_id;\r\n  final String name;\r\n  final String address;\r\n  final String phone1;\r\n  final String phone2;\r\n  final String logoUrl;\r\n  final bool isActive;\r\n  final DateTime createdAt;\r\n\r\n  ClinicEntity({\r\n    required this.id,\r\n    required this.ownerId,\r\n    required this.name,\r\n    required this.address,\r\n    required this.phone1,\r\n    required this.phone2,\r\n    required this.logoUrl,\r\n    required this.isActive,\r\n    required this.createdAt,\r\n  });\r\n\r\n  // أول حرف من اسم العيادة — يُستخدم كشعار افتراضي\r\n  String get initials {\r\n    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();\r\n    if (parts.isEmpty) return '?';\r\n    return parts.first[0];\r\n  }\r\n\r\n  ClinicEntity copyWith({\r\n    String? id,\r\n    String? ownerId,\r\n    String? name,\r\n    String? address,\r\n    String? phone1,\r\n    String? phone2,\r\n    String? logoUrl,\r\n    bool? isActive,\r\n    DateTime? createdAt,\r\n  }) {\r\n    return ClinicEntity(\r\n      id: id ?? this.id,\r\n      ownerId: ownerId ?? this.ownerId,\r\n      name: name ?? this.name,\r\n      address: address ?? this.address,\r\n      phone1: phone1 ?? this.phone1,\r\n      phone2: phone2 ?? this.phone2,\r\n      logoUrl: logoUrl ?? this.logoUrl,\r\n      isActive: isActive ?? this.isActive,\r\n      createdAt: createdAt ?? this.createdAt,\r\n    );\r\n  }\r\n}\r\n"
+        }
+    ]
+}

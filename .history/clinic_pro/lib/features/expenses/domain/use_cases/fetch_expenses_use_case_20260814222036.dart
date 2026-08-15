@@ -1,0 +1,18 @@
+import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
+import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';
+import 'package:dartz/dartz.dart';
+import 'package:injectable/injectable.dart';
+
+import '../../presentation/manager/expenses_repository.dart';
+
+@injectable
+class FetchEcpensesUseCase {
+  final ExpensesRepository expensesRepository;
+
+  FetchEcpensesUseCase({required this.expensesRepository});
+
+  Future<Either<Failure, ClinicEntity>> call(String id) {
+    return expensesRepository.loadExpenses(id);
+  }
+}

@@ -15,12 +15,10 @@ class ExpensesRepository {
 
   Future<List<ExpenseCategory>> loadCategories() async {
     final data = await _cloud.select(table: 'expense_categories');
-    return data
-        .map((raw) => ExpenseCategory(
-              id: raw['id'] as String,
-              name: raw['name'] as String,
-            ))
-        .toList();
+    return data.map((raw) => ExpenseCategory(
+      id: raw['id'] as String,
+      name:  raw['name']) as String,
+    )).toList();
   }
 
   Future<List<ExpenseItem>> loadExpenses() async {
@@ -28,19 +26,17 @@ class ExpensesRepository {
     final categories = await loadCategories();
     final catMap = {for (var c in categories) c.id: c.name};
 
-    return data
-        .map((exp) => ExpenseItem(
-              id: exp['id'] as String,
-              clinicId: exp['clinic_id'] as String? ?? '',
-              title: exp['title'] as String,
-              amount: (exp['amount'] as num).toDouble(),
-              categoryId: exp['category_id'] as String,
-              categoryLabel: catMap[exp['name'] as String] ?? 'أخرى',
-              date: exp['date'] as String,
-              notes: (exp['notes'] as String?) ?? '',
-              createdBy: exp['created_by'] as String,
-            ))
-        .toList();
+    return data.map((exp) => ExpenseItem(
+      id: exp['id'] as String,
+      clinicId: exp['clinic_id'] as String? ?? '',
+      title: exp['title'] as String,
+      amount: (exp['amount'] as num).toDouble(),
+      categoryId: exp['category_id'] as String,
+      categoryLabel: catMap[exp['category_id'] as String] ?? 'أخرى',
+      date: exp['date'] as String,
+      notes: (exp['notes'] as String?) ?? '',
+      createdBy: exp['created_by'] as String,
+    )).toList();
   }
 
   Future<ExpenseItem> addExpense({

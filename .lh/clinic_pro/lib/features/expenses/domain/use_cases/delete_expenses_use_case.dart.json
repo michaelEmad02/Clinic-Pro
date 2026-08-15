@@ -1,0 +1,30 @@
+{
+    "sourceFile": "clinic_pro/lib/features/expenses/domain/use_cases/delete_expenses_use_case.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1786733799520,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1786733816179,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n-class DeleteClinicUseCase {\r\n+class DeleteExpensesUseCase {\r\n   final ClinicsRepository clinicsRepository;\r\n \r\n   DeleteClinicUseCase({required this.clinicsRepository});\r\n \r\n"
+                },
+                {
+                    "date": 1786733822756,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,10 +4,9 @@\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n class DeleteExpensesUseCase {\r\n-  final ClinicsRepository   final ExpensesRepository expensesRepository;\r\n-;\r\n+  final ClinicsRepository clinicsRepository;\r\n \r\n   DeleteClinicUseCase({required this.clinicsRepository});\r\n \r\n   Future<Either<Failure, void>> call(String id) {\r\n"
+                },
+                {
+                    "date": 1786733860420,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,29 @@\n+import 'package:clinic_pro/core/error/failures.dart';\r\n+import 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\n+import 'package:dartz/dartz.dart';\r\n+import 'package:injectable/injectable.dart';\r\n+\r\n+import '../../presentation/manager/expenses_repository.dart';\r\n+\r\n+@injectable\r\n+class DeleteExpensesUseCase {\r\n+  final ExpensesRepository expensesRepository;\r\n+\r\n+  DeleteExpensesUseCase({required this.expensesRepository});\r\n+\r\n+  Future<Either<Failure, void>> call(String id) {\r\n+    return expensesRepository.deleteClinic(id);\r\n+  }\r\n+}\r\n+\r\n+\r\n+\r\n+@injectable\r\n+class AddExpensesUseCase {\r\n+  final ExpensesRepository expensesRepository;\r\n+\r\n+  AddExpensesUseCase({required this.expensesRepository});\r\n+  Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n+    return expensesRepository.addExpense(expenses);\r\n+  }\r\n+}\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1786733799520,
+            "name": "Commit-0",
+            "content": "import 'package:clinic_pro/core/error/failures.dart';\r\nimport 'package:clinic_pro/features/clinics/domain/repositories/clinics_repository.dart';\r\nimport 'package:dartz/dartz.dart';\r\nimport 'package:injectable/injectable.dart';\r\n\r\n@injectable\r\nclass DeleteClinicUseCase {\r\n  final ClinicsRepository clinicsRepository;\r\n\r\n  DeleteClinicUseCase({required this.clinicsRepository});\r\n\r\n  Future<Either<Failure, void>> call(String id) {\r\n    return clinicsRepository.deleteClinic(id);\r\n  }\r\n}\r\n\r\n\r\n\r\n@injectable\r\nclass AddExpensesUseCase {\r\n  final ExpensesRepository expensesRepository;\r\n\r\n  AddExpensesUseCase({required this.expensesRepository});\r\n  Future<Either<Failure, String>> call(ExpensesEntity expenses) {\r\n    return expensesRepository.addExpense(expenses);\r\n  }\r\n}"
+        }
+    ]
+}

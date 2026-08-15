@@ -15,6 +15,7 @@ class ExpensesRepository {
 
   Future<List<ExpenseCategory>> loadCategories() async {
     final data = await _cloud.select(table: 'expense_categories');
+    print(data);
     return data
         .map((raw) => ExpenseCategory(
               id: raw['id'] as String,
@@ -35,7 +36,7 @@ class ExpensesRepository {
               title: exp['title'] as String,
               amount: (exp['amount'] as num).toDouble(),
               categoryId: exp['category_id'] as String,
-              categoryLabel: catMap[exp['name'] as String] ?? 'أخرى',
+              categoryLabel: catMap[exp['category_id'] as String] ?? 'أخرى',
               date: exp['date'] as String,
               notes: (exp['notes'] as String?) ?? '',
               createdBy: exp['created_by'] as String,

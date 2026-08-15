@@ -20,7 +20,7 @@ class AddEditExpenseSheet {
         value: context.read<ExpensesCubit>(),
         child: _AddEditExpenseForm(
           expense: expense,
-          categories: categories,
+          categories: [,],
         ),
       ),
     );
@@ -56,11 +56,9 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
     _amountController =
         TextEditingController(text: widget.expense?.amount.toString() ?? '');
     _notesController = TextEditingController(text: widget.expense?.notes ?? '');
-    
-    final hasCategories = widget.categories.isNotEmpty;
-    _categoryId = widget.expense?.categoryId ?? (hasCategories ? widget.categories.first.id : '');
+    _categoryId = widget.expense?.categoryId ?? widget.categories.first.id;
     _categoryLabel =
-        widget.expense?.categoryLabel ?? (hasCategories ? widget.categories.first.name : '');
+        widget.expense?.categoryLabel ?? widget.categories.first.name;
   }
 
   @override
@@ -173,11 +171,10 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: _categoryId.isEmpty ? null : _categoryId,
+                        value: _categoryId,
                         isExpanded: true,
                         icon: Icon(Icons.expand_more,
                             color: context.textSecondary, size: 20),
-                        hint: Text(widget.categories.isEmpty ? 'لا توجد تصنيفات' : 'اختر التصنيف'),
                         items: widget.categories.map((cat) {
                           return DropdownMenuItem(
                             value: cat.id,
