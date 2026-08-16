@@ -18,11 +18,15 @@ class ClinicsLoading extends ClinicsState {}
 
 class ClinicsLoaded extends ClinicsState {
   final List<ClinicEntity> clinics;
+  final String? actionMessage;
 
-  const ClinicsLoaded({required this.clinics});
+  const ClinicsLoaded({
+    required this.clinics,
+    this.actionMessage,
+  });
 
   @override
-  List<Object?> get props => [clinics];
+  List<Object?> get props => [clinics, actionMessage];
 }
 
 class ClinicsError extends ClinicsState {

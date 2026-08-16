@@ -46,22 +46,33 @@
 
 //Example of features jsonb:
  {
-  "print": [
+  "print_reports": 
     {
+      "arb_title": "طباعه و استخراج التقارير",
+      "eng_title" : "Print and Export Reports",
       "value": false
-    },
-    {
-      "title": "طباعه التقارير"
     }
-  ],
-  "export": [
-    {
+  ,
+  "clinics_reports": {
+     "arb_title": "تقارير العيادات",
+      "eng_title" : "Clinics Reports",
       "value": false
-    },
-    {
-      "title": "تصدير التقارير"
-    }
-  ]
+  },
+    "appointments_reports": {
+      "arb_title": "تقارير المواعيد",
+      "eng_title" : "Appointments Reports",
+      "value": false
+  },
+    "doctors_performance_reports": {
+      "arb_title": "تقارير اداء الاطباء",
+      "eng_title" : "Doctors Performance Reports",
+      "value": false
+  },
+      "prescriptions_reports": {
+      "arb_title": "تقارير الروشتات و الادوية",
+      "eng_title" : "Prescription Reports",
+      "value": false
+  }
 }
 > ⚠️ Table is `plans_features` (plural "plans") and column is `features` (plural).
 > Previous docs used `plan_features` / singular `feature` — both wrong.

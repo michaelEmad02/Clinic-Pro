@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/invoices/domain/repositories/i_invoices_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -15,7 +16,7 @@ class DeleteInvoiceUseCase {
 
   Future<Either<Failure, Unit>> call(String invoiceId) {
     if (invoiceId.isEmpty) {
-      return Future.value(const Left(ServerFailure('رقم الفاتورة غير صحيح')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'رقم الفاتورة غير صحيح')));
     }
     return _repository.deleteInvoice(invoiceId);
   }

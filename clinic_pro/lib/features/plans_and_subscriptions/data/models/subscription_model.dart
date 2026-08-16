@@ -14,8 +14,24 @@ class SubscriptionModel extends SubscriptionEntity {
     required super.status,
     super.startedAt,
     super.endAt,
+    super.createdBy,
     required super.createdAt,
   });
+
+  /// إنشاء نموذج من الـ Entity
+  factory SubscriptionModel.fromEntity(SubscriptionEntity entity) {
+    return SubscriptionModel(
+      id: entity.id,
+      ownerId: entity.ownerId,
+      planId: entity.planId,
+      subscriptionType: entity.subscriptionType,
+      status: entity.status,
+      startedAt: entity.startedAt,
+      endAt: entity.endAt,
+      createdBy: entity.createdBy,
+      createdAt: entity.createdAt,
+    );
+  }
 
   /// إنشاء نموذج من بيانات Supabase الخام
   factory SubscriptionModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +47,7 @@ class SubscriptionModel extends SubscriptionEntity {
       endAt: json['end_at'] != null
           ? DateTime.parse(json['end_at'] as String)
           : null,
+      createdBy: json['created_by'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -44,6 +61,7 @@ class SubscriptionModel extends SubscriptionEntity {
       'status': status,
       'started_at': startedAt?.toIso8601String(),
       'end_at': endAt?.toIso8601String(),
+      'created_by': createdBy ?? ownerId,
     };
   }
 }

@@ -7,7 +7,7 @@ import 'package:equatable/equatable.dart';
 import '../../../auth/domain/entities/auth_user_entity.dart';
 import '../../../clinics/domain/entities/clinic_entity.dart';
 import '../../../staff_and_invitations/domain/entities/staff_entity.dart';
-import '../../../subscriptions/domain/entities/subscription_entity.dart';
+import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dart';
 
 class SettingsState extends Equatable {
   final bool isLoading;
@@ -22,6 +22,9 @@ class SettingsState extends Equatable {
   // قائمة العيادات المتاحة
   final List<ClinicEntity> availableClinics;
 
+  // قائمة أطقم العيادة الحالية للمالك
+  final List<StaffEntity> staffList;
+
   // قائمة الأطباء للسكرتيرة
   final List<Map<String, dynamic>> secretaryDoctors;
 
@@ -33,6 +36,7 @@ class SettingsState extends Equatable {
     this.subscriptionEntity,
     this.doctorEntity,
     this.availableClinics = const [],
+    this.staffList = const [],
     this.secretaryDoctors = const [],
   });
 
@@ -52,6 +56,7 @@ class SettingsState extends Equatable {
     SubscriptionEntity? subscriptionEntity,
     StaffEntity? doctorEntity,
     List<ClinicEntity>? availableClinics,
+    List<StaffEntity>? staffList,
     List<Map<String, dynamic>>? secretaryDoctors,
   }) {
     return SettingsState(
@@ -62,6 +67,7 @@ class SettingsState extends Equatable {
       subscriptionEntity: subscriptionEntity ?? this.subscriptionEntity,
       doctorEntity: doctorEntity ?? this.doctorEntity,
       availableClinics: availableClinics ?? this.availableClinics,
+      staffList: staffList ?? this.staffList,
       secretaryDoctors: secretaryDoctors ?? this.secretaryDoctors,
     );
   }
@@ -75,6 +81,7 @@ class SettingsState extends Equatable {
         subscriptionEntity,
         doctorEntity,
         availableClinics,
+        staffList,
         secretaryDoctors,
       ];
 }

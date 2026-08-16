@@ -10,7 +10,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/error/query_failure.dart';
 import '../../domain/repositories/i_settings_repository.dart';
 import '../../../clinics/domain/entities/clinic_entity.dart';
-import '../../../subscriptions/domain/entities/subscription_entity.dart';
+import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dart';
 import '../../domain/entities/queue_rule_entity.dart';
 import '../../domain/entities/doctor_schedule_entity.dart';
 import '../../domain/entities/doctor_appointment_type_entity.dart';

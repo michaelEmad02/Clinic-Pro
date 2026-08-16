@@ -30,9 +30,8 @@ class GenderChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? context.primary.withOpacity(0.12)
-              : context.surface,
+          color:
+              isSelected ? context.primary.withOpacity(0.12) : context.surface,
           borderRadius: BorderRadius.circular(AppConstants.radiusButton),
           border: Border.all(
             color: isSelected ? context.primary : context.border,
@@ -69,6 +68,7 @@ class PatientInputField extends StatelessWidget {
   final TextEditingController controller;
   final TextDirection? textDirection;
   final int maxLines;
+  final TextInputType? keyboardType;
 
   const PatientInputField({
     super.key,
@@ -77,6 +77,7 @@ class PatientInputField extends StatelessWidget {
     required this.controller,
     this.textDirection,
     this.maxLines = 1,
+    this.keyboardType,
   });
 
   @override
@@ -85,6 +86,7 @@ class PatientInputField extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       textDirection: textDirection,
+      keyboardType: keyboardType ?? TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20),

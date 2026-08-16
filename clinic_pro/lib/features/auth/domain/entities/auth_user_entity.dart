@@ -17,6 +17,7 @@ class AuthUserEntity {
   final bool isActive; // حالة نشاط الحساب (نشط أم موقوف)
   final String? ownerId; // معرف المالك التابع له الموظف (للموظفين فقط)
   final String? country; // الدولة (لمالك العيادة فقط)
+  final bool isNewUser; // هل المستخدم جديد وتم إنشاؤه للتو؟
 
   const AuthUserEntity({
     required this.id,
@@ -30,6 +31,7 @@ class AuthUserEntity {
     this.isActive = true,
     this.ownerId,
     this.country,
+    this.isNewUser = false,
   });
 
   AuthUserEntity copyWith({

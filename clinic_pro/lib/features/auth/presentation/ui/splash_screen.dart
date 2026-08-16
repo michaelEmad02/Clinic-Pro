@@ -104,7 +104,18 @@ class _SplashScreenState extends State<SplashScreen>
           context.read<SettingsCubit>().loadSettings(role, userId);
 
           if (role == StaffRoles.owner) {
-            context.go(RouteConstants.ownerDashboard);
+            final sub = state.activeSubscription;
+            if (sub == null) {
+              context.go(RouteConstants.onboardingPlan);
+            } else if (sub.isActive) {
+              context.go(RouteConstants.ownerDashboard);
+            } else if (sub.isPending) {
+              context.go(RouteConstants.pendingSubscription);
+            } else if (sub.isExpired) {
+              context.go(RouteConstants.pendingSubscription, extra: {'isExpired': true});
+            } else {
+              context.go(RouteConstants.onboardingPlan);
+            }
           } else if (role == StaffRoles.doctor) {
             context.go(RouteConstants.doctorDashboard);
           } else if (role == StaffRoles.secretary) {

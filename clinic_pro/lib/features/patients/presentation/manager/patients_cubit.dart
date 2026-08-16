@@ -53,11 +53,11 @@ class PatientsCubit extends Cubit<PatientsState> {
   }
 
   /// إضافة مريض جديد
-  Future<void> addPatient(PatientEntity patient) async {
+  Future<void> addPatient(PatientEntity patient, {String? ownerId}) async {
     if (state is! PatientsLoaded) return;
     final loaded = state as PatientsLoaded;
 
-    final result = await _addPatientUseCase(patient);
+    final result = await _addPatientUseCase(patient, ownerId: ownerId);
     result.fold(
       (failure) => emit(PatientsError(failure.message)),
       (newPatient) => emit(

@@ -1,4 +1,5 @@
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../domain/entities/reports_entities.dart';
@@ -33,7 +34,7 @@ class ReportsRepositoryImpl implements IReportsRepository {
       );
       return Right(model);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -55,7 +56,7 @@ class ReportsRepositoryImpl implements IReportsRepository {
       );
       return Right(model);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -77,7 +78,7 @@ class ReportsRepositoryImpl implements IReportsRepository {
       );
       return Right(model);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -97,7 +98,7 @@ class ReportsRepositoryImpl implements IReportsRepository {
       );
       return Right(list);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -115,7 +116,7 @@ class ReportsRepositoryImpl implements IReportsRepository {
       );
       return Right(model);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -131,7 +132,7 @@ class ReportsRepositoryImpl implements IReportsRepository {
       );
       return Right(list);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -147,8 +148,7 @@ class ReportsRepositoryImpl implements IReportsRepository {
       );
       return Right(data);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 }
-

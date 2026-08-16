@@ -10,7 +10,6 @@ import '../../features/auth/presentation/ui/splash_screen.dart';
 import '../../features/auth/presentation/ui/login_screen.dart';
 import '../../features/auth/presentation/ui/create_account_screen.dart';
 import '../../features/auth/presentation/ui/accept_invitation_screen.dart';
-import '../../features/onboarding/presentation/ui/plan_screen.dart';
 import '../../features/clinics/presentation/ui/create_clinic_screen.dart';
 import '../../features/staff_and_invitations/presentation/ui/invite_staff_screen.dart';
 import '../../features/dashboard/presentation/ui/owner_dashboard_screen.dart';
@@ -25,7 +24,11 @@ import '../../features/prescription/presentation/ui/drugs_screen.dart';
 import '../../features/prescription/presentation/ui/prescription_screen.dart';
 import '../../features/prescription/presentation/ui/templates_screen.dart';
 import '../../features/settings/presentation/ui/settings_screen.dart';
-import '../../features/settings/presentation/ui/subscription_screen.dart';
+import '../../features/plans_and_subscriptions/domain/entities/company_info_entity.dart';
+import '../../features/plans_and_subscriptions/domain/entities/plan_entity.dart';
+import '../../features/plans_and_subscriptions/presentation/ui/subscription_screen.dart';
+import '../../features/plans_and_subscriptions/presentation/ui/plans_comparison_screen.dart';
+import '../../features/plans_and_subscriptions/presentation/ui/pending_subscription_screen.dart';
 import '../../features/staff_and_invitations/presentation/ui/staff_screen.dart';
 import '../../features/clinics/presentation/ui/clinics_screen.dart';
 import '../../features/clinics/presentation/ui/clinic_details_screen.dart';
@@ -58,7 +61,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteConstants.onboardingPlan,
-      builder: (context, state) => const PlanScreen(),
+      builder: (context, state) => const PlansComparisonScreen(isOnboarding: true),
     ),
     GoRoute(
       path: RouteConstants.onboardingClinic,
@@ -190,6 +193,22 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteConstants.settingsSubscription,
       builder: (context, state) => const SubscriptionScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.plansComparison,
+      builder: (context, state) => const PlansComparisonScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.pendingSubscription,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return PendingSubscriptionScreen(
+          plan: extra?['plan'] as PlanEntity?,
+          subscriptionType: extra?['subscriptionType'] as String?,
+          companyInfo: extra?['companyInfo'] as CompanyInfoEntity?,
+          isExpired: extra?['isExpired'] as bool? ?? false,
+        );
+      },
     ),
     GoRoute(
       path: RouteConstants.invoices,

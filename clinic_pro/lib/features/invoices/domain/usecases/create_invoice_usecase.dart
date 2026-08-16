@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/invoices/domain/repositories/i_invoices_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -23,19 +24,19 @@ class CreateInvoiceUseCase {
     required String createdBy,
   }) {
     if (patientId.isEmpty) {
-      return Future.value(const Left(ServerFailure('يرجى اختيار المريض')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'يرجى اختيار المريض')));
     }
     if (sourceId.isEmpty) {
-      return Future.value(const Left(ServerFailure('يرجى اختيار الموعد المرتبط بالفاتورة')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'يرجى اختيار الموعد المرتبط بالفاتورة')));
     }
     if (totalAmount <= 0) {
-      return Future.value(const Left(ServerFailure('يجب أن يكون المبلغ الإجمالي أكبر من الصفر')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'يجب أن يكون المبلغ الإجمالي أكبر من الصفر')));
     }
     if (paidAmount < 0) {
-      return Future.value(const Left(ServerFailure('المبلغ المدفوع لا يمكن أن يكون بالسالب')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'المبلغ المدفوع لا يمكن أن يكون بالسالب')));
     }
     if (paidAmount > totalAmount) {
-      return Future.value(const Left(ServerFailure('المبلغ المدفوع لا يمكن أن يتجاوز المبلغ الإجمالي')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'المبلغ المدفوع لا يمكن أن يتجاوز المبلغ الإجمالي')));
     }
 
     return _repository.createInvoice(

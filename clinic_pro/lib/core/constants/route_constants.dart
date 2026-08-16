@@ -49,4 +49,6 @@ class RouteConstants {
   // الإعدادات والاشتراكات
   static const String settings = '/settings';
   static const String settingsSubscription = '/settings/subscription';
+  static const String plansComparison = '/subscriptions/plans';
+  static const String pendingSubscription = '/subscriptions/pending';
 }

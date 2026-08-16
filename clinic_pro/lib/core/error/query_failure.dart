@@ -205,6 +205,12 @@ class UnauthorizedApiFailure extends QueryFailure {
   const UnauthorizedApiFailure() : super(message: 'غير مصرح لك بالوصول إلى هذا المورد.');
 }
 
+class PlanLimitQueryFailure extends QueryFailure {
+  const PlanLimitQueryFailure({
+    super.message = 'لقد وصلت للحد الأقصى المسموح به في خطتك الحالية',
+  });
+}
+
 // ─── Unknown / Fallback Failure ──────────────────────────────
 
 class UnknownQueryFailure extends QueryFailure {

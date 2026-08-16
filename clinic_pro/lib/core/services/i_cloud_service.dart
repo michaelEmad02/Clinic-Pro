@@ -45,4 +45,7 @@ abstract class ICloudService {
     required String primaryKey,
     String? clinicId,
   });
+
+  /// استدعاء دالة إجراءات مخزنة (RPC Function) على السيرفر
+  Future<dynamic> rpc(String functionName, {Map<String, dynamic>? params});
 }

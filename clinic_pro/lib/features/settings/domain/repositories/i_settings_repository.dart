@@ -11,7 +11,7 @@ import 'package:clinic_pro/features/settings/domain/entities/queue_rule_entity.d
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../clinics/domain/entities/clinic_entity.dart';
-import '../../../subscriptions/domain/entities/subscription_entity.dart';
+import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dart';
 
 abstract class ISettingsRepository {
   // ──── مشترك بين جميع الأدوار ────

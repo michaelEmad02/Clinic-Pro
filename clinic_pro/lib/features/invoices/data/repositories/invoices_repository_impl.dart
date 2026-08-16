@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/invoices/data/data_sources/invoices_remote_data_source.dart';
 import 'package:clinic_pro/features/invoices/data/models/invoice_model.dart';
 import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
@@ -24,7 +25,7 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
       final invoices = await _remoteDataSource.getInvoices(clinicId);
       return Right(invoices);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -55,7 +56,7 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
       await _remoteDataSource.createInvoice(model);
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -66,7 +67,7 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
       await _remoteDataSource.updateInvoice(model);
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -76,7 +77,7 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
       await _remoteDataSource.deleteInvoice(invoiceId);
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -88,7 +89,7 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
           await _remoteDataSource.getPatientUnpaidAppointments(patientId);
       return Right(appointments);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 }

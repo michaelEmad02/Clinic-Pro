@@ -3,6 +3,7 @@
 // يقوم بالتواصل مع مصدر البيانات السحابي وتحويل النماذج إلى كيانات منطقية
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'dart:typed_data';
 import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
@@ -403,7 +404,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       );
       return Right(pdfBytes);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 

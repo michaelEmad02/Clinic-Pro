@@ -73,9 +73,10 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
       _nameController.text = p.name;
       _phoneController.text = p.phone ?? '';
       _gender = p.gender.isNotEmpty ? p.gender : Gender.male;
-      _bloodType = (p.bloodType != null && BloodType.values.contains(p.bloodType))
-          ? p.bloodType
-          : null;
+      _bloodType =
+          (p.bloodType != null && BloodType.values.contains(p.bloodType))
+              ? p.bloodType
+              : null;
       _chronicController.text = p.chronicConditions ?? '';
       _allergiesController.text = p.allergies ?? '';
       _addressController.text = p.address ?? '';
@@ -217,6 +218,7 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
               icon: Icons.call_outlined,
               controller: _phoneController,
               textDirection: TextDirection.ltr,
+              keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
 
@@ -288,18 +290,15 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
                 labelText: AppStrings.isArabic ? 'فصيلة الدم' : 'Blood Type',
                 prefixIcon: const Icon(Icons.bloodtype_outlined),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusInput),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                   borderSide: BorderSide(color: context.border),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusInput),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                   borderSide: BorderSide(color: context.primary, width: 1.5),
                 ),
                 border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusInput),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                 ),
               ),
               value: _bloodType,

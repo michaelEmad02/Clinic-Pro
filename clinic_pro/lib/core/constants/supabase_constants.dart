@@ -30,6 +30,7 @@ class SupabaseTables {
   static const String plans = 'plans';
   static const String plansFeatures = 'plans_features';
   static const String ownerSettings = 'owner_settings';
+  static const String companyInfo = 'company_info';
 }
 
 class SupabaseBucket {
@@ -80,14 +81,14 @@ class SubscriptionType {
   static const String monthly = 'monthly';
   static const String yearly = 'yearly';
   static const String lifetime = 'lifetime';
-  static const String trail = 'trail';
+  static const String trail = 'trail'; // ⚠️ DB literal
 }
 
 class SubscriptionStatus {
   static const String pending = 'pending';
   static const String active = 'active';
-  static const String trial = 'cancelled';
   static const String expired = 'expired';
+  static const String cancelled = 'cancelled';
 }
 
 class Gender {
@@ -140,5 +141,11 @@ class DoseTiming {
         return timing;
     }
   }
+}
+
+class PlanName {
+  static const String basic = 'Basic';
+  static const String pro = 'Pro';
+  static const String enterprise = 'Enterprise';
 }
 

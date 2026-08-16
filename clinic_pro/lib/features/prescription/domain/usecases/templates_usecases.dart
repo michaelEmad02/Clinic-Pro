@@ -2,6 +2,7 @@
 // حالات استخدام قوالب الروشتات (Templates UseCases)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
@@ -29,7 +30,7 @@ class AddTemplateUseCase {
     String doctorId,
   ) {
     if (template.name.trim().isEmpty) {
-      return Future.value(const Left(ServerFailure('اسم القالب مطلوب')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'اسم القالب مطلوب')));
     }
     return _repository.addTemplate(template, doctorId);
   }
@@ -42,7 +43,7 @@ class EditTemplateUseCase {
 
   Future<Either<Failure, void>> call(PrescriptionTemplateEntity template) {
     if (template.name.trim().isEmpty) {
-      return Future.value(const Left(ServerFailure('اسم القالب مطلوب')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'اسم القالب مطلوب')));
     }
     return _repository.editTemplate(template);
   }

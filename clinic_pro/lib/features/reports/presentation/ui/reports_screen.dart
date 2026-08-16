@@ -7,6 +7,7 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import 'financial_reports_screen.dart';
 import 'appointment_reports_screen.dart';
 import 'patient_reports_screen.dart';
@@ -65,7 +66,7 @@ class _ReportsCategoryBody extends StatelessWidget {
         _ReportCategoryItem(
           title: AppStrings.isArabic ? 'تقارير العيادات' : 'Clinic Reports',
           subtitle: AppStrings.isArabic
-              ? 'مقارنة أداء وإيرادات العيادات والفروع'
+              ? 'مقارنة أداء وإيرادات العيادات'
               : 'Compare clinics performance & revenue',
           icon: Icons.business_outlined,
           color: Colors.indigo,
@@ -143,24 +144,27 @@ class _ReportsCategoryBody extends StatelessWidget {
           child: Container(color: context.borderColor, height: 1),
         ),
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 600;
-          return GridView.builder(
-            padding: const EdgeInsets.all(AppConstants.spaceMd),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isWide ? 3 : 1,
-              crossAxisSpacing: AppConstants.spaceMd,
-              mainAxisSpacing: AppConstants.spaceMd,
-              childAspectRatio: isWide ? 1.4 : 2.5,
-            ),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final cat = categories[index];
-              return _CategoryCard(item: cat);
-            },
-          );
-        },
+      body: ResponsiveHelper.responsiveCenter(
+        maxWidth: AppConstants.maxContentWidth,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 600;
+            return GridView.builder(
+              padding: const EdgeInsets.all(AppConstants.spaceMd),
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 350,
+                mainAxisExtent: isWide ? 90 : 85,
+                crossAxisSpacing: AppConstants.spaceMd,
+                mainAxisSpacing: AppConstants.spaceMd,
+              ),
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final cat = categories[index];
+                return _CategoryCard(item: cat);
+              },
+            );
+          },
+        ),
       ),
     );
   }

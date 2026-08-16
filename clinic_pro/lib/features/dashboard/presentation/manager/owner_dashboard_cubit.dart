@@ -150,7 +150,7 @@ class OwnerDashboardCubit extends Cubit<OwnerDashboardState> {
       final subscription = subscriptions.first;
       final status = subscription['status'] as String?;
 
-      if (status == SubscriptionStatus.trial) {
+      if (status == SubscriptionStatus.expired) {
         final trialEnd = subscription['trial_end_at'] as String?;
         if (trialEnd != null) {
           final endDate = DateTime.tryParse(trialEnd);

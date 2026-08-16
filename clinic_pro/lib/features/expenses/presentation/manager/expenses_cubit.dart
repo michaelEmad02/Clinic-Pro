@@ -3,9 +3,10 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/features/expenses/presentation/manager/expenses_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'expenses_repository.dart';
+
 import 'expenses_state.dart';
 
 @injectable

@@ -222,4 +222,9 @@ class MockCloudService implements ICloudService {
         return [];
     }
   }
+
+  @override
+  Future<dynamic> rpc(String functionName, {Map<String, dynamic>? params}) async {
+    return null;
+  }
 }

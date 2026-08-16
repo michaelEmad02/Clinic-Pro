@@ -148,7 +148,7 @@ class SupabaseAuthServices extends IAuthServices {
         throw Exception(res.data);
       }
 
-      print("User deleted from Auth successfully");
+      debugPrint("User deleted from Auth successfully");
     } catch (e, stackTrace) {
       debugPrint("Error deleting user: $e");
       debugPrintStack(stackTrace: stackTrace);

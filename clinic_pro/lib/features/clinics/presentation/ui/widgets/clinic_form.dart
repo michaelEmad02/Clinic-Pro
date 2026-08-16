@@ -34,7 +34,7 @@ class _ClinicFormState extends State<ClinicForm> {
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
-  String? _selectedSpecialty;
+  // String? _selectedSpecialty;
   bool _isDoctor = false;
 
   /// الصورة المختارة من المعرض
@@ -153,47 +153,47 @@ class _ClinicFormState extends State<ClinicForm> {
         const SizedBox(height: 16),
 
         // Specialty
-        Text(
-          AppStrings.specialty,
-          style: AppTextStyles.bodyMedium(context).copyWith(
-            color: context.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          height: 48,
-          decoration: BoxDecoration(
-            color: context.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: context.border),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedSpecialty,
-              hint: Text(AppStrings.selectSpecialty,
-                  style: TextStyle(color: context.textHint)),
-              isExpanded: true,
-              icon: Icon(Icons.expand_more, color: context.textSecondary),
-              items: [
-                DropdownMenuItem(
-                    value: 'general', child: Text(AppStrings.generalMedicine)),
-                DropdownMenuItem(
-                    value: 'dental', child: Text(AppStrings.dentalMedicine)),
-                DropdownMenuItem(
-                    value: 'pediatrics', child: Text(AppStrings.pediatrics)),
-                DropdownMenuItem(
-                    value: 'cardiology', child: Text(AppStrings.cardiology)),
-              ],
-              onChanged: (val) {
-                setState(() {
-                  _selectedSpecialty = val;
-                });
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
+        // Text(
+        //   AppStrings.specialty,
+        //   style: AppTextStyles.bodyMedium(context).copyWith(
+        //     color: context.textPrimary,
+        //   ),
+        // ),
+        // const SizedBox(height: 8),
+        // Container(
+        //   height: 48,
+        //   decoration: BoxDecoration(
+        //     color: context.surface,
+        //     borderRadius: BorderRadius.circular(8),
+        //     border: Border.all(color: context.border),
+        //   ),
+        //   padding: const EdgeInsets.symmetric(horizontal: 16),
+        //   child: DropdownButtonHideUnderline(
+        //     child: DropdownButton<String>(
+        //       value: _selectedSpecialty,
+        //       hint: Text(AppStrings.selectSpecialty,
+        //           style: TextStyle(color: context.textHint)),
+        //       isExpanded: true,
+        //       icon: Icon(Icons.expand_more, color: context.textSecondary),
+        //       items: [
+        //         DropdownMenuItem(
+        //             value: 'general', child: Text(AppStrings.generalMedicine)),
+        //         DropdownMenuItem(
+        //             value: 'dental', child: Text(AppStrings.dentalMedicine)),
+        //         DropdownMenuItem(
+        //             value: 'pediatrics', child: Text(AppStrings.pediatrics)),
+        //         DropdownMenuItem(
+        //             value: 'cardiology', child: Text(AppStrings.cardiology)),
+        //       ],
+        //       onChanged: (val) {
+        //         setState(() {
+        //           _selectedSpecialty = val;
+        //         });
+        //       },
+        //     ),
+        //   ),
+        // ),
+        // const SizedBox(height: 16),
 
         _buildTextField(
           label: AppStrings.address,

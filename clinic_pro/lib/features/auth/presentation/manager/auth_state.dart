@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:equatable/equatable.dart';
+import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dart';
 import '../../domain/entities/auth_user_entity.dart';
 
 abstract class AuthState extends Equatable {
@@ -21,11 +22,15 @@ class AuthLoading extends AuthState {}
 class AuthAuthenticated extends AuthState {
   @override
   final AuthUserEntity user;
+  final SubscriptionEntity? activeSubscription;
 
-  const AuthAuthenticated({required this.user});
+  const AuthAuthenticated({
+    required this.user,
+    this.activeSubscription,
+  });
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [user, activeSubscription];
 }
 
 class AuthRegistrationSuccess extends AuthState {

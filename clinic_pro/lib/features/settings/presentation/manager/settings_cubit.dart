@@ -14,8 +14,9 @@ import '../../domain/usecases/get_secretary_doctors_usecase.dart';
 import '../../domain/usecases/set_active_doctor_usecase.dart';
 import '../../domain/usecases/upload_avatar_usecase.dart';
 import '../../../clinics/domain/entities/clinic_entity.dart';
+import '../../../staff_and_invitations/domain/use_cases/fetch_all_staff_use_case.dart';
 import '../../../staff_and_invitations/domain/entities/staff_entity.dart';
-import '../../../subscriptions/domain/entities/subscription_entity.dart';
+import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dart';
 import 'settings_state.dart';
 import 'dart:io';
 import '../../data/data_sources/i_settings_local_data_source.dart';
@@ -29,6 +30,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   final GetSecretaryDoctorsUseCase _getSecretaryDoctorsUseCase;
   final SetActiveDoctorUseCase _setActiveDoctorUseCase;
   final UploadAvatarUseCase _uploadAvatarUseCase;
+  final FetchAllStaffUseCase _fetchAllStaffUseCase;
   final ISettingsLocalDataSource _localDataSource;
 
   SettingsCubit(
@@ -39,6 +41,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     this._getSecretaryDoctorsUseCase,
     this._setActiveDoctorUseCase,
     this._uploadAvatarUseCase,
+    this._fetchAllStaffUseCase,
     this._localDataSource,
   ) : super(const SettingsState());
 
@@ -90,17 +93,22 @@ class SettingsCubit extends Cubit<SettingsState> {
             );
           }
 
-          // جلب الاشتراك في حالة المالك
+          // جلب الاشتراك وطاقم العمل في حالة المالك
           SubscriptionEntity? sub;
+          List<StaffEntity> ownerStaff = [];
           if (role == StaffRoles.owner) {
             final subResult = await _getSubscriptionUseCase(userId);
             subResult.fold((_) {}, (s) => sub = s);
+
+            final staffResult = await _fetchAllStaffUseCase(userId);
+            staffResult.fold((_) {}, (list) => ownerStaff = list);
           }
 
           emit(state.copyWith(
             isLoading: false,
             subscriptionEntity: sub,
             availableClinics: clinics,
+            staffList: ownerStaff,
             clinicEntity: currentClinic ?? (clinics.isNotEmpty ? clinics.first : null),
           ));
 

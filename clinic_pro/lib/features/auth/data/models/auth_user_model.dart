@@ -19,10 +19,11 @@ class AuthUserModel extends AuthUserEntity {
     super.isActive,
     super.ownerId,
     super.country,
+    super.isNewUser,
   });
 
   /// إنشاء نموذج من البيانات القادمة من قاعدة البيانات (Supabase Map)
-  factory AuthUserModel.fromJson(Map<String, dynamic> json, StaffRoles role) {
+  factory AuthUserModel.fromJson(Map<String, dynamic> json, StaffRoles role, {bool isNewUser = false}) {
     return AuthUserModel(
       id: json['id'] as String,
       name: json['name'] as String? ?? '',
@@ -35,6 +36,7 @@ class AuthUserModel extends AuthUserEntity {
       isActive: json['is_active'] as bool? ?? true,
       ownerId: json['owner_id'] as String?,
       country: json['country'] as String?,
+      isNewUser: isNewUser,
     );
   }
 

@@ -27,7 +27,11 @@ class LoginScreen extends StatelessWidget {
           final role = state.user.role;
 
           if (role == StaffRoles.owner) {
-            context.go(RouteConstants.ownerDashboard);
+            if (state.user.isNewUser) {
+              context.go(RouteConstants.onboardingPlan);
+            } else {
+              context.go(RouteConstants.ownerDashboard);
+            }
           } else if (role == StaffRoles.doctor) {
             context.go(RouteConstants.doctorDashboard);
           } else if (role == StaffRoles.secretary) {

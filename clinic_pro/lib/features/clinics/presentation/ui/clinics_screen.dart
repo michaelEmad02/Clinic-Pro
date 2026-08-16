@@ -68,7 +68,24 @@ class _ClinicsBody extends StatelessWidget {
           child: Container(color: context.border, height: 1),
         ),
       ),
-      body: BlocBuilder<ClinicsCubit, ClinicsState>(
+      body: BlocConsumer<ClinicsCubit, ClinicsState>(
+        listener: (context, state) {
+          if (state is ClinicsError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: context.danger,
+              ),
+            );
+          } else if (state is ClinicsLoaded && state.actionMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.actionMessage!),
+                backgroundColor: context.successText,
+              ),
+            );
+          }
+        },
         builder: (context, state) {
           if (state is ClinicsLoading) {
             return const Padding(
@@ -77,6 +94,7 @@ class _ClinicsBody extends StatelessWidget {
             );
           }
           if (state is ClinicsError) {
+            final cubit = context.read<ClinicsCubit>();
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -84,8 +102,7 @@ class _ClinicsBody extends StatelessWidget {
                   Text(state.message),
                   const SizedBox(height: AppConstants.spaceMd),
                   ElevatedButton(
-                    onPressed: () =>
-                        context.read<ClinicsCubit>().fetchClinics(ownerId),
+                    onPressed: () => cubit.fetchClinics(ownerId),
                     child: Text(AppStrings.retry),
                   ),
                 ],
@@ -153,10 +170,6 @@ class _ClinicsBody extends StatelessWidget {
     );
     if (confirmed != true) return;
     await cubit.deleteClinic(clinic);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${AppStrings.deletedSuccess}"${clinic.name}"')),
-    );
   }
 
   // تبديل حالة التفعيل
@@ -164,14 +177,6 @@ class _ClinicsBody extends StatelessWidget {
       BuildContext context, ClinicEntity clinic) async {
     final cubit = context.read<ClinicsCubit>();
     await cubit.toggleActive(clinic.id);
-    if (!context.mounted) return;
-    final action =
-        clinic.isActive ? AppStrings.toggleClinic : AppStrings.enableClinic;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content:
-              Text('${AppStrings.toggledSuccess}$action "${clinic.name}"')),
-    );
   }
 
   // فتح نموذج إضافة / تعديل عيادة
@@ -197,9 +202,6 @@ class _ClinicsBody extends StatelessWidget {
         phone1: result['phone'] as String,
         address: result['address'] as String,
       ));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.updatedSuccess)),
-      );
     } else {
       var userId = context.read<AuthCubit>().state.user?.id ?? '';
       final isDoctor = result['isDoctor'] as bool? ?? false;
@@ -217,9 +219,6 @@ class _ClinicsBody extends StatelessWidget {
           createdAt: DateTime.now(),
         ),
         isDoctor: isDoctor,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.addedSuccess)),
       );
     }
   }

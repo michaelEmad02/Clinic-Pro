@@ -11,7 +11,7 @@ import '../../../../core/constants/supabase_constants.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/services/storage/i_storage_service.dart';
 import '../../../clinics/data/models/clinic_model.dart';
-import '../../../subscriptions/data/models/subscription_model.dart';
+import '../../../plans_and_subscriptions/data/models/subscription_model.dart';
 
 import '../../../../core/services/storage/i_image_compression_service.dart';
 import 'dart:io';

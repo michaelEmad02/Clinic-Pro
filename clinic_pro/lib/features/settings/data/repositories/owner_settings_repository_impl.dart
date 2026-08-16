@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/settings/data/data_sources/owner_settings_remote_data_source.dart';
 import 'package:clinic_pro/features/settings/data/models/printing_settings_model.dart';
 import 'package:clinic_pro/features/settings/domain/entities/printing_settings_entity.dart';
@@ -36,7 +37,7 @@ class OwnerSettingsRepositoryImpl implements IOwnerSettingsRepository {
       _cachedOwnerId = ownerId;
       return Right(settings);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -53,7 +54,7 @@ class OwnerSettingsRepositoryImpl implements IOwnerSettingsRepository {
 
       return const Right(unit);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 }

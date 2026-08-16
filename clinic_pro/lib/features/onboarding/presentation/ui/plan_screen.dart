@@ -1,76 +1,161 @@
+// ────────────────────────────────────────────────────────
+// شاشة اختيار الخطط والاشتراكات (PlanScreen)
+// تعتمد على SubscriptionsCubit والبيانات الحقيقية بداخل داتا بيز Supabase
+// ────────────────────────────────────────────────────────
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/themes/app_colors.dart';
-import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/services/i_cloud_service.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../../../core/themes/app_colors.dart';
+import '../../../../core/themes/app_text_styles.dart';
+import '../../../auth/presentation/manager/auth_cubit.dart';
 import '../../../clinics/presentation/ui/widgets/progress_indicator_bar.dart';
-import 'widgets/plan_card.dart';
+import '../../../plans_and_subscriptions/domain/entities/plan_entity.dart';
+import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dart';
+import '../../../plans_and_subscriptions/presentation/manager/subscriptions_cubit.dart';
+import '../../../plans_and_subscriptions/presentation/manager/subscriptions_state.dart';
+import '../../../plans_and_subscriptions/presentation/ui/widgets/upgrade_confirmation_dialog.dart';
+import '../../../plans_and_subscriptions/presentation/ui/widgets/plan_card.dart';
 
-class PlanScreen extends StatefulWidget {
+class PlanScreen extends StatelessWidget {
   const PlanScreen({super.key});
 
   @override
-  State<PlanScreen> createState() => _PlanScreenState();
+  Widget build(BuildContext context) {
+    final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
+
+    return BlocProvider(
+      create: (_) => sl<SubscriptionsCubit>()..loadSubscriptionsData(ownerId),
+      child: const _PlanScreenBody(),
+    );
+  }
 }
 
-class _PlanScreenState extends State<PlanScreen> {
-  String _selectedBillingCycle = 'monthly'; // 'monthly', 'yearly', 'lifetime'
-  Map<String, dynamic>? _selectedPlan;
-  List<Map<String, dynamic>> _plans = [];
-  List<Map<String, dynamic>> _plansFeatures = [];
-  bool _isLoading = true;
+class _PlanScreenBody extends StatefulWidget {
+  const _PlanScreenBody();
 
   @override
-  void initState() {
-    super.initState();
-    _fetchPlansData();
-  }
+  State<_PlanScreenBody> createState() => _PlanScreenBodyState();
+}
 
-  Future<void> _fetchPlansData() async {
-    try {
-      final cloudService = sl<ICloudService>();
-      final plans = await cloudService.select(table: 'plans');
-      final features = await cloudService.select(table: 'plans_features');
+class _PlanScreenBodyState extends State<_PlanScreenBody> {
+  String _selectedBillingCycle = 'monthly'; // 'monthly', 'yearly', 'lifetime'
+  PlanEntity? _selectedPlan;
 
-      setState(() {
-        _plans = plans;
-        _plansFeatures = features;
-        // Default select 'pro' plan if present, else basic
-        _selectedPlan = plans.firstWhere((p) => p['name'] == 'pro',
-            orElse: () => plans.first);
-        _isLoading = false;
-      });
-    } catch (_) {
-      setState(() => _isLoading = false);
+  void _onConfirmSubscriptionRequest(
+    BuildContext context,
+    PlanEntity plan,
+    SubscriptionEntity? activeSub, {
+    bool isTrial = false,
+  }) {
+    final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
+
+    final cycle = isTrial ? 'trail' : _selectedBillingCycle;
+
+    // إذا كان المالك يملك اشتراكاً نشطاً بالفعل
+    if (activeSub != null && activeSub.isActive) {
+      if (activeSub.planId == plan.id) {
+        final endDateStr = activeSub.endAt != null
+            ? '${activeSub.endAt!.day}/${activeSub.endAt!.month}/${activeSub.endAt!.year}'
+            : 'غير محدد';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'اشتراكك الحالي في خطة (${plan.name.toUpperCase()}) نشط حتى $endDateStr. لا يمكنك إعادة التجديد بنفس الخطة الآن.',
+            ),
+            backgroundColor: context.warningText,
+          ),
+        );
+        return;
+      }
+
+      // في حالة الترقية
+      final remainingDays = activeSub.endAt != null
+          ? activeSub.endAt!.difference(DateTime.now()).inDays
+          : 0;
+
+      showDialog(
+        context: context,
+        builder: (_) => UpgradeConfirmationDialog(
+          currentPlanName: activeSub.planId,
+          targetPlanName: plan.name,
+          remainingDays: remainingDays < 0 ? 0 : remainingDays,
+          onConfirmUpgrade: () {
+            context.read<SubscriptionsCubit>().requestSubscription(
+                  ownerId: ownerId,
+                  targetPlan: plan,
+                  subscriptionType: cycle,
+                );
+          },
+        ),
+      );
+      return;
     }
-  }
 
-  Map<String, dynamic>? _getFeaturesForPlan(String planId) {
-    if (_plansFeatures.isEmpty) return null;
-    final list = _plansFeatures.where((f) => f['plan_id'] == planId);
-    return list.isNotEmpty ? list.first : null;
+    // اشتراك جديد أو منتهي
+    context.read<SubscriptionsCubit>().requestSubscription(
+          ownerId: ownerId,
+          targetPlan: plan,
+          subscriptionType: cycle,
+        );
   }
 
   @override
   Widget build(BuildContext context) {
+    final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
+
     return Scaffold(
-      backgroundColor: context.background,
+      backgroundColor: context.backgroundColor,
       body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Center(
+        child: BlocConsumer<SubscriptionsCubit, SubscriptionsState>(
+          listener: (context, state) {
+            if (state is SubscriptionPendingCreated) {
+              if (state.subscription.isTrial) {
+                // التجربة المجانية تتخطى الشاشات المالية وتذهب فوراً لإنشاء العيادة
+                context.go(RouteConstants.onboardingClinic);
+              } else {
+                context.go(
+                  RouteConstants.pendingSubscription,
+                  extra: {
+                    'plan': state.plan,
+                    'subscriptionType': state.subscription.subscriptionType,
+                    'companyInfo': state.companyInfo,
+                  },
+                );
+              }
+            } else if (state is SubscriptionsError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is SubscriptionsLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is SubscriptionsLoaded) {
+              final plans = state.plans;
+              final activeSub = state.activeSubscription;
+
+              // افتراضياً اختيار خطة Pro أو الخطة الأولى
+              _selectedPlan ??= plans.firstWhere(
+                (p) => p.name == 'Pro',
+               
+              );
+
+              return Center(
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 1024),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Progress Indicator
+                        // مؤشر التقدم (Onboarding Progress Bar)
                         SizedBox(
                           width: 896,
                           child: ProgressIndicatorBar(
@@ -81,7 +166,7 @@ class _PlanScreenState extends State<PlanScreen> {
                         ),
                         const SizedBox(height: 32),
 
-                        // Header
+                        // العنوان
                         Text(
                           AppStrings.chooseYourPlan,
                           style: AppTextStyles.headlineLarge(context),
@@ -97,89 +182,67 @@ class _PlanScreenState extends State<PlanScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Toggle: شهري | سنوي | مدى الحياة
+                        // Toggle دورة الفوترة: شهري | سنوي | مدى الحياة
                         Center(
                           child: Container(
                             decoration: BoxDecoration(
-                              color:
-                                  context.surfaceContainerLow.withOpacity(0.5),
+                              color: context.surfaceContainerLow.withOpacity(0.5),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             padding: const EdgeInsets.all(4),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _buildCycleButton(
-                                    'monthly', AppStrings.monthlyLabel),
-                                _buildCycleButton(
-                                    'yearly', AppStrings.yearlyLabel),
-                                _buildCycleButton(
-                                    'lifetime', AppStrings.lifetimeLabel),
+                                _buildCycleButton('monthly', AppStrings.monthlyLabel),
+                                _buildCycleButton('yearly', AppStrings.yearlyLabel),
+                                _buildCycleButton('lifetime', AppStrings.lifetimeLabel),
                               ],
                             ),
                           ),
                         ),
                         const SizedBox(height: 40),
 
-                        // Pricing Cards Container
+                        // كروت أسعار ومميزات الخطط
                         LayoutBuilder(
                           builder: (context, constraints) {
-                            final basicPlan = _plans.firstWhere(
-                                (p) => p['name'] == 'basic',
-                                orElse: () => {});
-                            final proPlan = _plans.firstWhere(
-                                (p) => p['name'] == 'pro',
-                                orElse: () => {});
-                            final entPlan = _plans.firstWhere(
-                                (p) => p['name'] == 'enterprise',
-                                orElse: () => {});
-
-                            if (constraints.maxWidth > 800) {
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  if (basicPlan.isNotEmpty)
-                                    Expanded(
-                                        child: _buildPlanCardWidget(basicPlan)),
-                                  const SizedBox(width: 24),
-                                  if (proPlan.isNotEmpty)
-                                    Expanded(
-                                        child: _buildPlanCardWidget(proPlan)),
-                                  const SizedBox(width: 24),
-                                  if (entPlan.isNotEmpty)
-                                    Expanded(
-                                        child: _buildPlanCardWidget(entPlan)),
-                                ],
-                              );
-                            } else {
-                              return Column(
-                                children: [
-                                  if (basicPlan.isNotEmpty) ...[
-                                    _buildPlanCardWidget(basicPlan),
-                                    const SizedBox(height: 24),
-                                  ],
-                                  if (proPlan.isNotEmpty) ...[
-                                    _buildPlanCardWidget(proPlan),
-                                    const SizedBox(height: 24),
-                                  ],
-                                  if (entPlan.isNotEmpty)
-                                    _buildPlanCardWidget(entPlan),
-                                ],
-                              );
-                            }
+                            final isWide = constraints.maxWidth > 800;
+                            return isWide
+                                ? Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: plans.map((plan) {
+                                      return Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                                          child: _buildPlanCardWidget(context, plan, activeSub),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  )
+                                : Column(
+                                    children: plans.map((plan) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 24),
+                                        child: _buildPlanCardWidget(context, plan, activeSub),
+                                      );
+                                    }).toList(),
+                                  );
                           },
                         ),
 
                         const SizedBox(height: 48),
 
-                        // Main Action Button
+                        // زر التفعيل / الانتقال للخطوة التالية
                         Center(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 400),
                             child: ElevatedButton(
                               onPressed: () {
-                                // Navigate to create clinic
-                                context.go(RouteConstants.onboardingClinic);
+                                if (_selectedPlan != null) {
+                                  _onConfirmSubscriptionRequest(
+                                      context, _selectedPlan!, activeSub, isTrial: true);
+                                } else {
+                                  context.go(RouteConstants.onboardingClinic);
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: context.primary,
@@ -198,16 +261,13 @@ class _PlanScreenState extends State<PlanScreen> {
                                 children: [
                                   RichText(
                                     text: TextSpan(
-                                      style:
-                                          AppTextStyles.headlineMedium(context)
-                                              .copyWith(
+                                      style: AppTextStyles.headlineMedium(context).copyWith(
                                         color: context.onPrimary,
                                       ),
                                       children: [
-                                        TextSpan(
-                                            text: AppStrings.startFreeTrial),
+                                        TextSpan(text: AppStrings.startFreeTrial),
                                         const TextSpan(
-                                          text: '14',
+                                          text: ' 14 ',
                                           style: TextStyle(
                                             fontFamily: 'Inter',
                                             fontWeight: FontWeight.w700,
@@ -218,8 +278,7 @@ class _PlanScreenState extends State<PlanScreen> {
                                     ),
                                   ),
                                   const Spacer(),
-                                  const Icon(Icons
-                                      .arrow_back), // Arrow pointing left in RTL
+                                  const Icon(Icons.arrow_back),
                                 ],
                               ),
                             ),
@@ -229,7 +288,19 @@ class _PlanScreenState extends State<PlanScreen> {
                     ),
                   ),
                 ),
+              );
+            }
+
+            return Center(
+              child: ElevatedButton(
+                onPressed: () => context
+                    .read<SubscriptionsCubit>()
+                    .loadSubscriptionsData(ownerId),
+                child: const Text('إعادة المحاولة'),
               ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -242,7 +313,7 @@ class _PlanScreenState extends State<PlanScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: active ? context.surface : Colors.transparent,
+          color: active ? context.surfaceColor : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -257,71 +328,41 @@ class _PlanScreenState extends State<PlanScreen> {
     );
   }
 
-  Widget _buildPlanCardWidget(Map<String, dynamic> plan) {
-    final planId = plan['id'] as String;
-    final planName = plan['name'] as String;
-
-    // Title mapping
+  Widget _buildPlanCardWidget(
+    BuildContext context,
+    PlanEntity plan,
+    SubscriptionEntity? activeSub,
+  ) {
     String displayTitle = AppStrings.basicPlan;
-    if (planName == 'pro') displayTitle = AppStrings.professionalPlan;
-    if (planName == 'enterprise') displayTitle = AppStrings.enterprisePlan;
+    if (plan.name == 'pro') displayTitle = AppStrings.professionalPlan;
+    if (plan.name == 'enterprise') displayTitle = AppStrings.enterprisePlan;
 
-    // Price depending on cycle
-    double rawPrice = 7.0;
+    double rawPrice = plan.monthlyPrice;
     String subText = AppStrings.perMonth;
     if (_selectedBillingCycle == 'yearly') {
-      rawPrice = (plan['yearly_price'] ?? 70.0) as double;
+      rawPrice = plan.yearlyPrice;
       subText = AppStrings.perYear;
     } else if (_selectedBillingCycle == 'lifetime') {
-      rawPrice = (plan['lifetime_price'] ?? 155.0) as double;
+      rawPrice = plan.lifetimePrice;
       subText = AppStrings.lifetimeSuffix;
-    } else {
-      rawPrice = (plan['monthly_price'] ?? 7.0) as double;
     }
 
-    final displayPrice = '\$${rawPrice.toString().replaceAll('.0', '')}';
-    final isSelected = _selectedPlan?['id'] == planId;
+    final displayPrice = '\$${rawPrice.toInt()}';
+    final isSelected = _selectedPlan?.id == plan.id;
 
-    // Get features
-    final featuresMap = _getFeaturesForPlan(planId);
-    List<PlanFeature> planFeaturesList = [];
-    if (featuresMap != null) {
-      final maxClinics = featuresMap['max_clinics'];
-      final maxStaff = featuresMap['max_staff'];
-      final maxPatients = featuresMap['max_patients'];
-
-      planFeaturesList
-          .add(PlanFeature(text: AppStrings.supportClinics(maxClinics ?? 0)));
-      planFeaturesList
-          .add(PlanFeature(text: AppStrings.supportStaff(maxStaff ?? 0)));
-      planFeaturesList
-          .add(PlanFeature(text: AppStrings.supportPatients(maxPatients ?? 0)));
-
-      final jsonFeatures = featuresMap['features'];
-      if (jsonFeatures is Map<String, dynamic>) {
-        jsonFeatures.forEach((key, val) {
-          if (val is List && val.length >= 2) {
-            final valMap = val[0];
-            final titleMap = val[1];
-            if (valMap is Map && titleMap is Map) {
-              final active = valMap['value'] == true;
-              final title = titleMap['title'] as String?;
-              if (title != null) {
-                planFeaturesList
-                    .add(PlanFeature(text: title, included: active));
-              }
-            }
-          }
-        });
-      }
+    final List<PlanFeature> planFeaturesList = [];
+    if (plan.features != null) {
+      planFeaturesList.add(PlanFeature(text: AppStrings.supportClinics(plan.features!.maxClinics)));
+      planFeaturesList.add(PlanFeature(text: AppStrings.supportStaff(plan.features!.maxStaff)));
+      planFeaturesList.add(PlanFeature(text: AppStrings.supportPatients(plan.features!.maxPatients)));
     }
 
     return PlanCard(
       title: displayTitle,
       price: displayPrice,
       priceSubtext: subText,
-      isFeatured: planName == 'pro',
-      badgeText: planName == 'pro' ? AppStrings.mostPopular : null,
+      isFeatured: plan.name == 'pro',
+      badgeText: plan.name == 'pro' ? AppStrings.mostPopular : null,
       features: planFeaturesList,
       buttonText: isSelected ? AppStrings.planSelected : AppStrings.selectPlan,
       onSelect: () {
@@ -331,4 +372,19 @@ class _PlanScreenState extends State<PlanScreen> {
       },
     );
   }
+}
+
+class PlanEntityFallback extends PlanEntity {
+  const PlanEntityFallback()
+      : super(
+          id: '',
+          name: 'basic',
+          monthlyPrice: 7,
+          yearlyPrice: 70,
+          lifetimePrice: 155,
+          monthlyDiscount: 0,
+          yearlyDiscount: 20,
+          lifetimeDiscount: 50,
+          currency: r'USD $',
+        );
 }

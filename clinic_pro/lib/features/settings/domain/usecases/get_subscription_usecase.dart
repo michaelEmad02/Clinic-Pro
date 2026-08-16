@@ -5,7 +5,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
-import '../../../subscriptions/domain/entities/subscription_entity.dart';
+import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dart';
 import '../repositories/i_settings_repository.dart';
 
 @injectable

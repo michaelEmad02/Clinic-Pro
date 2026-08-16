@@ -1,5 +1,5 @@
+import 'package:clinic_pro/features/expenses/domain/repositories/expenses_repository.dart';
 import 'package:injectable/injectable.dart';
-import '../../presentation/manager/expenses_repository.dart';
 
 @injectable
 class DeleteExpensesUseCase {

@@ -166,4 +166,9 @@ class SupabaseServices extends ICloudService {
         .eq(matchColumn, matchValue)
         .select();
   }
+
+  @override
+  Future<dynamic> rpc(String functionName, {Map<String, dynamic>? params}) async {
+    return await supabase.rpc(functionName, params: params);
+  }
 }

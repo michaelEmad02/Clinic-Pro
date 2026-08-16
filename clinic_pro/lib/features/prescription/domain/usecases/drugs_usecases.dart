@@ -2,6 +2,7 @@
 // حالات استخدام إدارة الأدوية (Drugs UseCases)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
@@ -25,7 +26,7 @@ class AddDrugUseCase {
 
   Future<Either<Failure, DrugEntity>> call(DrugEntity drug) {
     if (drug.tradeName == null || drug.tradeName!.trim().isEmpty) {
-      return Future.value(const Left(ServerFailure('اسم الدواء التجاري مطلوب')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'اسم الدواء التجاري مطلوب')));
     }
     return _repository.addDrug(drug);
   }
@@ -38,7 +39,7 @@ class UpdateDrugUseCase {
 
   Future<Either<Failure, void>> call(DrugEntity drug) {
     if (drug.tradeName == null || drug.tradeName!.trim().isEmpty) {
-      return Future.value(const Left(ServerFailure('اسم الدواء التجاري مطلوب')));
+      return Future.value(const Left(UnknownQueryFailure(message: 'اسم الدواء التجاري مطلوب')));
     }
     return _repository.updateDrug(drug);
   }

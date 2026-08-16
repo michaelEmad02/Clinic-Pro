@@ -75,6 +75,21 @@ class _FinancialReportsBodyState extends State<_FinancialReportsBody> {
             color: context.primary,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: context.primary,
+            ),
+            tooltip: AppStrings.isArabic ? 'تحديث' : 'Refresh',
+            onPressed: () {
+              context.read<FinancialReportsCubit>().loadReports(
+                    doctorId: widget.doctorId,
+                    forceRefresh: true,
+                  );
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: context.borderColor, height: 1),

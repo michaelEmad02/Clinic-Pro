@@ -11,6 +11,7 @@ class SubscriptionEntity {
   final String status; // 'pending' | 'active' | 'expired' | 'cancelled'
   final DateTime? startedAt;
   final DateTime? endAt;
+  final String? createdBy;
   final DateTime createdAt;
 
   const SubscriptionEntity({
@@ -21,11 +22,15 @@ class SubscriptionEntity {
     required this.status,
     this.startedAt,
     this.endAt,
+    this.createdBy,
     required this.createdAt,
   });
 
   /// هل الاشتراك نشط حالياً؟
   bool get isActive => status == 'active';
+
+  /// هل الطلب قيد الانتظار للتفعيل؟
+  bool get isPending => status == 'pending';
 
   /// هل هو في فترة التجربة؟
   bool get isTrial => subscriptionType == 'trail'; // ⚠️ الخطأ الإملائي موجود في قاعدة البيانات

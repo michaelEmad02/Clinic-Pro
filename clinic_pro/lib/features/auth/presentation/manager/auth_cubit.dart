@@ -5,6 +5,8 @@
 import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dart';
+import '../../../plans_and_subscriptions/domain/usecases/subscriptions_usecases.dart';
 import '../../domain/use_cases/get_current_user_use_case.dart';
 import '../../domain/use_cases/login_with_google_use_case.dart';
 import '../../domain/use_cases/login_with_apple_use_case.dart';
@@ -21,6 +23,7 @@ class AuthCubit extends Cubit<AuthState> {
   final LoginWithEmailAndPasswordUseCase _loginWithEmailAndPasswordUseCase;
   final RegisterOwnerUseCase _registerOwnerUseCase;
   final LogoutUseCase _logoutUseCase;
+  final CheckSubscriptionStatusUseCase _checkSubscriptionStatusUseCase;
 
   /// الدور الأصلي للمستخدم (يُحفظ عند التبديل بين الأدوار)
   StaffRoles? _originalRole;
@@ -40,6 +43,7 @@ class AuthCubit extends Cubit<AuthState> {
     this._loginWithEmailAndPasswordUseCase,
     this._registerOwnerUseCase,
     this._logoutUseCase,
+    this._checkSubscriptionStatusUseCase,
   ) : super(AuthInitial());
 
   /// التحقق من حالة الجلسة الحالية
@@ -48,16 +52,20 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await _getCurrentUserUseCase();
     result.fold(
       (failure) => emit(AuthError(message: failure.message)),
-      (user) {
+      (user) async {
         if (user != null) {
-          emit(AuthAuthenticated(user: user));
+          SubscriptionEntity? activeSub;
+          if (user.role == StaffRoles.owner) {
+            final subResult = await _checkSubscriptionStatusUseCase(user.id);
+            subResult.fold((_) => null, (sub) => activeSub = sub);
+          }
+          emit(AuthAuthenticated(user: user, activeSubscription: activeSub));
         } else {
           emit(AuthUnauthenticated());
         }
       },
     );
   }
-
 
   /// تسجيل دخول بالبريد الإلكتروني وكلمة المرور
   Future<void> login(String email, String password) async {

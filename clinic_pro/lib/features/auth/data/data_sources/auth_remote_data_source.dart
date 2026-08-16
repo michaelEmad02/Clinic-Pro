@@ -133,45 +133,47 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
             : (email.isNotEmpty ? email.split('@').first : 'Google User');
 
         // إدراج المالك الجديد
+        final ownerData = {
+          'id': userId,
+          'name': displayName,
+          'phone': '',
+          'country': '',
+          'address': '',
+        };
         await _cloudService.insert(
           table: SupabaseTables.owners,
-          data: {
-            'id': userId,
-            'name': displayName,
-            'phone': '',
-            'country': '',
-            'address': '',
-          },
+          data: ownerData,
         );
 
         // إدراج الموظف المرتبط به كطبيب - مالك
+        final userData = {
+          'id': userId,
+          'owner_id': userId,
+          'name': displayName,
+          'phone': '',
+          'address': '',
+          'specialty': 'طبيب - مالك',
+          'is_active': true,
+        };
         await _cloudService.insert(
           table: SupabaseTables.users,
-          data: {
-            'id': userId,
-            'owner_id': userId,
-            'name': displayName,
-            'phone': '',
-            'address': '',
-            'specialty': 'طبيب - مالك',
-            'is_active': true,
-          },
+          data: userData,
         );
 
-        // إعادة جلب السجلات المحدثة
-        ownerResults = await _cloudService.select(
-          table: SupabaseTables.owners,
-          eq: {'id': userId},
-        );
+        // إرجاع النموذج مباشرةً بدون طلبات SELECT إضافية توفيراً للوقت والموارد
+        final returnedUserData = Map<String, dynamic>.from(userData);
+        returnedUserData['email'] = email;
+        return AuthUserModel.fromJson(returnedUserData, StaffRoles.owner, isNewUser: true);
       }
     }
-      StaffRoles staffRole = StaffRoles.owner;
+
+    StaffRoles staffRole = StaffRoles.owner;
 
     // 5. بناء كائن المستخدم المرجّع بناءً على نوع الحساب
     if (ownerResults.isNotEmpty) {
-      // final ownerData = Map<String, dynamic>.from(ownerResults.first);
-      // ownerData['email'] = email;
-      // return AuthUserModel.fromJson(ownerData, StaffRoles.owner);
+      final ownerData = Map<String, dynamic>.from(ownerResults.first);
+      ownerData['email'] = email;
+      return AuthUserModel.fromJson(ownerData, StaffRoles.owner);
     }
 
     if (userResults.isNotEmpty) {

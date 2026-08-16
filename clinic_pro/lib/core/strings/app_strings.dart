@@ -590,7 +590,7 @@ class AppStrings {
   static String get currentPlan => isArabic ? 'الباقة الحالية' : 'Current Plan';
   static String get planUsage =>
       isArabic ? 'استهلاك الباقة الحالية' : 'Current Plan Usage';
-  static String get users => isArabic ? 'المستخدمين' : 'Users';
+  static String get users => isArabic ? 'الموظفين' : 'Staff';
   static String get branches => isArabic ? 'الفروع' : 'Branches';
 
   // General app info
@@ -1018,4 +1018,63 @@ class AppStrings {
   static String get printingSettingsSavedSuccess => isArabic
       ? 'تم حفظ إعدادات الطباعة بنجاح'
       : 'Printing settings saved successfully';
+
+  // Subscriptions & Plans Extra
+  static String get plansAndSubscriptions =>
+      isArabic ? 'الخطط والاشتراكات' : 'Plans & Subscriptions';
+  static String get choosePlanSubtitle => isArabic
+      ? 'اختر الخطة المناسبة لعيادتك'
+      : 'Choose the right plan for your clinic';
+  static String get choosePlanDesc => isArabic
+      ? 'احصل على كامل المميزات مع إمكانية الترقية والتجديد في أي وقت'
+      : 'Get full features with the ability to upgrade and renew at any time';
+  static String get startFreeTrial14Days => isArabic
+      ? 'بدء النسخة التجريبية لمدة 14 يوماً مجاناً'
+      : 'Start 14-day free trial now';
+  static String get renew => isArabic ? 'تجديد' : 'Renew';
+  static String get upgrade => isArabic ? 'ترقية' : 'Upgrade';
+  static String get requestSubscription =>
+      isArabic ? 'طلب الاشتراك' : 'Request Subscription';
+  static String get yearlyDiscount =>
+      isArabic ? 'سنوي (خصم)' : 'Yearly (Discount)';
+  static String activeUntil(String date) => isArabic
+      ? 'اشتراكك الحالي في هذه الخطة ما زال نشطاً حتى $date. لا يمكنك التجديد قبل انتهاء الفترة.'
+      : 'Your current subscription for this plan is active until $date. You cannot renew before expiration.';
+  static String activePlanNoDowngrade(String date) => isArabic
+      ? 'اشتراكك الحالي نشط حتى $date. لا يمكنك التغيير لباقة أقل حتى انتهاء الفترة.'
+      : 'Your current subscription is active until $date. You cannot downgrade until expiration.';
+  static String get confirmUpgradeTitle =>
+      isArabic ? 'تأكيد ترقية الاشتراك' : 'Confirm Subscription Upgrade';
+  static String get confirmPlanSelectionTitle =>
+      isArabic ? 'تأكيد اختيار الخطة' : 'Confirm Plan Selection';
+  static String get billingCycle =>
+      isArabic ? 'دورة الفوترة' : 'Billing Cycle';
+  static String remainingDaysNotice(int days) => isArabic
+      ? 'اشتراكك الحالي متبقي فيه $days يوماً. عند التأكيد سيتم إلغاء الاشتراك الحالي.'
+      : 'Your current subscription has $days days remaining. Upon confirmation, current subscription will be updated.';
+  static String get planFeaturesListTitle =>
+      isArabic ? 'مميزات الخطة:' : 'Plan Features:';
+  static String get clinicsCountLabel =>
+      isArabic ? 'عدد العيادات' : 'Clinics Count';
+  static String get staffCountLabel =>
+      isArabic ? 'الطاقم الطبي والأطباء' : 'Staff & Doctors';
+  static String get patientsCapacityLabel =>
+      isArabic ? 'سعة المرضى' : 'Patients Capacity';
+  static String get confirmUpgradeAction =>
+      isArabic ? 'تأكيد الترقية' : 'Confirm Upgrade';
+  static String get confirmRequestAction =>
+      isArabic ? 'تأكيد الطلب' : 'Confirm Request';
+  static String get billingHistoryTitle =>
+      isArabic ? 'سجل الفواتير والاشتراكات' : 'Billing & Subscription History';
+  static String get noBillingRecords =>
+      isArabic ? 'لا توجد فواتير سابقة حتى الآن' : 'No past billing records yet';
+  static String get subscriptionRequestSubmitted =>
+      isArabic ? 'تم تقديم الطلب بنجاح' : 'Request Submitted Successfully';
+  static String get subscriptionExpired =>
+      isArabic ? 'انتهت صلاحية اشتراكك' : 'Subscription Expired';
+  static String get subscriptionActivatedSuccess =>
+      isArabic ? 'تم تفعيل اشتراكك بنجاح! مرحباً بك.' : 'Your subscription has been activated successfully!';
+  static String get currentPlanBadge =>
+      isArabic ? 'الخطة الحالية' : 'Current Plan';
+  static String get unlimited => isArabic ? 'غير محدود' : 'Unlimited';
 }
