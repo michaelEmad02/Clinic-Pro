@@ -1,0 +1,18 @@
+{
+    "sourceFile": "clinic_pro/lib/core/services/numbers_format.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1786916082583,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1786916082583,
+            "name": "Commit-0",
+            "content": "String formatNumber( value) {\r\n  return NumberFormat(\"#,##0\", \"en_US\").format(value);\r\n}"
+        }
+    ]
+}

@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 8,
+            "activePatchIndex": 9,
             "patches": [
                 {
                     "date": 1786734165242,
@@ -40,6 +40,10 @@
                 {
                     "date": 1786735292871,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,6 @@\n-import 'package:clinic_pro/core/error/failures.dart';\r\n import 'package:clinic_pro/features/expenses/presentation/manager/expenses_state.dart';\r\n import 'package:injectable/injectable.dart';\r\n-\r\n import '../../presentation/manager/expenses_repository.dart';\r\n \r\n @injectable\r\n class FetchEcpensesUseCase {\r\n@@ -10,7 +8,7 @@\n \r\n   FetchEcpensesUseCase({required this.expensesRepository});\r\n \r\n   Future<List<ExpenseItem>> call(String id) {\r\n-    return expensesRepository.loadExpenses(id);\r\n+    return expensesRepository.loadExpenses();\r\n   }\r\n }\r\n"
+                },
+                {
+                    "date": 1786912438389,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,14 +1,15 @@\n-import 'package:clinic_pro/features/expenses/presentation/manager/expenses_state.dart';\r\n+import 'package:clinic_pro/core/error/failures.dart';\r\n+import 'package:clinic_pro/features/expenses/domain/repositories/expenses_repository.dart';\r\n+import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n-import '../../presentation/manager/expenses_repository.dart';\r\n \r\n @injectable\r\n class FetchEcpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   FetchEcpensesUseCase({required this.expensesRepository});\r\n \r\n-  Future<List<ExpenseItem>> call(String id) {\r\n-    return expensesRepository.loadExpenses();\r\n+  Future<Either<Failure, void>> call(String clinicId) {\r\n+    return expensesRepository.loadExpenses(clinicId);\r\n   }\r\n }\r\n"
                 }
             ],
             "date": 1786734165242,

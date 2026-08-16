@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 17,
+            "activePatchIndex": 18,
             "patches": [
                 {
                     "date": 1786733207441,
@@ -76,6 +76,10 @@
                 {
                     "date": 1786734106277,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,7 +5,7 @@\n abstract class ExpensesRepository {\r\n   Future<Either<Failure, String>> addExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> updateExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteExpense(String id);\r\n-  Future<Either<Failure, void>> fet(String id);\r\n+  Future<Either<Failure, void>> fetchExpense(String id);\r\n  \r\n }\r\n"
+                },
+                {
+                    "date": 1786912633350,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,7 +6,7 @@\n   Future<Either<Failure, String>> addExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> updateExpense(ExpensesEntity expenses);\r\n   Future<Either<Failure, void>> deleteExpense(String id);\r\n   Future<Either<Failure, void>> loadExpenses(String id);\r\n-  Future<Either<Failure, void>> loadc(String id);\r\n+  Future<Either<Failure, void>> loadCa(String id);\r\n \r\n }\r\n"
                 }
             ],
             "date": 1786733207441,

@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 3,
+            "activePatchIndex": 9,
             "patches": [
                 {
                     "date": 1786725926163,
@@ -20,6 +20,30 @@
                 {
                     "date": 1786726004681,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -19,9 +19,9 @@\n       child: BlocProvider.value(\r\n         value: context.read<ExpensesCubit>(),\r\n         child: _AddEditExpenseForm(\r\n           expense: expense,\r\n-          categories: ['',],\r\n+          categories: [,],\r\n         ),\r\n       ),\r\n     );\r\n   }\r\n"
+                },
+                {
+                    "date": 1786917423888,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -19,9 +19,9 @@\n       child: BlocProvider.value(\r\n         value: context.read<ExpensesCubit>(),\r\n         child: _AddEditExpenseForm(\r\n           expense: expense,\r\n-          categories: [,],\r\n+          categories: categories,\r\n         ),\r\n       ),\r\n     );\r\n   }\r\n@@ -55,11 +55,13 @@\n     _titleController = TextEditingController(text: widget.expense?.title ?? '');\r\n     _amountController =\r\n         TextEditingController(text: widget.expense?.amount.toString() ?? '');\r\n     _notesController = TextEditingController(text: widget.expense?.notes ?? '');\r\n-    _categoryId = widget.expense?.categoryId ?? widget.categories.first.id;\r\n+    \r\n+    final hasCategories = widget.categories.isNotEmpty;\r\n+    _categoryId = widget.expense?.categoryId ?? (hasCategories ? widget.categories.first.id : '');\r\n     _categoryLabel =\r\n-        widget.expense?.categoryLabel ?? widget.categories.first.name;\r\n+        widget.expense?.categoryLabel ?? (hasCategories ? widget.categories.first.name : '');\r\n   }\r\n \r\n   @override\r\n   void dispose() {\r\n@@ -170,12 +172,13 @@\n                     ),\r\n                     padding: const EdgeInsets.symmetric(horizontal: 12),\r\n                     child: DropdownButtonHideUnderline(\r\n                       child: DropdownButton<String>(\r\n-                        value: _categoryId,\r\n+                        value: _categoryId.isEmpty ? null : _categoryId,\r\n                         isExpanded: true,\r\n                         icon: Icon(Icons.expand_more,\r\n                             color: context.textSecondary, size: 20),\r\n+                        hint: Text(widget.categories.isEmpty ? 'لا توجد تصنيفات' : 'اختر التصنيف'),\r\n                         items: widget.categories.map((cat) {\r\n                           return DropdownMenuItem(\r\n                             value: cat.id,\r\n                             child: Text(cat.name),\r\n@@ -193,9 +196,9 @@\n                       ),\r\n                     ),\r\n                   ),\r\n                   const SizedBox(height: 16),\r\n-                  _buildLabel(AppStrings.amount),\r\n+                  _buildLabel(),\r\n                   const SizedBox(height: 6),\r\n                   TextField(\r\n                     controller: _amountController,\r\n                     keyboardType: TextInputType.number,\r\n"
+                },
+                {
+                    "date": 1786917429697,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -196,9 +196,9 @@\n                       ),\r\n                     ),\r\n                   ),\r\n                   const SizedBox(height: 16),\r\n-                  _buildLabel(),\r\n+                  _buildLabel(formatNumber()),\r\n                   const SizedBox(height: 6),\r\n                   TextField(\r\n                     controller: _amountController,\r\n                     keyboardType: TextInputType.number,\r\n"
+                },
+                {
+                    "date": 1786917435351,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../../../../../core/constants/app_constants.dart';\r\n+import '../../../../../core/services/numbers_format.dart';\r\n import '../../../../../core/strings/app_strings.dart';\r\n import '../../../../../core/themes/app_colors.dart';\r\n import '../../../../../core/themes/app_text_styles.dart';\r\n import '../../../../../core/widgets/app_bottom_sheet.dart';\r\n"
+                },
+                {
+                    "date": 1786917469008,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,7 @@\n import 'package:flutter/material.dart';\r\n import 'package:flutter_bloc/flutter_bloc.dart';\r\n import '../../../../../core/constants/app_constants.dart';\r\n-import '../../../../../core/services/numbers_format.dart';\r\n import '../../../../../core/strings/app_strings.dart';\r\n import '../../../../../core/themes/app_colors.dart';\r\n import '../../../../../core/themes/app_text_styles.dart';\r\n import '../../../../../core/widgets/app_bottom_sheet.dart';\r\n@@ -197,9 +196,9 @@\n                       ),\r\n                     ),\r\n                   ),\r\n                   const SizedBox(height: 16),\r\n-                  _buildLabel(formatNumber()),\r\n+                  _buildLabel(AppStrings.amount),\r\n                   const SizedBox(height: 6),\r\n                   TextField(\r\n                     controller: _amountController,\r\n                     keyboardType: TextInputType.number,\r\n"
+                },
+                {
+                    "date": 1786917507845,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -200,9 +200,9 @@\n                   _buildLabel(AppStrings.amount),\r\n                   const SizedBox(height: 6),\r\n                   TextField(\r\n                     controller: _amountController,\r\n-                    keyboardType: TextInputType.number,\r\n+                    keyboardType: TextInputType.number.,\r\n                     textDirection: TextDirection.ltr,\r\n                     decoration: InputDecoration(\r\n                       hintText: '0.00',\r\n                       hintStyle: TextStyle(\r\n"
+                },
+                {
+                    "date": 1786917513687,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -200,9 +200,9 @@\n                   _buildLabel(AppStrings.amount),\r\n                   const SizedBox(height: 6),\r\n                   TextField(\r\n                     controller: _amountController,\r\n-                    keyboardType: TextInputType.number.,\r\n+                    keyboardType: TextInputType.number,\r\n                     textDirection: TextDirection.ltr,\r\n                     decoration: InputDecoration(\r\n                       hintText: '0.00',\r\n                       hintStyle: TextStyle(\r\n"
                 }
             ],
             "date": 1786725926163,

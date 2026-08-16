@@ -1,0 +1,30 @@
+{
+    "sourceFile": "clinic_pro/lib/features/expenses/presentation/ui/widgets/expense_list_item.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1786915179441,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1786915329972,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -41,13 +41,13 @@\n               decoration: BoxDecoration(\r\n                 color: context.background,\r\n                 borderRadius: BorderRadius.circular(8),\r\n               ),\r\n-              // child: Icon(\r\n-              //   _categoryIcon(expense.categoryId),\r\n-              //   color: context.primary,\r\n-              //   size: 24,\r\n-              // ),\r\n+              child: Icon(\r\n+                _categoryIcon(expense.categoryId),\r\n+                color: context.primary,\r\n+                size: 24,\r\n+              ),\r\n             ),\r\n             const SizedBox(width: 12),\r\n             Expanded(\r\n               child: Column(\r\n"
+                },
+                {
+                    "date": 1786915340069,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -41,9 +41,9 @@\n               decoration: BoxDecoration(\r\n                 color: context.background,\r\n                 borderRadius: BorderRadius.circular(8),\r\n               ),\r\n-              child: IconButton(\r\n+              child: Icon(\r\n                 _categoryIcon(expense.categoryId),\r\n                 color: context.primary,\r\n                 size: 24,\r\n               ),\r\n"
+                },
+                {
+                    "date": 1786915355188,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,9 +34,10 @@\n           ],\r\n         ),\r\n         child: Row(\r\n           children: [\r\n-            In(\r\n+            InkWell(\r\n+              on\r\n               child: Container(\r\n                 width: 48,\r\n                 height: 48,\r\n                 decoration: BoxDecoration(\r\n"
+                }
+            ],
+            "date": 1786915179441,
+            "name": "Commit-0",
+            "content": "import 'package:flutter/material.dart';\r\nimport '../../../../../core/themes/app_colors.dart';\r\nimport '../../../../../core/themes/app_text_styles.dart';\r\nimport '../../manager/expenses_state.dart';\r\n\r\nclass ExpenseListItem extends StatelessWidget {\r\n  final ExpenseItem expense;\r\n  final VoidCallback onEdit;\r\n  final VoidCallback onDelete;\r\n\r\n  const ExpenseListItem({\r\n    super.key,\r\n    required this.expense,\r\n    required this.onEdit,\r\n    required this.onDelete,\r\n  });\r\n\r\n  @override\r\n  Widget build(BuildContext context) {\r\n    return Padding(\r\n      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),\r\n      child: Container(\r\n        padding: const EdgeInsets.all(12),\r\n        decoration: BoxDecoration(\r\n          color: context.surface,\r\n          borderRadius: BorderRadius.circular(12),\r\n          border: Border.all(color: context.border),\r\n          boxShadow: const [\r\n            BoxShadow(\r\n              color: Color(0x08000000),\r\n              blurRadius: 3,\r\n              offset: Offset(0, 1),\r\n            ),\r\n          ],\r\n        ),\r\n        child: Row(\r\n          children: [\r\n            Container(\r\n              width: 48,\r\n              height: 48,\r\n              decoration: BoxDecoration(\r\n                color: context.background,\r\n                borderRadius: BorderRadius.circular(8),\r\n              ),\r\n              // child: Icon(\r\n              //   _categoryIcon(expense.categoryId),\r\n              //   color: context.primary,\r\n              //   size: 24,\r\n              // ),\r\n            ),\r\n            const SizedBox(width: 12),\r\n            Expanded(\r\n              child: Column(\r\n                crossAxisAlignment: CrossAxisAlignment.start,\r\n                children: [\r\n                  Text(\r\n                    expense.title,\r\n                    style: AppTextStyles.headlineSmall(context).copyWith(\r\n                      fontWeight: FontWeight.bold,\r\n                    ),\r\n                    maxLines: 1,\r\n                    overflow: TextOverflow.ellipsis,\r\n                  ),\r\n                  const SizedBox(height: 2),\r\n                  Text(\r\n                    expense.formattedDate,\r\n                    style: AppTextStyles.caption(context).copyWith(\r\n                      color: context.textHint,\r\n                    ),\r\n                  ),\r\n                ],\r\n              ),\r\n            ),\r\n            Text(\r\n              '- ${expense.amount.toStringAsFixed(0)}',\r\n              style: AppTextStyles.dataNumeric(context).copyWith(\r\n                color: context.danger,\r\n                fontWeight: FontWeight.bold,\r\n                fontSize: 14,\r\n              ),\r\n            ),\r\n          ],\r\n        ),\r\n      ),\r\n    );\r\n  }\r\n\r\n  IconData _categoryIcon(String categoryId) {\r\n    switch (categoryId) {\r\n      case 'ec-1':\r\n        return Icons.home_work;\r\n      case 'ec-2':\r\n        return Icons.bolt;\r\n      case 'ec-3':\r\n        return Icons.medical_services;\r\n      case 'ec-4':\r\n        return Icons.groups;\r\n      case 'ec-5':\r\n        return Icons.build;\r\n      case 'ec-6':\r\n        return Icons.more_horiz;\r\n      default:\r\n        return Icons.more_horiz;\r\n    }\r\n  }\r\n}\r\n"
+        }
+    ]
+}

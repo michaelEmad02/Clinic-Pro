@@ -1,0 +1,30 @@
+{
+    "sourceFile": "clinic_pro/lib/features/expenses/domain/use_cases/fetch_categories_use_case.dart",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1786912420064,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1786912427009,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n-class FetchEcpensesUseCase {\r\n+class FetchExpensesUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   FetchEcpensesUseCase({required this.expensesRepository});\r\n \r\n"
+                },
+                {
+                    "date": 1786912456537,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n-class FetchCaUseCase {\r\n+class FetchCatUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   FetchExpensesUseCase({required this.expensesRepository});\r\n \r\n"
+                },
+                {
+                    "date": 1786912466710,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import 'package:dartz/dartz.dart';\r\n import 'package:injectable/injectable.dart';\r\n \r\n @injectable\r\n-class FetchCateUseCase {\r\n+class FetchCategUseCase {\r\n   final ExpensesRepository expensesRepository;\r\n \r\n   FetchExpensesUseCase({required this.expensesRepository});\r\n \r\n"
+                }
+            ],
+            "date": 1786912420064,
+            "name": "Commit-0",
+            "content": "import 'package:clinic_pro/core/error/failures.dart';\r\nimport 'package:clinic_pro/features/expenses/domain/repositories/expenses_repository.dart';\r\nimport 'package:dartz/dartz.dart';\r\nimport 'package:injectable/injectable.dart';\r\n\r\n@injectable\r\nclass FetchEcpensesUseCase {\r\n  final ExpensesRepository expensesRepository;\r\n\r\n  FetchEcpensesUseCase({required this.expensesRepository});\r\n\r\n  Future<Either<Failure, void>> call(String clinicId) {\r\n    return expensesRepository.loadExpenses(clinicId);\r\n  }\r\n}\r\n"
+        }
+    ]
+}
