@@ -38,7 +38,7 @@ class LiveQueueSection extends StatelessWidget {
               Text(
                 AppStrings.liveQueue,
                 style: AppTextStyles.headlineSmall(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -56,7 +56,7 @@ class LiveQueueSection extends StatelessWidget {
                   child: Text(
                     AppStrings.viewAll,
                     style: AppTextStyles.labelChip(context).copyWith(
-                      color: AppColors.primary,
+                      color: context.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -92,7 +92,7 @@ class LiveQueueSection extends StatelessWidget {
               final app = displayQueue[index];
               final isInProgress = app.status == 'in_progress';
               final isUrgent = app.isUrgent;
- 
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Container(
@@ -110,12 +110,12 @@ class LiveQueueSection extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         backgroundColor: isInProgress
-                            ? AppColors.accent.withOpacity(0.2)
+                            ? context.accent.withOpacity(0.2)
                             : context.primaryLightColor,
                         child: Icon(
                           isInProgress ? Icons.volume_up : Icons.person,
                           color:
-                              isInProgress ? AppColors.accent : AppColors.primary,
+                              isInProgress ? context.accent : context.primary,
                           size: 20,
                         ),
                       ),
@@ -126,7 +126,8 @@ class LiveQueueSection extends StatelessWidget {
                           children: [
                             Text(
                               app.patientName ?? AppStrings.patient,
-                              style: AppTextStyles.headlineSmall(context).copyWith(
+                              style:
+                                  AppTextStyles.headlineSmall(context).copyWith(
                                 color: context.textPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -180,39 +181,49 @@ class LiveQueueSection extends StatelessWidget {
                               AppBottomSheet.show(
                                 context: context,
                                 child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(16, 0, 16, 24),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         app.patientName ?? AppStrings.patient,
-                                        style: AppTextStyles.headlineSmall(context).copyWith(
+                                        style:
+                                            AppTextStyles.headlineSmall(context)
+                                                .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: AppColors.primary,
+                                          color: context.primary,
                                         ),
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
                                         app.patientPhone ?? '',
-                                        style: AppTextStyles.bodyMedium(context).copyWith(
+                                        style: AppTextStyles.bodyMedium(context)
+                                            .copyWith(
                                           color: context.textSecondary,
                                         ),
                                         textDirection: TextDirection.ltr,
                                       ),
                                       const SizedBox(height: 16),
                                       ListTile(
-                                        leading: const Icon(Icons.person_outline, color: AppColors.primary),
+                                        leading: Icon(Icons.person_outline,
+                                            color: context.primary),
                                         title: Text(
                                           AppStrings.patientDetails,
-                                          style: AppTextStyles.bodyMedium(context).copyWith(
+                                          style:
+                                              AppTextStyles.bodyMedium(context)
+                                                  .copyWith(
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                         onTap: () {
                                           Navigator.pop(context);
                                           context.push(
-                                            RouteConstants.patientDetails.replaceAll(':id', app.patientId),
+                                            RouteConstants.patientDetails
+                                                .replaceAll(
+                                                    ':id', app.patientId),
                                           );
                                         },
                                         contentPadding: EdgeInsets.zero,
@@ -229,13 +240,13 @@ class LiveQueueSection extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppColors.successBg,
+                                color: context.successBg,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 AppStrings.atDoctor,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.successText,
+                                  color: context.successText,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 10,
                                 ),
@@ -245,8 +256,8 @@ class LiveQueueSection extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () => onCall(app.id),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryContainer,
-                                foregroundColor: AppColors.onPrimary,
+                                backgroundColor: context.primaryContainer,
+                                foregroundColor: context.onPrimary,
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 minimumSize: Size.zero,
@@ -259,7 +270,7 @@ class LiveQueueSection extends StatelessWidget {
                               child: Text(
                                 AppStrings.call,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.onPrimary,
+                                  color: context.onPrimary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 11,
                                 ),
@@ -271,13 +282,13 @@ class LiveQueueSection extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppColors.dangerBg,
+                                color: context.dangerBg,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 AppStrings.urgent,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.dangerText,
+                                  color: context.dangerText,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 10,
                                 ),

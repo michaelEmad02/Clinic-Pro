@@ -48,7 +48,7 @@ class QuickActionsRow extends StatelessWidget {
           child: Text(
             AppStrings.quickActions,
             style: AppTextStyles.headlineSmall(context).copyWith(
-              color: AppColors.primary,
+              color: context.primary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -109,7 +109,7 @@ class QuickActionsRow extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: AppColors.primaryContainer,
+              color: context.primaryContainer,
               size: 22,
             ),
             const SizedBox(height: 6),

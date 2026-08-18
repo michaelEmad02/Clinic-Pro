@@ -27,7 +27,7 @@ class SecretaryQuickActions extends StatelessWidget {
           child: Text(
             AppStrings.quickActions,
             style: AppTextStyles.headlineSmall(context).copyWith(
-              color: AppColors.primary,
+              color: context.primary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -95,7 +95,7 @@ class SecretaryQuickActions extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: AppColors.primaryContainer,
+              color: context.primaryContainer,
               size: 24,
             ),
             const SizedBox(height: 8),

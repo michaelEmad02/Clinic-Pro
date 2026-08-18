@@ -1,18 +1,9 @@
 import 'package:equatable/equatable.dart';
 import '../../../appointments/domain/entities/appointment_entity.dart';
 
-abstract class DoctorDashboardState extends Equatable {
-  const DoctorDashboardState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class DoctorDashboardInitial extends DoctorDashboardState {}
-
-class DoctorDashboardLoading extends DoctorDashboardState {}
-
-class DoctorDashboardLoaded extends DoctorDashboardState {
+/// كيان بيانات لوحة تحكم الطبيب (Doctor Dashboard Data Entity)
+/// يحتوي على الإحصائيات الحالية والمريض المعالج وطابور الانتظار
+class DoctorDashboardDataEntity extends Equatable {
   final String doctorName;
   final String clinicName;
   final AppointmentEntity? currentPatient;
@@ -20,9 +11,9 @@ class DoctorDashboardLoaded extends DoctorDashboardState {
   final int todayAppointmentsCount;
   final int completedCount;
   final int waitingCount;
-  final String avgWaitingTime; // e.g. "١٥ دقيقة"
+  final String avgWaitingTime;
 
-  const DoctorDashboardLoaded({
+  const DoctorDashboardDataEntity({
     required this.doctorName,
     required this.clinicName,
     this.currentPatient,
@@ -44,13 +35,4 @@ class DoctorDashboardLoaded extends DoctorDashboardState {
         waitingCount,
         avgWaitingTime,
       ];
-}
-
-class DoctorDashboardError extends DoctorDashboardState {
-  final String message;
-
-  const DoctorDashboardError(this.message);
-
-  @override
-  List<Object?> get props => [message];
 }

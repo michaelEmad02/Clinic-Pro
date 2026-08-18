@@ -27,7 +27,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
               Text(
                 AppStrings.isArabic ? 'عياداتك النشطة' : 'Your Active Clinics',
                 style: AppTextStyles.headlineSmall(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -36,7 +36,7 @@ class ClinicsHorizontalScroll extends StatelessWidget {
                 child: Text(
                   AppStrings.viewAll,
                   style: AppTextStyles.bodyMedium(context).copyWith(
-                    color: AppColors.primaryContainer,
+                    color: context.primaryContainer,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -54,108 +54,122 @@ class ClinicsHorizontalScroll extends StatelessWidget {
             itemBuilder: (context, index) {
               final clinic = clinics[index];
               return GestureDetector(
-                onTap: () => context.push('${RouteConstants.clinics}/${clinic.id}'),
+                onTap: () =>
+                    context.push('${RouteConstants.clinics}/${clinic.id}'),
                 child: Container(
-                width: 240,
-                margin: const EdgeInsets.only(left: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: context.borderColor),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            clinic.name,
-                            style: AppTextStyles.headlineSmall(context).copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: context.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: clinic.isActive ? AppColors.successBg : AppColors.dangerBg,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            clinic.isActive ? (AppStrings.isArabic ? 'نشطة' : 'Active') : (AppStrings.isArabic ? 'متوقفة' : 'Inactive'),
-                            style: AppTextStyles.caption(context).copyWith(
-                              fontSize: 10,
-                              color: clinic.isActive ? AppColors.successText : AppColors.dangerText,
-                              fontWeight: FontWeight.bold,
+                  width: 240,
+                  margin: const EdgeInsets.only(left: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.surfaceColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: context.borderColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              clinic.name,
+                              style:
+                                  AppTextStyles.headlineSmall(context).copyWith(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: context.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.location_on_outlined, size: 14, color: context.textSecondary),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            clinic.location,
-                            style: AppTextStyles.caption(context).copyWith(
-                              color: context.textSecondary,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: clinic.isActive
+                                  ? context.successBg
+                                  : context.dangerBg,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.medication_outlined, size: 14, color: AppColors.primaryContainer),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${AppStrings.isArabic ? 'أطباء' : 'Doctors'}: ${clinic.doctorsCount}',
+                            child: Text(
+                              clinic.isActive
+                                  ? (AppStrings.isArabic ? 'نشطة' : 'Active')
+                                  : (AppStrings.isArabic
+                                      ? 'متوقفة'
+                                      : 'Inactive'),
                               style: AppTextStyles.caption(context).copyWith(
-                                color: AppColors.onSurfaceVariant,
+                                fontSize: 10,
+                                color: clinic.isActive
+                                    ? context.successText
+                                    : context.dangerText,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Icon(Icons.people_outline, size: 14, color: AppColors.primaryContainer),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${AppStrings.isArabic ? 'مرضى' : 'Patients'}: ${clinic.patientsCount}',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_outlined,
+                              size: 14, color: context.textSecondary),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              clinic.location,
                               style: AppTextStyles.caption(context).copyWith(
-                                color: AppColors.onSurfaceVariant,
+                                color: context.textSecondary,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.medication_outlined,
+                                  size: 14, color: context.primaryContainer),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${AppStrings.isArabic ? 'أطباء' : 'Doctors'}: ${clinic.doctorsCount}',
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: context.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Icon(Icons.people_outline,
+                                  size: 14, color: context.primaryContainer),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${AppStrings.isArabic ? 'مرضى' : 'Patients'}: ${clinic.patientsCount}',
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: context.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               );
             },
           ),

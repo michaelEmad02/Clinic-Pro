@@ -122,7 +122,7 @@ class SupabaseServices extends ICloudService {
       } catch (_) {}
 
       // 2. الاشتراك بالـ Realtime Channel للإشعارات الفورية
-      final name = 'rt_${table}_${clinicId ?? 'all'}';
+      final name = 'rt_${table}_${clinicId ?? 'all'}_${DateTime.now().microsecondsSinceEpoch}';
       channel = supabase.channel(name);
 
       channel!.onPostgresChanges(

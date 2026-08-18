@@ -34,7 +34,7 @@ class WaitingQueueList extends StatelessWidget {
                   Text(
                     AppStrings.todayQueue,
                     style: AppTextStyles.headlineSmall(context).copyWith(
-                      color: AppColors.primary,
+                      color: context.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -49,7 +49,7 @@ class WaitingQueueList extends StatelessWidget {
                   label: Text(
                     AppStrings.callNext,
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.primaryContainer,
+                      color: context.primaryContainer,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -108,10 +108,10 @@ class WaitingQueueList extends StatelessWidget {
                         backgroundColor: context.primaryLightColor,
                         child: Text(
                           '${index + 1}',
-                          style: const TextStyle(
+                          style:  TextStyle(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: context.primary,
                           ),
                         ),
                       ),
@@ -232,13 +232,13 @@ class WaitingQueueList extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.dangerBg,
+                                color: context.dangerBg,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 AppStrings.urgent,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.dangerText,
+                                  color: context.dangerText,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 10,
                                 ),

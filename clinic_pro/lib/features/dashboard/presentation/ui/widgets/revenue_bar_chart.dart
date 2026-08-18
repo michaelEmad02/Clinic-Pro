@@ -47,7 +47,7 @@ class RevenueBarChart extends StatelessWidget {
           Text(
             AppStrings.isArabic ? 'الإيرادات الأسبوعية' : 'Weekly Revenue',
             style: AppTextStyles.headlineSmall(context).copyWith(
-              color: AppColors.primary,
+              color: context.primary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -61,7 +61,7 @@ class RevenueBarChart extends StatelessWidget {
                 barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => AppColors.primary,
+                    getTooltipColor: (_) => context.primary,
                     tooltipPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     tooltipMargin: 4,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
@@ -143,7 +143,7 @@ class RevenueBarChart extends StatelessWidget {
                     barRods: [
                       BarChartRodData(
                         toY: weeklyRevenue[index],
-                        color: AppColors.primaryContainer,
+                        color: context.primaryContainer,
                         width: isMobile ? 14 : 20,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(4),
@@ -152,7 +152,7 @@ class RevenueBarChart extends StatelessWidget {
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: computedMaxY,
-                          color: context.isDarkMode ? AppColors.darkBackground : AppColors.surfaceContainerLow,
+                          color: context.isDarkMode ? context.backgroundColor : context.surfaceContainerLow,
                         ),
                       ),
                     ],

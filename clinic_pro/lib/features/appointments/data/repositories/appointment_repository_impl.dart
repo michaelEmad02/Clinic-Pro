@@ -7,6 +7,7 @@ import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/error/query_failure.dart';
 import '../../domain/entities/appointment_entity.dart';
 import '../../domain/repositories/i_appointment_repository.dart';
 import '../data_sources/i_appointment_remote_data_source.dart';
@@ -16,7 +17,14 @@ import '../models/appointment_model.dart';
 class AppointmentRepositoryImpl implements IAppointmentRepository {
   final IAppointmentRemoteDataSource _remoteDataSource;
 
+  // كاش محلي آمن للتحديثات الفورية بدون إعادة جلب كامل للقائمة من الشبكة
+  List<AppointmentEntity> _cachedAppointments = const [];
+
   AppointmentRepositoryImpl(this._remoteDataSource);
+
+  void _clearCache() {
+    _cachedAppointments = const [];
+  }
 
   @override
   Future<Either<Failure, List<AppointmentEntity>>> getAppointments({
@@ -34,7 +42,7 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
       );
       return Right(models);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -45,7 +53,7 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
       final model = await _remoteDataSource.getAppointmentById(id);
       return Right(model);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -72,9 +80,10 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
       );
 
       final result = await _remoteDataSource.insertAppointment(model);
+      _clearCache();
       return Right(result);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -88,9 +97,10 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
           'arrived_at': DateTime.now().toIso8601String(),
         },
       );
+      _clearCache();
       return const Right(unit);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -125,9 +135,10 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
         },
       );
 
+      _clearCache();
       return const Right(unit);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -141,9 +152,10 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
         appointmentId: appointmentId,
         fields: {'status': newStatus},
       );
+      _clearCache();
       return const Right(unit);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -152,18 +164,15 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     try {
       await _remoteDataSource.updateFields(
         appointmentId: appointmentId,
-        fields: {
-          'status': AppointmentStatus.cancelled,
-        },
+        fields: {'status': AppointmentStatus.cancelled},
       );
-
-      // حذف الفواتير المرتبطة بالموعد عند إلغائه (إن وجدت)
       try {
         await _remoteDataSource.deleteRelatedInvoices(appointmentId);
       } catch (_) {}
+      _clearCache();
       return const Right(unit);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -177,9 +186,10 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
         appointmentId: appointmentId,
         fields: {'is_urgent': isUrgent},
       );
+      _clearCache();
       return const Right(unit);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -206,27 +216,26 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
       );
 
       await _remoteDataSource.updateAppointment(model);
+      _clearCache();
       return const Right(unit);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
   @override
   Future<Either<Failure, Unit>> deleteAppointment(String appointmentId) async {
     try {
-      await _remoteDataSource.deleteAppointment(appointmentId);
       try {
         await _remoteDataSource.deleteRelatedInvoices(appointmentId);
       } catch (_) {}
+      await _remoteDataSource.deleteAppointment(appointmentId);
+      _clearCache();
       return const Right(unit);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
-
-  // كاش محلي آمن للتحديثات الفورية بدون إعادة جلب كامل للقائمة من الشبكة
-  List<AppointmentEntity> _cachedAppointments = const [];
 
   @override
   Stream<List<AppointmentEntity>> subscribeAppointments({
@@ -236,73 +245,16 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     return _remoteDataSource
         .subscribeAppointments(clinicId: clinicId)
         .asyncMap((rawList) async {
-      // 1. تصفية الـ rawList بحسب doctorId إن وُجد
-      final filteredRaw = doctorId != null && doctorId.isNotEmpty
-          ? rawList.where((r) => r['doctor_id'] == doctorId).toList()
-          : rawList;
-
-      final rawIds = filteredRaw.map((r) => r['id'] as String).toSet();
-      final cachedIds = _cachedAppointments.map((e) => e.id).toSet();
-
-      // ─── الحالة 1: تحميل أول مرة ─── //
-      if (_cachedAppointments.isEmpty) {
-        try {
-          final fresh = await _remoteDataSource.getAppointments(
-            clinicId: clinicId,
-            doctorId: doctorId,
-          );
-          _cachedAppointments = List.unmodifiable(fresh);
-          return _cachedAppointments;
-        } catch (_) {
-          return const <AppointmentEntity>[];
-        }
+      try {
+        final fresh = await _remoteDataSource.getAppointments(
+          clinicId: clinicId,
+          doctorId: doctorId,
+        );
+        _cachedAppointments = List.unmodifiable(fresh);
+        return _cachedAppointments;
+      } catch (_) {
+        return _cachedAppointments;
       }
-
-      final updatedList = List<AppointmentEntity>.from(_cachedAppointments);
-
-      // ─── الحالة 2: عنصر محذوف (DELETE) ─── //
-      final deletedIds = cachedIds.difference(rawIds);
-      if (deletedIds.isNotEmpty) {
-        updatedList.removeWhere((item) => deletedIds.contains(item.id));
-      }
-
-      // ─── الحالة 3: عنصر مضاف جديد (INSERT) ─── //
-      final addedIds = rawIds.difference(cachedIds);
-      if (addedIds.isNotEmpty) {
-        for (final newId in addedIds) {
-          try {
-            final newAppt = await _remoteDataSource.getEnrichedAppointmentById(newId);
-            updatedList.add(newAppt);
-          } catch (_) {}
-        }
-      }
-
-      // ─── الحالة 4: تحديث موعد (UPDATE) ─── //
-      final rawMap = {for (final r in filteredRaw) r['id'] as String: r};
-
-      final finalList = updatedList.map((cached) {
-        final raw = rawMap[cached.id];
-        if (raw != null) {
-          return cached.copyWith(
-            status: raw['status'] as String? ?? cached.status,
-            isUrgent: raw['is_urgent'] as bool? ?? cached.isUrgent,
-            arrivedAt: raw['arrived_at'] != null
-                ? DateTime.tryParse(raw['arrived_at'].toString())
-                : cached.arrivedAt,
-            calledAt: raw['called_at'] != null
-                ? DateTime.tryParse(raw['called_at'].toString())
-                : cached.calledAt,
-          );
-        }
-        return cached;
-      }).toList();
-
-      _cachedAppointments = List.unmodifiable(finalList);
-      return _cachedAppointments;
     });
   }
-}
-
-class DatabaseFailure extends Failure {
-  const DatabaseFailure(super.message);
 }

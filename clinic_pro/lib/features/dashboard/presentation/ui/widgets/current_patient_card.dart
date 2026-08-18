@@ -27,7 +27,7 @@ class CurrentPatientCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            const Icon(Icons.person_off_outlined, size: 48, color: AppColors.textHint),
+             Icon(Icons.person_off_outlined, size: 48, color: context.textHint),
             const SizedBox(height: 12),
             Text(
               AppStrings.isArabic ? 'لا يوجد مريض في غرفة الكشف حالياً' : 'No patient in the exam room',
@@ -39,7 +39,7 @@ class CurrentPatientCard extends StatelessWidget {
             Text(
               AppStrings.pressCallNext,
               style: AppTextStyles.caption(context).copyWith(
-                color: AppColors.textHint,
+                color: context.textHint,
               ),
             ),
           ],
@@ -53,10 +53,10 @@ class CurrentPatientCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryContainer, width: 1.5),
+        border: Border.all(color: context.primaryContainer, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryContainer.withOpacity(0.08),
+            color: context.primaryContainer.withOpacity(0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -76,12 +76,12 @@ class CurrentPatientCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.meeting_room_outlined, size: 14, color: AppColors.primary),
+                     Icon(Icons.meeting_room_outlined, size: 14, color: context.primary),
                     const SizedBox(width: 4),
                     Text(
                       AppStrings.isArabic ? 'غرفة الكشف الحالية' : 'Current Exam Room',
                       style: AppTextStyles.labelChip(context).copyWith(
-                        color: AppColors.primary,
+                        color: context.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -91,13 +91,13 @@ class CurrentPatientCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: patient!.isUrgent ? AppColors.dangerBg : AppColors.successBg,
+                  color: patient!.isUrgent ? context.dangerBg : context.successBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   patient!.isUrgent ? AppStrings.urgent : AppStrings.normalCheckup,
                   style: AppTextStyles.caption(context).copyWith(
-                    color: patient!.isUrgent ? AppColors.dangerText : AppColors.successText,
+                    color: patient!.isUrgent ? context.dangerText : context.successText,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -114,8 +114,8 @@ class CurrentPatientCard extends StatelessWidget {
                   color: context.primaryLightColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
-                  child: Icon(Icons.person, color: AppColors.primary, size: 24),
+                child: Center(
+                  child: Icon(Icons.person, color: context.primary, size: 24),
                 ),
               ),
               const SizedBox(width: 12),
@@ -173,7 +173,7 @@ class CurrentPatientCard extends StatelessWidget {
                   child: Text(
                     patient!.notes ?? (AppStrings.isArabic ? 'لا توجد ملاحظات إضافية للموعد' : 'No additional notes'),
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.onSurfaceVariant,
+                      color: context.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -184,8 +184,8 @@ class CurrentPatientCard extends StatelessWidget {
           ElevatedButton(
             onPressed: onStartExamination,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryContainer,
-              foregroundColor: AppColors.onPrimary,
+              backgroundColor: context.primaryContainer,
+              foregroundColor: context.onPrimary,
               elevation: 0,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
@@ -201,7 +201,7 @@ class CurrentPatientCard extends StatelessWidget {
                 Text(
                   AppStrings.isArabic ? 'بدء الكشف وكتابة الروشتة' : 'Start Examination & Prescription',
                   style: AppTextStyles.headlineSmall(context).copyWith(
-                    color: AppColors.onPrimary,
+                    color: context.onPrimary,
                   ),
                 ),
               ],

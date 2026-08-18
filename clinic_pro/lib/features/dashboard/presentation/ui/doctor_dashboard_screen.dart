@@ -1,21 +1,18 @@
-import 'package:clinic_pro/features/appointments/domain/usecases/appointments/sort_queue_usecase.dart';
-import 'package:clinic_pro/features/appointments/domain/usecases/appointments/call_patient_usecase.dart';
-import 'package:clinic_pro/features/appointments/domain/usecases/appointments/get_appointments_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/di/injection_container.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/widgets/app_responsive_scaffold.dart';
+import 'package:clinic_pro/core/widgets/lazy_indexed_stack.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/settings_state.dart';
-import 'package:clinic_pro/core/constants/app_constants.dart';
-import '../../../../core/di/injection_container.dart';
-import '../../../../core/services/i_cloud_service.dart';
-import '../../../../core/themes/app_colors.dart';
-import '../../../../core/themes/app_text_styles.dart';
-import '../../../../core/strings/app_strings.dart';
-import '../../../../core/widgets/app_responsive_scaffold.dart';
-import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../../../patients/presentation/ui/patients_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
@@ -25,6 +22,7 @@ import 'widgets/current_patient_card.dart';
 import 'widgets/waiting_queue_list.dart';
 import 'widgets/doctor_stats_row.dart';
 import 'widgets/doctor_quick_actions.dart';
+import 'widgets/doctor_dashboard_shimmer.dart';
 import '../../../expenses/presentation/ui/expenses_screen.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
@@ -44,12 +42,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _cubit = DoctorDashboardCubit(
-      sl<GetAppointmentsUseCase>(),
-      sl<CallPatientUseCase>(),
-      sl<SortQueueUseCase>(),
-      sl<ICloudService>(),
-    );
+    _cubit = sl<DoctorDashboardCubit>();
   }
 
   @override
@@ -84,13 +77,14 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     _cubit.loadDashboardData(
       doctorId: _doctorId,
       clinicId: _clinicId,
+      doctorName: currentUser.name,
+      clinicName: settingsState.clinicEntity?.name,
       autoCallNext: autoCallNext,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // تحديث البيانات تلقائياً عند الدخول أو إعادة بناء الواجهة
     _tryLoadDashboard();
 
     return BlocProvider.value(
@@ -106,54 +100,55 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             );
           }
         },
-            child: AppResponsiveScaffold(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-                if (index == 0) {
-                  _tryLoadDashboard(customContext: context);
-                }
-              },
-              destinations: [
-                NavigationRailDestination(
-                  icon: const Icon(TablerIcons.smart_home),
-                  label: Text(AppStrings.home),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(TablerIcons.calendar),
-                  label: Text(AppStrings.appointments),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(TablerIcons.users),
-                  label: Text(AppStrings.patients),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(TablerIcons.wallet),
-                  label: Text(AppStrings.expenses),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(TablerIcons.settings),
-                  label: Text(AppStrings.settings),
-                ),
-              ],
-              appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
-              body: LazyIndexedStack(
-                index: _currentIndex,
-                children: [
-                  _buildMainDashboardTab(),
-                  const AppointmentsScreen(),
-                  const PatientsScreen(),
-                  const ExpensesScreen(),
-                  const SettingsScreen(showBottomNav: false),
-                ],
-              ),
-              bottomNavigationBar: _buildBottomNav(context),
+        child: AppResponsiveScaffold(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+            if (index == 0) {
+              _tryLoadDashboard(customContext: context);
+            }
+          },
+          destinations: [
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.smart_home),
+              label: Text(AppStrings.home),
             ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.calendar),
+              label: Text(AppStrings.appointments),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.users),
+              label: Text(AppStrings.patients),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.wallet),
+              label: Text(AppStrings.expenses),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(TablerIcons.settings),
+              label: Text(AppStrings.settings),
+            ),
+          ],
+          appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
+          body: LazyIndexedStack(
+            index: _currentIndex,
+            children: [
+              _buildMainDashboardTab(),
+              const AppointmentsScreen(),
+              const PatientsScreen(),
+              const ExpensesScreen(),
+              const SettingsScreen(showBottomNav: false),
+            ],
           ),
-        );
+          bottomNavigationBar: _buildBottomNav(context),
+        ),
+      ),
+    );
   }
+
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       toolbarHeight: 64,
@@ -195,30 +190,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           );
         },
       ),
-      actions: const [
-        // IconButton(
-        //   icon: Icon(Icons.notifications_none_outlined,
-        //       color: context.textSecondary),
-        //   onPressed: () {},
-        // ),
-        // const SizedBox(width: 8),
-        // Container(
-        //   margin: const EdgeInsets.only(left: 16),
-        //   width: 36,
-        //   height: 36,
-        //   decoration: BoxDecoration(
-        //     color: context.primaryLightColor,
-        //     shape: BoxShape.circle,
-        //   ),
-        //   child: Center(
-        //     child: Icon(
-        //       Icons.healing_outlined,
-        //       color: context.primary,
-        //       size: 20,
-        //     ),
-        //   ),
-        // ),
-      ],
+      actions: const [],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(
@@ -233,7 +205,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     return BlocBuilder<DoctorDashboardCubit, DoctorDashboardState>(
       builder: (context, state) {
         if (state is DoctorDashboardLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const DoctorDashboardShimmer();
         }
         if (state is DoctorDashboardError) {
           return Center(child: Text(state.message));
@@ -243,39 +215,43 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             onRefresh: () async {
               _tryLoadDashboard(customContext: context);
             },
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              children: [
-                DoctorStatsRow(
-                  completedCount: state.completedCount,
-                  waitingCount: state.waitingCount,
-                  avgWaitingTime: state.avgWaitingTime,
-                ),
-                const SizedBox(height: 24),
-                const DoctorQuickActions(),
-                const SizedBox(height: 24),
-                CurrentPatientCard(
-                  patient: state.currentPatient,
-                  onStartExamination: () async {
-                    if (state.currentPatient != null) {
-                      await context.push(
-                        '/prescription/${state.currentPatient!.id}',
-                        extra: state.currentPatient,
-                      );
-                      if (context.mounted) {
-                        _tryLoadDashboard(autoCallNext: true, customContext: context);
+            child: ResponsiveHelper.responsiveCenter(
+              maxWidth: 1100,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                children: [
+                  DoctorStatsRow(
+                    todayAppointmentsCount: state.todayAppointmentsCount,
+                    completedCount: state.completedCount,
+                    waitingCount: state.waitingCount,
+                    avgWaitingTime: state.avgWaitingTime,
+                  ),
+                  const SizedBox(height: 24),
+                  const DoctorQuickActions(),
+                  const SizedBox(height: 24),
+                  CurrentPatientCard(
+                    patient: state.currentPatient,
+                    onStartExamination: () async {
+                      if (state.currentPatient != null) {
+                        await context.push(
+                          '/prescription/${state.currentPatient!.id}',
+                          extra: state.currentPatient,
+                        );
+                        if (context.mounted) {
+                          _tryLoadDashboard(autoCallNext: true, customContext: context);
+                        }
                       }
-                    }
-                  },
-                ),
-                const SizedBox(height: 24),
-                WaitingQueueList(
-                  queue: state.waitingQueue,
-                  onCallNext: () {
-                    context.read<DoctorDashboardCubit>().callNextPatient();
-                  },
-                ),
-              ],
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  WaitingQueueList(
+                    queue: state.waitingQueue,
+                    onCallNext: () {
+                      context.read<DoctorDashboardCubit>().callNextPatient();
+                    },
+                  ),
+                ],
+              ),
             ),
           );
         }
