@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/strings/app_strings.dart';
+import 'package:clinic_pro/core/error/failures.dart';
 import '../../domain/entities/reports_entities.dart';
 import '../../domain/usecases/get_appointment_stats_usecase.dart';
 import 'reports_state.dart';
@@ -57,9 +57,10 @@ class AppointmentReportsLoaded extends AppointmentReportsState {
 
 class AppointmentReportsError extends AppointmentReportsState {
   final String message;
-  const AppointmentReportsError(this.message);
+  final Failure? failure;
+  const AppointmentReportsError(this.message, {this.failure});
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, failure];
 }
 
 @injectable
@@ -89,7 +90,7 @@ class AppointmentReportsCubit extends Cubit<AppointmentReportsState> {
     );
 
     result.fold(
-      (failure) => emit(AppointmentReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(AppointmentReportsError(failure.message, failure: failure)),
       (data) => emit(AppointmentReportsLoaded(
         stats: data,
         activeRange: range,
@@ -118,7 +119,7 @@ class AppointmentReportsCubit extends Cubit<AppointmentReportsState> {
     );
 
     result.fold(
-      (failure) => emit(AppointmentReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(AppointmentReportsError(failure.message, failure: failure)),
       (data) => emit(AppointmentReportsLoaded(
         stats: data,
         activeRange: range,
@@ -151,7 +152,7 @@ class AppointmentReportsCubit extends Cubit<AppointmentReportsState> {
     );
 
     result.fold(
-      (failure) => emit(AppointmentReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(AppointmentReportsError(failure.message, failure: failure)),
       (data) => emit(AppointmentReportsLoaded(
         stats: data,
         activeRange: activeRange,

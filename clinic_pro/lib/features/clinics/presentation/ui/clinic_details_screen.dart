@@ -21,6 +21,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_text_styles.dart';
 
+
 class ClinicDetailsScreen extends StatelessWidget {
   final String id;
 

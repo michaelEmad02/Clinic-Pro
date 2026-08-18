@@ -1,8 +1,8 @@
+import 'package:clinic_pro/core/error/failures.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/strings/app_strings.dart';
 import '../../domain/entities/reports_entities.dart';
 import '../../domain/usecases/get_revenue_summary_usecase.dart';
 import 'reports_state.dart';
@@ -49,9 +49,10 @@ class FinancialReportsLoaded extends FinancialReportsState {
 }
 class FinancialReportsError extends FinancialReportsState {
   final String message;
-  const FinancialReportsError(this.message);
+  final Failure? failure;
+  const FinancialReportsError(this.message, {this.failure});
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, failure];
 }
 
 @injectable
@@ -78,7 +79,7 @@ class FinancialReportsCubit extends Cubit<FinancialReportsState> {
       forceRefresh: forceRefresh,
     );
     result.fold(
-      (failure) => emit(FinancialReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(FinancialReportsError(failure.message, failure: failure)),
       (data) => emit(FinancialReportsLoaded(
         summary: data,
         activeRange: range,
@@ -105,7 +106,7 @@ class FinancialReportsCubit extends Cubit<FinancialReportsState> {
       customDateRange: customDateRange,
     );
     result.fold(
-      (failure) => emit(FinancialReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(FinancialReportsError(failure.message, failure: failure)),
       (data) => emit(FinancialReportsLoaded(
         summary: data,
         activeRange: range,
@@ -136,7 +137,7 @@ class FinancialReportsCubit extends Cubit<FinancialReportsState> {
       customDateRange: customDateRange,
     );
     result.fold(
-      (failure) => emit(FinancialReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(FinancialReportsError(failure.message, failure: failure)),
       (data) => emit(FinancialReportsLoaded(
         summary: data,
         activeRange: activeRange,

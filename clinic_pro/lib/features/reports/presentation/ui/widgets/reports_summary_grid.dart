@@ -108,7 +108,7 @@ class ReportsSummaryGrid extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                AppStrings.isArabic ? 'الصافي (المحصل - المصروفات)' : 'Net Profit',
+                AppStrings.isArabic ? 'الصافي (الاجمالي - المصروفات)' : 'Net Profit',
                 style: AppTextStyles.bodyMedium(context).copyWith(
                   color: context.onPrimaryContainer,
                   fontSize: 11,

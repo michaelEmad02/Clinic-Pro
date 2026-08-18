@@ -147,7 +147,7 @@ class ClinicStaffSection extends StatelessWidget {
                           onRemove: () => _confirmRemoveStaff(
                               context: context,
                               staffName: staff.name,
-                              staffEntryId: staff.userId,
+                              staffEntryId: staff.id,
                               role: staff.role.name,
                               ownerId: ownerId,
                               doctorId: doctorId),
@@ -295,7 +295,7 @@ class ClinicStaffSection extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                              '${AppStrings.addedSuccess} $userId'),
+                              AppStrings.addedSuccess),
                           backgroundColor: context.successText,
                         ),
                       );

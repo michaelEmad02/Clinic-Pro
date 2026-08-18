@@ -11,7 +11,7 @@ import '../../../domain/use_cases/edit_clinic_use_case.dart';
 import '../../../domain/use_cases/delete_clinic_use_case.dart';
 import '../../../domain/use_cases/toggle_is_active_use_case.dart';
 import '../../../domain/use_cases/add_staff_use_case.dart';
-import '../../../domain/use_cases/delete_staff_use_case.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/use_cases/delete_staff_use_case.dart' as staff_use_cases;
 import '../../../../../core/constants/staff_roles.dart';
 import 'clinics_state.dart';
 
@@ -23,7 +23,7 @@ class ClinicsCubit extends Cubit<ClinicsState> {
   final DeleteClinicUseCase deleteClinicUseCase;
   final ToggleIsActiveUseCase toggleIsActiveUseCase;
   final AddStaffUseCase addStaffUseCase;
-  final DeleteStaffUseCase deleteStaffUseCase;
+  final staff_use_cases.DeleteStaffUseCase deleteStaffUseCase;
 
   ClinicsCubit({
     required this.fetchClinicsUseCase,
@@ -168,7 +168,7 @@ class ClinicsCubit extends Cubit<ClinicsState> {
     required String staffId,
     String? doctorId,
   }) async {
-    final result = await deleteStaffUseCase.call(clinicId, staffId, doctorId);
+    final result = await deleteStaffUseCase.call(staffId);
 
     result.fold(
       (failure) => emit(ClinicsError(failure.message)),

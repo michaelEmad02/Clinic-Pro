@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
 import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
@@ -22,7 +21,7 @@ import '../../../../core/utils/date_range_helper.dart';
 
 import 'reports_cache_manager.dart';
 
-@LazySingleton(as: IReportsRemoteDataSource)
+// @LazySingleton(as: IReportsRemoteDataSource)
 class ReportsRemoteDataSourceImpl implements IReportsRemoteDataSource {
   final ICloudService _cloudService;
   final ReportsCacheManager _cacheManager;

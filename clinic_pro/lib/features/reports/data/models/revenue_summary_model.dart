@@ -47,6 +47,27 @@ class RevenueSummaryModel extends RevenueSummaryEntity {
     super.expensesBreakdown = const [],
   });
 
+  factory RevenueSummaryModel.fromMap(Map<String, dynamic> map) {
+    final chartList = ((map['chart'] ?? []) as List)
+        .map((item) => WeeklyRevenueModel.fromMap(item as Map<String, dynamic>))
+        .toList();
+    final expensesList = ((map['expenses_breakdown'] ?? []) as List)
+        .map((item) => ExpenseCategoryStatModel.fromMap(item as Map<String, dynamic>))
+        .toList();
+
+    return RevenueSummaryModel(
+      totalRevenue: ((map['total_revenue'] ?? 0.0) as num).toDouble(),
+      collectedAmount: ((map['collected_amount'] ?? 0.0) as num).toDouble(),
+      totalExpenses: ((map['total_expenses'] ?? 0.0) as num).toDouble(),
+      netProfit: ((map['net_profit'] ?? 0.0) as num).toDouble(),
+      pendingAmount: ((map['pending_amount'] ?? 0.0) as num).toDouble(),
+      revenueChange: (map['revenue_change'] ?? '0%').toString(),
+      expensesChange: (map['expenses_change'] ?? '0%').toString(),
+      chart: chartList,
+      expensesBreakdown: expensesList,
+    );
+  }
+
   factory RevenueSummaryModel.empty() {
     return const RevenueSummaryModel(
       totalRevenue: 0.0,

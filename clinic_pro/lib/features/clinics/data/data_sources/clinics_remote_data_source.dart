@@ -24,7 +24,6 @@ abstract class IClinicsRemoteDataSource {
       String? doctorId,
       StaffRoles
           role); // if the staff is new , will create it by use staff feature
-  Future<void> deleteStaff(String clinicId, String staffId, [String? doctorId]);
   Future<ClinicStatisticsModel> fetchClinicStatistics(String clinicId);
 }
 
@@ -72,82 +71,6 @@ class ClinicsRemoteDataSource extends IClinicsRemoteDataSource {
   Future<void> deleteClinic(String id) async {
     await iCloudService.delete(
         table: SupabaseTables.clinics, matchColumn: 'id', matchValue: id);
-  }
-
-  @override
-  Future<void> deleteStaff(String clinicId, String staffId,
-      [String? doctorId]) async {
-    // ١. الاستعلام عن بيانات الموظف في العيادة لمعرفة دوره
-    final staffRecords = await iCloudService.select(
-      table: SupabaseTables.clinicStaff,
-      eq: {
-        'clinic_id': clinicId,
-        'user_id': staffId,
-      },
-    );
-
-    if (staffRecords.isEmpty) return;
-
-    final role = staffRecords.first['role'] as String?;
-
-    if (role == 'secretary') {
-      if (doctorId != null && doctorId.isNotEmpty) {
-        // حذف الارتباط مع هذا الطبيب تحديداً
-        await iCloudService.delete(
-          table: SupabaseTables.doctorSecretaries,
-          matchMap: {
-            'clinic_id': clinicId,
-            'secretary_id': staffId,
-            'doctor_id': doctorId,
-          },
-        );
-
-        // التحقق مما إذا كان هناك ارتباطات أخرى لهذا السكرتير في العيادة
-        final remainingRelations = await iCloudService.select(
-          table: SupabaseTables.doctorSecretaries,
-          eq: {
-            'clinic_id': clinicId,
-            'secretary_id': staffId,
-          },
-        );
-
-        // إذا لم يعد لديه أطباء مرتبطين في العيادة، نحذفه من جدول clinicStaff
-        if (remainingRelations.isEmpty) {
-          await iCloudService.delete(
-            table: SupabaseTables.clinicStaff,
-            matchMap: {
-              'clinic_id': clinicId,
-              'user_id': staffId,
-            },
-          );
-        }
-      } else {
-        // إذا لم يُحدد طبيب، نحذف جميع الارتباطات والموظف نفسه
-        await iCloudService.delete(
-          table: SupabaseTables.doctorSecretaries,
-          matchMap: {
-            'clinic_id': clinicId,
-            'secretary_id': staffId,
-          },
-        );
-        await iCloudService.delete(
-          table: SupabaseTables.clinicStaff,
-          matchMap: {
-            'clinic_id': clinicId,
-            'user_id': staffId,
-          },
-        );
-      }
-    } else {
-      // للأدوار الأخرى (مثل الطبيب)، حذف عادي من طاقم العيادة
-      await iCloudService.delete(
-        table: SupabaseTables.clinicStaff,
-        matchMap: {
-          'clinic_id': clinicId,
-          'user_id': staffId,
-        },
-      );
-    }
   }
 
   @override

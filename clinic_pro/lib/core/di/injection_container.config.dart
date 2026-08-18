@@ -91,8 +91,6 @@ import '../../features/clinics/domain/use_cases/add_staff_use_case.dart'
     as _i25;
 import '../../features/clinics/domain/use_cases/delete_clinic_use_case.dart'
     as _i2;
-import '../../features/clinics/domain/use_cases/delete_staff_use_case.dart'
-    as _i542;
 import '../../features/clinics/domain/use_cases/edit_clinic_use_case.dart'
     as _i240;
 import '../../features/clinics/domain/use_cases/fetch_clinic_by_id_use_case.dart'
@@ -119,6 +117,20 @@ import '../../features/dashboard/presentation/manager/owner_dashboard_cubit.dart
     as _i456;
 import '../../features/dashboard/presentation/manager/secretary_dashboard_cubit.dart'
     as _i158;
+import '../../features/expenses/data/data_sources/expenses_remote_data_source.dart'
+    as _i219;
+import '../../features/expenses/data/repositories/expenses_repo_implementation.dart'
+    as _i936;
+import '../../features/expenses/domain/repositories/expenses_repository.dart'
+    as _i321;
+import '../../features/expenses/domain/use_cases/add_expenses_use_case.dart'
+    as _i824;
+import '../../features/expenses/domain/use_cases/delete_expenses_use_case.dart'
+    as _i1067;
+import '../../features/expenses/domain/use_cases/edit_expenses_use_case.dart'
+    as _i789;
+import '../../features/expenses/domain/use_cases/fetch_expenses_use_case.dart'
+    as _i536;
 import '../../features/expenses/presentation/manager/expenses_cubit.dart'
     as _i560;
 import '../../features/expenses/presentation/manager/expenses_repository.dart'
@@ -213,8 +225,8 @@ import '../../features/reports/data/datasources/i_reports_remote_data_source.dar
     as _i107;
 import '../../features/reports/data/datasources/reports_cache_manager.dart'
     as _i777;
-import '../../features/reports/data/datasources/reports_remote_data_source_impl.dart'
-    as _i35;
+import '../../features/reports/data/datasources/reports_rpc_remote_data_source_impl.dart'
+    as _i478;
 import '../../features/reports/data/repositories/reports_repository_impl.dart'
     as _i227;
 import '../../features/reports/domain/repositories/i_reports_repository.dart'
@@ -374,6 +386,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i26.ImageCompressionService());
     gh.lazySingleton<_i581.IPrescriptionPdfService>(
         () => _i926.PrescriptionPdfServiceImpl());
+    gh.lazySingleton<_i321.ExpensesRepository>(
+        () => _i936.ExpensesRepoImplementation());
     gh.lazySingleton<_i819.ILocalDataService>(
         () => _i29.SharedPreferencesService(gh<_i460.SharedPreferences>()));
     gh.lazySingleton<_i662.IAuthServices>(
@@ -402,11 +416,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i815.SupabaseStorageService(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i446.IInvoicesRemoteDataSource>(
         () => _i446.InvoicesRemoteDataSourceImpl(gh<_i239.ICloudService>()));
-    gh.lazySingleton<_i107.IReportsRemoteDataSource>(
-        () => _i35.ReportsRemoteDataSourceImpl(
-              gh<_i239.ICloudService>(),
-              gh<_i777.ReportsCacheManager>(),
-            ));
     gh.lazySingleton<_i25.IAuthRemoteDataSource>(
         () => _i25.AuthRemoteDataSourceImpl(
               gh<_i239.ICloudService>(),
@@ -414,19 +423,28 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.factory<_i560.ExpensesCubit>(
         () => _i560.ExpensesCubit(gh<_i490.ExpensesRepository>()));
+    gh.factory<_i824.AddExpensesUseCase>(() => _i824.AddExpensesUseCase(
+        expensesRepository: gh<_i321.ExpensesRepository>()));
+    gh.factory<_i1067.DeleteExpensesUseCase>(() => _i1067.DeleteExpensesUseCase(
+        expensesRepository: gh<_i321.ExpensesRepository>()));
+    gh.factory<_i789.EditExpensesUseCase>(() => _i789.EditExpensesUseCase(
+        expensesRepository: gh<_i321.ExpensesRepository>()));
+    gh.factory<_i536.FetchEcpensesUseCase>(() => _i536.FetchEcpensesUseCase(
+        expensesRepository: gh<_i321.ExpensesRepository>()));
     gh.lazySingleton<_i769.ISettingsLocalDataSource>(
         () => _i917.SettingsLocalDataSourceImpl(gh<_i819.ILocalDataService>()));
     gh.lazySingleton<_i431.StaffRepository>(() => _i418.StaffRepoImplementation(
         staffRemoteDataSource: gh<_i951.StaffRemoteDataSource>()));
     gh.lazySingleton<_i589.IAuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i25.IAuthRemoteDataSource>()));
+    gh.lazySingleton<_i219.IClinicsRemoteDataSource>(() =>
+        _i219.ClinicsRemoteDataSource(
+            iCloudService: gh<_i239.ICloudService>()));
     gh.lazySingleton<_i256.IClinicsRemoteDataSource>(() =>
         _i256.ClinicsRemoteDataSource(
             iCloudService: gh<_i239.ICloudService>()));
     gh.lazySingleton<_i247.IInvoicesRepository>(() =>
         _i1008.InvoicesRepositoryImpl(gh<_i446.IInvoicesRemoteDataSource>()));
-    gh.lazySingleton<_i187.IReportsRepository>(() =>
-        _i227.ReportsRepositoryImpl(gh<_i107.IReportsRemoteDataSource>()));
     gh.lazySingleton<_i482.IPrescriptionRemoteDataSource>(
         () => _i482.PrescriptionRemoteDataSourceImpl(
               gh<_i239.ICloudService>(),
@@ -434,6 +452,8 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i1070.IOwnerSettingsRemoteDataSource>(() =>
         _i1070.OwnerSettingsRemoteDataSourceImpl(gh<_i239.ICloudService>()));
+    gh.lazySingleton<_i107.IReportsRemoteDataSource>(
+        () => _i478.ReportsRpcRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i330.IAppointmentRepository>(() =>
         _i155.AppointmentRepositoryImpl(
             gh<_i720.IAppointmentRemoteDataSource>()));
@@ -479,8 +499,10 @@ extension GetItInjectableX on _i174.GetIt {
             staffRepository: gh<_i431.StaffRepository>()));
     gh.factory<_i36.FetchStaffByIsUseCase>(() => _i36.FetchStaffByIsUseCase(
         staffRepository: gh<_i431.StaffRepository>()));
-    gh.factory<_i255.InviteStaffUseCase>(() =>
-        _i255.InviteStaffUseCase(staffRepository: gh<_i431.StaffRepository>()));
+    gh.factory<_i255.InviteStaffUseCase>(() => _i255.InviteStaffUseCase(
+          staffRepository: gh<_i431.StaffRepository>(),
+          subscriptionsRepository: gh<_i255.ISubscriptionsRepository>(),
+        ));
     gh.factory<_i920.CreateInvoiceUseCase>(
         () => _i920.CreateInvoiceUseCase(gh<_i247.IInvoicesRepository>()));
     gh.factory<_i109.DeleteInvoiceUseCase>(
@@ -515,20 +537,6 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i330.IAppointmentRepository>()));
     gh.factory<_i807.UpdateAppointmentUseCase>(() =>
         _i807.UpdateAppointmentUseCase(gh<_i330.IAppointmentRepository>()));
-    gh.factory<_i660.GetAppointmentStatsUseCase>(
-        () => _i660.GetAppointmentStatsUseCase(gh<_i187.IReportsRepository>()));
-    gh.factory<_i397.GetDoctorPerformanceUseCase>(() =>
-        _i397.GetDoctorPerformanceUseCase(gh<_i187.IReportsRepository>()));
-    gh.factory<_i965.GetDrugStatsUseCase>(
-        () => _i965.GetDrugStatsUseCase(gh<_i187.IReportsRepository>()));
-    gh.factory<_i206.GetPatientStatsUseCase>(
-        () => _i206.GetPatientStatsUseCase(gh<_i187.IReportsRepository>()));
-    gh.factory<_i249.GetRevenueSummaryUseCase>(
-        () => _i249.GetRevenueSummaryUseCase(gh<_i187.IReportsRepository>()));
-    gh.factory<_i61.GetTemplateStatsUseCase>(
-        () => _i61.GetTemplateStatsUseCase(gh<_i187.IReportsRepository>()));
-    gh.factory<_i1007.GetClinicReportUseCase>(
-        () => _i1007.GetClinicReportUseCase(gh<_i187.IReportsRepository>()));
     gh.lazySingleton<_i524.ISettingsRemoteDataSource>(
         () => _i524.SettingsRemoteDataSource(
               gh<_i239.ICloudService>(),
@@ -542,19 +550,10 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i95.CallPatientUseCase>(),
               gh<_i239.ICloudService>(),
             ));
-    gh.factory<_i0.DoctorMyReportsCubit>(() => _i0.DoctorMyReportsCubit(
-          gh<_i249.GetRevenueSummaryUseCase>(),
-          gh<_i660.GetAppointmentStatsUseCase>(),
-          gh<_i206.GetPatientStatsUseCase>(),
-          gh<_i965.GetDrugStatsUseCase>(),
-          gh<_i61.GetTemplateStatsUseCase>(),
-        ));
     gh.factory<_i392.AddPatientUseCase>(() => _i392.AddPatientUseCase(
           gh<_i69.IPatientsRepository>(),
           gh<_i255.ISubscriptionsRepository>(),
         ));
-    gh.factory<_i685.PatientReportsCubit>(
-        () => _i685.PatientReportsCubit(gh<_i206.GetPatientStatsUseCase>()));
     gh.factory<_i730.AcceptInvitationUseCase>(
         () => _i730.AcceptInvitationUseCase(gh<_i589.IAuthRepository>()));
     gh.factory<_i129.GetCurrentUserUseCase>(
@@ -585,8 +584,6 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i482.IPrescriptionRemoteDataSource>()));
     gh.lazySingleton<_i657.ISettingsRepository>(() =>
         _i955.SettingsRepositoryImpl(gh<_i524.ISettingsRemoteDataSource>()));
-    gh.factory<_i174.DoctorPerformanceCubit>(() =>
-        _i174.DoctorPerformanceCubit(gh<_i397.GetDoctorPerformanceUseCase>()));
     gh.factory<_i683.DoctorDashboardCubit>(() => _i683.DoctorDashboardCubit(
           gh<_i228.GetAppointmentsUseCase>(),
           gh<_i95.CallPatientUseCase>(),
@@ -599,8 +596,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i602.SaveOwnerPrintingSettingsUseCase>(() =>
         _i602.SaveOwnerPrintingSettingsUseCase(
             gh<_i591.IOwnerSettingsRepository>()));
-    gh.factory<_i753.ClinicReportsCubit>(
-        () => _i753.ClinicReportsCubit(gh<_i1007.GetClinicReportUseCase>()));
     gh.factory<_i88.GetAvailableClinicsUseCase>(
         () => _i88.GetAvailableClinicsUseCase(gh<_i657.ISettingsRepository>()));
     gh.factory<_i1034.GetClinicInfoUseCase>(
@@ -668,8 +663,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i372.IncrementTemplateUsageUseCase>(() =>
         _i372.IncrementTemplateUsageUseCase(
             gh<_i845.IPrescriptionRepository>()));
-    gh.factory<_i405.DrugReportsCubit>(
-        () => _i405.DrugReportsCubit(gh<_i965.GetDrugStatsUseCase>()));
+    gh.lazySingleton<_i187.IReportsRepository>(() =>
+        _i227.ReportsRepositoryImpl(gh<_i107.IReportsRemoteDataSource>()));
     gh.factory<_i774.DeletePatientUseCase>(
         () => _i774.DeletePatientUseCase(gh<_i69.IPatientsRepository>()));
     gh.factory<_i338.FindPatientByIdUseCase>(
@@ -701,8 +696,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i209.GetAppointmentByIdUseCase>(),
           gh<_i486.SubscribeAppointmentsUseCase>(),
         ));
-    gh.factory<_i977.FinancialReportsCubit>(() =>
-        _i977.FinancialReportsCubit(gh<_i249.GetRevenueSummaryUseCase>()));
     gh.factory<_i1042.DrugsCubit>(() => _i1042.DrugsCubit(
           gh<_i628.GetDrugsUseCase>(),
           gh<_i628.AddDrugUseCase>(),
@@ -714,8 +707,6 @@ extension GetItInjectableX on _i174.GetIt {
           inviteStaffUseCase: gh<_i255.InviteStaffUseCase>(),
         ));
     gh.factory<_i2.DeleteClinicUseCase>(() => _i2.DeleteClinicUseCase(
-        clinicsRepository: gh<_i359.ClinicsRepository>()));
-    gh.factory<_i542.DeleteStaffUseCase>(() => _i542.DeleteStaffUseCase(
         clinicsRepository: gh<_i359.ClinicsRepository>()));
     gh.factory<_i240.EditClinicUseCase>(() => _i240.EditClinicUseCase(
         clinicsRepository: gh<_i359.ClinicsRepository>()));
@@ -731,15 +722,6 @@ extension GetItInjectableX on _i174.GetIt {
             clinicsRepository: gh<_i359.ClinicsRepository>()));
     gh.factory<_i444.ToggleIsActiveUseCase>(() => _i444.ToggleIsActiveUseCase(
         clinicsRepository: gh<_i359.ClinicsRepository>()));
-    gh.factory<_i888.AuthCubit>(() => _i888.AuthCubit(
-          gh<_i129.GetCurrentUserUseCase>(),
-          gh<_i490.LoginWithGoogleUseCase>(),
-          gh<_i652.LoginWithAppleUseCase>(),
-          gh<_i394.LoginWithEmailAndPasswordUseCase>(),
-          gh<_i488.RegisterOwnerUseCase>(),
-          gh<_i698.LogoutUseCase>(),
-         gh<_i944.CheckSubscriptionStatusUseCase>(),
-        ));
     gh.factory<_i467.QueuePatternCubit>(() => _i467.QueuePatternCubit(
           gh<_i924.GetQueueRuleUseCase>(),
           gh<_i31.UpsertQueueRuleUseCase>(),
@@ -778,13 +760,20 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i256.UpdatePatientUseCase>(),
           gh<_i774.DeletePatientUseCase>(),
         ));
-    gh.factory<_i476.AppointmentReportsCubit>(() =>
-        _i476.AppointmentReportsCubit(gh<_i660.GetAppointmentStatsUseCase>()));
     gh.factory<_i534.TemplatesCubit>(() => _i534.TemplatesCubit(
           gh<_i535.GetTemplatesUseCase>(),
           gh<_i535.AddTemplateUseCase>(),
           gh<_i535.EditTemplateUseCase>(),
           gh<_i535.DeleteTemplateUseCase>(),
+        ));
+    gh.factory<_i888.AuthCubit>(() => _i888.AuthCubit(
+          gh<_i129.GetCurrentUserUseCase>(),
+          gh<_i490.LoginWithGoogleUseCase>(),
+          gh<_i652.LoginWithAppleUseCase>(),
+          gh<_i394.LoginWithEmailAndPasswordUseCase>(),
+          gh<_i488.RegisterOwnerUseCase>(),
+          gh<_i698.LogoutUseCase>(),
+          gh<_i944.CheckSubscriptionStatusUseCase>(),
         ));
     gh.factory<_i747.AddClinicUseCase>(() => _i747.AddClinicUseCase(
           clinicsRepository: gh<_i359.ClinicsRepository>(),
@@ -794,12 +783,33 @@ extension GetItInjectableX on _i174.GetIt {
           clinicsRepository: gh<_i359.ClinicsRepository>(),
           subscriptionsRepository: gh<_i255.ISubscriptionsRepository>(),
         ));
+    gh.factory<_i660.GetAppointmentStatsUseCase>(
+        () => _i660.GetAppointmentStatsUseCase(gh<_i187.IReportsRepository>()));
+    gh.factory<_i397.GetDoctorPerformanceUseCase>(() =>
+        _i397.GetDoctorPerformanceUseCase(gh<_i187.IReportsRepository>()));
+    gh.factory<_i965.GetDrugStatsUseCase>(
+        () => _i965.GetDrugStatsUseCase(gh<_i187.IReportsRepository>()));
+    gh.factory<_i206.GetPatientStatsUseCase>(
+        () => _i206.GetPatientStatsUseCase(gh<_i187.IReportsRepository>()));
+    gh.factory<_i249.GetRevenueSummaryUseCase>(
+        () => _i249.GetRevenueSummaryUseCase(gh<_i187.IReportsRepository>()));
+    gh.factory<_i61.GetTemplateStatsUseCase>(
+        () => _i61.GetTemplateStatsUseCase(gh<_i187.IReportsRepository>()));
+    gh.factory<_i1007.GetClinicReportUseCase>(
+        () => _i1007.GetClinicReportUseCase(gh<_i187.IReportsRepository>()));
     gh.factory<_i562.WaitingQueueCubit>(() => _i562.WaitingQueueCubit(
           gh<_i228.GetAppointmentsUseCase>(),
           gh<_i95.CallPatientUseCase>(),
           gh<_i924.GetQueueRuleUseCase>(),
           gh<_i20.SortQueueUseCase>(),
           gh<_i486.SubscribeAppointmentsUseCase>(),
+        ));
+    gh.factory<_i0.DoctorMyReportsCubit>(() => _i0.DoctorMyReportsCubit(
+          gh<_i249.GetRevenueSummaryUseCase>(),
+          gh<_i660.GetAppointmentStatsUseCase>(),
+          gh<_i206.GetPatientStatsUseCase>(),
+          gh<_i965.GetDrugStatsUseCase>(),
+          gh<_i61.GetTemplateStatsUseCase>(),
         ));
     gh.factory<_i51.PrescriptionPdfCubit>(() => _i51.PrescriptionPdfCubit(
           gh<_i880.GeneratePrescriptionPdfUseCase>(),
@@ -815,15 +825,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i652.LoginWithAppleUseCase>(),
           gh<_i698.LogoutUseCase>(),
         ));
-    gh.factory<_i169.ClinicsCubit>(() => _i169.ClinicsCubit(
-          fetchClinicsUseCase: gh<_i236.FetchClinicsUseCase>(),
-          addClinicUseCase: gh<_i747.AddClinicUseCase>(),
-          editClinicUseCase: gh<_i240.EditClinicUseCase>(),
-          deleteClinicUseCase: gh<_i2.DeleteClinicUseCase>(),
-          toggleIsActiveUseCase: gh<_i444.ToggleIsActiveUseCase>(),
-          addStaffUseCase: gh<_i25.AddStaffUseCase>(),
-          deleteStaffUseCase: gh<_i542.DeleteStaffUseCase>(),
-        ));
+    gh.factory<_i685.PatientReportsCubit>(
+        () => _i685.PatientReportsCubit(gh<_i206.GetPatientStatsUseCase>()));
     gh.factory<_i641.PrintingSettingsCubit>(() => _i641.PrintingSettingsCubit(
           gh<_i456.GetOwnerPrintingSettingsUseCase>(),
           gh<_i602.SaveOwnerPrintingSettingsUseCase>(),
@@ -834,6 +837,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i338.FindPatientByIdUseCase>(),
           gh<_i507.GetVisitsForPatientUseCase>(),
         ));
+    gh.factory<_i174.DoctorPerformanceCubit>(() =>
+        _i174.DoctorPerformanceCubit(gh<_i397.GetDoctorPerformanceUseCase>()));
     gh.factory<_i795.InvoicesCubit>(() => _i795.InvoicesCubit(
           gh<_i366.GetInvoicesUseCase>(),
           gh<_i920.CreateInvoiceUseCase>(),
@@ -844,6 +849,23 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i209.GetAppointmentByIdUseCase>(),
           gh<_i986.LoadPatientsUseCase>(),
         ));
+    gh.factory<_i753.ClinicReportsCubit>(
+        () => _i753.ClinicReportsCubit(gh<_i1007.GetClinicReportUseCase>()));
+    gh.factory<_i405.DrugReportsCubit>(
+        () => _i405.DrugReportsCubit(gh<_i965.GetDrugStatsUseCase>()));
+    gh.factory<_i977.FinancialReportsCubit>(() =>
+        _i977.FinancialReportsCubit(gh<_i249.GetRevenueSummaryUseCase>()));
+    gh.factory<_i169.ClinicsCubit>(() => _i169.ClinicsCubit(
+          fetchClinicsUseCase: gh<_i236.FetchClinicsUseCase>(),
+          addClinicUseCase: gh<_i747.AddClinicUseCase>(),
+          editClinicUseCase: gh<_i240.EditClinicUseCase>(),
+          deleteClinicUseCase: gh<_i2.DeleteClinicUseCase>(),
+          toggleIsActiveUseCase: gh<_i444.ToggleIsActiveUseCase>(),
+          addStaffUseCase: gh<_i25.AddStaffUseCase>(),
+          deleteStaffUseCase: gh<_i382.DeleteStaffUseCase>(),
+        ));
+    gh.factory<_i476.AppointmentReportsCubit>(() =>
+        _i476.AppointmentReportsCubit(gh<_i660.GetAppointmentStatsUseCase>()));
     return this;
   }
 }

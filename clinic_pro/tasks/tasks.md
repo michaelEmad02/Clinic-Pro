@@ -14,9 +14,8 @@
 
 
 ## staff
-- [ ] create staff details screen.
 - [X] add deleteStaffFromClinic method , and use it in clinic feature 
-- []  عند حذف موظف , لو الموظف مش موجود في عياده اخري يتم حذف حسابه نهائيا
+- [x]  عند حذف موظف , لو الموظف مش موجود في عياده اخري يتم حذف حسابه نهائيا
 
 
 ## appointments
@@ -30,27 +29,31 @@
 
 
 ## reports 
-- [ ] build doctor reports screen .will show doctor statistics, will display in bottom nav bar instad of expenses.
-
+- [x] build doctor reports screen .will show doctor statistics, will display in bottom nav bar instad of expenses.
+- [x] التحقق من سماحيه الوصول للتقارير حسب نوع الاشتراك
 
 
 ## improvements 
  - improve search (easy_debounce)
  - errors handling and the messages 
  - snackbar showing
+ - network error page
+ - loading widget
+ - empty data widget
+ - language
+ - themes
  
 
 ## reports
  - [x] عمل refresh indecator in reports
  - [x] implement date filters
  - [x] تحسين التقارير و المعلومات اللي بتظهر
- - [ ] تحسين جلب البيانات (جلبها من السيرفر)
+ - [x] تحسين جلب البيانات (جلبها من السيرفر)
 
 ## subscriptions
- - [] error handling
- - [] show plans
- - [] trail
- - [] 
+ - [x] error handling
+ - [x] show plans
+ - [x] trail
 
 ## settings
 - [] اضافه زر لحذف الحساب في حاله المالك
@@ -69,4 +72,4 @@
 - [ ] expenses
 - [x] reports
 - [ ] dashboard
-- [ ] subscriptions
+- [x] subscriptions

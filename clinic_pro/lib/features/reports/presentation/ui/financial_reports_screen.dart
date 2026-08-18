@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clinic_pro/core/di/injection_container.dart';
@@ -10,6 +11,7 @@ import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/clinics_cubit.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/clinics_state.dart';
+import 'package:clinic_pro/core/widgets/feature_locked_paywall_widget.dart';
 import '../manager/financial_reports_cubit.dart';
 import '../manager/reports_state.dart';
 import 'widgets/reports_date_range_chips.dart';
@@ -104,6 +106,13 @@ class _FinancialReportsBodyState extends State<_FinancialReportsBody> {
             );
           }
           if (state is FinancialReportsError) {
+            if (state.failure is FeatureNotAllowedFailure) {
+              final fail = state.failure as FeatureNotAllowedFailure;
+              return FeatureLockedPaywallWidget(
+                featureName: AppStrings.isArabic ? 'التقارير المالية' : 'Financial Reports',
+                featureKey: fail.featureKey,
+              );
+            }
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

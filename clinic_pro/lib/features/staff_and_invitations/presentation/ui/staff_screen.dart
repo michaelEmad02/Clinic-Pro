@@ -112,61 +112,64 @@ class _StaffBody extends StatelessWidget {
           }
           if (state is StaffLoaded) {
             return RefreshIndicator(
-              onRefresh: () async {
-                context.read<StaffCubit>().fetchAllStaff(ownerId);
-                context.read<ClinicsCubit>().fetchClinics(ownerId);
-                await Future.delayed(const Duration(milliseconds: 600));
-              },
-              child: ResponsiveHelper.responsiveCenter(
-                maxWidth: 1100,
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                children: [
-                  ClinicFilterChips(
-                    clinics: clinicsList,
-                    selectedClinicId: state.selectedClinicId,
-                    onChanged: (clinicId) =>
-                        context.read<StaffCubit>().changeClinicFilter(clinicId),
-                  ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      AppStrings.filterByRole,
-                      style: AppTextStyles.caption(context).copyWith(
-                        color: context.textSecondary,
-                        fontWeight: FontWeight.bold,
+                onRefresh: () async {
+                  context.read<StaffCubit>().fetchAllStaff(ownerId);
+                  context.read<ClinicsCubit>().fetchClinics(ownerId);
+                  await Future.delayed(const Duration(milliseconds: 600));
+                },
+                child: ResponsiveHelper.responsiveCenter(
+                  maxWidth: 1100,
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    children: [
+                      ClinicFilterChips(
+                        clinics: clinicsList,
+                        selectedClinicId: state.selectedClinicId,
+                        onChanged: (clinicId) => context
+                            .read<StaffCubit>()
+                            .changeClinicFilter(clinicId),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          AppStrings.filterByRole,
+                          style: AppTextStyles.caption(context).copyWith(
+                            color: context.textSecondary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      StaffFilterChips(
+                        activeFilter: state.activeFilter,
+                        onChanged: (f) =>
+                            context.read<StaffCubit>().changeFilter(f),
+                      ),
+                      const SizedBox(height: 16),
+                      if (state.pendingInvitations.isNotEmpty) ...[
+                        PendingInvitationsSection(
+                          invitations: state.pendingInvitations,
+                          onResend: (inv) => context
+                              .read<StaffCubit>()
+                              .resendInvitation(inv.id),
+                          onCancel: (inv) => context
+                              .read<StaffCubit>()
+                              .cancelInvitation(inv.id),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      StaffList(
+                        staffList: state.filteredStaff,
+                        onItemTap: (s) => _showActions(context, s),
+                        onItemMore: (s) => _showActions(context, s),
+                        clinicNames: {
+                          for (final c in clinicsList) c.id: c.name,
+                        },
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  StaffFilterChips(
-                    activeFilter: state.activeFilter,
-                    onChanged: (f) =>
-                        context.read<StaffCubit>().changeFilter(f),
-                  ),
-                  const SizedBox(height: 16),
-                  if (state.pendingInvitations.isNotEmpty) ...[
-                    PendingInvitationsSection(
-                      invitations: state.pendingInvitations,
-                      onResend: (inv) =>
-                          context.read<StaffCubit>().resendInvitation(inv.id),
-                      onCancel: (inv) =>
-                          context.read<StaffCubit>().cancelInvitation(inv.id),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  StaffList(
-                    staffList: state.filteredStaff,
-                    onItemTap: (s) => _showActions(context, s),
-                    onItemMore: (s) => _showActions(context, s),
-                    clinicNames: {
-                      for (final c in clinicsList) c.id: c.name,
-                    },
-                  ),
-                ],
-              ),
-            ));
+                ));
           }
           return const SizedBox.shrink();
         },

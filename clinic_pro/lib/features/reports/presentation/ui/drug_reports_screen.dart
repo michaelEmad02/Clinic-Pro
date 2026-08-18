@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clinic_pro/core/di/injection_container.dart';
@@ -10,6 +11,7 @@ import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/clinics_cubit.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/clinics_state.dart';
+import 'package:clinic_pro/core/widgets/feature_locked_paywall_widget.dart';
 import '../manager/drug_reports_cubit.dart';
 import 'widgets/reports_date_range_chips.dart';
 import 'widgets/drug_stats_section.dart';
@@ -91,6 +93,13 @@ class _DrugReportsBodyState extends State<_DrugReportsBody> {
             );
           }
           if (state is DrugReportsError) {
+            if (state.failure is FeatureNotAllowedFailure) {
+              final fail = state.failure as FeatureNotAllowedFailure;
+              return FeatureLockedPaywallWidget(
+                featureName: AppStrings.isArabic ? 'تقارير الأدوية والروشتات' : 'Drug & Prescription Reports',
+                featureKey: fail.featureKey,
+              );
+            }
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

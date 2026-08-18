@@ -60,17 +60,6 @@ class ClinicsRepoImplementation extends ClinicsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteStaff(
-      String clinicId, String staffId, [String? doctorId]) async {
-    try {
-      await iClinicsRemoteDataSource.deleteStaff(clinicId, staffId, doctorId);
-      return const Right(null);
-    } catch (e) {
-      return Left(QueryFailure.fromException(e));
-    }
-  }
-
-  @override
   Future<Either<Failure, void>> editClinic(ClinicEntity clinic) async {
     try {
       final model = ClinicModel(

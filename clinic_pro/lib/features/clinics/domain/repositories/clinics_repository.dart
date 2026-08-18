@@ -20,7 +20,6 @@ abstract class ClinicsRepository {
       String? doctorId,
       StaffRoles
           role); // if the staff is new , will create it by use staff feature
-  Future<Either<Failure, void>> deleteStaff(String clinicId, String staffId, [String? doctorId]);
   Future<Either<Failure, ClinicStatisticsEntity>> fetchClinicStatistics(
       String clinicId);
 }

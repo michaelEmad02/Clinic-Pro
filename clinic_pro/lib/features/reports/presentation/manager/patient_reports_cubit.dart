@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/strings/app_strings.dart';
+import 'package:clinic_pro/core/error/failures.dart';
 import '../../domain/entities/reports_entities.dart';
 import '../../domain/usecases/get_patient_stats_usecase.dart';
 import 'reports_state.dart';
@@ -49,9 +49,10 @@ class PatientReportsLoaded extends PatientReportsState {
 }
 class PatientReportsError extends PatientReportsState {
   final String message;
-  const PatientReportsError(this.message);
+  final Failure? failure;
+  const PatientReportsError(this.message, {this.failure});
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, failure];
 }
 
 @injectable
@@ -78,7 +79,7 @@ class PatientReportsCubit extends Cubit<PatientReportsState> {
       forceRefresh: forceRefresh,
     );
     result.fold(
-      (failure) => emit(PatientReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(PatientReportsError(failure.message, failure: failure)),
       (data) => emit(PatientReportsLoaded(
         stats: data,
         activeRange: range,
@@ -105,7 +106,7 @@ class PatientReportsCubit extends Cubit<PatientReportsState> {
       customDateRange: customDateRange,
     );
     result.fold(
-      (failure) => emit(PatientReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(PatientReportsError(failure.message, failure: failure)),
       (data) => emit(PatientReportsLoaded(
         stats: data,
         activeRange: range,
@@ -136,7 +137,7 @@ class PatientReportsCubit extends Cubit<PatientReportsState> {
       customDateRange: customDateRange,
     );
     result.fold(
-      (failure) => emit(PatientReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(PatientReportsError(failure.message, failure: failure)),
       (data) => emit(PatientReportsLoaded(
         stats: data,
         activeRange: activeRange,

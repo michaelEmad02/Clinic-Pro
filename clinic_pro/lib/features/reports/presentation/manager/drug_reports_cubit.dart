@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/strings/app_strings.dart';
+import 'package:clinic_pro/core/error/failures.dart';
 import '../../domain/entities/reports_entities.dart';
 import '../../domain/usecases/get_drug_stats_usecase.dart';
 import 'reports_state.dart';
@@ -44,9 +44,10 @@ class DrugReportsLoaded extends DrugReportsState {
 }
 class DrugReportsError extends DrugReportsState {
   final String message;
-  const DrugReportsError(this.message);
+  final Failure? failure;
+  const DrugReportsError(this.message, {this.failure});
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, failure];
 }
 
 @injectable
@@ -69,7 +70,7 @@ class DrugReportsCubit extends Cubit<DrugReportsState> {
       forceRefresh: forceRefresh,
     );
     result.fold(
-      (failure) => emit(DrugReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(DrugReportsError(failure.message, failure: failure)),
       (data) => emit(DrugReportsLoaded(
         stats: data,
         selectedClinicId: clinicId,
@@ -77,11 +78,17 @@ class DrugReportsCubit extends Cubit<DrugReportsState> {
     );
   }
 
-  Future<void> changeClinic(String? clinicId, {String? doctorId}) async {
+  Future<void> changeClinic(
+    String? clinicId, {
+    String? doctorId,
+  }) async {
     emit(DrugReportsLoading());
-    final result = await _getDrugStats(doctorId: doctorId, clinicId: clinicId);
+    final result = await _getDrugStats(
+      doctorId: doctorId,
+      clinicId: clinicId,
+    );
     result.fold(
-      (failure) => emit(DrugReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(DrugReportsError(failure.message, failure: failure)),
       (data) => emit(DrugReportsLoaded(
         stats: data,
         selectedClinicId: clinicId,

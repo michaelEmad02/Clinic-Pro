@@ -23,6 +23,11 @@ abstract class QueryFailure extends Failure {
 
     // معالجة نصية عامة لأخطاء الشبكة والقيود والصلاحيات
     final message = e.toString();
+    if (message.contains('FEATURE_NOT_ALLOWED') || message.contains('40301')) {
+      final parts = message.split('FEATURE_NOT_ALLOWED:');
+      final key = parts.length > 1 ? parts[1].trim() : '';
+      return FeatureNotAllowedFailure(message: 'الميزة غير متاحة في باقة اشتراكك الحالية', featureKey: key);
+    }
     if (message.contains('socket') ||
         message.contains('Network') ||
         message.contains('network') ||
@@ -56,6 +61,12 @@ abstract class QueryFailure extends Failure {
   }
 
   factory QueryFailure.fromPostgrestException(PostgrestException e) {
+    if (e.code == '40301' || e.message.contains('FEATURE_NOT_ALLOWED')) {
+      final parts = e.message.split('FEATURE_NOT_ALLOWED:');
+      final key = parts.length > 1 ? parts[1].trim() : '';
+      return FeatureNotAllowedFailure(featureKey: key);
+    }
+
     switch (e.code) {
       // Data/Constraint Violations
       case '23505':
@@ -208,6 +219,14 @@ class UnauthorizedApiFailure extends QueryFailure {
 class PlanLimitQueryFailure extends QueryFailure {
   const PlanLimitQueryFailure({
     super.message = 'لقد وصلت للحد الأقصى المسموح به في خطتك الحالية',
+  });
+}
+
+class FeatureNotAllowedFailure extends QueryFailure {
+  final String featureKey;
+  const FeatureNotAllowedFailure({
+    super.message = 'الميزة غير متاحة في باقة اشتراكك الحالية',
+    this.featureKey = '',
   });
 }
 

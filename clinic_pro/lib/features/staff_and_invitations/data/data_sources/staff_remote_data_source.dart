@@ -60,13 +60,13 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
         matchColumn: 'id',
         matchValue: userId,
       );
-
-      // ب. حذفه من الـ Auth سحابياً
       try {
         await iAuthServices.deleteUserFromAuth(userId);
       } catch (e) {
         debugPrint('⚠️ فشل حذف حساب الموظف من الـ Auth: $e');
       }
+
+      // ب. حذفه من الـ Auth سحابياً
     } else {
       // 5. إذا كان مسجلاً في عيادات أو مع أطباء آخرين، نكتفي بحذف السجل الحالي فقط من العيادة
       if (roleStr == StaffRoles.secretary.name) {
