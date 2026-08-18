@@ -429,7 +429,7 @@ extension GetItInjectableX on _i174.GetIt {
         expensesRepository: gh<_i321.ExpensesRepository>()));
     gh.factory<_i789.EditExpensesUseCase>(() => _i789.EditExpensesUseCase(
         expensesRepository: gh<_i321.ExpensesRepository>()));
-    gh.factory<_i536.FetchEcpensesUseCase>(() => _i536.FetchEcpensesUseCase(
+    gh.factory<_i536.FetchExpensesUseCase>(() => _i536.FetchExpensesUseCase(
         expensesRepository: gh<_i321.ExpensesRepository>()));
     gh.lazySingleton<_i769.ISettingsLocalDataSource>(
         () => _i917.SettingsLocalDataSourceImpl(gh<_i819.ILocalDataService>()));
