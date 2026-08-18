@@ -111,10 +111,32 @@ import '../../features/clinics/presentation/manager/cubit/fetch_clinic_staff_cub
     as _i750;
 import '../../features/clinics/presentation/manager/cubit/fetch_clinic_statistics_cubit.dart'
     as _i728;
+import '../../features/dashboard/data/datasources/i_owner_dashboard_remote_data_source.dart'
+    as _i885;
+import '../../features/dashboard/data/datasources/owner_dashboard_remote_data_source_impl.dart'
+    as _i886;
+import '../../features/dashboard/data/repositories/owner_dashboard_repository_impl.dart'
+    as _i887;
+import '../../features/dashboard/domain/repositories/i_owner_dashboard_repository.dart'
+    as _i888;
+import '../../features/dashboard/domain/usecases/get_owner_summary_stats_usecase.dart'
+    as _i889;
+import '../../features/dashboard/domain/usecases/get_owner_weekly_revenue_usecase.dart'
+    as _i890;
+import '../../features/dashboard/domain/usecases/get_owner_clinics_overview_usecase.dart'
+    as _i891;
+import '../../features/dashboard/domain/usecases/get_owner_alerts_usecase.dart'
+    as _i892;
+import '../../features/dashboard/presentation/manager/owner_summary_stats_cubit.dart'
+    as _i893;
+import '../../features/dashboard/presentation/manager/owner_weekly_revenue_cubit.dart'
+    as _i894;
+import '../../features/dashboard/presentation/manager/owner_clinics_scroll_cubit.dart'
+    as _i895;
+import '../../features/dashboard/presentation/manager/owner_alerts_cubit.dart'
+    as _i896;
 import '../../features/dashboard/presentation/manager/doctor_dashboard_cubit.dart'
     as _i683;
-import '../../features/dashboard/presentation/manager/owner_dashboard_cubit.dart'
-    as _i456;
 import '../../features/dashboard/presentation/manager/secretary_dashboard_cubit.dart'
     as _i158;
 import '../../features/expenses/data/data_sources/expenses_remote_data_source.dart'
@@ -408,8 +430,38 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i255.ISubscriptionsRepository>(() =>
         _i399.SubscriptionsRepositoryImpl(
             gh<_i347.ISubscriptionsRemoteDataSource>()));
-    gh.factory<_i456.OwnerDashboardCubit>(
-        () => _i456.OwnerDashboardCubit(gh<_i239.ICloudService>()));
+    gh.lazySingleton<_i885.IOwnerDashboardRemoteDataSource>(
+        () => _i886.OwnerDashboardRemoteDataSourceImpl(
+              gh<_i239.ICloudService>(),
+            ));
+    gh.lazySingleton<_i888.IOwnerDashboardRepository>(
+        () => _i887.OwnerDashboardRepositoryImpl(
+              gh<_i885.IOwnerDashboardRemoteDataSource>(),
+            ));
+    gh.lazySingleton<_i889.GetOwnerSummaryStatsUseCase>(
+        () => _i889.GetOwnerSummaryStatsUseCase(
+              gh<_i888.IOwnerDashboardRepository>(),
+            ));
+    gh.lazySingleton<_i890.GetOwnerWeeklyRevenueUseCase>(
+        () => _i890.GetOwnerWeeklyRevenueUseCase(
+              gh<_i888.IOwnerDashboardRepository>(),
+            ));
+    gh.lazySingleton<_i891.GetOwnerClinicsOverviewUseCase>(
+        () => _i891.GetOwnerClinicsOverviewUseCase(
+              gh<_i888.IOwnerDashboardRepository>(),
+            ));
+    gh.lazySingleton<_i892.GetOwnerAlertsUseCase>(
+        () => _i892.GetOwnerAlertsUseCase(
+              gh<_i888.IOwnerDashboardRepository>(),
+            ));
+    gh.factory<_i893.OwnerSummaryStatsCubit>(
+        () => _i893.OwnerSummaryStatsCubit(gh<_i889.GetOwnerSummaryStatsUseCase>()));
+    gh.factory<_i894.OwnerWeeklyRevenueCubit>(
+        () => _i894.OwnerWeeklyRevenueCubit(gh<_i890.GetOwnerWeeklyRevenueUseCase>()));
+    gh.factory<_i895.OwnerClinicsScrollCubit>(
+        () => _i895.OwnerClinicsScrollCubit(gh<_i891.GetOwnerClinicsOverviewUseCase>()));
+    gh.factory<_i896.OwnerAlertsCubit>(
+        () => _i896.OwnerAlertsCubit(gh<_i892.GetOwnerAlertsUseCase>()));
     gh.factory<_i490.ExpensesRepository>(
         () => _i490.ExpensesRepository(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i557.IStorageService>(
@@ -453,7 +505,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1070.IOwnerSettingsRemoteDataSource>(() =>
         _i1070.OwnerSettingsRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i107.IReportsRemoteDataSource>(
-        () => _i478.ReportsRpcRemoteDataSourceImpl(gh<_i239.ICloudService>()));
+        () => _i478.ReportsRpcRemoteDataSourceImpl(gh<_i239.ICloudService>(),gh<_i777.ReportsCacheManager>()));
     gh.lazySingleton<_i330.IAppointmentRepository>(() =>
         _i155.AppointmentRepositoryImpl(
             gh<_i720.IAppointmentRemoteDataSource>()));

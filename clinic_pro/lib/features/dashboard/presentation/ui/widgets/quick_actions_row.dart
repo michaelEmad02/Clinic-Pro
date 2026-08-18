@@ -1,15 +1,45 @@
+// ─────────────────────────────────────────
+// أزرار الإجراءات السريعة بخطوط شبكية متجاوبة (Responsive GridView Layout)
+// ─────────────────────────────────────────
+
 import 'package:clinic_pro/core/constants/route_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../core/themes/app_colors.dart';
-import '../../../../../core/themes/app_text_styles.dart';
-import '../../../../../core/strings/app_strings.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
 
 class QuickActionsRow extends StatelessWidget {
   const QuickActionsRow({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    final actions = [
+      {
+        'label': AppStrings.manageStaff,
+        'icon': Icons.people_outlined,
+        'onTap': () => context.push(RouteConstants.staff),
+      },
+      {
+        'label': AppStrings.inviteStaff,
+        'icon': Icons.person_add_alt_1_outlined,
+        'onTap': () => context.push(RouteConstants.onboardingInvite, extra: {"isOnboarding": false}),
+      },
+      {
+        'label': AppStrings.isArabic ? 'تسجيل مصروف' : 'Add Expense',
+        'icon': Icons.account_balance_wallet_outlined,
+        'onTap': () => context.push(RouteConstants.expenses),
+      },
+      {
+        'label': AppStrings.isArabic ? 'إدارة الاشتراك' : 'Subscription',
+        'icon': Icons.card_membership_outlined,
+        'onTap': () => context.push(RouteConstants.settingsSubscription),
+      },
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -24,42 +54,27 @@ class QuickActionsRow extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 80,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            children: [
-              _buildActionButton(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: actions.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: isMobile ? 2 : 4,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: isMobile ? 1.9 : 2.4,
+            ),
+            itemBuilder: (context, index) {
+              final action = actions[index];
+              return _buildActionButton(
                 context: context,
-                label: AppStrings.addClinic,
-                icon: Icons.add_business_outlined,
-                onTap: () => context.push(RouteConstants.onboardingClinic),
-              ),
-              const SizedBox(width: 12),
-              _buildActionButton(
-                context: context,
-                label: AppStrings.inviteStaff,
-                icon: Icons.person_add_alt_1_outlined,
-                onTap: () => context.push(RouteConstants.onboardingInvite),
-              ),
-              const SizedBox(width: 12),
-              _buildActionButton(
-                context: context,
-                label: AppStrings.manageStaff,
-                icon: Icons.people_outlined,
-                onTap: () => context.push(RouteConstants.staff),
-              ),
-              const SizedBox(width: 12),
-              _buildActionButton(
-                context: context,
-                label: AppStrings.financialReports,
-                icon: Icons.analytics_outlined,
-                onTap: () {
-                  // Action to view financial reports
-                },
-              ),
-            ],
+                label: action['label'] as String,
+                icon: action['icon'] as IconData,
+                onTap: action['onTap'] as VoidCallback,
+              );
+            },
           ),
         ),
       ],
@@ -76,8 +91,7 @@ class QuickActionsRow extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        width: 120,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
         decoration: BoxDecoration(
           color: context.surfaceColor,
           borderRadius: BorderRadius.circular(12),
@@ -96,16 +110,22 @@ class QuickActionsRow extends StatelessWidget {
             Icon(
               icon,
               color: AppColors.primaryContainer,
-              size: 24,
+              size: 22,
             ),
             const SizedBox(height: 6),
-            Text(
-              label,
-              style: AppTextStyles.caption(context).copyWith(
-                fontWeight: FontWeight.w600,
-                color: context.textPrimary,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.caption(context).copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: context.textPrimary,
+                  fontSize: 10.5,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),

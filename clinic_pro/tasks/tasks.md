@@ -12,6 +12,8 @@
 
 - [X] when add staff from existing users , if the user select secretary will show widget for select the doctor.
 
+- [] add patients count in clinic details screen
+
 
 ## staff
 - [X] add deleteStaffFromClinic method , and use it in clinic feature 
@@ -42,6 +44,7 @@
  - empty data widget
  - language
  - themes
+ - local notifications
  
 
 ## reports

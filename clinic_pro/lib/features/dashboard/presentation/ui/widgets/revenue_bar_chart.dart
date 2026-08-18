@@ -1,8 +1,13 @@
+// ─────────────────────────────────────────
+// مخطط الإيرادات الأسبوعية المتجاوب (Responsive Bar Chart)
+// ─────────────────────────────────────────
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/strings/app_strings.dart';
-import '../../../../../core/themes/app_colors.dart';
-import '../../../../../core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
 
 class RevenueBarChart extends StatelessWidget {
   final List<double> weeklyRevenue;
@@ -15,6 +20,11 @@ class RevenueBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weekdays = AppStrings.dayNames;
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    // حساب القيمة العظمى ديناميكياً لتجنب طفح الأعمدة البيانية
+    final maxVal = weeklyRevenue.fold<double>(0.0, (m, e) => e > m ? e : m);
+    final computedMaxY = maxVal > 0 ? (maxVal * 1.25) : 1000.0;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -35,7 +45,7 @@ class RevenueBarChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppStrings.isArabic ? 'الإيرادات الأسبوعية (دولار)' : 'Weekly Revenue (USD)',
+            AppStrings.isArabic ? 'الإيرادات الأسبوعية' : 'Weekly Revenue',
             style: AppTextStyles.headlineSmall(context).copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
@@ -43,11 +53,11 @@ class RevenueBarChart extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           AspectRatio(
-            aspectRatio: 1.6,
+            aspectRatio: isMobile ? 1.6 : 2.5,
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: 4000,
+                maxY: computedMaxY,
                 barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
@@ -74,13 +84,17 @@ class RevenueBarChart extends StatelessWidget {
                       getTitlesWidget: (double value, TitleMeta meta) {
                         final idx = value.toInt();
                         if (idx >= 0 && idx < weekdays.length) {
+                          final dayName = weekdays[idx];
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              weekdays[idx].substring(0, 3), // e.g. "الأح" or similar, let's just use first 3 chars
-                              style: AppTextStyles.caption(context).copyWith(
-                                fontSize: 10,
-                                color: context.textSecondary,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                dayName,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  fontSize: 10,
+                                  color: context.textSecondary,
+                                ),
                               ),
                             ),
                           );
@@ -92,11 +106,12 @@ class RevenueBarChart extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 32,
+                      reservedSize: 36,
                       getTitlesWidget: (double value, TitleMeta meta) {
-                        if (value % 1000 == 0 && value > 0) {
+                        if (value > 0) {
+                          final valStr = value >= 1000 ? '${(value / 1000).toStringAsFixed(1)}k' : '${value.toInt()}';
                           return Text(
-                            '${(value / 1000).toInt()}k',
+                            valStr,
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 10,
@@ -129,14 +144,14 @@ class RevenueBarChart extends StatelessWidget {
                       BarChartRodData(
                         toY: weeklyRevenue[index],
                         color: AppColors.primaryContainer,
-                        width: 14,
+                        width: isMobile ? 14 : 20,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(4),
                           topRight: Radius.circular(4),
                         ),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
-                          toY: 4000,
+                          toY: computedMaxY,
                           color: context.isDarkMode ? AppColors.darkBackground : AppColors.surfaceContainerLow,
                         ),
                       ),

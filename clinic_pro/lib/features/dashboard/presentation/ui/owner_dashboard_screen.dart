@@ -1,22 +1,27 @@
 import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import '../../../../core/themes/app_colors.dart';
-import '../../../../core/themes/app_text_styles.dart';
-import '../../../../core/strings/app_strings.dart';
-import '../../../../core/di/injection_container.dart';
-import '../../../../core/services/i_cloud_service.dart';
-import '../../../../core/widgets/app_responsive_scaffold.dart';
-import '../../../../core/widgets/lazy_indexed_stack.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/di/injection_container.dart';
+import 'package:clinic_pro/core/widgets/app_responsive_scaffold.dart';
+import 'package:clinic_pro/core/widgets/lazy_indexed_stack.dart';
 import '../../../clinics/presentation/ui/clinics_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
 import '../../../settings/presentation/manager/settings_cubit.dart';
 import '../../../settings/presentation/manager/settings_state.dart';
-import '../manager/owner_dashboard_cubit.dart';
-import '../manager/owner_dashboard_state.dart';
+import '../manager/owner_summary_stats_cubit.dart';
+import '../manager/owner_summary_stats_state.dart';
+import '../manager/owner_weekly_revenue_cubit.dart';
+import '../manager/owner_weekly_revenue_state.dart';
+import '../manager/owner_alerts_cubit.dart';
+import '../manager/owner_alerts_state.dart';
 import 'widgets/dashboard_summary_row.dart';
+import 'widgets/dashboard_shimmers.dart';
 import 'widgets/alerts_section.dart';
 import 'widgets/revenue_bar_chart.dart';
 import 'widgets/quick_actions_row.dart';
@@ -32,19 +37,31 @@ class OwnerDashboardScreen extends StatefulWidget {
 
 class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   int _currentIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    var ownerId = context.read<AuthCubit>().state.user!.id;
-    return BlocProvider(
-      create: (context) =>
-          OwnerDashboardCubit(sl<ICloudService>())..loadDashboardData(ownerId),
+    final authState = context.read<AuthCubit>().state;
+    final ownerId = authState.user?.id ?? '';
+    final ownerName = authState.user?.name ?? AppStrings.ownerRoleLabel;
+
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => sl<OwnerSummaryStatsCubit>()..loadSummaryStats(ownerId),
+        ),
+        BlocProvider(
+          create: (_) => sl<OwnerWeeklyRevenueCubit>()..loadWeeklyRevenue(ownerId),
+        ),
+        BlocProvider(
+          create: (_) => sl<OwnerAlertsCubit>()..loadAlerts(ownerId),
+        ),
+      ],
       child: BlocListener<SettingsCubit, SettingsState>(
-        listenWhen: (SettingsState previous, SettingsState current) =>
+        listenWhen: (previous, current) =>
             previous.clinicEntity?.id != current.clinicEntity?.id,
         listener: (context, settingsState) {
-          if (settingsState.clinicEntity != null) {
-            // إعادة تحميل إحصائيات المالك للعيادة الجديدة
-            context.read<OwnerDashboardCubit>().loadDashboardData(ownerId);
+          if (settingsState.clinicEntity != null && ownerId.isNotEmpty) {
+            _refreshAll(context, ownerId, forceRefresh: true);
           }
         },
         child: AppResponsiveScaffold(
@@ -76,7 +93,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               label: Text(AppStrings.settings),
             ),
           ],
-          appBar: _currentIndex == 0 ? _buildAppBar(context) : null,
+          appBar: _currentIndex == 0 ? _buildAppBar(context, ownerName) : null,
           body: LazyIndexedStack(
             index: _currentIndex,
             children: [
@@ -85,7 +102,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               const ExpensesScreen(),
               const ReportsScreen(),
               const SettingsScreen(
-                  role: StaffRoles.owner, showBottomNav: false),
+                role: StaffRoles.owner,
+                showBottomNav: false,
+              ),
             ],
           ),
           bottomNavigationBar: _buildBottomNav(),
@@ -94,62 +113,37 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  void _refreshAll(BuildContext context, String ownerId, {bool forceRefresh = false}) {
+    context.read<OwnerSummaryStatsCubit>().loadSummaryStats(ownerId, forceRefresh: forceRefresh);
+    context.read<OwnerWeeklyRevenueCubit>().loadWeeklyRevenue(ownerId, forceRefresh: forceRefresh);
+    context.read<OwnerAlertsCubit>().loadAlerts(ownerId, forceRefresh: forceRefresh);
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context, String ownerName) {
     return AppBar(
       toolbarHeight: 64,
       backgroundColor: context.surfaceColor,
       elevation: 0,
       scrolledUnderElevation: 0,
-      title: BlocBuilder<OwnerDashboardCubit, OwnerDashboardState>(
-        builder: (context, state) {
-          String subtitle = AppStrings.isArabic ? 'لوحة التحكم' : 'Dashboard';
-          if (state is OwnerDashboardLoaded) {
-            subtitle = '${AppStrings.welcomeBack}${state.dashboard.ownerName}';
-          }
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppStrings.isArabic ? 'كلينك برو' : 'Clinic Pro',
-                style: AppTextStyles.headlineMedium(context).copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: context.textPrimary,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: AppTextStyles.caption(context).copyWith(
-                  color: context.textSecondary,
-                ),
-              ),
-            ],
-          );
-        },
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppStrings.isArabic ? 'كلينك برو' : 'Clinic Pro',
+            style: AppTextStyles.headlineMedium(context).copyWith(
+              fontWeight: FontWeight.bold,
+              color: context.textPrimary,
+            ),
+          ),
+          Text(
+            '${AppStrings.welcomeBack}$ownerName',
+            style: AppTextStyles.caption(context).copyWith(
+              color: context.textSecondary,
+            ),
+          ),
+        ],
       ),
-      actions: const [
-        // IconButton(
-        //   icon:  Icon(Icons.notifications_none_outlined,
-        //       color: context.textSecondary),
-        //   onPressed: () {},
-        // ),
-        // const SizedBox(width: 8),
-        // Container(
-        //   margin: const EdgeInsets.only(left: 16),
-        //   width: 36,
-        //   height: 36,
-        //   decoration:  BoxDecoration(
-        //     color: context.primaryLightColor,
-        //     shape: BoxShape.circle,
-        //   ),
-        //   child: const Center(
-        //     child: Icon(
-        //       Icons.person,
-        //       color: context.primary,
-        //       size: 20,
-        //     ),
-        //   ),
-        // ),
-      ],
+      actions: const [],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(
@@ -161,39 +155,77 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   }
 
   Widget _buildMainDashboardTab(String ownerId) {
-    return BlocBuilder<OwnerDashboardCubit, OwnerDashboardState>(
-      builder: (context, state) {
-        if (state is OwnerDashboardLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state is OwnerDashboardError) {
-          return Center(child: Text(state.message));
-        }
-        if (state is OwnerDashboardLoaded) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              context.read<OwnerDashboardCubit>().loadDashboardData(ownerId);
-            },
+    return Builder(
+      builder: (context) {
+        return RefreshIndicator(
+          onRefresh: () async {
+            _refreshAll(context, ownerId, forceRefresh: true);
+          },
+          child: ResponsiveHelper.responsiveCenter(
+            maxWidth: 1100,
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 20),
               children: [
-                DashboardSummaryRow(
-                  totalRevenue: state.dashboard.totalRevenue,
-                  totalPatients: state.dashboard.totalPatients,
-                  todayAppointments: state.dashboard.todayAppointments,
-                  activeClinics: state.dashboard.activeClinics,
-                ),
-                const SizedBox(height: 24),
-                AlertsSection(alerts: state.dashboard.alerts),
-                const SizedBox(height: 24),
-                // ClinicsHorizontalScroll(clinics: state.dashboard.clinics),
-                // const SizedBox(height: 24),
-                RevenueBarChart(weeklyRevenue: state.dashboard.weeklyRevenue),
-                const SizedBox(height: 24),
+                _buildAlertsSection(),
                 const QuickActionsRow(),
+                const SizedBox(height: 24),
+                _buildSummaryStatsSection(),
+                const SizedBox(height: 24),
+                _buildWeeklyRevenueSection(),
               ],
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSummaryStatsSection() {
+    return BlocBuilder<OwnerSummaryStatsCubit, OwnerSummaryStatsState>(
+      builder: (context, state) {
+        if (state is OwnerSummaryStatsLoading) {
+          return const DashboardSummaryShimmer();
+        }
+        if (state is OwnerSummaryStatsLoaded) {
+          return DashboardSummaryRow(
+            todayNetRevenue: state.stats.todayNetRevenue,
+            totalPatients: state.stats.totalPatients,
+            todayAppointments: state.stats.todayAppointments,
+            todayCompletedAppointments: state.stats.todayCompletedAppointments,
           );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildAlertsSection() {
+    return BlocBuilder<OwnerAlertsCubit, OwnerAlertsState>(
+      builder: (context, state) {
+        if (state is OwnerAlertsLoading) {
+          return const AlertsSectionShimmer();
+        }
+        if (state is OwnerAlertsLoaded && state.alerts.isNotEmpty) {
+          return Column(
+            children: [
+              const SizedBox(height: 0),
+              AlertsSection(alerts: state.alerts),
+            ],
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildWeeklyRevenueSection() {
+    return BlocBuilder<OwnerWeeklyRevenueCubit, OwnerWeeklyRevenueState>(
+      builder: (context, state) {
+        if (state is OwnerWeeklyRevenueLoading) {
+          return const WeeklyRevenueChartShimmer();
+        }
+        if (state is OwnerWeeklyRevenueLoaded) {
+          return RevenueBarChart(weeklyRevenue: state.weeklyRevenue);
         }
         return const SizedBox.shrink();
       },

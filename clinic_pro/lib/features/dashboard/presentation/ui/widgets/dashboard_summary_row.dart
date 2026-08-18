@@ -1,41 +1,60 @@
+// ─────────────────────────────────────────
+// كروت إحصائيات لوحة التحكم بخطوط شبكية متجاوبة (Responsive GridView)
+// ─────────────────────────────────────────
+
 import 'package:flutter/material.dart';
-import '../../../../../core/themes/app_colors.dart';
-import '../../../../../core/themes/app_text_styles.dart';
-import '../../../../../core/strings/app_strings.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
 
 class DashboardSummaryRow extends StatelessWidget {
-  final num totalRevenue;
+  final num todayNetRevenue;
   final int totalPatients;
   final int todayAppointments;
-  final int activeClinics;
+  final int todayCompletedAppointments;
 
   const DashboardSummaryRow({
     super.key,
-    required this.totalRevenue,
+    required this.todayNetRevenue,
     required this.totalPatients,
     required this.todayAppointments,
-    required this.activeClinics,
+    required this.todayCompletedAppointments,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 120,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.count(
+        crossAxisCount: isMobile ? 2 : 3,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: isMobile ? 1.55 : 1.85,
         children: [
           _buildBentoCard(
             context: context,
-            title: AppStrings.totalRevenue,
-            value: '\$${totalRevenue.toStringAsFixed(0)}',
+            title: AppStrings.isArabic ? 'صافي إيراد اليوم' : 'Today Net Revenue',
+            value: '\$${todayNetRevenue.toStringAsFixed(0)}',
             icon: Icons.payments_outlined,
             iconBgColor: AppColors.successBg,
             iconColor: AppColors.successText,
             hasRightAccent: true,
             accentColor: AppColors.accent,
           ),
-          const SizedBox(width: 12),
+          _buildBentoCard(
+            context: context,
+            title: AppStrings.todayAppointments,
+            value: '$todayCompletedAppointments / $todayAppointments',
+            icon: Icons.today_outlined,
+            iconBgColor: AppColors.warningBg,
+            iconColor: AppColors.warningText,
+            accentColor: AppColors.warning,
+          ),
           _buildBentoCard(
             context: context,
             title: AppStrings.totalPatients,
@@ -44,26 +63,6 @@ class DashboardSummaryRow extends StatelessWidget {
             iconBgColor: context.primaryLightColor,
             iconColor: AppColors.primaryContainer,
             accentColor: AppColors.primaryContainer,
-          ),
-          const SizedBox(width: 12),
-          _buildBentoCard(
-            context: context,
-            title: AppStrings.todayAppointments,
-            value: '$todayAppointments',
-            icon: Icons.today_outlined,
-            iconBgColor: AppColors.warningBg,
-            iconColor: AppColors.warningText,
-            accentColor: AppColors.warning,
-          ),
-          const SizedBox(width: 12),
-          _buildBentoCard(
-            context: context,
-            title: AppStrings.activeClinics,
-            value: '$activeClinics',
-            icon: Icons.business_outlined,
-            iconBgColor: AppColors.iconBg, // purple tint
-            iconColor: AppColors.icon, // purple
-            accentColor: AppColors.icon,
           ),
         ],
       ),
@@ -81,7 +80,6 @@ class DashboardSummaryRow extends StatelessWidget {
     Color? accentColor,
   }) {
     return Container(
-      width: 160,
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
@@ -111,7 +109,7 @@ class DashboardSummaryRow extends StatelessWidget {
                 ),
               ),
             ),
-            // Left Accent Border
+            // Right Accent Border
             if (hasRightAccent && accentColor != null)
               Positioned(
                 top: 0,
@@ -124,7 +122,7 @@ class DashboardSummaryRow extends StatelessWidget {
               ),
             // Content
             Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -151,17 +149,26 @@ class DashboardSummaryRow extends StatelessWidget {
                     children: [
                       Text(
                         title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.caption(context).copyWith(
                           color: context.textSecondary,
                           fontWeight: FontWeight.w500,
+                          fontSize: 11,
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        value,
-                        style: AppTextStyles.dataNumeric(context).copyWith(
-                          fontSize: 18,
-                          color: context.textPrimary,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          value,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.dataNumeric(context).copyWith(
+                            fontSize: 18,
+                            color: context.textPrimary,
+                          ),
                         ),
                       ),
                     ],
