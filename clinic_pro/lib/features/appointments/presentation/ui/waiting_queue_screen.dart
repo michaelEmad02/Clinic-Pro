@@ -2,8 +2,12 @@
 // شاشة طابور الانتظار — للطبيب والسكرتيرة (Responsive)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/features/appointments/presentation/ui/widgets/current_patient_card.dart';
+import 'package:clinic_pro/features/appointments/presentation/ui/widgets/waiting_queue_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/strings/app_strings.dart';
@@ -19,7 +23,6 @@ import '../../../settings/presentation/manager/settings_state.dart';
 import '../manager/waiting_queue_cubit.dart';
 import '../manager/waiting_queue_state.dart';
 import 'widgets/call_next_button.dart';
-import 'widgets/queue_list.dart';
 
 class WaitingQueueScreen extends StatefulWidget {
   const WaitingQueueScreen({super.key});
@@ -161,7 +164,13 @@ class _WaitingQueueBody extends StatelessWidget {
             );
           }
           if (state is WaitingQueueLoaded) {
+            final authState = context.read<AuthCubit>().state;
+            final isDoctor = authState is AuthAuthenticated &&
+                authState.user.role == StaffRoles.doctor;
             final hasNext = state.queue.any((p) => p.status == 'confirmed');
+            final currentPatient = state.rawQueue
+                .where((a) => a.status == AppointmentStatus.inProgress)
+                .firstOrNull;
 
             return RefreshIndicator(
               onRefresh: () async {
@@ -182,13 +191,30 @@ class _WaitingQueueBody extends StatelessWidget {
                         );
                       },
                     ),
+                    if (isDoctor) ...[
+                      const SizedBox(height: AppConstants.spaceMd),
+                      CurrentPatientCard(
+                        patient: currentPatient,
+                        onStartExamination: () async {
+                          if (currentPatient != null) {
+                            await context.push(
+                              '/prescription/${currentPatient.id}',
+                              extra: currentPatient,
+                            );
+                            if (context.mounted) {
+                              onRefresh();
+                            }
+                          }
+                        },
+                      ),
+                    ],
                     const SizedBox(height: AppConstants.spaceMd),
-                    QueueList(
-                      queue: state.queue,
-                      onCallPatient: (id) {
-                        context.read<WaitingQueueCubit>().callPatient(id);
+                    WaitingQueueList(
+                      queue: state.rawQueue,
+                      onCallNext: () {
+                        context.read<WaitingQueueCubit>().callNext();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(AppStrings.patientCalledDetails)),
+                          SnackBar(content: Text(AppStrings.patientCalled)),
                         );
                       },
                     ),

@@ -114,7 +114,6 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
       final activeInProg = await _remoteDataSource.getAppointments(
         clinicId: targetAppt.clinicId,
         doctorId: targetAppt.doctorId,
-        date: targetAppt.date,
         status: AppointmentStatus.inProgress,
       );
 

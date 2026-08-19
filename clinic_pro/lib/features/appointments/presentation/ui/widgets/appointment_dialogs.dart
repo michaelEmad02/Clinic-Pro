@@ -25,8 +25,9 @@ class AppointmentDialogs {
       onConfirmArrival: item.status == AppointmentStatus.scheduled
           ? () => bloc.add(ConfirmArrivalEvent(item.id))
           : null,
-      onComplete: item.status == AppointmentStatus.inProgress
-          ? () => bloc.add(CompleteAppointmentEvent(appointmentId: item.id))
+      onComplete: item.status != AppointmentStatus.done &&
+              item.status != AppointmentStatus.cancelled
+          ? () => confirmComplete(context: context, item: item, bloc: bloc)
           : null,
       onToggleUrgent: () => bloc.add(ToggleUrgentEvent(item.id)),
       onCancel: item.status != AppointmentStatus.done && item.status != AppointmentStatus.cancelled
@@ -46,6 +47,43 @@ class AppointmentDialogs {
         }
       },
       onDelete: () => confirmDelete(context: context, item: item, bloc: bloc),
+    );
+  }
+
+  static void confirmComplete({
+    required BuildContext context,
+    required AppointmentEntity item,
+    required AppointmentsBloc bloc,
+  }) {
+    if (item.status == AppointmentStatus.inProgress) {
+      bloc.add(CompleteAppointmentEvent(appointmentId: item.id));
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(AppStrings.isArabic ? 'تأكيد إتمام الموعد' : 'Confirm Complete Appointment'),
+        content: Text(
+          AppStrings.isArabic
+              ? 'تنبيه: هذا الموعد ليس في حالة "قيد الكشف". هل أنت تأكد من رغبتك في إتمام الزيارة مباشرة؟'
+              : 'Warning: This appointment is not in progress. Are you sure you want to complete the visit directly?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppStrings.back),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              bloc.add(CompleteAppointmentEvent(appointmentId: item.id));
+            },
+            style: TextButton.styleFrom(foregroundColor: context.success),
+            child: Text(AppStrings.isArabic ? 'إتمام الموعد' : 'Complete Appointment'),
+          ),
+        ],
+      ),
     );
   }
 

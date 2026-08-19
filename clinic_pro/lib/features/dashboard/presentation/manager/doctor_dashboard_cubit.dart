@@ -7,7 +7,10 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import '../../../appointments/domain/usecases/appointments/call_patient_usecase.dart';
+import '../../../appointments/domain/usecases/appointments/cancel_appointment_usecase.dart';
+import '../../../appointments/domain/usecases/appointments/update_appointment_status_usecase.dart';
 import '../../domain/usecases/get_doctor_dashboard_data_usecase.dart';
 import '../../domain/usecases/watch_doctor_dashboard_data_usecase.dart';
 import 'doctor_dashboard_state.dart';
@@ -17,6 +20,8 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
   final GetDoctorDashboardDataUseCase _getDoctorDashboardDataUseCase;
   final WatchDoctorDashboardDataUseCase _watchDoctorDashboardDataUseCase;
   final CallPatientUseCase _callPatientUseCase;
+  final UpdateAppointmentStatusUseCase _updateAppointmentStatusUseCase;
+  final CancelAppointmentUseCase _cancelAppointmentUseCase;
 
   StreamSubscription? _dashboardSubscription;
   String _doctorId = '';
@@ -26,6 +31,8 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
     this._getDoctorDashboardDataUseCase,
     this._watchDoctorDashboardDataUseCase,
     this._callPatientUseCase,
+    this._updateAppointmentStatusUseCase,
+    this._cancelAppointmentUseCase,
   ) : super(DoctorDashboardInitial());
 
   /// تحميل كافة بيانات لوحة التحكم مع الاشتراك اللحظي
@@ -112,6 +119,19 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
         ));
       }
     }
+  }
+
+  /// إتمام كشف موعد معين (تحويل الحالة إلى done)
+  Future<void> completeAppointment(String appointmentId) async {
+    await _updateAppointmentStatusUseCase(
+      appointmentId: appointmentId,
+      newStatus: AppointmentStatus.done,
+    );
+  }
+
+  /// إلغاء موعد معين (تحويل الحالة إلى cancelled)
+  Future<void> cancelAppointment(String appointmentId) async {
+    await _cancelAppointmentUseCase(appointmentId);
   }
 
   @override

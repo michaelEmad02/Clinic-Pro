@@ -18,12 +18,12 @@ import '../../../patients/presentation/ui/patients_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/doctor_dashboard_cubit.dart';
 import '../manager/doctor_dashboard_state.dart';
-import 'widgets/current_patient_card.dart';
-import 'widgets/waiting_queue_list.dart';
+import '../../../appointments/presentation/ui/widgets/current_patient_card.dart';
+import '../../../appointments/presentation/ui/widgets/waiting_queue_list.dart';
 import 'widgets/doctor_stats_row.dart';
 import 'widgets/doctor_quick_actions.dart';
 import 'widgets/doctor_dashboard_shimmer.dart';
-import '../../../expenses/presentation/ui/expenses_screen.dart';
+import '../../../appointments/presentation/ui/waiting_queue_screen.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
   const DoctorDashboardScreen({super.key});
@@ -116,16 +116,16 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
               label: Text(AppStrings.home),
             ),
             NavigationRailDestination(
+              icon: const Icon(TablerIcons.clock),
+              label: Text(AppStrings.queueTooltip),
+            ),
+            NavigationRailDestination(
               icon: const Icon(TablerIcons.calendar),
               label: Text(AppStrings.appointments),
             ),
             NavigationRailDestination(
               icon: const Icon(TablerIcons.users),
               label: Text(AppStrings.patients),
-            ),
-            NavigationRailDestination(
-              icon: const Icon(TablerIcons.wallet),
-              label: Text(AppStrings.expenses),
             ),
             NavigationRailDestination(
               icon: const Icon(TablerIcons.settings),
@@ -137,9 +137,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             index: _currentIndex,
             children: [
               _buildMainDashboardTab(),
+              const WaitingQueueScreen(),
               const AppointmentsScreen(),
               const PatientsScreen(),
-              const ExpensesScreen(),
               const SettingsScreen(showBottomNav: false),
             ],
           ),
@@ -268,6 +268,11 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         'activeIcon': TablerIcons.smart_home
       },
       {
+        'label': AppStrings.queueTooltip,
+        'icon': TablerIcons.clock,
+        'activeIcon': TablerIcons.clock
+      },
+      {
         'label': AppStrings.appointments,
         'icon': TablerIcons.calendar,
         'activeIcon': TablerIcons.calendar
@@ -276,11 +281,6 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         'label': AppStrings.patients,
         'icon': TablerIcons.users,
         'activeIcon': TablerIcons.users
-      },
-      {
-        'label': AppStrings.expenses,
-        'icon': TablerIcons.wallet,
-        'activeIcon': TablerIcons.wallet
       },
       {
         'label': AppStrings.settings,

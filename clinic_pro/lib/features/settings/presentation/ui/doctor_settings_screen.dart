@@ -32,8 +32,12 @@ class DoctorSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthCubit>().state.user;
+    final settingsState = context.watch<SettingsCubit>().state;
+    final doctorId = user?.id ?? '';
+    final clinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+
     return BlocProvider(
-      create: (_) => sl<QueuePatternCubit>()..loadPattern(),
+      create: (_) => sl<QueuePatternCubit>()..init(doctorId, clinicId),
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -293,10 +297,16 @@ class _QueuePatternChips extends StatelessWidget {
             Wrap(
               spacing: AppConstants.spaceSm,
               runSpacing: AppConstants.spaceSm,
-              children: state.slots.map((slot) {
-                final label = _mapSlotTypeToLabel(slot);
-                return QueueChip(label, isUrgent: slot == 'urgent');
-              }).toList(),
+              children: List.generate(state.slots.length, (index) {
+                final label = (index < state.slotLabels.length &&
+                        state.slotLabels[index].isNotEmpty)
+                    ? state.slotLabels[index]
+                    : state.slots[index];
+                final isUrgent = label.contains('طارئ') ||
+                    label.toLowerCase().contains('urgent') ||
+                    label.contains('مستعجل');
+                return QueueChip(label, isUrgent: isUrgent);
+              }),
             ),
             if (state.slots.isNotEmpty) ...[
               const SizedBox(height: AppConstants.spaceSm),
@@ -307,7 +317,7 @@ class _QueuePatternChips extends StatelessWidget {
                   Text(AppStrings.repeatsEvery,
                       style: AppTextStyles.bodyMedium(context)
                           .copyWith(color: context.textSecondary)),
-                  Text('${state.cycleLength}',
+                  Text(' ${state.cycleLength} ',
                       style: AppTextStyles.dataNumeric(context)),
                   Text(AppStrings.patientsCount,
                       style: AppTextStyles.bodyMedium(context)
@@ -319,9 +329,5 @@ class _QueuePatternChips extends StatelessWidget {
         );
       },
     );
-  }
-
-  static String _mapSlotTypeToLabel(String slotType) {
-    return AppStrings.mapSlotTypeToLabel(slotType);
   }
 }

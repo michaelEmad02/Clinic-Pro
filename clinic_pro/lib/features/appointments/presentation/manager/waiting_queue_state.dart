@@ -13,6 +13,10 @@ class QueuePatient extends Equatable {
   final String status;
   final bool isUrgent;
   final int queueNumber;
+  final DateTime? arrivedAt;
+  final String? patientPhone;
+  final String? patientId;
+  final String? doctorName;
 
   const QueuePatient({
     required this.id,
@@ -22,9 +26,20 @@ class QueuePatient extends Equatable {
     required this.status,
     required this.isUrgent,
     required this.queueNumber,
+    this.arrivedAt,
+    this.patientPhone,
+    this.patientId,
+    this.doctorName,
   });
 
-  QueuePatient copyWith({String? status, int? queueNumber}) {
+  QueuePatient copyWith({
+    String? status,
+    int? queueNumber,
+    DateTime? arrivedAt,
+    String? patientPhone,
+    String? patientId,
+    String? doctorName,
+  }) {
     return QueuePatient(
       id: id,
       patientName: patientName,
@@ -33,11 +48,23 @@ class QueuePatient extends Equatable {
       status: status ?? this.status,
       isUrgent: isUrgent,
       queueNumber: queueNumber ?? this.queueNumber,
+      arrivedAt: arrivedAt ?? this.arrivedAt,
+      patientPhone: patientPhone ?? this.patientPhone,
+      patientId: patientId ?? this.patientId,
+      doctorName: doctorName ?? this.doctorName,
     );
   }
 
   @override
-  List<Object?> get props => [id, status, queueNumber];
+  List<Object?> get props => [
+        id,
+        status,
+        queueNumber,
+        arrivedAt,
+        patientPhone,
+        patientId,
+        doctorName,
+      ];
 }
 
 abstract class WaitingQueueState extends Equatable {
@@ -53,22 +80,28 @@ class WaitingQueueLoading extends WaitingQueueState {}
 
 class WaitingQueueLoaded extends WaitingQueueState {
   final List<QueuePatient> queue;
+  final List<AppointmentEntity> rawQueue;
   final String doctorName;
 
   const WaitingQueueLoaded({
     required this.queue,
+    this.rawQueue = const [],
     required this.doctorName,
   });
 
-  WaitingQueueLoaded copyWith({List<QueuePatient>? queue}) {
+  WaitingQueueLoaded copyWith({
+    List<QueuePatient>? queue,
+    List<AppointmentEntity>? rawQueue,
+  }) {
     return WaitingQueueLoaded(
       queue: queue ?? this.queue,
+      rawQueue: rawQueue ?? this.rawQueue,
       doctorName: doctorName,
     );
   }
 
   @override
-  List<Object?> get props => [queue, doctorName];
+  List<Object?> get props => [queue, rawQueue, doctorName];
 }
 
 class WaitingQueueError extends WaitingQueueState {

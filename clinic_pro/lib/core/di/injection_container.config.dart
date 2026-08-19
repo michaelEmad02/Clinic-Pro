@@ -669,14 +669,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i845.IPrescriptionRepository>(() =>
         _i678.PrescriptionRepositoryImpl(
             gh<_i482.IPrescriptionRemoteDataSource>()));
-    gh.lazySingleton<_i976.IDoctorDashboardRepository>(
-        () => _i26.DoctorDashboardRepositoryImpl(
-              gh<_i257.IDoctorDashboardRemoteDataSource>(),
-              gh<_i228.GetAppointmentsUseCase>(),
-              gh<_i486.SubscribeAppointmentsUseCase>(),
-              gh<_i95.CallPatientUseCase>(),
-              gh<_i20.SortQueueUseCase>(),
-            ));
     gh.lazySingleton<_i657.ISettingsRepository>(() =>
         _i955.SettingsRepositoryImpl(gh<_i524.ISettingsRemoteDataSource>()));
     gh.factory<_i174.DoctorPerformanceCubit>(() =>
@@ -861,12 +853,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i476.AppointmentReportsCubit>(() =>
         _i476.AppointmentReportsCubit(gh<_i660.GetAppointmentStatsUseCase>()));
-    gh.lazySingleton<_i27.GetDoctorDashboardDataUseCase>(() =>
-        _i27.GetDoctorDashboardDataUseCase(
-            gh<_i976.IDoctorDashboardRepository>()));
-    gh.lazySingleton<_i894.WatchDoctorDashboardDataUseCase>(() =>
-        _i894.WatchDoctorDashboardDataUseCase(
-            gh<_i976.IDoctorDashboardRepository>()));
     gh.factory<_i534.TemplatesCubit>(() => _i534.TemplatesCubit(
           gh<_i535.GetTemplatesUseCase>(),
           gh<_i535.AddTemplateUseCase>(),
@@ -890,6 +876,15 @@ extension GetItInjectableX on _i174.GetIt {
           clinicsRepository: gh<_i359.ClinicsRepository>(),
           subscriptionsRepository: gh<_i255.ISubscriptionsRepository>(),
         ));
+    gh.lazySingleton<_i976.IDoctorDashboardRepository>(
+        () => _i26.DoctorDashboardRepositoryImpl(
+              gh<_i257.IDoctorDashboardRemoteDataSource>(),
+              gh<_i228.GetAppointmentsUseCase>(),
+              gh<_i486.SubscribeAppointmentsUseCase>(),
+              gh<_i95.CallPatientUseCase>(),
+              gh<_i20.SortQueueUseCase>(),
+              gh<_i924.GetQueueRuleUseCase>(),
+            ));
     gh.factory<_i562.WaitingQueueCubit>(() => _i562.WaitingQueueCubit(
           gh<_i228.GetAppointmentsUseCase>(),
           gh<_i95.CallPatientUseCase>(),
@@ -900,11 +895,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i51.PrescriptionPdfCubit>(() => _i51.PrescriptionPdfCubit(
           gh<_i880.GeneratePrescriptionPdfUseCase>(),
           gh<_i456.GetOwnerPrintingSettingsUseCase>(),
-        ));
-    gh.factory<_i683.DoctorDashboardCubit>(() => _i683.DoctorDashboardCubit(
-          gh<_i27.GetDoctorDashboardDataUseCase>(),
-          gh<_i894.WatchDoctorDashboardDataUseCase>(),
-          gh<_i95.CallPatientUseCase>(),
         ));
     gh.factory<_i728.FetchClinicStatisticsCubit>(() =>
         _i728.FetchClinicStatisticsCubit(
@@ -944,6 +934,19 @@ extension GetItInjectableX on _i174.GetIt {
           toggleIsActiveUseCase: gh<_i444.ToggleIsActiveUseCase>(),
           addStaffUseCase: gh<_i25.AddStaffUseCase>(),
           deleteStaffUseCase: gh<_i382.DeleteStaffUseCase>(),
+        ));
+    gh.lazySingleton<_i27.GetDoctorDashboardDataUseCase>(() =>
+        _i27.GetDoctorDashboardDataUseCase(
+            gh<_i976.IDoctorDashboardRepository>()));
+    gh.lazySingleton<_i894.WatchDoctorDashboardDataUseCase>(() =>
+        _i894.WatchDoctorDashboardDataUseCase(
+            gh<_i976.IDoctorDashboardRepository>()));
+    gh.factory<_i683.DoctorDashboardCubit>(() => _i683.DoctorDashboardCubit(
+          gh<_i27.GetDoctorDashboardDataUseCase>(),
+          gh<_i894.WatchDoctorDashboardDataUseCase>(),
+          gh<_i95.CallPatientUseCase>(),
+          gh<_i996.UpdateAppointmentStatusUseCase>(),
+          gh<_i449.CancelAppointmentUseCase>(),
         ));
     return this;
   }

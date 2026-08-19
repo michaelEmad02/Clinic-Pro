@@ -486,7 +486,7 @@ class AppStrings {
   static String get inProgress => isArabic ? 'قيد الكشف' : 'In Progress';
   static String get completed => isArabic ? 'منتهي' : 'Completed';
   static String get completeVisit =>
-      isArabic ? 'إتمام الزيارة' : 'Complete Visit';
+      isArabic ? 'إتمام الموعد' : 'Complete appointment';
   static String get cancelled => isArabic ? 'ملغي' : 'Cancelled';
   static String get booked => isArabic ? 'حُجز' : 'Booked';
   static String get arrived => isArabic ? 'وصل' : 'Arrived';

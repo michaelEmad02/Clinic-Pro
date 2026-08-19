@@ -1,8 +1,12 @@
+// ────────────────────────────────────────────────────────
+// كرت المريض الحالي في غرفة الكشف
+// ────────────────────────────────────────────────────────
+
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/strings/app_strings.dart';
-import '../../../../appointments/domain/entities/appointment_entity.dart';
+import '../../../domain/entities/appointment_entity.dart';
 
 class CurrentPatientCard extends StatelessWidget {
   final AppointmentEntity? patient;
@@ -27,7 +31,7 @@ class CurrentPatientCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-             Icon(Icons.person_off_outlined, size: 48, color: context.textHint),
+            Icon(Icons.person_off_outlined, size: 48, color: context.textHint),
             const SizedBox(height: 12),
             Text(
               AppStrings.isArabic ? 'لا يوجد مريض في غرفة الكشف حالياً' : 'No patient in the exam room',
@@ -76,7 +80,7 @@ class CurrentPatientCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                     Icon(Icons.meeting_room_outlined, size: 14, color: context.primary),
+                    Icon(Icons.meeting_room_outlined, size: 14, color: context.primary),
                     const SizedBox(width: 4),
                     Text(
                       AppStrings.isArabic ? 'غرفة الكشف الحالية' : 'Current Exam Room',
@@ -95,7 +99,11 @@ class CurrentPatientCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  patient!.isUrgent ? AppStrings.urgent : AppStrings.normalCheckup,
+                  patient!.isUrgent
+                      ? AppStrings.urgent
+                      : (patient!.typeName != null && patient!.typeName!.isNotEmpty
+                          ? patient!.typeName!
+                          : AppStrings.normalCheckup),
                   style: AppTextStyles.caption(context).copyWith(
                     color: patient!.isUrgent ? context.dangerText : context.successText,
                     fontWeight: FontWeight.bold,

@@ -99,22 +99,28 @@ class QueueSorter {
       });
   }
 
-  // ② ترتيب الحجز (time تصاعدياً)
+  // ② ترتيب الحجز (date + time تصاعدياً)
   static List<AppointmentEntity> _sortByBooking(List<AppointmentEntity> entries) {
     return List.from(entries)
       ..sort((a, b) {
+        final aDate = a.date;
+        final bDate = b.date;
+        if (aDate != bDate) {
+          return aDate.compareTo(bDate);
+        }
         final aTime = a.time ?? '00:00:00';
         final bTime = b.time ?? '00:00:00';
         return aTime.compareTo(bTime);
       });
   }
 
-  // ③ نمط مخصص
+  // ③ نمط مخصص (تطابق مباشر عبر appt.typeId مع slots)
   static List<AppointmentEntity> _sortByPattern(
     List<AppointmentEntity> entries,
     List<dynamic> slots,
     int startIndex,
   ) {
+    if (slots.isEmpty) return entries;
     final remaining = List<AppointmentEntity>.from(entries);
     final result = <AppointmentEntity>[];
     final cycleLength = slots.length;
@@ -122,18 +128,23 @@ class QueueSorter {
 
     while (remaining.isNotEmpty) {
       final currentSlotIndex = (startIndex + result.length + slotOffset) % cycleLength;
-      final expectedType = slots[currentSlotIndex].toString();
+      final rawSlot = slots[currentSlotIndex];
+      final expectedType = rawSlot is Map
+          ? (rawSlot['id']?.toString() ?? rawSlot['type_id']?.toString() ?? rawSlot.toString())
+          : rawSlot.toString();
 
       final matchIndex = remaining.indexWhere((appt) {
-        return appt.typeId == expectedType;
+        return appt.typeId == expectedType ||
+            (appt.typeName != null && appt.typeName == expectedType);
       });
 
       if (matchIndex != -1) {
         result.add(remaining.removeAt(matchIndex));
+        slotOffset = 0; // تفريغ الـ offset عند نجاح التنسيق لضمان استمرار النمط
       } else {
         slotOffset++;
-        // إذا نفدت المحاولات لتجنب التكرار والجمود، نضيف المتبقي بالترتيب الافتراضي
-        if (slotOffset > cycleLength) {
+        // إذا نفدت المحاولات في الدورة الكاملة لتجنب الجمود، نضيف المتبقي بالترتيب الافتراضي
+        if (slotOffset >= cycleLength) {
           result.addAll(remaining);
           break;
         }

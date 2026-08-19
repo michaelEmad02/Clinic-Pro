@@ -4,6 +4,8 @@ import 'package:clinic_pro/core/error/failures.dart';
 import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/features/settings/domain/entities/queue_rule_entity.dart';
+import 'package:clinic_pro/features/settings/domain/usecases/get_queue_rule_usecase.dart';
 import '../../../appointments/domain/entities/appointment_entity.dart';
 import '../../../appointments/domain/usecases/appointments/call_patient_usecase.dart';
 import '../../../appointments/domain/usecases/appointments/get_appointments_usecase.dart';
@@ -20,6 +22,7 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
   final SubscribeAppointmentsUseCase _subscribeAppointmentsUseCase;
   final CallPatientUseCase _callPatientUseCase;
   final SortQueueUseCase _sortQueueUseCase;
+  final GetQueueRuleUseCase _getQueueRuleUseCase;
 
   DoctorDashboardRepositoryImpl(
     this._remoteDataSource,
@@ -27,6 +30,7 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
     this._subscribeAppointmentsUseCase,
     this._callPatientUseCase,
     this._sortQueueUseCase,
+    this._getQueueRuleUseCase,
   );
 
   @override
@@ -46,6 +50,12 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
       final resolvedDoctorName = info['doctor_name'] as String;
       final resolvedClinicName = info['clinic_name'] as String;
 
+      final ruleResult = await _getQueueRuleUseCase(
+        doctorId: doctorId,
+        clinicId: clinicId,
+      );
+      final queueRule = ruleResult.fold((_) => null, (rule) => rule);
+
       final todayStr = DateTime.now().toIso8601String().substring(0, 10);
       final appointmentsResult = await _getAppointmentsUseCase(
         GetAppointmentsParams(clinicId: clinicId),
@@ -61,6 +71,7 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
             clinicId: clinicId,
             allAppts: allAppts,
             todayStr: todayStr,
+            queueRule: queueRule,
           );
           return Right(data);
         },
@@ -87,6 +98,12 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
       final resolvedDoctorName = info['doctor_name'] as String;
       final resolvedClinicName = info['clinic_name'] as String;
 
+      final ruleResult = await _getQueueRuleUseCase(
+        doctorId: doctorId,
+        clinicId: clinicId,
+      );
+      final queueRule = ruleResult.fold((_) => null, (rule) => rule);
+
       final stream = _subscribeAppointmentsUseCase(
         clinicId: clinicId,
         doctorId: doctorId,
@@ -101,6 +118,7 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
           clinicId: clinicId,
           allAppts: allAppts,
           todayStr: todayStr,
+          queueRule: queueRule,
         );
         yield Right(data);
       }
@@ -116,12 +134,17 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
     required String clinicId,
     required List<AppointmentEntity> allAppts,
     required String todayStr,
+    QueueRuleEntity? queueRule,
   }) {
-    final todayAppts = allAppts.where((a) {
-      return a.doctorId == doctorId &&
-          a.clinicId == clinicId &&
-          a.date == todayStr;
+    final now = DateTime.now();
+
+    // 1. All appointments for this doctor & clinic
+    final doctorClinicAppts = allAppts.where((a) {
+      return a.doctorId == doctorId && a.clinicId == clinicId;
     }).toList();
+
+    // 2. Today's appointments (booked for today)
+    final todayAppts = doctorClinicAppts.where((a) => a.date == todayStr).toList();
 
     final todayAppointmentsCount = todayAppts
         .where((a) => a.status != AppointmentStatus.cancelled)
@@ -129,10 +152,6 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
 
     final completedCount =
         todayAppts.where((a) => a.status == AppointmentStatus.done).length;
-
-    final waitingCount = todayAppts.where((a) {
-      return a.arrivedAt != null && a.status == AppointmentStatus.confirmed;
-    }).length;
 
     int totalMinutes = 0;
     int calledCount = 0;
@@ -149,28 +168,38 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
             '$avgMinutes ${AppStrings.isArabic ? 'دقيقة' : 'min'}')
         : '—';
 
-    final currentRaw = todayAppts
+    // 3. Active queue candidates (arrived within last 24h or booked for today, and not cancelled)
+    final activeQueueCandidates = doctorClinicAppts.where((a) {
+      if (a.status == AppointmentStatus.cancelled) return false;
+
+      final isToday = a.date == todayStr;
+      final isArrivedRecently = a.arrivedAt != null &&
+          now.difference(a.arrivedAt!.toLocal()).inHours.abs() < 24;
+
+      return isToday || isArrivedRecently;
+    }).toList();
+
+    // 4. Current patient in progress
+    final inProgressList = activeQueueCandidates
         .where((a) => a.status == AppointmentStatus.inProgress)
         .toList();
     final AppointmentEntity? currentPatient =
-        currentRaw.isNotEmpty ? currentRaw.first : null;
+        inProgressList.isNotEmpty ? inProgressList.first : null;
 
-    final todayWaitingAppts = allAppts.where((a) {
-      return a.doctorId == doctorId &&
-          a.clinicId == clinicId &&
-          a.date == todayStr &&
-          a.arrivedAt != null &&
-          a.status != AppointmentStatus.cancelled &&
-          a.status != AppointmentStatus.inProgress &&
-          a.status != AppointmentStatus.done;
-    }).toList();
+    // 5. Waiting Count (confirmed patients sitting in waiting room)
+    final waitingCount = activeQueueCandidates
+        .where((a) => a.status == AppointmentStatus.confirmed && a.arrivedAt != null)
+        .length;
 
+    // 6. Sort all active candidates using QueueSorter (which splits fixed vs waiting)
     final sortedAppts = _sortQueueUseCase(
-      appointments: todayWaitingAppts,
+      appointments: activeQueueCandidates,
+      rule: queueRule,
     );
 
+    // 7. Filter waitingQueue (only confirmed waiting patients)
     final waitingQueue = sortedAppts
-        .where((a) => a.status == AppointmentStatus.confirmed)
+        .where((a) => a.status == AppointmentStatus.confirmed && a.arrivedAt != null)
         .toList();
 
     return DoctorDashboardDataEntity(

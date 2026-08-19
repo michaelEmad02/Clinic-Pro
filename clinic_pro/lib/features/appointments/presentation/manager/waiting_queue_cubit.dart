@@ -59,15 +59,14 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
     _subscribeToQueueChanges();
 
     try {
-      final today = DateTime.now().toIso8601String().substring(0, 10);
+      final now = DateTime.now();
+      final today = now.toIso8601String().substring(0, 10);
 
-      // 1. جلب المواعيد
+      // 1. جلب المواعيد (بدون تقييد قاسي باليوم لمراعاة شيفتات منتصف الليل)
       final appointmentsResult = await _getAppointmentsUseCase(
         GetAppointmentsParams(
           clinicId: _clinicId,
           doctorId: _doctorId,
-          date: today,
-          status: AppointmentStatus.confirmed,
         ),
       );
 
@@ -78,10 +77,12 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
         (failure) => emit(WaitingQueueError(AppStrings.isArabic
             ? 'تعذّر تحميل طابور الانتظار'
             : 'Failed to load queue')),
-        (appointments) {
-          final sorted = _sortQueueUseCase(appointments: appointments, rule: _cachedRule);
+        (allAppointments) {
+          final activeCandidates = _filterActiveQueueCandidates(allAppointments, today, now);
+          final sorted = _sortQueueUseCase(appointments: activeCandidates, rule: _cachedRule);
           emit(WaitingQueueLoaded(
             queue: _mapEntitiesToQueuePatients(sorted),
+            rawQueue: sorted.cast<AppointmentEntity>(),
             doctorName: _doctorName,
           ));
         },
@@ -107,12 +108,30 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
     _ruleLoaded = true;
   }
 
+  /// فلترة المرشحين الفعالين في طابور الانتظار (تشمل المرضى الحاضرين في آخر 24 ساعة)
+  List<AppointmentEntity> _filterActiveQueueCandidates(
+    List<AppointmentEntity> allAppointments,
+    String today,
+    DateTime now,
+  ) {
+    return allAppointments.where((a) {
+      if (_doctorId.isNotEmpty && a.doctorId != _doctorId) return false;
+      if (a.status == AppointmentStatus.cancelled) return false;
+
+      final isToday = a.date == today;
+      final isArrivedRecently = a.arrivedAt != null &&
+          now.difference(a.arrivedAt!.toLocal()).inHours.abs() < 24;
+
+      return isToday || isArrivedRecently;
+    }).toList();
+  }
+
   /// استدعاء المريض التالي في الطابور
   Future<void> callNext() async {
     if (state is! WaitingQueueLoaded) return;
     final loaded = state as WaitingQueueLoaded;
 
-    final nextIndex = loaded.queue.indexWhere((p) => p.status == 'confirmed');
+    final nextIndex = loaded.queue.indexWhere((p) => p.status == AppointmentStatus.confirmed);
     if (nextIndex == -1) return;
 
     try {
@@ -132,7 +151,6 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
     }
   }
 
-  /// ... باقي العمليات
   Future<void> callPatient(String appointmentId) async {
     if (state is! WaitingQueueLoaded) return;
 
@@ -164,6 +182,10 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
         status: entity.status,
         isUrgent: entity.isUrgent,
         queueNumber: index + 1,
+        arrivedAt: entity.arrivedAt,
+        patientPhone: entity.patientPhone,
+        patientId: entity.patientId,
+        doctorName: entity.doctorName,
       );
     }).toList();
   }
@@ -175,18 +197,16 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
       clinicId: _clinicId,
       doctorId: _doctorId,
     ).listen((allAppointments) {
-      // فلترة ذكية: فقط مواعيد اليوم بحالة confirmed
-      final today = DateTime.now().toIso8601String().substring(0, 10);
-      final todayConfirmed = allAppointments
-          .where((a) => a.date == today && a.status == AppointmentStatus.confirmed)
-          .toList();
+      final now = DateTime.now();
+      final today = now.toIso8601String().substring(0, 10);
+      final activeCandidates = _filterActiveQueueCandidates(allAppointments, today, now);
 
-      // استخدام البيانات مباشرة من الـ stream + القاعدة المخزنة مؤقتاً
-      final sorted = _sortQueueUseCase(appointments: todayConfirmed, rule: _cachedRule);
+      final sorted = _sortQueueUseCase(appointments: activeCandidates, rule: _cachedRule);
 
       if (!isClosed) {
         emit(WaitingQueueLoaded(
           queue: _mapEntitiesToQueuePatients(sorted),
+          rawQueue: sorted.cast<AppointmentEntity>(),
           doctorName: _doctorName,
         ));
       }

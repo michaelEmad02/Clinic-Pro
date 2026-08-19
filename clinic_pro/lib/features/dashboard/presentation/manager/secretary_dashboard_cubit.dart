@@ -81,10 +81,13 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
           }).toList();
 
           // 4. جلب قائمة الانتظار الحالية (التي وصلت ولم تنتهِ ولم تُلغَ)
-          final queueRaw = todayAppts.where((a) {
-            return a.arrivedAt != null &&
-                a.status != 'cancelled' &&
-                a.status != 'done';
+          final queueRaw = allAppts.where((a) {
+            if (a.clinicId != _clinicId) return false;
+            if (a.status == 'cancelled' || a.status == 'done') return false;
+            if (a.arrivedAt == null) return false;
+            final isArrivedRecently = DateTime.now().difference(a.arrivedAt!).inHours < 24;
+            final isToday = a.date == todayStr;
+            return isArrivedRecently || isToday;
           }).toList();
 
           // ترتيب قائمة الانتظار حسب تاريخ الوصول arrived_at تصاعدياً

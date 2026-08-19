@@ -6,6 +6,7 @@ import '../constants/app_constants.dart';
 class AppListItem extends StatelessWidget {
   final String title;
   final String? subtitle;
+  final Widget? subtitleWidget;
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -14,6 +15,7 @@ class AppListItem extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
+    this.subtitleWidget,
     this.leading,
     this.trailing,
     this.onTap,
@@ -42,7 +44,10 @@ class AppListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: AppTextStyles.headlineSmall(context)),
-                  if (subtitle != null) ...[
+                  if (subtitleWidget != null) ...[
+                    const SizedBox(height: AppConstants.spaceXs),
+                    subtitleWidget!,
+                  ] else if (subtitle != null) ...[
                     const SizedBox(height: AppConstants.spaceXs),
                     Text(subtitle!, style: AppTextStyles.bodyMedium(context)),
                   ],

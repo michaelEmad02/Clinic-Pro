@@ -56,10 +56,28 @@ class AppointmentActionSheet {
                   onConfirmArrival();
                 },
               ),
-            if (appointment.status == AppointmentStatus.inProgress &&
+            // if ((appointment.status == AppointmentStatus.inProgress ||
+            //         ((appointment.status == AppointmentStatus.confirmed) &&
+            //             appointment.arrivedAt != null &&
+            //             DateTime.now()
+            //                     .difference(appointment.arrivedAt!.toLocal())
+            //                     .inHours >=
+            //                 4)) &&
+            //     onComplete != null)
+            //   _ActionTile(
+            //     icon: Icons.done_all_outlined,
+            //     label: AppStrings.completeVisit,
+            //     color: context.success,
+            //     onTap: () {
+            //       Navigator.pop(context);
+            //       onComplete();
+            //     },
+            //   ),
+            if (appointment.status != AppointmentStatus.done && 
+            appointment.status != AppointmentStatus.cancelled && 
                 onComplete != null)
               _ActionTile(
-                icon: Icons.done_all_outlined,
+                icon: Icons.check_circle_outline,
                 label: AppStrings.completeVisit,
                 color: context.success,
                 onTap: () {
