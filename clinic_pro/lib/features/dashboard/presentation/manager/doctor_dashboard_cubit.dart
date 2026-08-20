@@ -72,6 +72,8 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
           completedCount: data.completedCount,
           waitingCount: data.waitingCount,
           avgWaitingTime: data.avgWaitingTime,
+          todayRevenue: data.todayRevenue,
+          collectedAmount: data.collectedAmount,
         ));
       },
     );
@@ -98,6 +100,8 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
             completedCount: data.completedCount,
             waitingCount: data.waitingCount,
             avgWaitingTime: data.avgWaitingTime,
+            todayRevenue: data.todayRevenue,
+            collectedAmount: data.collectedAmount,
           ));
         },
       );

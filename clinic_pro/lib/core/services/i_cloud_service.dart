@@ -10,6 +10,7 @@ abstract class ICloudService {
     String columns = '*',
     Map<String, dynamic>? eq,
     Map<String, dynamic>? neq,
+    Map<String, List<dynamic>>? notIn,
     Map<String, dynamic>? gte,
     Map<String, dynamic>? lte,
     String? notIsNull,

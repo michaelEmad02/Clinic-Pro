@@ -43,6 +43,7 @@ class SupabaseServices extends ICloudService {
       String columns = '*',
       Map<String, dynamic>? eq,
       Map<String, dynamic>? neq,
+      Map<String, List<dynamic>>? notIn,
       Map<String, dynamic>? gte,
       Map<String, dynamic>? lte,
       String? notIsNull,
@@ -62,6 +63,16 @@ class SupabaseServices extends ICloudService {
     if (neq != null) {
       neq.forEach((key, value) {
         query = query.neq(key, value);
+      });
+    }
+
+    // تطبيق فلاتر عدم الوجود في القائمة (notIn) إذا كانت متوفرة
+    if (notIn != null) {
+      notIn.forEach((key, values) {
+        if (values.isNotEmpty) {
+          final formattedValues = '(${values.join(',')})';
+          query = query.not(key, 'in', formattedValues);
+        }
       });
     }
 

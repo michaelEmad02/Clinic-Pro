@@ -6,4 +6,9 @@ abstract class IDoctorDashboardRemoteDataSource {
     String? doctorName,
     String? clinicName,
   });
+
+  Future<double> fetchTodayCollectedAmount({
+    required String clinicId,
+    required List<String> appointmentIds,
+  });
 }

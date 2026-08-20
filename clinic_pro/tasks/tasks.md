@@ -45,6 +45,7 @@
  - language
  - themes
  - local notifications
+ - حاله ضغط الطبيب و السكرتير في نفس الوقت علي استدعاء التالي لنفس المريض , او واحد قبل التاني قبل ما يسمع عنده
  
 
 ## reports
@@ -77,5 +78,5 @@
 - [x] invoices
 - [ ] expenses
 - [x] reports
-- [ ] dashboard
+- [x] dashboard
 - [x] subscriptions

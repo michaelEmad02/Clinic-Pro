@@ -78,10 +78,13 @@ class PatientsRemoteDataSourceImpl implements IPatientsRemoteDataSource {
   Future<List<AppointmentModel>> getVisitsForPatient(
     String patientId,
   ) async {
-    // جلب المواعيد المرتبطة بالمريض (appointments WHERE patient_id = X)
+    // جلب زيارات المريض المكتملة والمؤكدة مباشرة من السيرفر (استبعاد المجدول والملغي)
     final appointments = await _cloud.select(
       table: SupabaseTables.appointments,
       eq: {'patient_id': patientId},
+      notIn: {
+        'status': [AppointmentStatus.scheduled, AppointmentStatus.cancelled]
+      },
       order: 'created_at',
       ascending: false,
     );

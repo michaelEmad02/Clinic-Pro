@@ -21,18 +21,20 @@ class SecretaryDashboardLoaded extends SecretaryDashboardState {
   final String clinicName;
   final String doctorName;
   final List<AppointmentEntity> liveQueue;
-  final String totalInvoiced;
-  final String totalCollected;
-  final int totalAppointmentsCount;
+  final int todayAppointmentsCount;
+  final int completedCount;
+  final int waitingCount;
+  final String avgWaitingTime;
 
   const SecretaryDashboardLoaded({
     required this.secretaryName,
     required this.clinicName,
     required this.doctorName,
     required this.liveQueue,
-    required this.totalInvoiced,
-    required this.totalCollected,
-    required this.totalAppointmentsCount,
+    required this.todayAppointmentsCount,
+    required this.completedCount,
+    required this.waitingCount,
+    required this.avgWaitingTime,
   });
 
   @override
@@ -41,9 +43,10 @@ class SecretaryDashboardLoaded extends SecretaryDashboardState {
         clinicName,
         doctorName,
         liveQueue,
-        totalInvoiced,
-        totalCollected,
-        totalAppointmentsCount,
+        todayAppointmentsCount,
+        completedCount,
+        waitingCount,
+        avgWaitingTime,
       ];
 }
 

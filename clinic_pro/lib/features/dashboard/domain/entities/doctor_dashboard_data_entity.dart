@@ -12,6 +12,8 @@ class DoctorDashboardDataEntity extends Equatable {
   final int completedCount;
   final int waitingCount;
   final String avgWaitingTime;
+  final double todayRevenue;
+  final double collectedAmount;
 
   const DoctorDashboardDataEntity({
     required this.doctorName,
@@ -22,6 +24,8 @@ class DoctorDashboardDataEntity extends Equatable {
     required this.completedCount,
     required this.waitingCount,
     required this.avgWaitingTime,
+    required this.todayRevenue,
+    required this.collectedAmount,
   });
 
   @override
@@ -34,5 +38,7 @@ class DoctorDashboardDataEntity extends Equatable {
         completedCount,
         waitingCount,
         avgWaitingTime,
+        todayRevenue,
+        collectedAmount,
       ];
 }

@@ -44,4 +44,32 @@ class DoctorDashboardRemoteDataSourceImpl
       'clinic_name': resolvedClinicName,
     };
   }
+
+  @override
+  Future<double> fetchTodayCollectedAmount({
+    required String clinicId,
+    required List<String> appointmentIds,
+  }) async {
+    if (appointmentIds.isEmpty) return 0.0;
+    try {
+      final invoices = await _cloudService.select(
+        table: SupabaseTables.invoices,
+        eq: {'clinic_id': clinicId , 'created_at' : DateTime.now().toIso8601String().substring(0, 10)},
+      );
+
+      final apptIdSet = appointmentIds.toSet();
+      double totalCollected = 0.0;
+
+      for (final raw in invoices) {
+        final sourceId = raw['source_id'] as String?;
+        if (sourceId != null && apptIdSet.contains(sourceId)) {
+          final paidAmount = (raw['paid_amount'] as num?)?.toDouble() ?? 0.0;
+          totalCollected += paidAmount;
+        }
+      }
+      return totalCollected;
+    } catch (_) {
+      return 0.0;
+    }
+  }
 }

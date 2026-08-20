@@ -21,6 +21,8 @@ class DoctorDashboardLoaded extends DoctorDashboardState {
   final int completedCount;
   final int waitingCount;
   final String avgWaitingTime; // e.g. "١٥ دقيقة"
+  final double todayRevenue;
+  final double collectedAmount;
 
   const DoctorDashboardLoaded({
     required this.doctorName,
@@ -31,6 +33,8 @@ class DoctorDashboardLoaded extends DoctorDashboardState {
     required this.completedCount,
     required this.waitingCount,
     required this.avgWaitingTime,
+    required this.todayRevenue,
+    required this.collectedAmount,
   });
 
   @override
@@ -43,6 +47,8 @@ class DoctorDashboardLoaded extends DoctorDashboardState {
         completedCount,
         waitingCount,
         avgWaitingTime,
+        todayRevenue,
+        collectedAmount,
       ];
 }
 

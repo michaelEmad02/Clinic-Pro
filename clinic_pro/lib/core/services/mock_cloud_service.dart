@@ -10,6 +10,7 @@ class MockCloudService implements ICloudService {
     String columns = '*',
     Map<String, dynamic>? eq,
     Map<String, dynamic>? neq,
+    Map<String, List<dynamic>>? notIn,
     Map<String, dynamic>? gte,
     Map<String, dynamic>? lte,
     String? notIsNull,
@@ -22,6 +23,20 @@ class MockCloudService implements ICloudService {
     if (eq != null) {
       data = data.where((item) {
         return eq.entries.every((entry) => item[entry.key] == entry.value);
+      }).toList();
+    }
+
+    // Filtering (neq)
+    if (neq != null) {
+      data = data.where((item) {
+        return neq.entries.every((entry) => item[entry.key] != entry.value);
+      }).toList();
+    }
+
+    // Filtering (notIn)
+    if (notIn != null) {
+      data = data.where((item) {
+        return notIn.entries.every((entry) => !entry.value.contains(item[entry.key]));
       }).toList();
     }
 

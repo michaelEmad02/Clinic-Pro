@@ -13,6 +13,8 @@ class DoctorStatsRow extends StatelessWidget {
   final int completedCount;
   final int waitingCount;
   final String avgWaitingTime;
+  final double todayRevenue;
+  final double collectedAmount;
 
   const DoctorStatsRow({
     super.key,
@@ -20,21 +22,23 @@ class DoctorStatsRow extends StatelessWidget {
     required this.completedCount,
     required this.waitingCount,
     required this.avgWaitingTime,
+    required this.todayRevenue,
+    required this.collectedAmount,
   });
 
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return SizedBox(
+      height: isMobile ? 190 : 95,
       child: GridView.count(
-        crossAxisCount: isMobile ? 2 : 4,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        scrollDirection: Axis.horizontal,
+        crossAxisCount: isMobile ? 2 : 1,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: isMobile ? 1.55 : 1.85,
+        childAspectRatio: isMobile ? 0.46 : 0.42,
         children: [
           _buildStatItem(
             context: context,
@@ -68,6 +72,22 @@ class DoctorStatsRow extends StatelessWidget {
             color: context.primaryContainer,
             bgColor: context.primaryLightColor,
           ),
+          _buildStatItem(
+            context: context,
+            title: AppStrings.isArabic ? 'إيرادات اليوم' : "Today's Revenue",
+            value: '${todayRevenue.toStringAsFixed(0)} ${AppStrings.sar}',
+            icon: Icons.account_balance_wallet_outlined,
+            color: context.primary,
+            bgColor: context.primaryLightColor,
+          ),
+          _buildStatItem(
+            context: context,
+            title: AppStrings.isArabic ? 'المحصل' : 'Collected Amount',
+            value: '${collectedAmount.toStringAsFixed(0)} ${AppStrings.sar}',
+            icon: Icons.price_check_outlined,
+            color: context.successText,
+            bgColor: context.successBg,
+          ),
         ],
       ),
     );
@@ -82,10 +102,10 @@ class DoctorStatsRow extends StatelessWidget {
     required Color bgColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
@@ -95,9 +115,7 @@ class DoctorStatsRow extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(6),
@@ -107,34 +125,40 @@ class DoctorStatsRow extends StatelessWidget {
             ),
             child: Icon(icon, color: color, size: 18),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.caption(context).copyWith(
-                  color: context.textSecondary,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 11,
-                ),
-              ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  value,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.dataNumeric(context).copyWith(
-                    fontSize: 16,
-                    color: context.textPrimary,
+                  style: AppTextStyles.caption(context).copyWith(
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.dataNumeric(context).copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -13,15 +13,21 @@ import 'queue_item.dart';
 class WaitingQueueList extends StatelessWidget {
   final List<AppointmentEntity> queue;
   final VoidCallback onCallNext;
+  final int? maxItems;
 
   const WaitingQueueList({
     super.key,
     required this.queue,
     required this.onCallNext,
+    this.maxItems,
   });
 
   @override
   Widget build(BuildContext context) {
+    final displayedQueue = (maxItems != null && maxItems! < queue.length)
+        ? queue.take(maxItems!).toList()
+        : queue;
+        
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -62,7 +68,7 @@ class WaitingQueueList extends StatelessWidget {
         const SizedBox(height: 8),
 
         // ── حالة فارغة ──
-        if (queue.isEmpty)
+        if (displayedQueue.isEmpty)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.all(24),
@@ -85,11 +91,11 @@ class WaitingQueueList extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: queue.length,
+            itemCount: displayedQueue.length,
             itemBuilder: (context, index) {
               return QueueItem(
                 index: index,
-                patient: queue[index],
+                patient: displayedQueue[index],
               );
             },
           ),

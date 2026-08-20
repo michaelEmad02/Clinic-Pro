@@ -225,6 +225,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     completedCount: state.completedCount,
                     waitingCount: state.waitingCount,
                     avgWaitingTime: state.avgWaitingTime,
+                    todayRevenue: state.todayRevenue,
+                    collectedAmount: state.collectedAmount,
                   ),
                   const SizedBox(height: 24),
                   const DoctorQuickActions(),
@@ -246,6 +248,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   const SizedBox(height: 24),
                   WaitingQueueList(
                     queue: state.waitingQueue,
+                    maxItems: 5,
                     onCallNext: () {
                       context.read<DoctorDashboardCubit>().callNextPatient();
                     },

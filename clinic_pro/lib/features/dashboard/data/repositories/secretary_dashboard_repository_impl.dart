@@ -5,63 +5,64 @@ import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/features/settings/domain/entities/queue_rule_entity.dart';
-import 'package:clinic_pro/features/appointments/data/data_sources/i_appointment_remote_data_source.dart';
 import 'package:clinic_pro/features/settings/data/data_sources/settings_remote_data_source.dart';
+import 'package:clinic_pro/features/appointments/data/data_sources/i_appointment_remote_data_source.dart';
 import '../../../appointments/domain/entities/appointment_entity.dart';
-import '../../../appointments/domain/usecases/appointments/call_patient_usecase.dart';
 import '../../../appointments/domain/usecases/appointments/sort_queue_usecase.dart';
-import '../../domain/entities/doctor_dashboard_data_entity.dart';
-import '../../domain/repositories/i_doctor_dashboard_repository.dart';
-import '../datasources/i_doctor_dashboard_remote_data_source.dart';
+import '../../domain/entities/secretary_dashboard_data_entity.dart';
+import '../../domain/repositories/i_secretary_dashboard_repository.dart';
+import '../datasources/i_secretary_dashboard_remote_data_source.dart';
 
-@LazySingleton(as: IDoctorDashboardRepository)
-class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
-  final IDoctorDashboardRemoteDataSource _remoteDataSource;
+@LazySingleton(as: ISecretaryDashboardRepository)
+class SecretaryDashboardRepositoryImpl implements ISecretaryDashboardRepository {
+  final ISecretaryDashboardRemoteDataSource _remoteDataSource;
   final IAppointmentRemoteDataSource _appointmentRemoteDataSource;
   final ISettingsRemoteDataSource _settingsRemoteDataSource;
-  final CallPatientUseCase _callPatientUseCase;
   final SortQueueUseCase _sortQueueUseCase;
 
-  DoctorDashboardRepositoryImpl(
+  SecretaryDashboardRepositoryImpl(
     this._remoteDataSource,
     this._appointmentRemoteDataSource,
     this._settingsRemoteDataSource,
-    this._callPatientUseCase,
     this._sortQueueUseCase,
   );
 
   @override
-  Future<Either<Failure, DoctorDashboardDataEntity>> getDoctorDashboardData({
-    required String doctorId,
+  Future<Either<Failure, SecretaryDashboardDataEntity>> getSecretaryDashboardData({
+    required String secretaryId,
     required String clinicId,
-    String? doctorName,
+    String? secretaryName,
     String? clinicName,
   }) async {
     try {
-      final info = await _remoteDataSource.fetchDoctorDashboardData(
-        doctorId: doctorId,
+      final info = await _remoteDataSource.fetchSecretaryDashboardData(
+        secretaryId: secretaryId,
         clinicId: clinicId,
-        doctorName: doctorName,
+        secretaryName: secretaryName,
         clinicName: clinicName,
       );
-      final resolvedDoctorName = info['doctor_name'] as String;
+      final resolvedSecretaryName = info['secretary_name'] as String;
       final resolvedClinicName = info['clinic_name'] as String;
+      final doctorName = info['doctor_name'] as String;
+      final activeDoctorId = info['active_doctor_id'] as String?;
 
-      final queueRule = await _settingsRemoteDataSource.getQueueRule(
-        doctorId: doctorId,
-        clinicId: clinicId,
-      );
+      QueueRuleEntity? queueRule;
+      if (activeDoctorId != null) {
+        queueRule = await _settingsRemoteDataSource.getQueueRule(
+          doctorId: activeDoctorId,
+          clinicId: clinicId,
+        );
+      }
 
       final todayStr = DateTime.now().toIso8601String().substring(0, 10);
       final allAppts = await _appointmentRemoteDataSource.getAppointments(
         clinicId: clinicId,
       );
 
-      final data = await _processAppointmentsToEntity(
-        doctorName: resolvedDoctorName,
+      final data = _processAppointmentsToEntity(
+        secretaryName: resolvedSecretaryName,
         clinicName: resolvedClinicName,
-        doctorId: doctorId,
-        clinicId: clinicId,
+        doctorName: doctorName,
         allAppts: allAppts,
         todayStr: todayStr,
         queueRule: queueRule,
@@ -73,26 +74,31 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
   }
 
   @override
-  Stream<Either<Failure, DoctorDashboardDataEntity>> watchDoctorDashboardData({
-    required String doctorId,
+  Stream<Either<Failure, SecretaryDashboardDataEntity>> watchSecretaryDashboardData({
+    required String secretaryId,
     required String clinicId,
-    String? doctorName,
+    String? secretaryName,
     String? clinicName,
   }) async* {
     try {
-      final info = await _remoteDataSource.fetchDoctorDashboardData(
-        doctorId: doctorId,
+      final info = await _remoteDataSource.fetchSecretaryDashboardData(
+        secretaryId: secretaryId,
         clinicId: clinicId,
-        doctorName: doctorName,
+        secretaryName: secretaryName,
         clinicName: clinicName,
       );
-      final resolvedDoctorName = info['doctor_name'] as String;
+      final resolvedSecretaryName = info['secretary_name'] as String;
       final resolvedClinicName = info['clinic_name'] as String;
+      final doctorName = info['doctor_name'] as String;
+      final activeDoctorId = info['active_doctor_id'] as String?;
 
-      final queueRule = await _settingsRemoteDataSource.getQueueRule(
-        doctorId: doctorId,
-        clinicId: clinicId,
-      );
+      QueueRuleEntity? queueRule;
+      if (activeDoctorId != null) {
+        queueRule = await _settingsRemoteDataSource.getQueueRule(
+          doctorId: activeDoctorId,
+          clinicId: clinicId,
+        );
+      }
 
       final stream = _appointmentRemoteDataSource
           .subscribeAppointments(clinicId: clinicId)
@@ -104,11 +110,10 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
 
       await for (final allAppts in stream) {
         final todayStr = DateTime.now().toIso8601String().substring(0, 10);
-        final data = await _processAppointmentsToEntity(
-          doctorName: resolvedDoctorName,
+        final data = _processAppointmentsToEntity(
+          secretaryName: resolvedSecretaryName,
           clinicName: resolvedClinicName,
-          doctorId: doctorId,
-          clinicId: clinicId,
+          doctorName: doctorName,
           allAppts: allAppts,
           todayStr: todayStr,
           queueRule: queueRule,
@@ -120,24 +125,18 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
     }
   }
 
-  Future<DoctorDashboardDataEntity> _processAppointmentsToEntity({
-    required String doctorName,
+  SecretaryDashboardDataEntity _processAppointmentsToEntity({
+    required String secretaryName,
     required String clinicName,
-    required String doctorId,
-    required String clinicId,
+    required String doctorName,
     required List<AppointmentEntity> allAppts,
     required String todayStr,
     QueueRuleEntity? queueRule,
-  }) async {
+  }) {
     final now = DateTime.now();
 
-    // 1. All appointments for this doctor & clinic
-    final doctorClinicAppts = allAppts.where((a) {
-      return a.doctorId == doctorId && a.clinicId == clinicId;
-    }).toList();
-
-    // 2. Today's appointments (booked for today)
-    final todayAppts = doctorClinicAppts.where((a) => a.date == todayStr).toList();
+    // 1. مواعيد اليوم للعيادة (المحجوزة لليوم وغير الملقاة)
+    final todayAppts = allAppts.where((a) => a.date == todayStr).toList();
 
     final todayAppointmentsCount = todayAppts
         .where((a) => a.status != AppointmentStatus.cancelled)
@@ -146,18 +145,7 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
     final completedCount =
         todayAppts.where((a) => a.status == AppointmentStatus.done).length;
 
-    // حساب إيرادات اليوم وإجمالي المحصل من الفواتير
-    final double todayRevenue = todayAppts
-        .where((a) => a.status != AppointmentStatus.cancelled)
-        .fold<double>(0.0, (sum, a) => sum + (a.price));
-
-    final todayApptIds = todayAppts.map((a) => a.id).toList();
-    final double collectedAmount =
-        await _remoteDataSource.fetchTodayCollectedAmount(
-      clinicId: clinicId,
-      appointmentIds: todayApptIds,
-    );
-
+    // 2. حساب متوسط الانتظار
     int totalMinutes = 0;
     int calledCount = 0;
     for (final appt in todayAppts) {
@@ -173,8 +161,8 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
             '$avgMinutes ${AppStrings.isArabic ? 'دقيقة' : 'min'}')
         : '—';
 
-    // 3. Active queue candidates (arrived within last 24h or booked for today, and not cancelled)
-    final activeQueueCandidates = doctorClinicAppts.where((a) {
+    // 3. مرشحي قائمة الانتظار الحية (وصلوا خلال آخر 24 ساعة أو مواعيد اليوم وغير ملغاة)
+    final activeQueueCandidates = allAppts.where((a) {
       if (a.status == AppointmentStatus.cancelled) return false;
 
       final isToday = a.date == todayStr;
@@ -184,53 +172,32 @@ class DoctorDashboardRepositoryImpl implements IDoctorDashboardRepository {
       return isToday || isArrivedRecently;
     }).toList();
 
-    // 4. Current patient in progress
-    final inProgressList = activeQueueCandidates
-        .where((a) => a.status == AppointmentStatus.inProgress)
-        .toList();
-    final AppointmentEntity? currentPatient =
-        inProgressList.isNotEmpty ? inProgressList.first : null;
-
-    // 5. Waiting Count (confirmed patients sitting in waiting room)
+    // 4. عدد المنتظرين في العيادة (الذين وصلت حالتهم confirmed وتم تأكيد وصولهم ولم يخرجوا بعد)
     final waitingCount = activeQueueCandidates
         .where((a) => a.status == AppointmentStatus.confirmed && a.arrivedAt != null)
         .length;
 
-    // 6. Sort all active candidates using QueueSorter (which splits fixed vs waiting)
+    // 5. ترتيب قائمة الانتظار
     final sortedAppts = _sortQueueUseCase(
       appointments: activeQueueCandidates,
       rule: queueRule,
     );
 
-    // 7. Filter waitingQueue (only confirmed waiting patients)
-    final waitingQueue = sortedAppts
-        .where((a) => a.status == AppointmentStatus.confirmed && a.arrivedAt != null)
+    // 6. قائمة الانتظار الحية المفلترة للعرض (مرتبة بدون الملغاة أو المكتملة مسبقاً)
+    final liveQueue = sortedAppts
+        .where((a) => a.status != AppointmentStatus.cancelled && a.status != AppointmentStatus.done)
         .toList();
 
-    return DoctorDashboardDataEntity(
-      doctorName: doctorName,
+    return SecretaryDashboardDataEntity(
+      secretaryName: secretaryName,
       clinicName: clinicName,
-      currentPatient: currentPatient,
-      waitingQueue: waitingQueue,
+      doctorName: doctorName,
+      liveQueue: liveQueue,
       todayAppointmentsCount: todayAppointmentsCount,
       completedCount: completedCount,
       waitingCount: waitingCount,
       avgWaitingTime: avgWaitingTime,
-      todayRevenue: todayRevenue,
-      collectedAmount: collectedAmount,
     );
-  }
-
-  @override
-  Future<Either<Failure, void>> callNextPatient({
-    required String appointmentId,
-  }) async {
-    try {
-      final result = await _callPatientUseCase(appointmentId);
-      return result;
-    } catch (e) {
-      return Left(QueryFailure.fromException(e));
-    }
   }
 
   String _toArabicNumbers(String input) {

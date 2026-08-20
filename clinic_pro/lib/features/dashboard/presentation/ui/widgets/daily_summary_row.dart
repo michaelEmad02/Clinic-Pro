@@ -3,59 +3,70 @@
 // ─────────────────────────────────────────
 
 import 'package:flutter/material.dart';
-import '../../../../../core/themes/app_colors.dart';
-import '../../../../../core/themes/app_text_styles.dart';
-import '../../../../../core/strings/app_strings.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
 
 class DailySummaryRow extends StatelessWidget {
-  final String totalInvoiced;
-  final String totalCollected;
-  final int totalAppointmentsCount;
+  final int todayAppointmentsCount;
+  final int completedCount;
+  final int waitingCount;
+  final String avgWaitingTime;
 
   const DailySummaryRow({
     super.key,
-    required this.totalInvoiced,
-    required this.totalCollected,
-    required this.totalAppointmentsCount,
+    required this.todayAppointmentsCount,
+    required this.completedCount,
+    required this.waitingCount,
+    required this.avgWaitingTime,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    return SizedBox(
+      height: isMobile ? 190 : 95,
+      child: GridView.count(
+        scrollDirection: Axis.horizontal,
+        crossAxisCount: isMobile ? 2 : 1,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: isMobile ? 0.46 : 0.42,
         children: [
-          Expanded(
-            child: _buildSummaryItem(
-              context: context,
-              title: AppStrings.dailyInvoices,
-              value: '$totalInvoiced ${AppStrings.sar}',
-              icon: Icons.receipt_long_outlined,
-              color: context.primary,
-              bgColor: context.primaryLightColor,
-            ),
+          _buildSummaryItem(
+            context: context,
+            title: AppStrings.isArabic ? 'مواعيد اليوم' : 'Today Appointments',
+            value: '$todayAppointmentsCount',
+            icon: Icons.calendar_today_outlined,
+            color: context.primary,
+            bgColor: context.primaryLightColor,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildSummaryItem(
-              context: context,
-              title: AppStrings.dailyCollected,
-              value: '$totalCollected ${AppStrings.sar}',
-              icon: Icons.payments_outlined,
-              color: context.successText,
-              bgColor: context.successBg,
-            ),
+          _buildSummaryItem(
+            context: context,
+            title: AppStrings.isArabic ? 'مكتمل اليوم' : 'Completed Today',
+            value: '$completedCount',
+            icon: Icons.check_circle_outline,
+            color: context.successText,
+            bgColor: context.successBg,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildSummaryItem(
-              context: context,
-              title: AppStrings.totalAppointmentsStr,
-              value: '$totalAppointmentsCount',
-              icon: Icons.calendar_today_outlined,
-              color: context.warningText,
-              bgColor: context.warningBg,
-            ),
+          _buildSummaryItem(
+            context: context,
+            title: AppStrings.isArabic ? 'قيد الانتظار' : 'Waiting',
+            value: '$waitingCount',
+            icon: Icons.hourglass_empty_outlined,
+            color: context.warningText,
+            bgColor: context.warningBg,
+          ),
+          _buildSummaryItem(
+            context: context,
+            title: AppStrings.isArabic ? 'متوسط الانتظار' : 'Avg Wait Time',
+            value: avgWaitingTime,
+            icon: Icons.access_time,
+            color: context.primaryContainer,
+            bgColor: context.primaryLightColor,
           ),
         ],
       ),
@@ -71,10 +82,10 @@ class DailySummaryRow extends StatelessWidget {
     required Color bgColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
@@ -84,8 +95,7 @@ class DailySummaryRow extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(6),
@@ -93,24 +103,41 @@ class DailySummaryRow extends StatelessWidget {
               color: bgColor,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: 16),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: AppTextStyles.caption(context).copyWith(
-              color: context.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: AppTextStyles.dataNumeric(context).copyWith(
-              fontSize: 15,
-              color: context.textPrimary,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.caption(context).copyWith(
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.dataNumeric(context).copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

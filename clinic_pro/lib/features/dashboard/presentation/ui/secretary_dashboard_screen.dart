@@ -80,6 +80,8 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
     _cubit.loadDashboardData(
       secretaryId: _secretaryId,
       clinicId: _clinicId,
+      secretaryName: currentUser.name,
+      clinicName: settingsState.clinicEntity?.name,
     );
   }
 
@@ -161,8 +163,9 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
           String title = AppStrings.secretaryDashboardTitle;
           String sub = AppStrings.receptionOffice;
           if (state is SecretaryDashboardLoaded) {
+            String str = AppStrings.isArabic ? 'الطبيب : ' : 'Doctor';
             title = state.clinicName;
-            sub = '${AppStrings.welcomeBack}${state.secretaryName}         • ${state.doctorName}';
+            sub = '• ${AppStrings.welcomeBack}${state.secretaryName}         •  ${str + state.doctorName}';
           }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,9 +238,10 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               children: [
                 DailySummaryRow(
-                  totalInvoiced: state.totalInvoiced,
-                  totalCollected: state.totalCollected,
-                  totalAppointmentsCount: state.totalAppointmentsCount,
+                  todayAppointmentsCount: state.todayAppointmentsCount,
+                  completedCount: state.completedCount,
+                  waitingCount: state.waitingCount,
+                  avgWaitingTime: state.avgWaitingTime,
                 ),
                 const SizedBox(height: 24),
                 SecretaryQuickActions(
