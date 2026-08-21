@@ -6,6 +6,7 @@ import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
+import 'package:clinic_pro/core/widgets/app_error_widget.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/clinics_cubit.dart';
@@ -77,18 +78,10 @@ class _DoctorReportsBodyState extends State<_DoctorReportsBody> {
             );
           }
           if (state is DoctorPerformanceError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<DoctorPerformanceCubit>().loadReports(forceRefresh: true),
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
-              ),
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.message,
+              onRetry: () => context.read<DoctorPerformanceCubit>().loadReports(forceRefresh: true),
             );
           }
           if (state is DoctorPerformanceLoaded) {

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/widgets/app_loading.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../manager/drugs_cubit.dart';
 import '../../manager/drugs_state.dart';
@@ -26,7 +27,7 @@ class AddDrugSearchSheet extends StatelessWidget {
           if (state is DrugsLoading) {
             return const Padding(
               padding: EdgeInsets.all(40),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: AppLoadingWidget()),
             );
           }
 

@@ -167,9 +167,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               children: [
                 _buildAlertsSection(),
-                const QuickActionsRow(),
-                const SizedBox(height: 24),
                 _buildSummaryStatsSection(),
+                const SizedBox(height: 24),
+                const QuickActionsRow(),
                 const SizedBox(height: 24),
                 _buildWeeklyRevenueSection(),
               ],

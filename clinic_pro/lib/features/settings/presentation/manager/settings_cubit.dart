@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/constants/staff_roles.dart';
+import '../../domain/usecases/delete_account_usecase.dart';
 import '../../domain/usecases/update_profile_usecase.dart';
 import '../../domain/usecases/get_clinic_info_usecase.dart';
 import '../../domain/usecases/get_available_clinics_usecase.dart';
@@ -23,6 +24,7 @@ import '../../data/data_sources/i_settings_local_data_source.dart';
 
 @injectable
 class SettingsCubit extends Cubit<SettingsState> {
+  final DeleteAccountUseCase _deleteAccountUseCase;
   final UpdateProfileUseCase _updateProfileUseCase;
   final GetClinicInfoUseCase _getClinicInfoUseCase;
   final GetAvailableClinicsUseCase _getAvailableClinicsUseCase;
@@ -34,6 +36,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   final ISettingsLocalDataSource _localDataSource;
 
   SettingsCubit(
+    this._deleteAccountUseCase,
     this._updateProfileUseCase,
     this._getClinicInfoUseCase,
     this._getAvailableClinicsUseCase,
@@ -44,6 +47,21 @@ class SettingsCubit extends Cubit<SettingsState> {
     this._fetchAllStaffUseCase,
     this._localDataSource,
   ) : super(const SettingsState());
+
+  Future<bool> deleteAccount(String userId) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    final result = await _deleteAccountUseCase(userId);
+    return result.fold(
+      (failure) {
+        emit(state.copyWith(isLoading: false, error: failure.message));
+        return false;
+      },
+      (_) {
+        emit(state.copyWith(isLoading: false));
+        return true;
+      },
+    );
+  }
 
   /// تحميل الإعدادات (العيادة، العيادات المتاحة، والاشتراك)
   Future<void> loadSettings(StaffRoles role, String userId) async {

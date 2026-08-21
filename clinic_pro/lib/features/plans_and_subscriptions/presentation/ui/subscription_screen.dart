@@ -12,6 +12,8 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/widgets/app_loading.dart';
 import '../../../auth/presentation/manager/auth_cubit.dart';
 import '../manager/subscriptions_cubit.dart';
 import '../manager/subscriptions_state.dart';
@@ -63,7 +65,7 @@ class _SubscriptionBody extends StatelessWidget {
       body: BlocBuilder<SubscriptionsCubit, SubscriptionsState>(
         builder: (context, state) {
           if (state is SubscriptionsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: AppLoadingWidget());
           }
 
           if (state is SubscriptionsLoaded) {
@@ -217,13 +219,13 @@ class _SubscriptionBody extends StatelessWidget {
             );
           }
 
-          return Center(
-            child: ElevatedButton(
-              onPressed: () => context
-                  .read<SubscriptionsCubit>()
-                  .loadSubscriptionsData(userId),
-              child: Text(AppStrings.retry),
-            ),
+          final errorMsg = state is SubscriptionsError ? state.message : null;
+          return AppErrorWidget.buildErrorView(
+            context: context,
+            error: errorMsg,
+            onRetry: () => context
+                .read<SubscriptionsCubit>()
+                .loadSubscriptionsData(userId),
           );
         },
       ),

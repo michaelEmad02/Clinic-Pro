@@ -4,6 +4,7 @@ import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../domain/entities/clinic_entity.dart';
 import 'widgets/progress_indicator_bar.dart';
 import 'widgets/clinic_form.dart';
@@ -32,9 +33,7 @@ class CreateClinicScreen extends StatelessWidget {
           if (state is ClinicsLoaded && isOnboarding) {
             context.go(RouteConstants.ownerDashboard);
           } else if (state is ClinicsError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            AppSnackbar.error(context, message: state.message);
           }
         },
         child: Scaffold(

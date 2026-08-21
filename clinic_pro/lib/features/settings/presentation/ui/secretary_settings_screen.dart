@@ -11,6 +11,8 @@ import '../../../auth/presentation/manager/auth_cubit.dart';
 import '../manager/settings_cubit.dart';
 import '../manager/settings_state.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/widgets/app_loading.dart';
 import 'widgets/shared_settings_widgets.dart';
 import 'widgets/settings_account_section.dart';
 import 'widgets/settings_clinic_section.dart';
@@ -45,12 +47,18 @@ class SecretarySettingsScreen extends StatelessWidget {
       body: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, state) {
           if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: AppLoadingWidget());
           }
           if (state.error != null) {
-            return Center(
-              child: Text('${AppStrings.error}: ${state.error}',
-                  style: AppTextStyles.bodyLarge(context)),
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.error,
+              onRetry: () {
+                final role = user?.role ?? StaffRoles.secretary;
+                context
+                    .read<SettingsCubit>()
+                    .loadSettings(role, user?.id ?? '');
+              },
             );
           }
           return RefreshIndicator(
@@ -246,6 +254,12 @@ class SecretarySettingsScreen extends StatelessWidget {
             icon: Icons.language_outlined,
             label: AppStrings.language,
             trailing: const LanguageSwitch(),
+          ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          NavSettingsItem(
+            icon: Icons.info_outline,
+            label: AppStrings.aboutUs,
+            onTap: () => context.push(RouteConstants.aboutUs),
           ),
           Divider(height: 1, thickness: 0.5, color: context.border),
           const SettingsLogoutSection(inline: true),

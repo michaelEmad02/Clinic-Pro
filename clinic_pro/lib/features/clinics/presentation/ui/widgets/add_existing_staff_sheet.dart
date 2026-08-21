@@ -4,6 +4,7 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/constants/staff_roles.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../../../core/widgets/app_loading.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../auth/presentation/manager/auth_cubit.dart';
@@ -162,7 +163,7 @@ class _AddExistingStaffSheetState extends State<AddExistingStaffSheet> {
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(AppConstants.spaceLg),
-                    child: CircularProgressIndicator(),
+                    child: AppLoadingWidget(size: AppLoadingSize.small),
                   ),
                 )
               : state is StaffError

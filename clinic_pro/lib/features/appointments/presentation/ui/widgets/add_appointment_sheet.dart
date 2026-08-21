@@ -6,6 +6,8 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/widgets/app_loading.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import '../../../../../core/utils/responsive_helper.dart';
 import '../../../../../core/constants/staff_roles.dart';
 import '../../../../../core/di/injection_container.dart';
@@ -206,9 +208,7 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
 
   void _submit() {
     if (_patientId == null || _doctorId == null || _typeId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.fillRequiredFields)),
-      );
+      AppSnackbar.info(context, message: AppStrings.fillRequiredFields);
       return;
     }
 
@@ -248,11 +248,9 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
     }
 
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(_isEditing
-              ? AppStrings.updatedSuccess
-              : AppStrings.addedSuccess)),
+    AppSnackbar.success(
+      context,
+      message: _isEditing ? AppStrings.updatedSuccess : AppStrings.addedSuccess,
     );
   }
 
@@ -488,7 +486,7 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                     ? const Center(
                         child: Padding(
                           padding: EdgeInsets.all(8.0),
-                          child: CircularProgressIndicator(),
+                          child: AppLoadingWidget(size: AppLoadingSize.small),
                         ),
                       )
                     : DropdownButtonFormField<String>(

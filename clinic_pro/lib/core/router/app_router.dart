@@ -24,6 +24,7 @@ import '../../features/prescription/presentation/ui/drugs_screen.dart';
 import '../../features/prescription/presentation/ui/prescription_screen.dart';
 import '../../features/prescription/presentation/ui/templates_screen.dart';
 import '../../features/settings/presentation/ui/settings_screen.dart';
+import '../../features/settings/presentation/ui/about_us_screen.dart';
 import '../../features/plans_and_subscriptions/domain/entities/company_info_entity.dart';
 import '../../features/plans_and_subscriptions/domain/entities/plan_entity.dart';
 import '../../features/plans_and_subscriptions/presentation/ui/subscription_screen.dart';
@@ -193,6 +194,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteConstants.settingsSubscription,
       builder: (context, state) => const SubscriptionScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.aboutUs,
+      builder: (context, state) => const AboutUsScreen(),
     ),
     GoRoute(
       path: RouteConstants.plansComparison,

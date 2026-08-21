@@ -8,6 +8,8 @@ import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
+import 'package:clinic_pro/core/widgets/app_loading.dart';
+import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
 import 'package:clinic_pro/features/invoices/presentation/manager/invoices_cubit.dart';
@@ -283,9 +285,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       setState(() => _isLoading = false);
       if (success && context.mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppStrings.operationSuccessful)),
-        );
+        AppSnackbar.success(context, message: AppStrings.operationSuccessful);
       }
       return;
     }
@@ -304,11 +304,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
 
     if (success && context.mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.operationSuccessful),
-        ),
-      );
+      AppSnackbar.success(context, message: AppStrings.operationSuccessful);
     }
   }
 
@@ -347,7 +343,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
           if (_isLoading)
             const SizedBox(
               height: 200,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: AppLoadingWidget()),
             )
           else
             Column(

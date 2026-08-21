@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 
 class AccountForm extends StatefulWidget {
   const AccountForm({
@@ -39,12 +40,7 @@ class _AccountFormState extends State<AccountForm> {
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       if (!_agreedToTerms) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.agreeToTerms),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        AppSnackbar.info(context, message: AppStrings.agreeToTerms);
         return;
       }
       // Navigate to plan selection on success
@@ -84,9 +80,7 @@ class _AccountFormState extends State<AccountForm> {
             ),
           );
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          AppSnackbar.error(context, message: state.message);
         }
       },
       child: Form(

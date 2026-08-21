@@ -13,6 +13,8 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import 'create_clinic_screen.dart';
 import '../../domain/entities/clinic_entity.dart';
@@ -71,19 +73,9 @@ class _ClinicsBody extends StatelessWidget {
       body: BlocConsumer<ClinicsCubit, ClinicsState>(
         listener: (context, state) {
           if (state is ClinicsError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: context.danger,
-              ),
-            );
+            AppSnackbar.error(context, message: state.message);
           } else if (state is ClinicsLoaded && state.actionMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.actionMessage!),
-                backgroundColor: context.successText,
-              ),
-            );
+            AppSnackbar.success(context, message: state.actionMessage!);
           }
         },
         builder: (context, state) {
@@ -95,18 +87,10 @@ class _ClinicsBody extends StatelessWidget {
           }
           if (state is ClinicsError) {
             final cubit = context.read<ClinicsCubit>();
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: AppConstants.spaceMd),
-                  ElevatedButton(
-                    onPressed: () => cubit.fetchClinics(ownerId),
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
-              ),
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.message,
+              onRetry: () => cubit.fetchClinics(ownerId),
             );
           }
           if (state is ClinicsLoaded) {

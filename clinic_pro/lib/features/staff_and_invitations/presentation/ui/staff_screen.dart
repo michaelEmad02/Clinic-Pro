@@ -6,6 +6,8 @@ import '../../../../core/constants/route_constants.dart';
 import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import '../../../clinics/presentation/manager/cubit/clinics_cubit.dart';
 import '../../../clinics/presentation/manager/cubit/clinics_state.dart';
@@ -95,19 +97,11 @@ class _StaffBody extends StatelessWidget {
             );
           }
           if (state is StaffError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () =>
-                        context.read<StaffCubit>().fetchAllStaff(ownerId),
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
-              ),
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.message,
+              onRetry: () =>
+                  context.read<StaffCubit>().fetchAllStaff(ownerId),
             );
           }
           if (state is StaffLoaded) {
@@ -202,23 +196,19 @@ class _StaffBody extends StatelessWidget {
       onToggleSuspend: () async {
         await context.read<StaffCubit>().toggleSuspend(staff.id);
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(staff.isActive
-                ? AppStrings.accountSuspended
-                : AppStrings.accountReactivated),
-          ),
+        AppSnackbar.info(
+          context,
+          message: staff.isActive
+              ? AppStrings.accountSuspended
+              : AppStrings.accountReactivated,
         );
       },
       onDelete: () async {
         await context.read<StaffCubit>().deleteStaff(staff.id);
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.isArabic
-                ? 'تم حذف الموظف بنجاح'
-                : 'Staff deleted successfully'),
-          ),
+        AppSnackbar.success(
+          context,
+          message: AppStrings.isArabic ? 'تم حذف الموظف بنجاح' : 'Staff deleted successfully',
         );
       },
     );
@@ -242,8 +232,9 @@ class _StaffBody extends StatelessWidget {
     if (selectedRole == null) return;
     await staffCubit.updateStaffRole(staff.id, selectedRole.name);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${AppStrings.roleChanged}${staff.role.label}')),
+    AppSnackbar.success(
+      context,
+      message: '${AppStrings.roleChanged}${staff.role.label}',
     );
   }
 }

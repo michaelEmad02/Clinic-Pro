@@ -8,6 +8,7 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/widgets/app_loading.dart';
 import '../../../../patients/domain/entities/patient_entity.dart';
 import '../../../../patients/presentation/manager/patients_cubit.dart';
 import '../../../../patients/presentation/manager/patients_state.dart';
@@ -113,7 +114,7 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
                               child: SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: AppLoadingWidget(size: AppLoadingSize.small),
                               ),
                             )
                           : Text(
@@ -166,7 +167,7 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
                     ? const Center(
                         child: Padding(
                           padding: EdgeInsets.all(16.0),
-                          child: CircularProgressIndicator(),
+                          child: AppLoadingWidget(size: AppLoadingSize.small),
                         ),
                       )
                     : filteredPatients.isEmpty

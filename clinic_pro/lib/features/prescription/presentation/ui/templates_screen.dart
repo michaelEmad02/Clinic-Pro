@@ -10,6 +10,7 @@ import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/app_bottom_sheet.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/widgets/app_error_widget.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/di/injection_container.dart';
 import '../manager/templates_cubit.dart';
@@ -59,21 +60,10 @@ class TemplatesScreen extends StatelessWidget {
             }
 
             if (state is TemplatesError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      state.message,
-                      style: AppTextStyles.bodyMedium(context),
-                    ),
-                    const SizedBox(height: AppConstants.spaceSm + 4),
-                    ElevatedButton(
-                      onPressed: () => context.read<TemplatesCubit>().loadTemplates(),
-                      child: Text(AppStrings.retry),
-                    ),
-                  ],
-                ),
+              return AppErrorWidget.buildErrorView(
+                context: context,
+                error: state.message,
+                onRetry: () => context.read<TemplatesCubit>().loadTemplates(),
               );
             }
 

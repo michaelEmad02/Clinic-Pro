@@ -7,6 +7,7 @@ import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../../../core/widgets/app_loading.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../../../appointments/domain/entities/appointment_entity.dart';
 import 'visit_timeline_item.dart';
@@ -24,7 +25,7 @@ class PatientVisitsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: AppLoadingWidget());
     }
 
     if (visits.isEmpty) {

@@ -5,6 +5,8 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import 'package:clinic_pro/core/widgets/app_loading.dart';
+import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../manager/prescription_bloc.dart';
 import '../../manager/prescription_event.dart';
@@ -116,7 +118,7 @@ class TemplatesSelectorSection extends StatelessWidget {
                 ),
                 const SizedBox(height: AppConstants.spaceSm + 4),
                 if (state is TemplatesLoading)
-                  const Center(child: CircularProgressIndicator())
+                  const Center(child: AppLoadingWidget())
                 else if (state is TemplatesError)
                   Center(
                       child: Text(state.message,
@@ -147,12 +149,9 @@ class TemplatesSelectorSection extends StatelessWidget {
                               .read<PrescriptionBloc>()
                               .add(ApplyTemplateEvent(t['id']));
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${AppStrings.template} $name ✓'),
-                              behavior: SnackBarBehavior.floating,
-                              duration: const Duration(seconds: 1),
-                            ),
+                          AppSnackbar.success(
+                            context,
+                            message: '${AppStrings.template} $name ✓',
                           );
                         },
                       );
@@ -183,11 +182,9 @@ class TemplatesSelectorSection extends StatelessWidget {
         onSave: (name, drugs) {
           templatesCubit.addTemplate(name, drugs);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${AppStrings.add} ${AppStrings.template}'),
-              behavior: SnackBarBehavior.floating,
-            ),
+          AppSnackbar.success(
+            context,
+            message: '${AppStrings.add} ${AppStrings.template}',
           );
         },
       ),

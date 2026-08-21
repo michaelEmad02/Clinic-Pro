@@ -9,6 +9,8 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../manager/expenses_cubit.dart';
 import '../manager/expenses_state.dart';
 import 'widgets/add_edit_expense_sheet.dart';
@@ -61,19 +63,10 @@ class _ExpensesBody extends StatelessWidget {
             );
           }
           if (state is ExpensesError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () =>
-                        context.read<ExpensesCubit>().loadExpenses(),
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
-              ),
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.message,
+              onRetry: () => context.read<ExpensesCubit>().loadExpenses(),
             );
           }
           if (state is ExpensesLoaded) {
@@ -150,9 +143,7 @@ class _ExpensesBody extends StatelessWidget {
             onPressed: () {
               context.read<ExpensesCubit>().deleteExpense(expense.id);
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(AppStrings.expenseDeleted)),
-              );
+              AppSnackbar.success(context, message: AppStrings.expenseDeleted);
             },
             child: Text(AppStrings.delete,
                 style: TextStyle(color: context.danger)),

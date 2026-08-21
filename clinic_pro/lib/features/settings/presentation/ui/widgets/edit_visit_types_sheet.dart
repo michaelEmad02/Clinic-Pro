@@ -12,6 +12,8 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/widgets/app_loading.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import '../../../../../core/utils/responsive_helper.dart';
 import '../../manager/settings_cubit.dart';
 import '../../manager/visit_types_cubit.dart';
@@ -51,11 +53,9 @@ class EditVisitTypesSheet extends StatelessWidget {
     return BlocConsumer<VisitTypesCubit, VisitTypesState>(
       listenWhen: (prev, curr) => prev.isSaving && !curr.isSaving && curr.error == null,
       listener: (context, state) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.visitTypesSaved, textAlign: TextAlign.right),
-            behavior: SnackBarBehavior.floating,
-          ),
+        AppSnackbar.success(
+          context,
+          message: AppStrings.visitTypesSaved,
         );
         Navigator.pop(context);
       },
@@ -73,7 +73,7 @@ class EditVisitTypesSheet extends StatelessWidget {
               if (state.isLoading)
                 const Padding(
                   padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(child: AppLoadingWidget()),
                 )
               else ...[
                 if (state.error != null)

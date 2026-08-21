@@ -12,6 +12,8 @@ import 'package:clinic_pro/features/appointments/presentation/manager/appointmen
 import 'package:clinic_pro/features/prescription/domain/entities/prescription_entity.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/prescription_screen.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_print_dialog.dart';
+import 'package:clinic_pro/core/widgets/app_loading.dart';
+import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import 'package:flutter/material.dart';
 
 class PatientPrescriptionCard extends StatelessWidget {
@@ -25,19 +27,15 @@ class PatientPrescriptionCard extends StatelessWidget {
   Future<void> _onEditPrescription(BuildContext context) async {
     final appointmentId = prescription.appointmentId;
     if (appointmentId == null || appointmentId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('تعذّر تحديد الموعد المرتبط بهذه الروشتة')),
+      AppSnackbar.error(
+        context,
+        message: 'تعذّر تحديد الموعد المرتبط بهذه الروشتة',
       );
       return;
     }
 
     // إظهار حوار تحميل مؤقت
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
+    AppLoadingOverlay.show(context);
 
     try {
       final appointmentsBloc = sl<AppointmentsBloc>();
@@ -45,11 +43,12 @@ class PatientPrescriptionCard extends StatelessWidget {
           await appointmentsBloc.getAppointmentById(appointmentId);
 
       if (context.mounted) {
-        Navigator.pop(context); // إغلاق حوار التحميل
+        AppLoadingOverlay.hide(context); // إغلاق حوار التحميل
 
         if (realAppointment == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('تعذّر جلب بيانات الموعد')),
+          AppSnackbar.error(
+            context,
+            message: 'تعذّر جلب بيانات الموعد',
           );
         } else {
           Navigator.push(
@@ -63,11 +62,12 @@ class PatientPrescriptionCard extends StatelessWidget {
           );
         }
       }
-    } catch (_) {
+    } catch (e) {
       if (context.mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('حدث خطأ أثناء جلب بيانات الموعد')),
+        AppLoadingOverlay.hide(context);
+        AppSnackbar.error(
+          context,
+          message: 'حدث خطأ أثناء تحميل بيانات الموعد',
         );
       }
     }

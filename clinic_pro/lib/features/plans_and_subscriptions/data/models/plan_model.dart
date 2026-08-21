@@ -76,15 +76,15 @@ class CompanyInfoModel extends CompanyInfoEntity {
 
   factory CompanyInfoModel.fromJson(Map<String, dynamic> json) {
     return CompanyInfoModel(
-      id: json['id'] as String,
+      id: json['id']?.toString() ?? 'default',
       name: json['name'] as String? ?? 'Clinic Pro Support',
       location: json['location'] as String?,
-      phone1: json['phone1'] as String? ?? '+201000000000',
-      phone2: json['phone2'] as String?,
-      whatsApp1: json['whats_app1'] as String? ?? '+201000000000',
-      whatsApp2: json['whats_app2'] as String?,
+      phone1: (json['phone1'] ?? json['phone_1'])?.toString() ?? '+201000000000',
+      phone2: (json['phone2'] ?? json['phone_2'])?.toString(),
+      whatsApp1: (json['whats_app1'] ?? json['whatsapp1'] ?? json['whatsapp_1'] ?? json['phone1'])?.toString() ?? '+201000000000',
+      whatsApp2: (json['whats_app2'] ?? json['whatsapp2'] ?? json['whatsapp_2'])?.toString(),
       website: json['website'] as String?,
-      logoUrl: json['logo_url'] as String?,
+      logoUrl: (json['logo_url'] ?? json['logourl']) as String?,
     );
   }
 }

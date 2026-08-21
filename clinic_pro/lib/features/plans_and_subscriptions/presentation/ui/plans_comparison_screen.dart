@@ -13,6 +13,9 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/widgets/app_loading.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../auth/presentation/manager/auth_cubit.dart';
 import 'widgets/plan_card.dart';
 import '../../domain/entities/plan_entity.dart';
@@ -87,13 +90,9 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
       final endDateStr = activeSub.endAt != null
           ? '${activeSub.endAt!.day}/${activeSub.endAt!.month}/${activeSub.endAt!.year}'
           : AppStrings.notSpecified;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppStrings.activeUntil(endDateStr),
-          ),
-          backgroundColor: context.warningBg,
-        ),
+      AppSnackbar.info(
+        context,
+        message: AppStrings.activeUntil(endDateStr),
       );
       return;
     }
@@ -134,13 +133,9 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
     final endDateStr = activeSub.endAt != null
         ? '${activeSub.endAt!.day}/${activeSub.endAt!.month}/${activeSub.endAt!.year}'
         : AppStrings.notSpecified;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          AppStrings.activePlanNoDowngrade(endDateStr),
-        ),
-        backgroundColor: context.warningText,
-      ),
+    AppSnackbar.info(
+      context,
+      message: AppStrings.activePlanNoDowngrade(endDateStr),
     );
     return;
   }
@@ -214,14 +209,12 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
               );
             }
           } else if (state is SubscriptionsError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            AppSnackbar.error(context, message: state.message);
           }
         },
         builder: (context, state) {
           if (state is SubscriptionsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: AppLoadingWidget());
           }
 
           if (state is SubscriptionsLoaded) {
@@ -362,13 +355,13 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
             );
           }
 
-          return Center(
-            child: ElevatedButton(
-              onPressed: () => context
-                  .read<SubscriptionsCubit>()
-                  .loadSubscriptionsData(ownerId),
-              child: Text(AppStrings.retry),
-            ),
+          final errorMsg = state is SubscriptionsError ? state.message : null;
+          return AppErrorWidget.buildErrorView(
+            context: context,
+            error: errorMsg,
+            onRetry: () => context
+                .read<SubscriptionsCubit>()
+                .loadSubscriptionsData(ownerId),
           );
         },
       ),

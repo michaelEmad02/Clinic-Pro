@@ -13,6 +13,9 @@ import '../../../auth/presentation/manager/auth_cubit.dart';
 import '../manager/settings_cubit.dart';
 import '../manager/settings_state.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/widgets/app_loading.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import 'widgets/shared_settings_widgets.dart';
 import 'widgets/settings_account_section.dart';
 import 'widgets/settings_logout_section.dart';
@@ -42,12 +45,19 @@ class OwnerSettingsScreen extends StatelessWidget {
       body: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, state) {
           if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: AppLoadingWidget());
           }
           if (state.error != null) {
-            return Center(
-                child: Text('${AppStrings.error}: ${state.error}',
-                    style: AppTextStyles.bodyLarge(context)));
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.error,
+              onRetry: () {
+                final role = user?.role ?? StaffRoles.owner;
+                context
+                    .read<SettingsCubit>()
+                    .loadSettings(role, user?.id ?? '');
+              },
+            );
           }
           final clinics = state.availableClinics;
           return RefreshIndicator(
@@ -81,8 +91,7 @@ class OwnerSettingsScreen extends StatelessWidget {
                     const SizedBox(height: AppConstants.spaceLg),
                     _buildOtherSection(context),
                     const SizedBox(height: AppConstants.spaceLg),
-                    if (clinics.isNotEmpty)
-                      _buildDangerZoneSection(context, clinics),
+                    _buildDangerZoneSection(context, clinics, user?.id),
                     const SizedBox(height: AppConstants.spaceLg),
                     const SettingsLogoutSection(inline: true),
                     const SizedBox(height: AppConstants.spaceXl),
@@ -124,8 +133,7 @@ class OwnerSettingsScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
+    }
   Widget _buildOtherSection(BuildContext context) {
     return SectionCard(
       title: AppStrings.other,
@@ -142,33 +150,97 @@ class OwnerSettingsScreen extends StatelessWidget {
             label: AppStrings.language,
             trailing: const LanguageSwitch(),
           ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          NavSettingsItem(
+            icon: Icons.info_outline,
+            label: AppStrings.aboutUs,
+            onTap: () => context.push(RouteConstants.aboutUs),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildDangerZoneSection(
-      BuildContext context, List<ClinicEntity> clinics) {
+      BuildContext context, List<ClinicEntity> clinics, String? userId) {
     return SectionCard(
       title: '',
       child: Column(
         children: [
+          if (clinics.isNotEmpty) ...[
+            NavSettingsItem(
+              icon: Icons.medical_services_outlined,
+              label: AppStrings.enterAsDoctor,
+              onTap: () {
+                if (clinics.length > 1) {
+                  _showClinicPickerForSwitch(context, clinics);
+                } else {
+                  context.read<AuthCubit>().switchToDoctor();
+                  context.go(RouteConstants.doctorDashboard);
+                }
+              },
+            ),
+            Divider(height: 1, thickness: 0.5, color: context.border),
+          ],
           NavSettingsItem(
-            icon: Icons.medical_services_outlined,
-            label: AppStrings.enterAsDoctor,
+            icon: Icons.delete_forever_outlined,
+            label: AppStrings.deleteAccount,
+            textColor: context.danger,
             onTap: () {
-              if (clinics.length > 1) {
-                // عند وجود أكثر من عيادة: إظهار اختيار العيادة أولاً
-                _showClinicPickerForSwitch(context, clinics);
-              } else {
-                // عيادة واحدة أو أقل: الدخول مباشرة كطبيب
-                context.read<AuthCubit>().switchToDoctor();
-                context.go(RouteConstants.doctorDashboard);
+              if (userId != null && userId.isNotEmpty) {
+                _confirmAndDeleteAccount(context, userId);
               }
             },
           ),
         ],
       ),
+    );
+  }
+
+  void _confirmAndDeleteAccount(BuildContext context, String userId) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(
+            AppStrings.confirmDeleteAccountTitle,
+            style: AppTextStyles.headlineSmall(dialogContext)
+                .copyWith(color: dialogContext.danger),
+          ),
+          content: Text(
+            AppStrings.confirmDeleteAccountMsg,
+            style: AppTextStyles.bodyMedium(dialogContext),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(AppStrings.cancel),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: dialogContext.danger,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                final success =
+                    await context.read<SettingsCubit>().deleteAccount(userId);
+                if (success && context.mounted) {
+                  AppSnackbar.success(
+                    context,
+                    message: AppStrings.deleteAccountSuccess,
+                  );
+                  await context.read<AuthCubit>().logout();
+                  if (context.mounted) {
+                    context.go(RouteConstants.login);
+                  }
+                }
+              },
+              child: Text(AppStrings.deleteAccount),
+            ),
+          ],
+        );
+      },
     );
   }
 

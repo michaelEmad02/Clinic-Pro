@@ -10,6 +10,8 @@ import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/widgets/app_loading.dart';
+import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import '../../../../../core/localization/language_cubit.dart';
 import '../../manager/settings_cubit.dart';
 import '../../manager/working_hours_cubit.dart';
@@ -56,12 +58,9 @@ class EditWorkingHoursSheet extends StatelessWidget {
           listenWhen: (prev, curr) =>
               prev.isSaving && !curr.isSaving && curr.error == null,
           listener: (context, state) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppStrings.workingHoursSaved,
-                    textAlign: TextAlign.right),
-                behavior: SnackBarBehavior.floating,
-              ),
+            AppSnackbar.success(
+              context,
+              message: AppStrings.workingHoursSaved,
             );
             Navigator.pop(context);
           },
@@ -69,7 +68,7 @@ class EditWorkingHoursSheet extends StatelessWidget {
             if (state.isLoading) {
               return const SizedBox(
                 height: 300,
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: AppLoadingWidget()),
               );
             }
             return Column(

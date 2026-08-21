@@ -10,6 +10,7 @@ import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
+import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_bloc.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_event.dart';
@@ -48,25 +49,16 @@ class PrescriptionView extends StatelessWidget {
             ),
           );
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${AppStrings.addedSuccess} ✓'),
-              backgroundColor: context.accent,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
-              ),
-            ),
+          AppSnackbar.success(
+            context,
+            message: '${AppStrings.addedSuccess} ✓',
           );
           context.pop();
         }
         if (state.status == PrescriptionStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? AppStrings.error),
-              backgroundColor: context.danger,
-              behavior: SnackBarBehavior.floating,
-            ),
+          AppSnackbar.error(
+            context,
+            message: state.errorMessage ?? AppStrings.error,
           );
         }
       },
@@ -119,11 +111,9 @@ class PrescriptionView extends StatelessWidget {
                     );
                   },
                   onWhatsApp: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${AppStrings.save} ${AppStrings.loading}...'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    AppSnackbar.info(
+                      context,
+                      message: '${AppStrings.save} ${AppStrings.loading}...',
                     );
                   },
                   onFinishWithoutSaving: () {
@@ -176,12 +166,9 @@ class PrescriptionView extends StatelessWidget {
               context.read<PrescriptionBloc>().add(
                     const CopyPreviousPrescriptionEvent(),
                   );
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${AppStrings.prescription} ${AppStrings.success} ✓'),
-                  behavior: SnackBarBehavior.floating,
-                  duration: const Duration(seconds: 2),
-                ),
+              AppSnackbar.success(
+                context,
+                message: '${AppStrings.prescription} ${AppStrings.success} ✓',
               );
             },
             icon: Icon(Icons.content_copy, size: AppConstants.iconSizeLg, color: context.primary),

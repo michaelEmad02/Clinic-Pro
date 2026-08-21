@@ -180,7 +180,15 @@ class WeeklyRevenueChartShimmer extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: List.generate(7, (index) {
-                    final heights = [60.0, 100.0, 80.0, 120.0, 90.0, 110.0, 70.0];
+                    final heights = [
+                      60.0,
+                      100.0,
+                      80.0,
+                      120.0,
+                      90.0,
+                      110.0,
+                      70.0
+                    ];
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [

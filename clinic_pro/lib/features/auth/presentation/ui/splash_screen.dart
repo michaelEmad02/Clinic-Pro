@@ -6,6 +6,7 @@ import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/constants/staff_roles.dart';
+import '../../../../core/widgets/app_error_widget.dart';
 import '../../../settings/presentation/manager/settings_cubit.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
@@ -129,92 +130,103 @@ class _SplashScreenState extends State<SplashScreen>
       },
       child: Scaffold(
         backgroundColor: context.surfaceColor,
-        body: Stack(
-          children: [
-            // Blurred Background Circles
-            Positioned(
-              top: -128,
-              right: -128,
-              child: _buildBlurCircle(context),
-            ),
-            Positioned(
-              bottom: -128,
-              left: -128,
-              child: _buildBlurCircle(context),
-            ),
-
-            // Central Content Area
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo
-                  AnimatedBuilder(
-                    animation: _pulseAnimation,
-                    builder: (context, child) {
-                      return Transform.scale(
-                        scale: _pulseAnimation.value,
-                        child: Opacity(
-                          opacity: 2 - _pulseAnimation.value,
-                          child: Container(
-                            width: 96,
-                            height: 96,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: context.primaryLightColor,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 4,
-                                ),
-                              ],
-                            ),
-                            child: Image.asset(
-                              'images/logo.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  // Typography
-                  Text(
-                    'ClinicPro',
-                    style: AppTextStyles.headlineLarge(context).copyWith(
-                      color: AppColors.primary,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppStrings.smartManagement,
-                    style: AppTextStyles.bodyLarge(context).copyWith(
-                      color: context.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Bottom Loading Indicator
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 48),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildLoadingDot(0),
-                    _buildLoadingDot(1),
-                    _buildLoadingDot(2),
-                  ],
+        body: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, state) {
+            if (state is AuthError) {
+              return AppErrorWidget.buildErrorView(
+                context: context,
+                error: state.message,
+                onRetry: () => context.read<AuthCubit>().checkAuthStatus(),
+              );
+            }
+            return Stack(
+              children: [
+                // Blurred Background Circles
+                Positioned(
+                  top: -128,
+                  right: -128,
+                  child: _buildBlurCircle(context),
                 ),
-              ),
-            ),
-          ],
+                Positioned(
+                  bottom: -128,
+                  left: -128,
+                  child: _buildBlurCircle(context),
+                ),
+
+                // Central Content Area
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Logo
+                      AnimatedBuilder(
+                        animation: _pulseAnimation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _pulseAnimation.value,
+                            child: Opacity(
+                              opacity: 2 - _pulseAnimation.value,
+                              child: Container(
+                                width: 96,
+                                height: 96,
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: context.primaryLightColor,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: Image.asset(
+                                  'images/logo.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Typography
+                      Text(
+                        'ClinicPro',
+                        style: AppTextStyles.headlineLarge(context).copyWith(
+                          color: AppColors.primary,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        AppStrings.smartManagement,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          color: context.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Bottom Loading Indicator
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 48),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildLoadingDot(0),
+                        _buildLoadingDot(1),
+                        _buildLoadingDot(2),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

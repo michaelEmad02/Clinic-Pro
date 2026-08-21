@@ -38,9 +38,9 @@
 ## improvements 
  - improve search (easy_debounce)
  - errors handling and the messages 
- - snackbar showing
- - network error page
- - loading widget
+ - [x] snackbar showing
+ - [x] network error page
+ - [x] loading widget
  - empty data widget
  - language
  - themes
@@ -60,9 +60,8 @@
  - [x] trail
 
 ## settings
-- [] اضافه زر لحذف الحساب في حاله المالك
-- [] about us 
-- [] وضع اعدادات للمالك للتحكم في فتح تقارير الطبيب
+- [x] اضافه زر لحذف الحساب في حاله المالك
+- [x] about us 
 
 ## expenses
   - عمل مصاريف خاصه بالطبيب وليس العياده 

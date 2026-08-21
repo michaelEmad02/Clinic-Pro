@@ -25,6 +25,16 @@ class SettingsRepositoryImpl implements ISettingsRepository {
   SettingsRepositoryImpl(this._remoteDataSource);
 
   @override
+  Future<Either<Failure, Unit>> deleteAccount(String userId) async {
+    try {
+      await _remoteDataSource.deleteAccount(userId);
+      return const Right(unit);
+    } catch (e) {
+      return Left(QueryFailure.fromException(e));
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> updateProfile({
     required String userId,
     required String name,

@@ -16,6 +16,9 @@ import '../../../plans_and_subscriptions/domain/entities/subscription_entity.dar
 abstract class ISettingsRepository {
   // ──── مشترك بين جميع الأدوار ────
 
+  /// حذف الحساب نهائياً
+  Future<Either<Failure, Unit>> deleteAccount(String userId);
+
   /// تحديث الملف الشخصي للمستخدم (الاسم، الهاتف، التخصص)
   Future<Either<Failure, Unit>> updateProfile({
     required String userId,

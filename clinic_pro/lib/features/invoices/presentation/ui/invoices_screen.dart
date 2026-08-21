@@ -8,6 +8,7 @@ import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
+import 'package:clinic_pro/core/widgets/app_error_widget.dart';
 import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
 import 'package:clinic_pro/features/invoices/presentation/manager/invoices_cubit.dart';
 import 'package:clinic_pro/features/invoices/presentation/manager/invoices_state.dart';
@@ -68,19 +69,11 @@ class _InvoicesBody extends StatelessWidget {
             );
           }
           if (state.status == InvoicesStatus.failure && state.invoices.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.errorMessage ?? AppStrings.error),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () =>
-                        context.read<InvoicesCubit>().loadInvoices(clinicId),
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
-              ),
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.errorMessage,
+              onRetry: () =>
+                  context.read<InvoicesCubit>().loadInvoices(clinicId),
             );
           }
 

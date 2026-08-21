@@ -15,6 +15,8 @@ import '../../../../core/di/injection_container.dart';
 import '../manager/accept_invitation_cubit.dart';
 import '../manager/accept_invitation_state.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_loading.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import 'widgets/auth_branding_panel.dart';
 import 'widgets/invitation_details_card.dart';
 import 'widgets/invitation_expired_view.dart';
@@ -49,12 +51,7 @@ class _AcceptInvitationBody extends StatelessWidget {
 
         // عرض رسالة خطأ
         if (state is AcceptInvitationError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: AppColors.danger,
-            ),
-          );
+          AppSnackbar.error(context, message: state.message);
         }
       },
       builder: (context, state) {
@@ -96,41 +93,12 @@ class _AcceptInvitationBody extends StatelessWidget {
 
   /// عرض مؤشر التحميل أثناء جلب بيانات الدعوة
   Widget _buildLoadingView(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.backgroundColor,
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: AppColors.primary),
-            SizedBox(height: AppConstants.spaceMd),
-            Text('جاري تحميل بيانات الدعوة...'),
-          ],
-        ),
-      ),
-    );
+    return const AppLoadingScreen(message: 'جاري تحميل بيانات الدعوة...');
   }
 
   /// عرض مؤشر التحميل أثناء تنفيذ القبول
   Widget _buildAcceptingView(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.backgroundColor,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(color: AppColors.primary),
-            const SizedBox(height: AppConstants.spaceMd),
-            Text(
-              'جاري قبول الدعوة والانضمام...',
-              style: AppTextStyles.bodyLarge(context).copyWith(
-                color: context.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const AppLoadingScreen(message: 'جاري قبول الدعوة والانضمام...');
   }
 
   /// عرض تفاصيل الدعوة الصالحة مع أزرار القبول
@@ -325,14 +293,9 @@ class _AcceptInvitationBody extends StatelessWidget {
     BuildContext context,
     AcceptInvitationSuccess state,
   ) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'تم قبول الدعوة بنجاح! مرحباً بك في ${state.clinicName}',
-        ),
-        backgroundColor: AppColors.accent,
-        duration: const Duration(seconds: 2),
-      ),
+    AppSnackbar.success(
+      context,
+      message: 'تم قبول الدعوة بنجاح! مرحباً بك في ${state.clinicName}',
     );
 
     // التوجيه حسب الدور بعد تأخير قصير

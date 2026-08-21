@@ -12,6 +12,7 @@ import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/utils/responsive_helper.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import '../../../../settings/presentation/manager/settings_cubit.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../../domain/entities/patient_entity.dart';
@@ -109,14 +110,9 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
 
   void _submit() {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppStrings.isArabic
-                ? 'يرجى إدخال اسم المريض'
-                : 'Please enter patient name',
-          ),
-        ),
+      AppSnackbar.info(
+        context,
+        message: AppStrings.isArabic ? 'يرجى إدخال اسم المريض' : 'Please enter patient name',
       );
       return;
     }
@@ -169,9 +165,7 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
     }
 
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppStrings.operationSuccessful)),
-    );
+    AppSnackbar.success(context, message: AppStrings.operationSuccessful);
   }
 
   @override

@@ -9,6 +9,8 @@ import '../../../../core/constants/staff_roles.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_loading.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import 'widgets/auth_branding_panel.dart';
 import 'widgets/email_password_form.dart';
 import 'widgets/social_login_row.dart';
@@ -38,9 +40,7 @@ class LoginScreen extends StatelessWidget {
             context.go(RouteConstants.secretaryDashboard);
           }
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          AppSnackbar.error(context, message: state.message);
         }
       },
       child: Scaffold(
@@ -131,7 +131,7 @@ class LoginScreen extends StatelessWidget {
 
                     // مؤشر التحميل عند الضغط
                     if (isLoading) ...[
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: AppLoadingWidget()),
                       const SizedBox(height: 16),
                     ],
 

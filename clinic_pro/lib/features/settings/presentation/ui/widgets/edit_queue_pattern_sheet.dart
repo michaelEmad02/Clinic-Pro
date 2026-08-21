@@ -11,6 +11,8 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/widgets/app_loading.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import '../../../../auth/presentation/manager/auth_cubit.dart';
 import '../../manager/queue_pattern_cubit.dart';
 import '../../manager/queue_pattern_state.dart';
@@ -50,16 +52,11 @@ class EditQueuePatternSheet extends StatelessWidget {
       listenWhen: (prev, curr) =>
           prev.isSaving && !curr.isSaving && curr.error == null,
       listener: (context, state) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppStrings.isArabic
-                  ? 'تم حفظ نظام قائمة الانتظار بنجاح'
-                  : 'Queue system saved successfully',
-              textAlign: TextAlign.right,
-            ),
-            behavior: SnackBarBehavior.floating,
-          ),
+        AppSnackbar.success(
+          context,
+          message: AppStrings.isArabic
+              ? 'تم حفظ نظام قائمة الانتظار بنجاح'
+              : 'Queue system saved successfully',
         );
         Navigator.pop(context);
       },
@@ -67,7 +64,7 @@ class EditQueuePatternSheet extends StatelessWidget {
         if (state.isLoading) {
           return const Padding(
             padding: EdgeInsets.all(40),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: AppLoadingWidget()),
           );
         }
         return Padding(
@@ -590,16 +587,11 @@ class EditQueuePatternSheet extends StatelessWidget {
 
     if (visitTypes.isEmpty) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isAr
-                ? 'يرجى إضافة أنواع زيارات من ميزة أنواع الكشف أولاً'
-                : 'Please add visit types in Visit Types settings first',
-            textAlign: TextAlign.right,
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
+      AppSnackbar.info(
+        context,
+        message: isAr
+            ? 'يرجى إضافة أنواع زيارات من ميزة أنواع الكشف أولاً'
+            : 'Please add visit types in Visit Types settings first',
       );
       return;
     }

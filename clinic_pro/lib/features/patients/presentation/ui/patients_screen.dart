@@ -6,6 +6,7 @@
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
+import 'package:clinic_pro/core/widgets/app_error_widget.dart';
 import 'package:clinic_pro/features/appointments/presentation/ui/widgets/add_appointment_sheet.dart';
 import 'package:clinic_pro/features/patients/presentation/manager/patients_cubit.dart';
 import 'package:clinic_pro/features/patients/presentation/manager/patients_state.dart';
@@ -149,18 +150,10 @@ class _PatientsBody extends StatelessWidget {
               );
             }
             if (state is PatientsError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(state.message),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => cubit.loadPatients(clinicId: clinicId),
-                      child: Text(AppStrings.retry),
-                    ),
-                  ],
-                ),
+              return AppErrorWidget.buildErrorView(
+                context: context,
+                error: state.message,
+                onRetry: () => cubit.loadPatients(clinicId: clinicId),
               );
             }
             if (state is PatientsLoaded) {

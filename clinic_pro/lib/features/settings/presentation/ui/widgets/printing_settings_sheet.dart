@@ -8,6 +8,8 @@ import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/widgets/app_loading.dart';
+import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/printing_settings_cubit.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/printing_settings_state.dart';
@@ -52,20 +54,16 @@ class PrintingSettingsSheet extends StatelessWidget {
       child: BlocConsumer<PrintingSettingsCubit, PrintingSettingsState>(
         listener: (context, state) {
           if (state.status == PrintingSettingsStatus.saved) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppStrings.printingSettingsSavedSuccess),
-                backgroundColor: context.accent,
-              ),
+            AppSnackbar.success(
+              context,
+              message: AppStrings.printingSettingsSavedSuccess,
             );
             Navigator.pop(context);
           } else if (state.status == PrintingSettingsStatus.error &&
               state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: context.danger,
-              ),
+            AppSnackbar.error(
+              context,
+              message: state.errorMessage!,
             );
           }
         },
@@ -73,7 +71,7 @@ class PrintingSettingsSheet extends StatelessWidget {
           if (state.status == PrintingSettingsStatus.loading) {
             return const SizedBox(
               height: 250,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: AppLoadingWidget()),
             );
           }
 

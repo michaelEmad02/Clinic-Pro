@@ -12,6 +12,7 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import 'add_edit_patient_sheet.dart';
 import 'patient_allergy_banner.dart';
 
@@ -62,12 +63,9 @@ class PatientInfoTab extends StatelessWidget {
             children: [
               OutlinedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        AppStrings.isArabic ? 'سيتم تفعيل المراسلة لاحقاً' : 'Messaging will be available soon',
-                      ),
-                    ),
+                  AppSnackbar.info(
+                    context,
+                    message: AppStrings.isArabic ? 'سيتم تفعيل المراسلة لاحقاً' : 'Messaging will be available soon',
                   );
                 },
                 icon: const Icon(Icons.chat_outlined, size: 18),

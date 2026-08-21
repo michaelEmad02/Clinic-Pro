@@ -17,7 +17,10 @@ import '../../../../core/services/storage/i_image_compression_service.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../../core/services/i_auth_services.dart';
+
 abstract class ISettingsRemoteDataSource {
+  Future<void> deleteAccount(String userId);
   Future<void> updateProfile({
     required String userId,
     required String name,
@@ -90,12 +93,19 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
   final ICloudService _cloudService;
   final IStorageService _storageService;
   final IImageCompressionService _imageCompressionService;
+  final IAuthServices _authServices;
 
   SettingsRemoteDataSource(
     this._cloudService,
     this._storageService,
     this._imageCompressionService,
+    this._authServices,
   );
+
+  @override
+  Future<void> deleteAccount(String userId) async {
+    await _authServices.deleteUserFromAuth(userId);
+  }
 
   @override
   Future<void> updateProfile({

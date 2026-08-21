@@ -5,6 +5,8 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/widgets/app_loading.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../manager/cubit/clinics_cubit.dart';
 import 'package:go_router/go_router.dart';
@@ -49,7 +51,7 @@ class ClinicStaffSection extends StatelessWidget {
         //   };
         // }).toList();
         if (state is FetchClinicStaffLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: AppLoadingWidget());
         } else if (state is FetchClinicStaffFailure) {
           return Center(child: Text(AppStrings.loadFailed));
         } else if (state is FetchClinicStaffLoaded) {
@@ -198,11 +200,9 @@ class ClinicStaffSection extends StatelessWidget {
                   );
               if (!context.mounted) return;
               context.read<FetchClinicStaffCubit>().fetchClinicStaff(clinicId);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${AppStrings.deletedSuccess} $staffName'),
-                  backgroundColor: context.successText,
-                ),
+              AppSnackbar.success(
+                context,
+                message: '${AppStrings.deletedSuccess} $staffName',
               );
             },
             child: Text(AppStrings.remove,
@@ -292,12 +292,9 @@ class ClinicStaffSection extends StatelessWidget {
                       context
                           .read<FetchClinicStaffCubit>()
                           .fetchClinicStaff(clinicId);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              AppStrings.addedSuccess),
-                          backgroundColor: context.successText,
-                        ),
+                      AppSnackbar.success(
+                        context,
+                        message: AppStrings.addedSuccess,
                       );
                     },
                   ),

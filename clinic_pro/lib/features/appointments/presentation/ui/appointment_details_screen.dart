@@ -9,7 +9,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
+import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../manager/appointments_bloc.dart';
 import '../manager/appointments_event.dart';
 import '../manager/appointments_state.dart';
@@ -33,7 +35,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
         if (state is! AppointmentsLoaded) {
           return Scaffold(
             appBar: AppBar(title: Text(AppStrings.appointmentDetails)),
-            body: const Center(child: CircularProgressIndicator()),
+            body: const Center(child: AppLoadingWidget()),
           );
         }
 
@@ -113,9 +115,9 @@ class AppointmentDetailsScreen extends StatelessWidget {
                         context
                             .read<AppointmentsBloc>()
                             .add(CancelAppointmentEvent(appointment.id));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(AppStrings.appointmentDeleted)),
+                        AppSnackbar.info(
+                          context,
+                          message: AppStrings.appointmentDeleted,
                         );
                         Navigator.pop(context);
                       },

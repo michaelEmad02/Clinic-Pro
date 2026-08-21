@@ -10,6 +10,8 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../../../core/widgets/app_loading.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../auth/presentation/manager/auth_cubit.dart';
 import '../../../onboarding/presentation/manager/onboarding_cubit.dart';
 import '../../../onboarding/presentation/manager/onboarding_state.dart';
@@ -81,13 +83,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                 listener: (context, state) {
                   if (state is InviteStaffLoaded) {
                     if (state.submitErrorMessage != null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.submitErrorMessage!),
-                          backgroundColor: context.danger,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      AppSnackbar.error(context, message: state.submitErrorMessage!);
                       context.read<InviteStaffCubit>().clearSubmitError();
                     }
                     if (state.isSuccess) {
@@ -139,7 +135,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                                     const Padding(
                                       padding: EdgeInsets.all(AppConstants.spaceLg),
                                       child: Center(
-                                          child: CircularProgressIndicator()),
+                                          child: AppLoadingWidget()),
                                     )
                                   else if (state is InviteStaffError)
                                     Padding(
@@ -345,11 +341,9 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
               elevation: 0,
             ),
             child: isLoading
-                ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2),
+                ? const AppLoadingWidget(
+                    size: AppLoadingSize.small,
+                    color: Colors.white,
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -400,13 +394,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
   }
 
   void _showError(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: context.danger,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppSnackbar.error(context, message: msg);
   }
 
   /// دالة مساعدة لتجميع بيانات الواجهة وإنشاء كائن الدعوة وإضافته للقائمة

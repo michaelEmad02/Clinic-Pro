@@ -5,6 +5,7 @@ import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/constants/prescription_enums.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import '../../manager/drugs_cubit.dart';
 import '../../manager/drugs_state.dart';
 import 'template_drug_search_field.dart';
@@ -234,13 +235,9 @@ class _AddEditTemplateSheetState extends State<AddEditTemplateSheet> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         if (_addedDrugs.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content:
-                                  Text('${AppStrings.add} ${AppStrings.drug}'),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: context.danger,
-                            ),
+                          AppSnackbar.info(
+                            context,
+                            message: '${AppStrings.add} ${AppStrings.drug}',
                           );
                           return;
                         }

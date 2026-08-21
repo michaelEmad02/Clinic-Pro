@@ -14,6 +14,7 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/widgets/app_error_widget.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/di/injection_container.dart';
 import '../manager/appointments_bloc.dart';
@@ -176,19 +177,11 @@ class _AppointmentsBody extends StatelessWidget {
             );
           }
           if (state is AppointmentsError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: AppConstants.spaceMd),
-                  ElevatedButton(
-                    onPressed: () => bloc.add(
-                      LoadAppointmentsEvent(doctorId: doctorId, clinicId: clinicId),
-                    ),
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.message,
+              onRetry: () => bloc.add(
+                LoadAppointmentsEvent(doctorId: doctorId, clinicId: clinicId),
               ),
             );
           }

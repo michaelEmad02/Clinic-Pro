@@ -17,6 +17,7 @@ import 'widgets/clinic_staff_section.dart';
 import 'widgets/clinic_performance_chart.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/themes/app_colors.dart';
+import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_text_styles.dart';
@@ -93,7 +94,7 @@ class _ClinicDetailsBody extends StatelessWidget {
       body: BlocBuilder<FetchClinicByIdCubit, FetchClinicByIdState>(
         builder: (context, state) {
           if (state is FetchClinicByIdILoadind) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: AppLoadingWidget());
           } else if (state is FetchClinicByIdLoaded) {
             return _DetailsContent(clinic: state.clinic);
           } else if (state is FetchClinicByIdFailure) {

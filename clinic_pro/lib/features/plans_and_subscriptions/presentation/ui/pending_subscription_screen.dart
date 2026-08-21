@@ -14,6 +14,8 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_loading.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../auth/presentation/manager/auth_cubit.dart';
 import '../../domain/entities/company_info_entity.dart';
 import '../../domain/entities/plan_entity.dart';
@@ -118,9 +120,9 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('رقم الواتساب للاشتراك: ${companyInfo.whatsApp1}')),
+        AppSnackbar.info(
+          context,
+          message: 'رقم الواتساب للاشتراك: ${companyInfo.whatsApp1}',
         );
       }
     }
@@ -137,8 +139,9 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('رقم الهاتف للاتصال: $phone')),
+        AppSnackbar.info(
+          context,
+          message: 'رقم الهاتف للاتصال: $phone',
         );
       }
     }
@@ -164,11 +167,9 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
               if (state is SubscriptionsLoaded) {
                 final activeSub = state.activeSubscription;
                 if (activeSub != null && activeSub.isActive) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppStrings.subscriptionActivatedSuccess),
-                      backgroundColor: context.successText,
-                    ),
+                  AppSnackbar.success(
+                    context,
+                    message: AppStrings.subscriptionActivatedSuccess,
                   );
                   context.go(RouteConstants.ownerDashboard);
                 }
@@ -330,11 +331,9 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                                 ? null
                                 : () => _checkActivation(context, ownerId),
                             icon: _isChecking
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2, color: Colors.white),
+                                ? const AppLoadingWidget(
+                                    size: AppLoadingSize.small,
+                                    color: Colors.white,
                                   )
                                 : const Icon(Icons.refresh_rounded,
                                     color: Colors.white),

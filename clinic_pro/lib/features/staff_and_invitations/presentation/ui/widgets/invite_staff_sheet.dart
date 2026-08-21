@@ -9,6 +9,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import '../../manager/staff_cubit.dart';
 
 class InviteStaffSheet {
@@ -49,33 +50,31 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
   Future<void> _submit() async {
     if (_nameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(AppStrings.isArabic
-                ? 'يرجى ملء جميع الحقول المطلوبة'
-                : 'Please fill all required fields')),
+      AppSnackbar.info(
+        context,
+        message: AppStrings.isArabic
+            ? 'يرجى ملء جميع الحقول المطلوبة'
+            : 'Please fill all required fields',
       );
       return;
     }
 
     final cubit = context.read<StaffCubit>();
-    final nav = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
     final emailText = _emailController.text.trim();
 
     await cubit.inviteStaff(
-          email: emailText,
-          name: _nameController.text.trim(),
-          role: _role,
-        );
+      email: emailText,
+      name: _nameController.text.trim(),
+      role: _role,
+    );
 
-    nav.pop();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(AppStrings.isArabic
-            ? 'تم إرسال دعوة إلى $emailText'
-            : 'Invitation sent to $emailText'),
-      ),
+    if (!context.mounted) return;
+    Navigator.of(context).pop();
+    AppSnackbar.success(
+      context,
+      message: AppStrings.isArabic
+          ? 'تم إرسال دعوة إلى $emailText'
+          : 'Invitation sent to $emailText',
     );
   }
 

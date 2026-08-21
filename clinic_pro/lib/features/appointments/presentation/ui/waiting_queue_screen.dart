@@ -14,6 +14,7 @@ import '../../../../core/strings/app_strings.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../auth/presentation/manager/auth_cubit.dart';
@@ -186,9 +187,7 @@ class _WaitingQueueBody extends StatelessWidget {
                       enabled: hasNext,
                       onPressed: () {
                         context.read<WaitingQueueCubit>().callNext();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(AppStrings.patientCalled)),
-                        );
+                        AppSnackbar.info(context, message: AppStrings.patientCalled);
                       },
                     ),
                     if (isDoctor) ...[
@@ -213,9 +212,7 @@ class _WaitingQueueBody extends StatelessWidget {
                       queue: state.rawQueue,
                       onCallNext: () {
                         context.read<WaitingQueueCubit>().callNext();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(AppStrings.patientCalled)),
-                        );
+                        AppSnackbar.info(context, message: AppStrings.patientCalled);
                       },
                     ),
                   ],

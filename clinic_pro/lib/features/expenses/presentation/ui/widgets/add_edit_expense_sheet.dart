@@ -5,6 +5,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../../../core/widgets/app_snackbar.dart';
 import '../../manager/expenses_cubit.dart';
 import '../../manager/expenses_state.dart';
 
@@ -73,17 +74,13 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
 
   Future<void> _submit() async {
     if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى إدخال عنوان المصروف')),
-      );
+      AppSnackbar.info(context, message: 'يرجى إدخال عنوان المصروف');
       return;
     }
 
     final amount = double.tryParse(_amountController.text) ?? 0;
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('المبلغ يجب أن يكون أكبر من 0')),
-      );
+      AppSnackbar.info(context, message: 'المبلغ يجب أن يكون أكبر من 0');
       return;
     }
 
@@ -110,11 +107,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
 
     if (context.mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.operationSuccessful),
-        ),
-      );
+      AppSnackbar.success(context, message: AppStrings.operationSuccessful);
     }
   }
 

@@ -51,4 +51,5 @@ class RouteConstants {
   static const String settingsSubscription = '/settings/subscription';
   static const String plansComparison = '/subscriptions/plans';
   static const String pendingSubscription = '/subscriptions/pending';
+  static const String aboutUs = '/settings/about-us';
 }

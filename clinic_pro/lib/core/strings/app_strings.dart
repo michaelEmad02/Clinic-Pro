@@ -218,6 +218,37 @@ class AppStrings {
       isArabic ? 'مصروفات الشهر' : 'Monthly Expenses';
   static String get netProfit =>
       isArabic ? 'صافي الربح' : 'Net Profit';
+
+  // Account deletion strings
+  static String get deleteAccount =>
+      isArabic ? 'حذف الحساب نهائياً' : 'Delete Account Permanently';
+  static String get confirmDeleteAccountTitle =>
+      isArabic ? 'تأكيد حذف الحساب' : 'Confirm Account Deletion';
+  static String get confirmDeleteAccountMsg => isArabic
+      ? 'هل أنت تأكد من أنك تريد حذف حسابك نهائياً؟ هذا الإجراء سيقوم بحذف جميع بياناتك من المنظومة ولا يمكن التراجع عنه.'
+      : 'Are you sure you want to permanently delete your account? This action cannot be undone.';
+  static String get deleteAccountSuccess =>
+      isArabic ? 'تم حذف الحساب بنجاح' : 'Account deleted successfully';
+
+  // About Us strings
+  static String get aboutUs => isArabic ? 'من نحن' : 'About Us';
+  static String get contactUs => isArabic ? 'تواصل معنا' : 'Contact Us';
+  static String get visitWebsite => isArabic ? 'زيارة الموقع' : 'Visit Website';
+  static String get callUs => isArabic ? 'الاتصال بنا' : 'Call Us';
+  static String get chatOnWhatsApp => isArabic ? 'تواصل واتساب' : 'WhatsApp Chat';
+
+  // Network error strings
+  static String get noInternetTitle => isArabic
+      ? 'لا يوجد اتصال بالانترنت'
+      : 'Medical Signal Lost (No Connection)';
+  static String get noInternetMessage => isArabic
+      ? 'تعذر الاتصال بخوادم المنظومة الطبية. يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.'
+      : 'Unable to connect to clinic servers. Please check your internet connection and try again.';
+  static String get retryConnection =>
+      isArabic ? 'إعادة المحاولة' : 'Retry Connection';
+  static String get checkingConnection =>
+      isArabic ? 'جاري فحص الاتصال...' : 'Checking connection...';
+
   static String get completedAppointments =>
       isArabic ? 'المواعيد المكتملة' : 'Completed Appointments';
   static String get overallRating =>

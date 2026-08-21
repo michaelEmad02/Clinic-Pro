@@ -13,6 +13,7 @@ import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit
 import 'package:clinic_pro/features/settings/presentation/manager/settings_state.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/strings/app_strings.dart';
@@ -224,7 +225,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
     return BlocBuilder<SecretaryDashboardCubit, SecretaryDashboardState>(
       builder: (context, state) {
         if (state is SecretaryDashboardLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: AppLoadingWidget());
         }
         if (state is SecretaryDashboardError) {
           return Center(child: Text(state.message));
