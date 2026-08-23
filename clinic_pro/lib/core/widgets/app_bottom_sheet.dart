@@ -14,7 +14,7 @@ class AppBottomSheet {
       return showDialog<T>(
         context: context,
         builder: (context) {
-          final maxHeight = MediaQuery.sizeOf(context).height * 0.85;
+          final maxHeight = MediaQuery.sizeOf(context).height * 0.9;
           return Dialog(
             backgroundColor: context.surfaceColor,
             shape: RoundedRectangleBorder(
