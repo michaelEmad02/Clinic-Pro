@@ -10,6 +10,7 @@ abstract class ICloudService {
     String columns = '*',
     Map<String, dynamic>? eq,
     Map<String, dynamic>? neq,
+    Map<String, List<dynamic>>? filterIn,
     Map<String, List<dynamic>>? notIn,
     Map<String, dynamic>? gte,
     Map<String, dynamic>? lte,
@@ -17,6 +18,7 @@ abstract class ICloudService {
     String? order,
     bool ascending = true,
   });
+
 
   /// إدخال سجل جديد في جدول
   Future<Map<String, dynamic>> insert({
@@ -49,4 +51,7 @@ abstract class ICloudService {
 
   /// استدعاء دالة إجراءات مخزنة (RPC Function) على السيرفر
   Future<dynamic> rpc(String functionName, {Map<String, dynamic>? params});
+
+  /// استدعاء دالة Edge Function على السيرفر
+  Future<dynamic> invokeFunction(String functionName, {Map<String, dynamic>? body});
 }

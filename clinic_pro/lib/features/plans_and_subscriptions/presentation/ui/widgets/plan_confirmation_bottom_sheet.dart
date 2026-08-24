@@ -1,11 +1,12 @@
 // ────────────────────────────────────────────────────────
-// شيت تفاصيل وتأكيد الترقية/الاشتراك (PlanConfirmationBottomSheet)
+// شيت وتطبيقات تأكيد الترقية/الاشتراك المتجاوب (PlanConfirmationBottomSheet)
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/plans_and_subscriptions/domain/entities/plan_entity.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,7 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
   final bool isUpgrade;
   final int remainingDays;
   final VoidCallback onConfirm;
+  final VoidCallback? onPayOnline;
 
   const PlanConfirmationBottomSheet({
     super.key,
@@ -23,7 +25,58 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
     required this.isUpgrade,
     required this.remainingDays,
     required this.onConfirm,
+    this.onPayOnline,
   });
+
+  /// عرض متجاوب (Dialog على Tablet/Desktop و BottomSheet على Mobile)
+  static void showAdaptive({
+    required BuildContext context,
+    required PlanEntity targetPlan,
+    required String subscriptionType,
+    required bool isUpgrade,
+    required int remainingDays,
+    required VoidCallback onConfirm,
+    VoidCallback? onPayOnline,
+  }) {
+    if (ResponsiveHelper.isMobile(context)) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => PlanConfirmationBottomSheet(
+          targetPlan: targetPlan,
+          subscriptionType: subscriptionType,
+          isUpgrade: isUpgrade,
+          remainingDays: remainingDays,
+          onConfirm: onConfirm,
+          onPayOnline: onPayOnline,
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppConstants.radiusSheet),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: AppConstants.maxDialogWidth),
+            child: SingleChildScrollView(
+              child: PlanConfirmationBottomSheet(
+                targetPlan: targetPlan,
+                subscriptionType: subscriptionType,
+                isUpgrade: isUpgrade,
+                remainingDays: remainingDays,
+                onConfirm: onConfirm,
+                onPayOnline: onPayOnline,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,20 +115,21 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // مقبض السحب (Drag Handle)
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: context.borderColor,
-                  borderRadius: BorderRadius.circular(2),
+            // مقبض السحب (Drag Handle) للموبايل
+            if (ResponsiveHelper.isMobile(context))
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: AppConstants.spaceMd),
+                  decoration: BoxDecoration(
+                    color: context.borderColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppConstants.spaceMd),
 
-            // عنوان الشيت
+            // عنوان الشيت/النافذة
             Row(
               children: [
                 Container(
@@ -121,7 +175,7 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${AppStrings.basicPlan.isEmpty ? "خطة" : ""} ${targetPlan.name.toUpperCase()}',
+                          AppStrings.planNamePrefix(targetPlan.name.toUpperCase()),
                           style: AppTextStyles.headlineSmall(context).copyWith(
                             fontWeight: FontWeight.bold,
                             color: context.primary,
@@ -210,6 +264,36 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
 
             const SizedBox(height: AppConstants.spaceXl),
 
+            if (onPayOnline != null) ...[
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  onPayOnline!();
+                },
+                icon: const Icon(Icons.payment_rounded),
+                label: Flexible(
+                  child: Text(
+                    AppStrings.fastOnlinePayment,
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: context.onPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.primary,
+                  foregroundColor: context.onPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppConstants.spaceMd),
+            ],
+
             Row(
               children: [
                 Expanded(
@@ -223,6 +307,9 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
                     ),
                     child: Text(
                       AppStrings.cancel,
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        color: context.textPrimary,
+                      ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -230,22 +317,25 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(width: AppConstants.spaceMd),
                 Expanded(
-                  child: ElevatedButton(
+                  child: OutlinedButton(
                     onPressed: () {
                       Navigator.pop(context);
                       onConfirm();
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.primary,
-                      foregroundColor: context.onPrimary,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: context.primary,
+                      side: BorderSide(color: context.primary),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                       ),
                     ),
                     child: Text(
-                      isUpgrade ? AppStrings.confirmUpgradeAction : AppStrings.confirmRequestAction,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      AppStrings.manualWhatsAppOrder,
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.primary,
+                      ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -282,3 +372,4 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
     );
   }
 }
+

@@ -11,6 +11,7 @@ class MockCloudService implements ICloudService {
     Map<String, dynamic>? eq,
     Map<String, dynamic>? neq,
     Map<String, List<dynamic>>? notIn,
+    Map<String, dynamic>? filterIn,
     Map<String, dynamic>? gte,
     Map<String, dynamic>? lte,
     String? notIsNull,
@@ -241,5 +242,11 @@ class MockCloudService implements ICloudService {
   @override
   Future<dynamic> rpc(String functionName, {Map<String, dynamic>? params}) async {
     return null;
+  }
+  
+  @override
+  Future invokeFunction(String functionName, {Map<String, dynamic>? body}) {
+    // TODO: implement invokeFunction
+    throw UnimplementedError();
   }
 }

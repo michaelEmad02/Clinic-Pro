@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +51,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
               ),
               const SizedBox(height: AppConstants.spaceMd),
               Text(
-                'تأكيد ترقية الاشتراك',
+                AppStrings.confirmUpgradeTitle,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   fontWeight: FontWeight.bold,
                   color: context.textPrimary,
@@ -59,7 +60,11 @@ class UpgradeConfirmationDialog extends StatelessWidget {
               ),
               const SizedBox(height: AppConstants.spaceSm),
               Text(
-                'اشتراكك الحالي في خطة (${currentPlanName.toUpperCase()}) لا يزال نشطاً ومتبقياً فيه ($remainingDays يوماً).\nهل ترغب في تأكيد طلب الترقية إلى خطة (${targetPlanName.toUpperCase()}) الآن؟',
+                AppStrings.confirmUpgradeDialogMsg(
+                  currentPlanName.toUpperCase(),
+                  targetPlanName.toUpperCase(),
+                  remainingDays,
+                ),
                 style: AppTextStyles.bodyMedium(context).copyWith(
                   color: context.textSecondary,
                   height: 1.5,
@@ -79,7 +84,14 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                               BorderRadius.circular(AppConstants.radiusButton),
                         ),
                       ),
-                      child: const Text('إلغاء'),
+                      child: Text(
+                        AppStrings.cancel,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          color: context.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ),
                   ),
                   const SizedBox(width: AppConstants.spaceMd),
@@ -98,7 +110,15 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                               BorderRadius.circular(AppConstants.radiusButton),
                         ),
                       ),
-                      child: const Text('موافق، ترقية'),
+                      child: Text(
+                        AppStrings.agreeUpgrade,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: context.onPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ),
                   ),
                 ],
@@ -110,3 +130,4 @@ class UpgradeConfirmationDialog extends StatelessWidget {
     );
   }
 }
+

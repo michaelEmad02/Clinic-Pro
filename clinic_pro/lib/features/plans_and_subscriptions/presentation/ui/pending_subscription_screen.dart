@@ -76,11 +76,11 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
   String _getCycleTitle(String? type) {
     switch (type) {
       case 'yearly':
-        return 'السنوي';
+        return AppStrings.yearlyLabel;
       case 'lifetime':
-        return 'مدى الحياة';
+        return AppStrings.lifetimeLabel;
       default:
-        return 'الشهري';
+        return AppStrings.monthlyLabel;
     }
   }
 
@@ -91,9 +91,9 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
     String? type,
   ) async {
     final authState = context.read<AuthCubit>().state;
-    final userName = authState.user?.name ?? 'غير محدد';
-    final userEmail = authState.user?.email ?? 'غير محدد';
-    final planName = plan?.name.toUpperCase() ?? 'المختارة';
+    final userName = authState.user?.name ?? AppStrings.notSpecified;
+    final userEmail = authState.user?.email ?? AppStrings.notSpecified;
+    final planName = plan?.name.toUpperCase() ?? AppStrings.notSpecified;
 
     final rawPhone = companyInfo.whatsApp1.trim();
     final cleanPhone =
@@ -122,7 +122,7 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
       if (context.mounted) {
         AppSnackbar.info(
           context,
-          message: 'رقم الواتساب للاشتراك: ${companyInfo.whatsApp1}',
+          message: 'رقم الواتساب للااشتراك: ${companyInfo.whatsApp1}',
         );
       }
     }
@@ -141,7 +141,7 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
       if (context.mounted) {
         AppSnackbar.info(
           context,
-          message: 'رقم الهاتف للاتصال: $phone',
+          message: '${AppStrings.phoneNumber}: $phone',
         );
       }
     }
@@ -249,9 +249,8 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                         // الرسالة التوضيحية
                         Text(
                           widget.isExpired
-                              ? 'لقد انتهت فترة الاشتراك الحالي في خطة ($planNameStr).\nيرجى التجديد أو الترقية لخطة أعلى لمتابعة استخدام خدمات العيادة.'
-                              : 'تم تسجيل طلبك لخطة ($planNameStr) بحالة قيد الانتظار (Pending).\n'
-                                  'يرجى الانتظار حتى يقوم المسؤول بالتفعيل أو يمكنك التواصل معه لتأكيد التفعيل فوراً.',
+                              ? AppStrings.subscriptionExpiredDesc(planNameStr)
+                              : AppStrings.subscriptionPendingDesc(planNameStr),
                           style: AppTextStyles.bodyMedium(context).copyWith(
                             color: context.textSecondary,
                             height: 1.6,
@@ -267,7 +266,17 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                                 context.push(RouteConstants.plansComparison),
                             icon: const Icon(Icons.rocket_launch_rounded,
                                 color: Colors.white),
-                            label: const Text('تجديد أو ترقية الاشتراك الآن'),
+                            label: Flexible(
+                              child: Text(
+                                AppStrings.renewOrUpgradeNow,
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.onPrimary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: context.primary,
                               foregroundColor: context.onPrimary,
@@ -289,9 +298,19 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                                 _openWhatsApp(context, companyInfo, plan, type),
                             icon: const Icon(Icons.chat_bubble_outline_rounded,
                                 color: Colors.white),
-                            label: const Text('تواصل عبر واتساب للتفعيل'),
+                            label: Flexible(
+                              child: Text(
+                                AppStrings.contactWhatsAppActivate,
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF25D366),
+                              backgroundColor: context.whatsAppColor,
                               foregroundColor: Colors.white,
                               minimumSize: const Size(double.infinity, 50),
                               shape: RoundedRectangleBorder(
@@ -310,8 +329,16 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                                 _makePhoneCall(context, companyInfo.phone1),
                             icon: Icon(Icons.phone_outlined,
                                 color: context.primary),
-                            label: const Text(
-                                'إجراء مكالمة هاتفية'),
+                            label: Flexible(
+                              child: Text(
+                                AppStrings.makePhoneCall,
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  color: context.primary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: context.primary,
                               minimumSize: const Size(double.infinity, 50),
@@ -337,9 +364,19 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                                   )
                                 : const Icon(Icons.refresh_rounded,
                                     color: Colors.white),
-                            label: Text(_isChecking
-                                ? 'جاري التحقق...'
-                                : 'التحقق من التفعيل الآن'),
+                            label: Flexible(
+                              child: Text(
+                                _isChecking
+                                    ? AppStrings.checkingActivation
+                                    : AppStrings.checkActivationNow,
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.onPrimary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: context.primary,
                               foregroundColor: context.onPrimary,
@@ -364,3 +401,4 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
     );
   }
 }
+

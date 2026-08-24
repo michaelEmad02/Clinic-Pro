@@ -63,6 +63,8 @@ class AppColors {
   static const Color darkTextPrimary = Color(0xFFEDF2F7);
   static const Color darkTextSecondary = Color(0xFFA0AEC0);
   static const Color darkPrimaryLight = Color(0xFF1A2D35);
+  // ألوان المنصات والتطبيقات الخارجية
+  static const Color whatsApp = Color(0xFF25D366);
 }
 
 // ────────────────────────────────────────────────────────
@@ -166,4 +168,8 @@ extension ThemeColors on BuildContext {
 
   // لون النص/الأيقونة على متغيرات الأسطح
   Color get onSurfaceVariant => AppColors.onSurfaceVariant;
+
+  // لون الواتساب
+  Color get whatsAppColor => AppColors.whatsApp;
 }
+

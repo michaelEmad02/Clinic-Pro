@@ -31,6 +31,7 @@ class SupabaseTables {
   static const String plansFeatures = 'plans_features';
   static const String ownerSettings = 'owner_settings';
   static const String companyInfo = 'company_info';
+  static const String paymentTransactions = 'payment_transactions';
 }
 
 class SupabaseBucket {
@@ -48,6 +49,7 @@ class AppointmentStatus {
       'in_progress'; // الكشف جارٍ حالياً عند الطبيب
   static const String done = 'done'; // تم الانتهاء من الكشف وحفظ الروشتة
   static const String cancelled = 'cancelled'; // حجز ملغى
+  
 }
 
 class InvitationStatus {
@@ -89,6 +91,9 @@ class SubscriptionStatus {
   static const String active = 'active';
   static const String expired = 'expired';
   static const String cancelled = 'cancelled';
+  static const String failed = 'failed';
+  static const String refunded = 'refunded';
+  
 }
 
 class Gender {

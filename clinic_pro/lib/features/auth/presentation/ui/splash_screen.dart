@@ -111,9 +111,18 @@ class _SplashScreenState extends State<SplashScreen>
             } else if (sub.isActive) {
               context.go(RouteConstants.ownerDashboard);
             } else if (sub.isPending) {
-              context.go(RouteConstants.pendingSubscription);
+              if (sub.isManualPending) {
+                context.go(RouteConstants.pendingSubscription);
+              } else {
+                // اشتراك paymob معلق → يتيح له التوجه لشاشة الباقات لإعادة المحاولة أو اختيار باقة
+                context.go(RouteConstants.onboardingPlan);
+              }
             } else if (sub.isExpired) {
-              context.go(RouteConstants.pendingSubscription, extra: {'isExpired': true});
+              if (sub.isManualPending) {
+                context.go(RouteConstants.pendingSubscription, extra: {'isExpired': true});
+              } else {
+                context.go(RouteConstants.onboardingPlan);
+              }
             } else {
               context.go(RouteConstants.onboardingPlan);
             }

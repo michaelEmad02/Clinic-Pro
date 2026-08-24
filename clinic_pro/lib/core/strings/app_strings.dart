@@ -1108,4 +1108,117 @@ class AppStrings {
   static String get currentPlanBadge =>
       isArabic ? 'الخطة الحالية' : 'Current Plan';
   static String get unlimited => isArabic ? 'غير محدود' : 'Unlimited';
+
+  // Payment Methods & Flow
+  static String get checkoutTitle => isArabic ? 'إتمام الدفع' : 'Checkout';
+  static String planNamePrefix(String name) => isArabic ? 'خطة $name' : '$name Plan';
+  static String get billingCyclePrefix => isArabic ? 'دورة الفوترة' : 'Billing Cycle';
+  static String get selectOnlinePaymentMethod =>
+      isArabic ? 'اختر طريقة الدفع الإلكتروني' : 'Select Payment Method';
+  static String get secureRedirectNotice =>
+      isArabic ? 'سيتم توجيهك بأمان لإتمام العملية' : 'You will be securely redirected to complete payment';
+  static String get bankCardTitle => isArabic ? 'بطاقة بنكية' : 'Credit / Debit Card';
+  static String get bankCardSubtitle => 'Visa / Mastercard / Meeza';
+  static String get vodafoneCashTitle =>
+      isArabic ? 'فودافون كاش / المحافظ الإلكترونية' : 'E-Wallets / Mobile Cash';
+  static String get vodafoneCashSubtitle =>
+      isArabic ? 'دفع مباشر عبر محفظة الهاتف المحمول' : 'Direct payment via mobile wallet';
+  static String get fawryTitle => 'فوري (Fawry Pay)';
+  static String get fawrySubtitle =>
+      isArabic ? 'الحصول على كود للدفع في أي منافذ فوري' : 'Get code to pay at any Fawry outlet';
+  static String continuePaymentWithMethod(String method) =>
+      isArabic ? 'متابعة الدفع عبر $method' : 'Continue Payment via $method';
+  static String get contactWhatsAppManualPay => isArabic
+      ? 'التواصل عبر واتساب للدفع اليدوي (تحويل بنكي / كاش)'
+      : 'Contact via WhatsApp for manual payment (Bank transfer / Cash)';
+  static String get userIdentityError =>
+      isArabic ? 'تعذر تحديد هوية المستخدم' : 'Unable to identify user';
+
+  // Payment Webview & Status Check
+  static String get securePaymentGateway =>
+      isArabic ? 'بوابة الدفع الآمنة (Paymob)' : 'Secure Payment Gateway (Paymob)';
+  static String get cancelOperationTitle => isArabic ? 'إلغاء العملية؟' : 'Cancel Operation?';
+  static String get cancelOperationDesc => isArabic
+      ? 'هل أنت تأكد من إغلاق صفحة الدفع قبل إكتمال العملية؟'
+      : 'Are you sure you want to close the payment page before completion?';
+  static String get continuePayment => isArabic ? 'متابعة الدفع' : 'Continue Payment';
+  static String get closeAndConfirm => isArabic ? 'إغلاق وتأكيد' : 'Close & Confirm';
+  static String get verifyingPaymentServer => isArabic
+      ? 'جاري التحقق من حالة الدفع من السيرفر...'
+      : 'Verifying payment status from server...';
+  static String get doNotCloseApp =>
+      isArabic ? 'يرجى عدم إغلاق التطبيق' : 'Please do not close the application';
+
+  // Payment Result Screens
+  static String get paymentIncompleteTitle =>
+      isArabic ? 'لم تكتمل عملية الدفع ⚠️' : 'Payment Not Completed ⚠️';
+  static String get unexpectedPaymentError => isArabic
+      ? 'حدث أمر غير متوقع أثناء معالجة عملية الدفع.'
+      : 'An unexpected issue occurred while processing payment.';
+  static String get retryAnotherMethod =>
+      isArabic ? 'إعادة المحاولة بطريقة أخرى' : 'Retry with another method';
+  static String get contactSupportWhatsAppManual => isArabic
+      ? 'التواصل مع الدعم عبر واتساب للدفع اليدوي'
+      : 'Contact support via WhatsApp for manual payment';
+  static String get backToPlansSelection =>
+      isArabic ? 'العودة لشاشة اختيار الخطط' : 'Back to plan selection';
+  static String get paymentSuccessTitle =>
+      isArabic ? 'تم الدفع وتفعيل الاشتراك بنجاح! 🎉' : 'Payment & Subscription Activated Successfully! 🎉';
+  static String paymentSuccessDesc(String plan, String cycle) => isArabic
+      ? 'شكراً لك! تم تفعيل خطة ($plan) باشتراك $cycle وجاهز للاستخدام الآن.'
+      : 'Thank you! The ($plan) plan with $cycle subscription is now activated.';
+  static String get selectedPlanLabel => isArabic ? 'الباقة المختارة' : 'Selected Plan';
+  static String get paidAmountLabel => isArabic ? 'المبلغ المدفوع' : 'Paid Amount';
+  static String get transactionNumberLabel => isArabic ? 'رقم المعاملة' : 'Transaction Number';
+  static String get goToDashboard => isArabic ? 'الانتقال إلى لوحة التحكم' : 'Go to Dashboard';
+
+  // Pending & Expiration
+  static String subscriptionExpiredDesc(String plan) => isArabic
+      ? 'لقد انتهت فترة الاشتراك الحالي في خطة ($plan).\nيرجى التجديد أو الترقية لخطة أعلى لمتابعة استخدام خدمات العيادة.'
+      : 'Your current subscription for ($plan) plan has expired.\nPlease renew or upgrade to continue using clinic services.';
+  static String subscriptionPendingDesc(String plan) => isArabic
+      ? 'تم تسجيل طلبك لخطة ($plan) بحالة قيد الانتظار (Pending).\nيرجى الانتظار حتى يقوم المسؤول بالتفعيل أو يمكنك التواصل معه لتأكيد التفعيل فوراً.'
+      : 'Your request for ($plan) plan has been registered as Pending.\nPlease wait for activation or contact support.';
+  static String get renewOrUpgradeNow =>
+      isArabic ? 'تجديد أو ترقية الاشتراك الآن' : 'Renew or Upgrade Plan Now';
+  static String get contactWhatsAppActivate =>
+      isArabic ? 'تواصل عبر واتساب للتفعيل' : 'Contact via WhatsApp to Activate';
+  static String get makePhoneCall => isArabic ? 'إجراء مكالمة هاتفية' : 'Make a Phone Call';
+  static String get checkingActivation => isArabic ? 'جاري التحقق...' : 'Checking...';
+  static String get checkActivationNow =>
+      isArabic ? 'التحقق من التفعيل الآن' : 'Check Activation Now';
+  static String get fastOnlinePayment => isArabic
+      ? 'الدفع الإلكتروني السريع (بطاقة / فودافون كاش / فوري)'
+      : 'Fast Online Payment (Card / Wallet / Fawry)';
+  static String get manualWhatsAppOrder =>
+      isArabic ? 'الطلب يدوي (واتساب)' : 'Manual Request (WhatsApp)';
+  static String get agreeUpgrade => isArabic ? 'موافق، ترقية' : 'Confirm Upgrade';
+  static String confirmUpgradeDialogMsg(String current, String target, int days) => isArabic
+      ? 'اشتراكك الحالي في خطة ($current) لا يزال نشطاً ومتبقياً فيه ($days يوماً).\nهل ترغب في تأكيد طلب الترقية إلى خطة ($target) الآن؟'
+      : 'Your current subscription ($current) is active with ($days days left).\nDo you want to confirm upgrading to ($target) now?';
+
+  // Cubit Error & Failure Responses
+  static String get paymentInitiationError => isArabic
+      ? 'حدث خطأ غير متوقع أثناء إعداد عملية الدفع. يرجى المحاولة مرة أخرى.'
+      : 'An unexpected error occurred while setting up payment. Please try again.';
+  static String get paymentFailedDefault =>
+      isArabic ? 'فشلت عملية الدفع' : 'Payment process failed';
+  static String get paymentConfirmationTimeout => isArabic
+      ? 'لم يتم تأكيد الدفع بعد. يرجى الانتظار وإعادة المحاولة لاحقاً.'
+      : 'Payment confirmation timed out. Please wait and try again later.';
+  static String get paymentVerificationError => isArabic
+      ? 'حدث خطأ أثناء التحقق من حالة الدفع. يرجى التحقق من اتصالك بالإنترنت والإعادة.'
+      : 'Error verifying payment status. Please check your connection and retry.';
+  static String get paymentServiceEmptyResponse => isArabic
+      ? 'فشل الاتصال بخدمة الدفع (استجابة فارغة)'
+      : 'Payment service connection failed (Empty response)';
+  static String get unknownPaymentError => isArabic
+      ? 'حدث خطأ غير معروف أثناء إنشاء عملية الدفع'
+      : 'An unknown error occurred while creating payment intent';
+  static String get transactionStatusQueryError => isArabic
+      ? 'تعذر استعلام حالة المعاملة'
+      : 'Failed to query transaction status';
 }
+
+
+

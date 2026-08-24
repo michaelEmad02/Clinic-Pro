@@ -30,6 +30,14 @@ import '../../features/plans_and_subscriptions/domain/entities/plan_entity.dart'
 import '../../features/plans_and_subscriptions/presentation/ui/subscription_screen.dart';
 import '../../features/plans_and_subscriptions/presentation/ui/plans_comparison_screen.dart';
 import '../../features/plans_and_subscriptions/presentation/ui/pending_subscription_screen.dart';
+import '../../features/payment/presentation/ui/payment_methods_screen.dart';
+import '../../features/payment/presentation/ui/payment_webview_screen.dart';
+import '../../features/payment/presentation/ui/payment_success_screen.dart';
+import '../../features/payment/presentation/ui/payment_failed_screen.dart';
+import '../../features/payment/domain/entities/payment_status_entity.dart';
+
+
+
 import '../../features/staff_and_invitations/presentation/ui/staff_screen.dart';
 import '../../features/clinics/presentation/ui/clinics_screen.dart';
 import '../../features/clinics/presentation/ui/clinic_details_screen.dart';
@@ -212,6 +220,53 @@ final GoRouter appRouter = GoRouter(
           subscriptionType: extra?['subscriptionType'] as String?,
           companyInfo: extra?['companyInfo'] as CompanyInfoEntity?,
           isExpired: extra?['isExpired'] as bool? ?? false,
+        );
+      },
+    ),
+    GoRoute(
+      path: RouteConstants.paymentMethods,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return PaymentMethodsScreen(
+          targetPlan: extra!['targetPlan'] as PlanEntity,
+          subscriptionType: extra['subscriptionType'] as String,
+          companyInfo: extra['companyInfo'] as CompanyInfoEntity?,
+        );
+      },
+    ),
+    GoRoute(
+      path: RouteConstants.paymentWebview,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return PaymentWebviewScreen(
+          paymentUrl: extra!['paymentUrl'] as String,
+          transactionId: extra['transactionId'] as String,
+          plan: extra['plan'] as PlanEntity,
+          subscriptionType: extra['subscriptionType'] as String,
+        );
+      },
+    ),
+    GoRoute(
+      path: RouteConstants.paymentSuccess,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return PaymentSuccessScreen(
+          statusResult: extra!['statusResult'] as PaymentStatusEntity,
+          plan: extra['plan'] as PlanEntity,
+          subscriptionType: extra['subscriptionType'] as String,
+        );
+      },
+    ),
+
+    GoRoute(
+      path: RouteConstants.paymentFailed,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return PaymentFailedScreen(
+          message: extra?['message'] as String? ?? '',
+          plan: extra?['plan'] as PlanEntity?,
+          subscriptionType: extra?['subscriptionType'] as String?,
+          companyInfo: extra?['companyInfo'] as CompanyInfoEntity?,
         );
       },
     ),

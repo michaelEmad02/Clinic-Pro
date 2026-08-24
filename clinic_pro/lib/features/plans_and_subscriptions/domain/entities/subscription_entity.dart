@@ -9,6 +9,7 @@ class SubscriptionEntity {
   final String planId;
   final String subscriptionType; // 'trail' | 'monthly' | 'yearly' | 'lifetime'
   final String status; // 'pending' | 'active' | 'expired' | 'cancelled'
+  final String? paymentMethod; // 'manual' | 'paymob'
   final DateTime? startedAt;
   final DateTime? endAt;
   final String? createdBy;
@@ -20,11 +21,15 @@ class SubscriptionEntity {
     required this.planId,
     required this.subscriptionType,
     required this.status,
+    this.paymentMethod,
     this.startedAt,
     this.endAt,
     this.createdBy,
     required this.createdAt,
   });
+
+  /// هل الاشتراك قيد الانتظار اليدوي؟
+  bool get isManualPending => isPending && (paymentMethod == 'manual' || paymentMethod == null);
 
   /// هل الاشتراك نشط حالياً؟
   bool get isActive => status == 'active';

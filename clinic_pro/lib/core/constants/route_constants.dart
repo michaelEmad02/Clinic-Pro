@@ -51,5 +51,9 @@ class RouteConstants {
   static const String settingsSubscription = '/settings/subscription';
   static const String plansComparison = '/subscriptions/plans';
   static const String pendingSubscription = '/subscriptions/pending';
+  static const String paymentMethods = '/subscriptions/payment-methods';
+  static const String paymentWebview = '/subscriptions/payment-webview';
+  static const String paymentSuccess = '/subscriptions/payment-success';
+  static const String paymentFailed = '/subscriptions/payment-failed';
   static const String aboutUs = '/settings/about-us';
 }

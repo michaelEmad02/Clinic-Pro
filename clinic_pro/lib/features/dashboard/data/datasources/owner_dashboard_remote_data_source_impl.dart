@@ -44,7 +44,7 @@ class OwnerDashboardRemoteDataSourceImpl implements IOwnerDashboardRemoteDataSou
       }
     } catch (_) {}
 
-    // Fallback خفيف ومستهدف في حال عدم توفر الـ RPC بعد على السيرفر
+    // Fallback خفيف ومستهدف ومفلتر حسب عيادات المالك (Owner Clinics)
     final now = DateTime.now();
     final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
@@ -54,35 +54,51 @@ class OwnerDashboardRemoteDataSourceImpl implements IOwnerDashboardRemoteDataSou
     int totalPatients = 0;
 
     try {
-      final todayApptsRaw = await _cloudService.select(
-        table: SupabaseTables.appointments,
-        eq: {'date': todayStr},
+      // 1. جلب قائمة العيادات الخاصة بهذا المالك فقط
+      final ownerClinics = await _cloudService.select(
+        table: SupabaseTables.clinics,
+        eq: {'owner_id': ownerId},
       );
-      todayAppointments = todayApptsRaw.length;
-      for (var appt in todayApptsRaw) {
-        final st = appt['status'] as String?;
-        if (st == 'done' || st == 'confirmed') {
-          todayCompletedAppointments++;
+
+      final clinicIds = ownerClinics
+          .map((c) => c['id'] as String?)
+          .where((id) => id != null && id.isNotEmpty)
+          .cast<String>()
+          .toList();
+
+      if (clinicIds.isNotEmpty) {
+        // 2. حساب المواعيد الخاصة بعيادات المالك اليوم
+        final todayApptsRaw = await _cloudService.select(
+          table: SupabaseTables.appointments,
+          eq: {'date': todayStr},
+          filterIn: {'clinic_id': clinicIds},
+        );
+        todayAppointments = todayApptsRaw.length;
+        for (var appt in todayApptsRaw) {
+          final st = appt['status'] as String?;
+          if (st == 'done' || st == 'confirmed') {
+            todayCompletedAppointments++;
+          }
         }
-      }
-    } catch (_) {}
 
-    try {
-      final todayInvoicesRaw = await _cloudService.select(
-        table: SupabaseTables.invoices,
-        gte: {'created_at': '${todayStr}T00:00:00'},
-        lte: {'created_at': '${todayStr}T23:59:59'},
-      );
-      for (var inv in todayInvoicesRaw) {
-        todayNetRevenue += ((inv['paid_amount'] ?? 0) as num).toDouble();
-      }
-    } catch (_) {}
+        // 3. حساب فواتير وإيرادات اليوم الخاصة بعيادات المالك فقط
+        final todayInvoicesRaw = await _cloudService.select(
+          table: SupabaseTables.invoices,
+          gte: {'created_at': '${todayStr}T00:00:00'},
+          lte: {'created_at': '${todayStr}T23:59:59'},
+          filterIn: {'clinic_id': clinicIds},
+        );
+        for (var inv in todayInvoicesRaw) {
+          todayNetRevenue += ((inv['paid_amount'] ?? 0) as num).toDouble();
+        }
 
-    try {
-      final patientsRaw = await _cloudService.select(
-        table: SupabaseTables.patients,
-      );
-      totalPatients = patientsRaw.length;
+        // 4. حساب إجمالي عدد المرضى لعيادات هذا المالك فقط
+        final patientsRaw = await _cloudService.select(
+          table: SupabaseTables.patients,
+          filterIn: {'clinic_id': clinicIds},
+        );
+        totalPatients = patientsRaw.length;
+      }
     } catch (_) {}
 
     return OwnerSummaryStatsModel(
@@ -94,6 +110,7 @@ class OwnerDashboardRemoteDataSourceImpl implements IOwnerDashboardRemoteDataSou
   }
 
   @override
+
   Future<List<double>> fetchWeeklyRevenue(
     String ownerId, {
     bool forceRefresh = false,
@@ -112,28 +129,42 @@ class OwnerDashboardRemoteDataSourceImpl implements IOwnerDashboardRemoteDataSou
       }
     } catch (_) {}
 
-    // Fallback خفيف
+    // Fallback خفيف ومفلتر حسب عيادات الـ Owner فقط
     final now = DateTime.now();
     final weeklyRevenue = List<double>.filled(7, 0.0);
 
     try {
-      final sevenDaysAgo = now.subtract(const Duration(days: 6));
-      final startDateStr = '${sevenDaysAgo.year}-${sevenDaysAgo.month.toString().padLeft(2, '0')}-${sevenDaysAgo.day.toString().padLeft(2, '0')}T00:00:00';
-
-      final invoices = await _cloudService.select(
-        table: SupabaseTables.invoices,
-        gte: {'created_at': startDateStr},
+      final ownerClinics = await _cloudService.select(
+        table: SupabaseTables.clinics,
+        eq: {'owner_id': ownerId},
       );
 
-      for (int i = 0; i < 7; i++) {
-        final day = now.subtract(Duration(days: 6 - i));
-        final dayStr = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+      final clinicIds = ownerClinics
+          .map((c) => c['id'] as String?)
+          .where((id) => id != null && id.isNotEmpty)
+          .cast<String>()
+          .toList();
 
-        for (final invoice in invoices) {
-          final createdAt = invoice['created_at'] as String?;
-          if (createdAt != null && createdAt.startsWith(dayStr)) {
-            final amt = ((invoice['paid_amount'] ?? 0) as num).toDouble();
-            weeklyRevenue[i] += amt;
+      if (clinicIds.isNotEmpty) {
+        final sevenDaysAgo = now.subtract(const Duration(days: 6));
+        final startDateStr = '${sevenDaysAgo.year}-${sevenDaysAgo.month.toString().padLeft(2, '0')}-${sevenDaysAgo.day.toString().padLeft(2, '0')}T00:00:00';
+
+        final invoices = await _cloudService.select(
+          table: SupabaseTables.invoices,
+          gte: {'created_at': startDateStr},
+          filterIn: {'clinic_id': clinicIds},
+        );
+
+        for (int i = 0; i < 7; i++) {
+          final day = now.subtract(Duration(days: 6 - i));
+          final dayStr = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+
+          for (final invoice in invoices) {
+            final createdAt = invoice['created_at'] as String?;
+            if (createdAt != null && createdAt.startsWith(dayStr)) {
+              final amt = ((invoice['paid_amount'] ?? 0) as num).toDouble();
+              weeklyRevenue[i] += amt;
+            }
           }
         }
       }
@@ -141,6 +172,7 @@ class OwnerDashboardRemoteDataSourceImpl implements IOwnerDashboardRemoteDataSou
 
     return weeklyRevenue;
   }
+
 
   @override
   Future<List<ClinicSummaryEntity>> fetchClinicsOverview(

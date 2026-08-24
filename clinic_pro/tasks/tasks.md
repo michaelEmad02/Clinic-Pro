@@ -41,7 +41,6 @@
  - [x] snackbar showing
  - [x] network error page
  - [x] loading widget
- - empty data widget
  - language
  - themes
  - local notifications

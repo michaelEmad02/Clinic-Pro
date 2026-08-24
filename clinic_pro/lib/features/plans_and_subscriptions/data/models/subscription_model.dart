@@ -12,6 +12,7 @@ class SubscriptionModel extends SubscriptionEntity {
     required super.planId,
     required super.subscriptionType,
     required super.status,
+    super.paymentMethod,
     super.startedAt,
     super.endAt,
     super.createdBy,
@@ -26,6 +27,7 @@ class SubscriptionModel extends SubscriptionEntity {
       planId: entity.planId,
       subscriptionType: entity.subscriptionType,
       status: entity.status,
+      paymentMethod: entity.paymentMethod,
       startedAt: entity.startedAt,
       endAt: entity.endAt,
       createdBy: entity.createdBy,
@@ -41,6 +43,7 @@ class SubscriptionModel extends SubscriptionEntity {
       planId: json['plan_id'] as String? ?? '',
       subscriptionType: json['subscription_type'] as String? ?? '',
       status: json['status'] as String? ?? '',
+      paymentMethod: json['payment_method'] as String?,
       startedAt: json['started_at'] != null
           ? DateTime.parse(json['started_at'] as String)
           : null,
@@ -59,6 +62,7 @@ class SubscriptionModel extends SubscriptionEntity {
       'plan_id': planId,
       'subscription_type': subscriptionType,
       'status': status,
+      'payment_method': paymentMethod,
       'started_at': startedAt?.toIso8601String(),
       'end_at': endAt?.toIso8601String(),
       'created_by': createdBy ?? ownerId,

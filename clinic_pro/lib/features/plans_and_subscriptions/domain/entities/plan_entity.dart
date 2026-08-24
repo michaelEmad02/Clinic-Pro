@@ -8,6 +8,9 @@ class PlanEntity {
   final double monthlyPrice;
   final double yearlyPrice;
   final double lifetimePrice;
+  final double monthlyPriceEgp;
+  final double yearlyPriceEgp;
+  final double lifetimePriceEgp;
   final String? description;
   final double monthlyDiscount;
   final double yearlyDiscount;
@@ -21,6 +24,9 @@ class PlanEntity {
     required this.monthlyPrice,
     required this.yearlyPrice,
     required this.lifetimePrice,
+    this.monthlyPriceEgp = 0.0,
+    this.yearlyPriceEgp = 0.0,
+    this.lifetimePriceEgp = 0.0,
     this.description,
     required this.monthlyDiscount,
     required this.yearlyDiscount,

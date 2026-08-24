@@ -43,6 +43,7 @@ class SupabaseServices extends ICloudService {
       String columns = '*',
       Map<String, dynamic>? eq,
       Map<String, dynamic>? neq,
+      Map<String, List<dynamic>>? filterIn,
       Map<String, List<dynamic>>? notIn,
       Map<String, dynamic>? gte,
       Map<String, dynamic>? lte,
@@ -58,6 +59,16 @@ class SupabaseServices extends ICloudService {
         query = query.eq(key, value);
       });
     }
+
+    // تطبيق فلاتر الانتماء للقائمة (filterIn) إذا كانت متوفرة
+    if (filterIn != null) {
+      filterIn.forEach((key, value) {
+        if (value.isNotEmpty) {
+          query = query.filter(key, 'in', value);
+        }
+      });
+    }
+
 
     // تطبيق فلاتر عدم التساوي (neq) إذا كانت متوفرة
     if (neq != null) {
@@ -181,5 +192,11 @@ class SupabaseServices extends ICloudService {
   @override
   Future<dynamic> rpc(String functionName, {Map<String, dynamic>? params}) async {
     return await supabase.rpc(functionName, params: params);
+  }
+
+  @override
+  Future<dynamic> invokeFunction(String functionName, {Map<String, dynamic>? body}) async {
+    final response = await supabase.functions.invoke(functionName, body: body);
+    return response.data;
   }
 }

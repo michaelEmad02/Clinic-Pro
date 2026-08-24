@@ -18,6 +18,7 @@ import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 import '../../../auth/presentation/manager/auth_cubit.dart';
 import 'widgets/plan_card.dart';
+import 'widgets/plans_cycle_selector.dart';
 import '../../domain/entities/plan_entity.dart';
 import '../../domain/entities/subscription_entity.dart';
 import '../manager/subscriptions_cubit.dart';
@@ -87,33 +88,26 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
 
       // في حالة اختيار نفس الخطة ونفس الفوترة (محاولة تجديد قبل الانتهاء)
       if (isSamePlan && currentCycleWeight == selectedCycleWeight) {
-      final endDateStr = activeSub.endAt != null
-          ? '${activeSub.endAt!.day}/${activeSub.endAt!.month}/${activeSub.endAt!.year}'
-          : AppStrings.notSpecified;
-      AppSnackbar.info(
-        context,
-        message: AppStrings.activeUntil(endDateStr),
-      );
-      return;
-    }
+        final endDateStr = activeSub.endAt != null
+            ? '${activeSub.endAt!.day}/${activeSub.endAt!.month}/${activeSub.endAt!.year}'
+            : AppStrings.notSpecified;
+        AppSnackbar.info(
+          context,
+          message: AppStrings.activeUntil(endDateStr),
+        );
+        return;
+      }
 
-    final isUpgrade = selectedPlanWeight > currentPlanWeight ||
-        (isSamePlan && selectedCycleWeight > currentCycleWeight);
+      final isUpgrade = selectedPlanWeight > currentPlanWeight ||
+          (isSamePlan && selectedCycleWeight > currentCycleWeight);
 
-    if (isUpgrade) {
-      final remainingDays = activeSub.endAt != null
-          ? activeSub.endAt!.difference(DateTime.now()).inDays
-          : 0;
+      if (isUpgrade) {
+        final remainingDays = activeSub.endAt != null
+            ? activeSub.endAt!.difference(DateTime.now()).inDays
+            : 0;
 
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppConstants.radiusSheet),
-          ),
-        ),
-        builder: (_) => PlanConfirmationBottomSheet(
+        PlanConfirmationBottomSheet.showAdaptive(
+          context: context,
           targetPlan: selectedPlan,
           subscriptionType: _selectedCycle,
           isUpgrade: true,
@@ -125,30 +119,31 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                   subscriptionType: _selectedCycle,
                 );
           },
-        ),
+          onPayOnline: () {
+            context.push(
+              RouteConstants.paymentMethods,
+              extra: {
+                'targetPlan': selectedPlan,
+                'subscriptionType': _selectedCycle,
+              },
+            );
+          },
+        );
+        return;
+      }
+
+      final endDateStr = activeSub.endAt != null
+          ? '${activeSub.endAt!.day}/${activeSub.endAt!.month}/${activeSub.endAt!.year}'
+          : AppStrings.notSpecified;
+      AppSnackbar.info(
+        context,
+        message: AppStrings.activePlanNoDowngrade(endDateStr),
       );
       return;
     }
 
-    final endDateStr = activeSub.endAt != null
-        ? '${activeSub.endAt!.day}/${activeSub.endAt!.month}/${activeSub.endAt!.year}'
-        : AppStrings.notSpecified;
-    AppSnackbar.info(
-      context,
-      message: AppStrings.activePlanNoDowngrade(endDateStr),
-    );
-    return;
-  }
-
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(AppConstants.radiusSheet),
-      ),
-    ),
-    builder: (_) => PlanConfirmationBottomSheet(
+    PlanConfirmationBottomSheet.showAdaptive(
+      context: context,
       targetPlan: selectedPlan,
       subscriptionType: _selectedCycle,
       isUpgrade: false,
@@ -160,9 +155,17 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
               subscriptionType: _selectedCycle,
             );
       },
-    ),
-  );
-}
+      onPayOnline: () {
+        context.push(
+          RouteConstants.paymentMethods,
+          extra: {
+            'targetPlan': selectedPlan,
+            'subscriptionType': _selectedCycle,
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,220 +176,185 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
       child: Scaffold(
         backgroundColor: context.backgroundColor,
         appBar: widget.isOnboarding
-          ? null
-          : AppBar(
-              toolbarHeight: 64,
-              backgroundColor: context.surfaceColor,
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              title: Text(
-                AppStrings.plansAndSubscriptions,
-                style: AppTextStyles.headlineMedium(context).copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: context.primary,
+            ? null
+            : AppBar(
+                toolbarHeight: 64,
+                backgroundColor: context.surfaceColor,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                title: Text(
+                  AppStrings.plansAndSubscriptions,
+                  style: AppTextStyles.headlineMedium(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.primary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(1),
+                  child: Container(color: context.borderColor, height: 1),
+                ),
               ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(1),
-                child: Container(color: context.borderColor, height: 1),
-              ),
-            ),
-      body: BlocConsumer<SubscriptionsCubit, SubscriptionsState>(
-        listener: (context, state) {
-          if (state is SubscriptionPendingCreated) {
-            if (state.subscription.isTrial) {
-              context.go(RouteConstants.onboardingClinic);
-            } else {
-              context.go(
-                RouteConstants.pendingSubscription,
-                extra: {
-                  'plan': state.plan,
-                  'subscriptionType': state.subscription.subscriptionType,
-                  'companyInfo': state.companyInfo,
-                },
-              );
+        body: BlocConsumer<SubscriptionsCubit, SubscriptionsState>(
+          listener: (context, state) {
+            if (state is SubscriptionPendingCreated) {
+              if (state.subscription.isTrial) {
+                context.go(RouteConstants.onboardingClinic);
+              } else {
+                context.go(
+                  RouteConstants.pendingSubscription,
+                  extra: {
+                    'plan': state.plan,
+                    'subscriptionType': state.subscription.subscriptionType,
+                    'companyInfo': state.companyInfo,
+                  },
+                );
+              }
+            } else if (state is SubscriptionsError) {
+              AppSnackbar.error(context, message: state.message);
             }
-          } else if (state is SubscriptionsError) {
-            AppSnackbar.error(context, message: state.message);
-          }
-        },
-        builder: (context, state) {
-          if (state is SubscriptionsLoading) {
-            return const Center(child: AppLoadingWidget());
-          }
+          },
+          builder: (context, state) {
+            if (state is SubscriptionsLoading) {
+              return const Center(child: AppLoadingWidget());
+            }
 
-          if (state is SubscriptionsLoaded) {
-            final plans = state.plans;
-            final activeSub = state.activeSubscription;
-            final isTrialUsed = activeSub != null;
+            if (state is SubscriptionsLoaded) {
+              final plans = state.plans;
+              final activeSub = state.activeSubscription;
+              final isTrialUsed = activeSub != null;
 
-            return ResponsiveHelper.responsiveCenter(
-              maxWidth: 1024,
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppConstants.spaceLg),
-                  child: Column(
-                    children: [
-                      Text(
-                        AppStrings.choosePlanSubtitle,
-                        style: AppTextStyles.headlineLarge(context),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        AppStrings.choosePlanDesc,
-                        style: AppTextStyles.bodyLarge(context).copyWith(
-                          color: context.textSecondary,
+              return ResponsiveHelper.responsiveCenter(
+                maxWidth: 1024,
+                child: SafeArea(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppConstants.spaceLg),
+                    child: Column(
+                      children: [
+                        Text(
+                          AppStrings.choosePlanSubtitle,
+                          style: AppTextStyles.headlineLarge(context),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // مفتاح دورة الفوترة: شهري | سنوي | مدى الحياة
-                      Container(
-                        decoration: BoxDecoration(
-                          color: context.surfaceContainerLow.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.all(4),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildCycleButton(SubscriptionType.monthly, AppStrings.monthlyLabel),
-                              _buildCycleButton(SubscriptionType.yearly, AppStrings.yearlyDiscount),
-                              _buildCycleButton(SubscriptionType.lifetime, AppStrings.lifetimeLabel),
-                            ],
+                        const SizedBox(height: 8),
+                        Text(
+                          AppStrings.choosePlanDesc,
+                          style: AppTextStyles.bodyLarge(context).copyWith(
+                            color: context.textSecondary,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                      const SizedBox(height: 32),
+                        const SizedBox(height: 24),
 
-                      // عرض كروت الخطط (الخطة الحالية تظهر أولاً دائماً)
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isWide = constraints.maxWidth >= 768;
-                          
-                          final sortedPlans = List<PlanEntity>.from(plans);
-                          if (activeSub != null && activeSub.isActive) {
-                            sortedPlans.sort((a, b) {
-                              final aIsCurrent = a.name.toLowerCase() == activeSub.planId.toLowerCase() ||
-                                                 a.id.toLowerCase() == activeSub.planId.toLowerCase();
-                              final bIsCurrent = b.name.toLowerCase() == activeSub.planId.toLowerCase() ||
-                                                 b.id.toLowerCase() == activeSub.planId.toLowerCase();
-                              if (aIsCurrent && !bIsCurrent) return -1;
-                              if (!aIsCurrent && bIsCurrent) return 1;
-                              return 0;
-                            });
-                          }
+                        // مفتاح دورة الفوترة: شهري | سنوي | مدى الحياة
+                        PlansCycleSelector(
+                          selectedCycle: _selectedCycle,
+                          onCycleChanged: (cycle) {
+                            setState(() => _selectedCycle = cycle);
+                          },
+                        ),
+                        const SizedBox(height: 32),
 
-                          if (isWide) {
-                            return IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: sortedPlans.map((plan) {
-                                  return Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceSm),
-                                      child: _buildPlanCardItem(context, plan, activeSub),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
+                        // عرض كروت الخطط (الخطة الحالية تظهر أولاً دائماً)
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isWide = constraints.maxWidth >= 768;
+
+                            final sortedPlans = List<PlanEntity>.from(plans);
+                            if (activeSub != null && activeSub.isActive) {
+                              sortedPlans.sort((a, b) {
+                                final aIsCurrent = a.name.toLowerCase() == activeSub.planId.toLowerCase() ||
+                                    a.id.toLowerCase() == activeSub.planId.toLowerCase();
+                                final bIsCurrent = b.name.toLowerCase() == activeSub.planId.toLowerCase() ||
+                                    b.id.toLowerCase() == activeSub.planId.toLowerCase();
+                                if (aIsCurrent && !bIsCurrent) return -1;
+                                if (!aIsCurrent && bIsCurrent) return 1;
+                                return 0;
+                              });
+                            }
+
+                            if (isWide) {
+                              return IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: sortedPlans.map((plan) {
+                                    return Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceSm),
+                                        child: _buildPlanCardItem(context, plan, activeSub),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              );
+                            }
+
+                            return Column(
+                              children: sortedPlans.map((plan) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: AppConstants.spaceLg),
+                                  child: _buildPlanCardItem(context, plan, activeSub),
+                                );
+                              }).toList(),
                             );
-                          }
+                          },
+                        ),
 
-                          return Column(
-                            children: sortedPlans.map((plan) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: AppConstants.spaceLg),
-                                child: _buildPlanCardItem(context, plan, activeSub),
-                              );
-                            }).toList(),
-                          );
-                        },
-                      ),
+                        const SizedBox(height: 32),
 
-                      const SizedBox(height: 32),
-
-                      // زر تجربة 14 يوماً مجانية إذا لم يسبق له الاشتراك أو التجربة
-                      if (!isTrialUsed) ...[
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 400),
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              final basicPlan = plans.firstWhere(
-                                (p) => p.name.toLowerCase() == PlanName.basic.toLowerCase(),
-                              );
-                              context.read<SubscriptionsCubit>().requestSubscription(
-                                    ownerId: ownerId,
-                                    targetPlan: basicPlan,
-                                    subscriptionType: SubscriptionType.trail,
-                                  );
-                            },
-                            icon: const Icon(Icons.star_rounded, color: Colors.amber),
-                            label: Flexible(
-                              child: Text(
-                                AppStrings.startFreeTrial14Days,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+                        // زر تجربة 14 يوماً مجانية إذا لم يسبق له الاشتراك أو التجربة
+                        if (!isTrialUsed) ...[
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                final basicPlan = plans.firstWhere(
+                                  (p) => p.name.toLowerCase() == PlanName.basic.toLowerCase(),
+                                );
+                                context.read<SubscriptionsCubit>().requestSubscription(
+                                      ownerId: ownerId,
+                                      targetPlan: basicPlan,
+                                      subscriptionType: SubscriptionType.trail,
+                                    );
+                              },
+                              icon: const Icon(Icons.star_rounded, color: Colors.amber),
+                              label: Flexible(
+                                child: Text(
+                                  AppStrings.startFreeTrial14Days,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: context.primary,
-                              foregroundColor: context.onPrimary,
-                              minimumSize: const Size(double.infinity, 48),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.primary,
+                                foregroundColor: context.onPrimary,
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              );
+            }
+
+            final errorMsg = state is SubscriptionsError ? state.message : null;
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: errorMsg,
+              onRetry: () => context
+                  .read<SubscriptionsCubit>()
+                  .loadSubscriptionsData(ownerId),
             );
-          }
-
-          final errorMsg = state is SubscriptionsError ? state.message : null;
-          return AppErrorWidget.buildErrorView(
-            context: context,
-            error: errorMsg,
-            onRetry: () => context
-                .read<SubscriptionsCubit>()
-                .loadSubscriptionsData(ownerId),
-          );
-        },
-      ),
-    ),
-  );
-}
-
-  Widget _buildCycleButton(String key, String label) {
-    final active = _selectedCycle == key;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedCycle = key),
-      child: Container(
-        decoration: BoxDecoration(
-          color: active ? context.surfaceColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text(
-          label,
-          style: AppTextStyles.bodyMedium(context).copyWith(
-            color: active ? context.primary : context.textSecondary,
-            fontWeight: active ? FontWeight.bold : FontWeight.normal,
-          ),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
+          },
         ),
       ),
     );
@@ -410,7 +378,7 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
     final isCurrentPlan = activeSub != null &&
         activeSub.isActive &&
         (activeSub.planId.toLowerCase() == plan.name.toLowerCase() ||
-         activeSub.planId.toLowerCase() == plan.id.toLowerCase());
+            activeSub.planId.toLowerCase() == plan.id.toLowerCase());
 
     final isSameCycle = activeSub != null && activeSub.subscriptionType == _selectedCycle;
 
