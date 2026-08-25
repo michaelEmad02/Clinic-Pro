@@ -19,6 +19,7 @@ class ExpenseActionSheet {
   }) {
     return AppBottomSheet.show(
       context: context,
+      isScrollControlled: true,
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 24),
         child: Column(
@@ -102,15 +103,17 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
+          Text("$label :  ",
               style: AppTextStyles.bodyMedium(context)
                   .copyWith(color: context.textSecondary)),
           Flexible(
             child: Text(value,
+            maxLines: 4,
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   fontWeight: FontWeight.bold,
                   color: valueColor ?? context.textPrimary,
                   overflow: TextOverflow.ellipsis
+                  
                 )),
           ),
         ],

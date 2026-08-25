@@ -153,7 +153,7 @@ class _ReportsCategoryBody extends StatelessWidget {
               padding: const EdgeInsets.all(AppConstants.spaceMd),
               gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 350,
-                mainAxisExtent: isWide ? 90 : 85,
+                mainAxisExtent: isWide ? 90 : 95,
                 crossAxisSpacing: AppConstants.spaceMd,
                 mainAxisSpacing: AppConstants.spaceMd,
               ),
@@ -209,8 +209,8 @@ class _CategoryCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   color: item.color.withOpacity(0.12),
                   borderRadius:
@@ -230,7 +230,7 @@ class _CategoryCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: context.textPrimary,
                       ),
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
@@ -239,7 +239,7 @@ class _CategoryCard extends StatelessWidget {
                       style: AppTextStyles.caption(context).copyWith(
                         color: context.textSecondary,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
