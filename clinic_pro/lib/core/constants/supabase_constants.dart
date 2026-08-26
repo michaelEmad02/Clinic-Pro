@@ -32,6 +32,11 @@ class SupabaseTables {
   static const String ownerSettings = 'owner_settings';
   static const String companyInfo = 'company_info';
   static const String paymentTransactions = 'payment_transactions';
+  static const String coupons = 'coupons';
+  static const String couponRedemptions = 'coupon_redemptions';
+  static const String referralMilestoneRewards = 'referral_milestone_rewards';
+  static const String referralRedemptions = 'referral_redemptions';
+  static const String ownerClaimedMilestones = 'owner_claimed_milestones';
 }
 
 class SupabaseBucket {
@@ -152,5 +157,32 @@ class PlanName {
   static const String basic = 'Basic';
   static const String pro = 'Pro';
   static const String enterprise = 'Enterprise';
+}
+
+/// نوع نطاق الكوبون: عام لجميع الأطباء أو خاص بمكافأة طبيب معين
+enum CouponScope {
+  public,
+  private,
+}
+
+/// نوع المكافأة التي يمنحها الكوبون
+enum CouponRewardType {
+  discountPercent, // نسبة مئوية (مثلاً 20%)
+  fixedAmount,     // مبلغ ثابت بالجنيه (مثلاً 100 ج.م)
+  freeDays,        // أيام إضافية مضافة للاشتراك (مثلاً 30 يوم)
+  freeMonth,       // شهر كامل مجاناً
+}
+
+/// حالة سجل الدعوة الفردية
+enum ReferralRedemptionStatus {
+  pending,
+  completed,
+  cancelled,
+}
+
+/// توقيت منح مكافأة الإحالة (عند التسجيل أو بعد الدفع والاشتراك)
+enum ReferralRewardTriggerType {
+  afterRegister,
+  afterSubscription,
 }
 

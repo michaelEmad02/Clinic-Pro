@@ -22,6 +22,10 @@ import '../../../plans_and_subscriptions/domain/entities/plan_entity.dart';
 import '../../domain/entities/payment_method.dart';
 import '../manager/payment_cubit.dart';
 import '../manager/payment_state.dart';
+import '../../../coupons/presentation/manager/coupons_cubit.dart';
+import '../../../coupons/presentation/manager/coupons_state.dart';
+import '../../../coupons/presentation/ui/widgets/coupon_input_row.dart';
+import '../../../coupons/presentation/ui/widgets/available_coupons_bottom_sheet.dart';
 
 
 class PaymentMethodsScreen extends StatelessWidget {
@@ -38,8 +42,20 @@ class PaymentMethodsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<PaymentCubit>(),
+    final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<PaymentCubit>()),
+        BlocProvider(
+          create: (_) {
+            final cubit = sl<CouponsCubit>();
+            if (ownerId.isNotEmpty) {
+              cubit.loadAvailableCoupons(ownerId);
+            }
+            return cubit;
+          },
+        ),
+      ],
       child: _PaymentMethodsBody(
         targetPlan: targetPlan,
         subscriptionType: subscriptionType,
@@ -76,11 +92,11 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
 
   double _calculatePrice() {
     if (widget.subscriptionType == 'yearly') {
-      return widget.targetPlan.yearlyPrice;
+      return widget.targetPlan.yearlyPriceEgp;
     } else if (widget.subscriptionType == 'lifetime') {
-      return widget.targetPlan.lifetimePrice;
+      return widget.targetPlan.lifetimePriceEgp;
     }
-    return widget.targetPlan.monthlyPrice;
+    return widget.targetPlan.monthlyPriceEgp;
   }
 
   String _getCycleText() {
@@ -96,19 +112,37 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
       return;
     }
 
+    final couponsCubit = context.read<CouponsCubit>();
+
+    // ────────────────────────────────────────────────────────────────────────
+    // هل نتخطى بوابة الدفع؟
+    // (أيام/شهور مجانية أو خصم 100%)
+    // ────────────────────────────────────────────────────────────────────────
+    if (couponsCubit.shouldSkipPaymentGateway) {
+      couponsCubit.redeemCouponDirectly(
+        ownerId: ownerId,
+        planId: widget.targetPlan.id,
+        billingCycle: widget.subscriptionType,
+      );
+      return;
+    }
+
+    final couponCode = couponsCubit.appliedCoupon?.code;
+
     if (_selectedMethod == PaymentMethod.wallet) {
-      _showWalletBottomSheet(context, ownerId);
+      _showWalletBottomSheet(context, ownerId, couponCode);
     } else {
       context.read<PaymentCubit>().initiatePayment(
             ownerId: ownerId,
             plan: widget.targetPlan,
             subscriptionType: widget.subscriptionType,
             paymentMethod: _selectedMethod,
+            couponCode: couponCode,
           );
     }
   }
 
-  void _showWalletBottomSheet(BuildContext parentContext, String ownerId) {
+  void _showWalletBottomSheet(BuildContext parentContext, String ownerId, String? couponCode) {
     showModalBottomSheet(
       context: parentContext,
       isScrollControlled: true,
@@ -160,13 +194,13 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'الدفع بواسطة المحفظة الإلكترونية',
+                          'رقم المحفظة الإلكترونية',
                           style: AppTextStyles.headlineSmall(parentContext).copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'فودافون كاش، اتصالات كاش، أورانج كاش، WE Pay',
+                          'فودافون كاش، أورنج كاش، اتصالات كاش، وي باي، أو المحافظ البنكية',
                           style: AppTextStyles.caption(parentContext).copyWith(
                             color: parentContext.textSecondary,
                           ),
@@ -177,16 +211,22 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                 ],
               ),
               const SizedBox(height: AppConstants.spaceLg),
-              TextFormField(
+              TextField(
                 controller: _walletController,
                 keyboardType: TextInputType.phone,
+                textDirection: TextDirection.ltr,
+                maxLength: 11,
                 autofocus: true,
                 decoration: InputDecoration(
-                  labelText: 'رقم المحفظة الإلكترونية',
-                  hintText: 'أدخل رقم المحفظة (مثال: 01012345678)',
+                  labelText: 'رقم المحفظة',
+                  hintText: '010XXXXXXXX',
                   prefixIcon: const Icon(Icons.phone_android_rounded),
+                  counterText: '',
+                  filled: true,
+                  fillColor: parentContext.surfaceContainerLow,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: parentContext.borderColor),
                   ),
                 ),
               ),
@@ -205,6 +245,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                         subscriptionType: widget.subscriptionType,
                         paymentMethod: PaymentMethod.wallet,
                         walletNumber: walletNum,
+                        couponCode: couponCode,
                       );
                 },
                 style: ElevatedButton.styleFrom(
@@ -393,7 +434,16 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
           child: Container(color: context.borderColor, height: 1),
         ),
       ),
-      body: BlocConsumer<PaymentCubit, PaymentState>(
+      body: BlocListener<CouponsCubit, CouponsState>(
+        listener: (context, couponState) {
+          if (couponState is CouponRedeemSuccess) {
+            AppSnackbar.success(context, message: couponState.message);
+            context.go(RouteConstants.ownerDashboard);
+          } else if (couponState is CouponRedeemError) {
+            AppSnackbar.error(context, message: couponState.message);
+          }
+        },
+        child: BlocConsumer<PaymentCubit, PaymentState>(
         listener: (context, state) {
           if (state is PaymentIntentReady) {
             final fawryCode = state.intentResult.fawryCode ?? '';
@@ -451,65 +501,116 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // بطاقة ملخص الباقة
-                  Container(
-                    padding: const EdgeInsets.all(AppConstants.spaceMd),
-                    decoration: BoxDecoration(
-                      color: context.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: context.borderColor),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppStrings.planNamePrefix(widget.targetPlan.name.toUpperCase()),
-                                style: AppTextStyles.headlineSmall(context).copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: context.primary,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${AppStrings.billingCyclePrefix}: ${_getCycleText()}',
-                                style: AppTextStyles.bodyMedium(context).copyWith(
-                                  color: context.textSecondary,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ],
-                          ),
+                  Builder(
+                    builder: (context) {
+                      final couponsCubit = context.watch<CouponsCubit>();
+                      final appliedCoupon = couponsCubit.appliedCoupon;
+                      final finalPrice = appliedCoupon != null
+                          ? appliedCoupon.finalAmount
+                          : price;
+
+                      return Container(
+                        padding: const EdgeInsets.all(AppConstants.spaceMd),
+                        decoration: BoxDecoration(
+                          color: context.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: context.borderColor),
                         ),
-                        const SizedBox(width: AppConstants.spaceSm),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                        child: Column(
                           children: [
-                            Text(
-                              '\$${price.toInt()}',
-                              style: AppTextStyles.headlineMedium(context).copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: context.primary,
-                              ),
-                              textDirection: TextDirection.ltr,
-                            ),
-                            Text(
-                              '/${_getCycleText()}',
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: context.textSecondary,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppStrings.planNamePrefix(widget.targetPlan.name.toUpperCase()),
+                                        style: AppTextStyles.headlineSmall(context).copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: context.textPrimary,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${AppStrings.billingCyclePrefix}: ${_getCycleText()}',
+                                        style: AppTextStyles.bodyMedium(context).copyWith(
+                                          color: context.textSecondary,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: AppConstants.spaceSm),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    if (appliedCoupon != null) ...[
+                                      Text(
+                                        '${price.toInt()} ${AppStrings.egp}',
+                                        style: AppTextStyles.bodyMedium(context).copyWith(
+                                          decoration: TextDecoration.lineThrough,
+                                          color: context.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                    Text(
+                                      '${finalPrice.toInt()} ${AppStrings.egp}',
+                                      style: AppTextStyles.headlineMedium(context).copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: appliedCoupon != null ? context.accent : context.primary,
+                                      ),
+                                    ),
+                                    Text(
+                                      '/${_getCycleText()}',
+                                      style: AppTextStyles.caption(context).copyWith(
+                                        color: context.textSecondary,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: AppConstants.spaceLg),
+
+                  // صف إدخال وتطبيق الكوبونات
+                  Builder(
+                    builder: (context) {
+                      final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
+                      return CouponInputRow(
+                        ownerId: ownerId,
+                        planId: widget.targetPlan.id,
+                        billingCycle: widget.subscriptionType,
+                        onOpenAvailableCoupons: () {
+                          final coupons = context.read<CouponsCubit>().availableCoupons;
+                          AvailableCouponsBottomSheet.show(
+                            context: context,
+                            coupons: coupons,
+                            onSelectCoupon: (coupon) {
+                              context.read<CouponsCubit>().validateAndApplyCoupon(
+                                    code: coupon.code,
+                                    ownerId: ownerId,
+                                    planId: widget.targetPlan.id,
+                                    billingCycle: widget.subscriptionType,
+                                  );
+                            },
+                          );
+                        },
+                      );
+                    },
                   ),
 
                   const SizedBox(height: AppConstants.spaceXl),
@@ -620,6 +721,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
             ),
           );
         },
+      ),
       ),
     );
   }

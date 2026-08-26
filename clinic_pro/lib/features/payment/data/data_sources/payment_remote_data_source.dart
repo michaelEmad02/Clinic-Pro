@@ -18,6 +18,7 @@ abstract class IPaymentRemoteDataSource {
     required String subscriptionType,
     required PaymentMethod paymentMethod,
     String? walletNumber,
+    String? couponCode,
   });
 
   Future<PaymentStatusEntity> checkPaymentStatus(String transactionId);
@@ -37,6 +38,7 @@ class PaymentRemoteDataSource implements IPaymentRemoteDataSource {
     required String subscriptionType,
     required PaymentMethod paymentMethod,
     String? walletNumber,
+    String? couponCode,
   }) async {
     final res = await _paymentService.createPaymentIntent(
       ownerId: ownerId,
@@ -44,6 +46,7 @@ class PaymentRemoteDataSource implements IPaymentRemoteDataSource {
       subscriptionType: subscriptionType,
       paymentMethod: paymentMethod,
       walletNumber: walletNumber,
+      couponCode: couponCode,
     );
     return PaymentIntentEntity(
       paymentUrl: res.paymentUrl,

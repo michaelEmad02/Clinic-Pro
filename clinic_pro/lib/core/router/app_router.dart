@@ -43,6 +43,7 @@ import '../../features/clinics/presentation/ui/clinics_screen.dart';
 import '../../features/clinics/presentation/ui/clinic_details_screen.dart';
 import '../../features/invoices/presentation/ui/invoices_screen.dart';
 import '../../features/expenses/presentation/ui/expenses_screen.dart';
+import '../../features/owner_referrals/presentation/ui/referral_dashboard_screen.dart';
 import '../../features/reports/presentation/ui/reports_screen.dart';
 import '../../features/reports/presentation/ui/doctor_my_reports_screen.dart';
 
@@ -285,6 +286,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteConstants.doctorMyReports,
       builder: (context, state) => const DoctorMyReportsScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.referralDashboard,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final ownerId = extra?['ownerId'] as String? ?? '';
+        return ReferralDashboardScreen(ownerId: ownerId);
+      },
     ),
   ],
 );

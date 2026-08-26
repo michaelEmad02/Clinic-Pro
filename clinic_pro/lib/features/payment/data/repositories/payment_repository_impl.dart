@@ -26,6 +26,7 @@ class PaymentRepositoryImpl implements IPaymentRepository {
     required String subscriptionType,
     required PaymentMethod paymentMethod,
     String? walletNumber,
+    String? couponCode,
   }) async {
     try {
       final result = await _remoteDataSource.createPaymentIntent(
@@ -34,6 +35,7 @@ class PaymentRepositoryImpl implements IPaymentRepository {
         subscriptionType: subscriptionType,
         paymentMethod: paymentMethod,
         walletNumber: walletNumber,
+        couponCode: couponCode,
       );
       return Right(result);
     } catch (e) {

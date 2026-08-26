@@ -19,6 +19,7 @@ class AuthUserModel extends AuthUserEntity {
     super.isActive,
     super.ownerId,
     super.country,
+    super.referralCode,
     super.isNewUser,
   });
 
@@ -36,6 +37,7 @@ class AuthUserModel extends AuthUserEntity {
       isActive: json['is_active'] as bool? ?? true,
       ownerId: json['owner_id'] as String?,
       country: json['country'] as String?,
+      referralCode: json['referral_code'] as String?,
       isNewUser: isNewUser,
     );
   }

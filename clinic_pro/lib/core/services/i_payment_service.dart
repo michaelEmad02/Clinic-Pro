@@ -13,6 +13,7 @@ abstract class IPaymentService {
     required String subscriptionType,
     required PaymentMethod paymentMethod,
     String? walletNumber,
+    String? couponCode,
   });
 
   Future<PaymentStatusEntity> checkPaymentStatus(String transactionId);

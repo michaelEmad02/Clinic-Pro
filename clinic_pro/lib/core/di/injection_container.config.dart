@@ -111,6 +111,15 @@ import '../../features/clinics/presentation/manager/cubit/fetch_clinic_staff_cub
     as _i750;
 import '../../features/clinics/presentation/manager/cubit/fetch_clinic_statistics_cubit.dart'
     as _i728;
+import '../../features/coupons/data/data_sources/coupons_remote_data_source.dart'
+    as _i124;
+import '../../features/coupons/data/repositories/coupons_repository_impl.dart'
+    as _i471;
+import '../../features/coupons/domain/repositories/coupons_repository.dart'
+    as _i769;
+import '../../features/coupons/domain/usecases/coupon_usecases.dart' as _i12;
+import '../../features/coupons/presentation/manager/coupons_cubit.dart'
+    as _i321;
 import '../../features/dashboard/data/datasources/doctor_dashboard_remote_data_source_impl.dart'
     as _i920;
 import '../../features/dashboard/data/datasources/i_doctor_dashboard_remote_data_source.dart'
@@ -203,6 +212,16 @@ import '../../features/invoices/presentation/manager/invoices_cubit.dart'
     as _i795;
 import '../../features/onboarding/presentation/manager/onboarding_cubit.dart'
     as _i1012;
+import '../../features/owner_referrals/data/data_sources/owner_referral_remote_data_source.dart'
+    as _i543;
+import '../../features/owner_referrals/data/repositories/owner_referral_repository_impl.dart'
+    as _i234;
+import '../../features/owner_referrals/domain/repositories/owner_referral_repository.dart'
+    as _i937;
+import '../../features/owner_referrals/domain/usecases/owner_referral_usecases.dart'
+    as _i263;
+import '../../features/owner_referrals/presentation/manager/referral_cubit.dart'
+    as _i439;
 import '../../features/patients/data/datasources/i_patients_remote_data_source.dart'
     as _i816;
 import '../../features/patients/data/datasources/patients_remote_data_source_impl.dart'
@@ -232,26 +251,24 @@ import '../../features/patients/presentation/manager/patient_prescriptions_cubit
 import '../../features/patients/presentation/manager/patients_cubit.dart'
     as _i296;
 import '../../features/payment/data/data_sources/payment_remote_data_source.dart'
-    as _i250;
+    as _i673;
+import '../../features/payment/data/repositories/payment_repository_impl.dart'
+    as _i265;
+import '../../features/payment/domain/repositories/i_payment_repository.dart'
+    as _i1004;
+import '../../features/payment/domain/usecases/payment_usecases.dart' as _i878;
+import '../../features/payment/presentation/manager/payment_cubit.dart'
+    as _i815;
 import '../../features/plans_and_subscriptions/data/data_sources/subscriptions_remote_data_source.dart'
     as _i347;
-import '../../features/payment/data/repositories/payment_repository_impl.dart'
-    as _i586;
 import '../../features/plans_and_subscriptions/data/repositories/subscriptions_repository_impl.dart'
     as _i399;
-import '../../features/payment/domain/repositories/i_payment_repository.dart'
-    as _i824;
 import '../../features/plans_and_subscriptions/domain/repositories/i_subscriptions_repository.dart'
     as _i255;
-import '../../features/payment/domain/usecases/payment_usecases.dart'
-    as _i409;
 import '../../features/plans_and_subscriptions/domain/usecases/subscriptions_usecases.dart'
     as _i944;
-import '../../features/payment/presentation/manager/payment_cubit.dart'
-    as _i926;
 import '../../features/plans_and_subscriptions/presentation/manager/subscriptions_cubit.dart'
     as _i701;
-
 import '../../features/prescription/data/datasources/prescription_remote_data_source.dart'
     as _i482;
 import '../../features/prescription/data/repositories/prescription_repository_impl.dart'
@@ -411,8 +428,6 @@ import '../services/i_local_data_service.dart' as _i819;
 import '../services/i_payment_service.dart' as _i693;
 import '../services/i_prescription_pdf_service.dart' as _i581;
 import '../services/payment_service_impl.dart' as _i757;
-
-
 import '../services/prescription_pdf_service_impl.dart' as _i926;
 import '../services/shared_preferences_service.dart' as _i29;
 import '../services/storage/i_image_compression_service.dart' as _i576;
@@ -463,6 +478,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1019.SupabaseServices(supabase: gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i720.IAppointmentRemoteDataSource>(
         () => _i590.AppointmentRemoteDataSourceImpl(gh<_i239.ICloudService>()));
+    gh.lazySingleton<_i543.IOwnerReferralRemoteDataSource>(() =>
+        _i543.OwnerReferralRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i816.IPatientsRemoteDataSource>(
         () => _i472.PatientsRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i951.StaffRemoteDataSource>(
@@ -470,6 +487,8 @@ extension GetItInjectableX on _i174.GetIt {
               iAuthServices: gh<_i662.IAuthServices>(),
               iCloudService: gh<_i239.ICloudService>(),
             ));
+    gh.lazySingleton<_i124.ICouponsRemoteDataSource>(
+        () => _i124.CouponsRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i347.ISubscriptionsRemoteDataSource>(
         () => _i347.SubscriptionsRemoteDataSource(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i255.ISubscriptionsRepository>(() =>
@@ -488,6 +507,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i170.ISecretaryDashboardRemoteDataSource>(() =>
         _i238.SecretaryDashboardRemoteDataSourceImpl(
             gh<_i239.ICloudService>()));
+    gh.lazySingleton<_i769.ICouponsRepository>(() =>
+        _i471.CouponsRepositoryImpl(gh<_i124.ICouponsRemoteDataSource>()));
     gh.lazySingleton<_i25.IAuthRemoteDataSource>(
         () => _i25.AuthRemoteDataSourceImpl(
               gh<_i239.ICloudService>(),
@@ -507,9 +528,18 @@ extension GetItInjectableX on _i174.GetIt {
         expensesRepository: gh<_i321.ExpensesRepository>()));
     gh.lazySingleton<_i769.ISettingsLocalDataSource>(
         () => _i917.SettingsLocalDataSourceImpl(gh<_i819.ILocalDataService>()));
+    gh.lazySingleton<_i937.IOwnerReferralRepository>(() =>
+        _i234.OwnerReferralRepositoryImpl(
+            gh<_i543.IOwnerReferralRemoteDataSource>()));
     gh.lazySingleton<_i61.IOwnerDashboardRepository>(() =>
         _i382.OwnerDashboardRepositoryImpl(
             gh<_i246.IOwnerDashboardRemoteDataSource>()));
+    gh.lazySingleton<_i263.GetReferralDashboardUseCase>(() =>
+        _i263.GetReferralDashboardUseCase(
+            gh<_i937.IOwnerReferralRepository>()));
+    gh.lazySingleton<_i263.ApplyReferralCodeOnRegistrationUseCase>(() =>
+        _i263.ApplyReferralCodeOnRegistrationUseCase(
+            gh<_i937.IOwnerReferralRepository>()));
     gh.lazySingleton<_i431.StaffRepository>(() => _i418.StaffRepoImplementation(
         staffRemoteDataSource: gh<_i951.StaffRemoteDataSource>()));
     gh.lazySingleton<_i524.ISettingsRemoteDataSource>(
@@ -521,6 +551,12 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i589.IAuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i25.IAuthRemoteDataSource>()));
+    gh.lazySingleton<_i12.ValidateCouponUseCase>(
+        () => _i12.ValidateCouponUseCase(gh<_i769.ICouponsRepository>()));
+    gh.lazySingleton<_i12.GetAvailableCouponsUseCase>(
+        () => _i12.GetAvailableCouponsUseCase(gh<_i769.ICouponsRepository>()));
+    gh.lazySingleton<_i12.RedeemCouponUseCase>(
+        () => _i12.RedeemCouponUseCase(gh<_i769.ICouponsRepository>()));
     gh.lazySingleton<_i219.IClinicsRemoteDataSource>(() =>
         _i219.ClinicsRemoteDataSource(
             iCloudService: gh<_i239.ICloudService>()));
@@ -553,6 +589,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i591.IOwnerSettingsRepository>(() =>
         _i375.OwnerSettingsRepositoryImpl(
             gh<_i1070.IOwnerSettingsRemoteDataSource>()));
+    gh.factory<_i439.ReferralCubit>(() => _i439.ReferralCubit(
+          gh<_i263.GetReferralDashboardUseCase>(),
+          gh<_i263.ApplyReferralCodeOnRegistrationUseCase>(),
+        ));
     gh.lazySingleton<_i944.GetPlansUseCase>(
         () => _i944.GetPlansUseCase(gh<_i255.ISubscriptionsRepository>()));
     gh.lazySingleton<_i944.GetActiveSubscriptionUseCase>(() =>
@@ -663,9 +703,16 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i965.GetDrugStatsUseCase>(),
           gh<_i61.GetTemplateStatsUseCase>(),
         ));
+    gh.lazySingleton<_i673.IPaymentRemoteDataSource>(
+        () => _i673.PaymentRemoteDataSource(gh<_i693.IPaymentService>()));
     gh.factory<_i392.AddPatientUseCase>(() => _i392.AddPatientUseCase(
           gh<_i69.IPatientsRepository>(),
           gh<_i255.ISubscriptionsRepository>(),
+        ));
+    gh.factory<_i321.CouponsCubit>(() => _i321.CouponsCubit(
+          gh<_i12.ValidateCouponUseCase>(),
+          gh<_i12.GetAvailableCouponsUseCase>(),
+          gh<_i12.RedeemCouponUseCase>(),
         ));
     gh.factory<_i334.OwnerSummaryStatsCubit>(() =>
         _i334.OwnerSummaryStatsCubit(gh<_i895.GetOwnerSummaryStatsUseCase>()));
@@ -701,12 +748,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i845.IPrescriptionRepository>(() =>
         _i678.PrescriptionRepositoryImpl(
             gh<_i482.IPrescriptionRemoteDataSource>()));
-    gh.lazySingleton<_i250.IPaymentRemoteDataSource>(
-        () => _i250.PaymentRemoteDataSource(gh<_i693.IPaymentService>()));
     gh.lazySingleton<_i657.ISettingsRepository>(() =>
         _i955.SettingsRepositoryImpl(gh<_i524.ISettingsRemoteDataSource>()));
-    gh.lazySingleton<_i824.IPaymentRepository>(() =>
-        _i586.PaymentRepositoryImpl(gh<_i250.IPaymentRemoteDataSource>()));
     gh.lazySingleton<_i976.IDoctorDashboardRepository>(
         () => _i26.DoctorDashboardRepositoryImpl(
               gh<_i257.IDoctorDashboardRemoteDataSource>(),
@@ -876,6 +919,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i620.GetDoctorAppointmentTypesUseCase>(),
           gh<_i431.GetGlobalAppointmentTypesUseCase>(),
         ));
+    gh.lazySingleton<_i1004.IPaymentRepository>(() =>
+        _i265.PaymentRepositoryImpl(gh<_i673.IPaymentRemoteDataSource>()));
     gh.factory<_i864.PatientPrescriptionsCubit>(() =>
         _i864.PatientPrescriptionsCubit(
             gh<_i1061.GetPrescriptionsForPatientUseCase>()));
@@ -901,16 +946,16 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i476.AppointmentReportsCubit>(() =>
         _i476.AppointmentReportsCubit(gh<_i660.GetAppointmentStatsUseCase>()));
-    gh.lazySingleton<_i409.CreatePaymentIntentUseCase>(
-        () => _i409.CreatePaymentIntentUseCase(gh<_i824.IPaymentRepository>()));
-    gh.lazySingleton<_i409.CheckPaymentStatusUseCase>(
-        () => _i409.CheckPaymentStatusUseCase(gh<_i824.IPaymentRepository>()));
     gh.lazySingleton<_i27.GetDoctorDashboardDataUseCase>(() =>
         _i27.GetDoctorDashboardDataUseCase(
             gh<_i976.IDoctorDashboardRepository>()));
     gh.lazySingleton<_i894.WatchDoctorDashboardDataUseCase>(() =>
         _i894.WatchDoctorDashboardDataUseCase(
             gh<_i976.IDoctorDashboardRepository>()));
+    gh.lazySingleton<_i878.CreatePaymentIntentUseCase>(() =>
+        _i878.CreatePaymentIntentUseCase(gh<_i1004.IPaymentRepository>()));
+    gh.lazySingleton<_i878.CheckPaymentStatusUseCase>(
+        () => _i878.CheckPaymentStatusUseCase(gh<_i1004.IPaymentRepository>()));
     gh.factory<_i534.TemplatesCubit>(() => _i534.TemplatesCubit(
           gh<_i535.GetTemplatesUseCase>(),
           gh<_i535.AddTemplateUseCase>(),
@@ -955,16 +1000,16 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i652.LoginWithAppleUseCase>(),
           gh<_i698.LogoutUseCase>(),
         ));
+    gh.factory<_i815.PaymentCubit>(() => _i815.PaymentCubit(
+          createPaymentIntentUseCase: gh<_i878.CreatePaymentIntentUseCase>(),
+          checkPaymentStatusUseCase: gh<_i878.CheckPaymentStatusUseCase>(),
+        ));
     gh.factory<_i641.PrintingSettingsCubit>(() => _i641.PrintingSettingsCubit(
           gh<_i456.GetOwnerPrintingSettingsUseCase>(),
           gh<_i602.SaveOwnerPrintingSettingsUseCase>(),
         ));
     gh.factory<_i317.FetchClinicByIdCubit>(
         () => _i317.FetchClinicByIdCubit(gh<_i665.FetchClinicByIdUseCase>()));
-    gh.factory<_i926.PaymentCubit>(() => _i926.PaymentCubit(
-          createPaymentIntentUseCase: gh<_i409.CreatePaymentIntentUseCase>(),
-          checkPaymentStatusUseCase: gh<_i409.CheckPaymentStatusUseCase>(),
-        ));
     gh.factory<_i116.PatientDetailsCubit>(() => _i116.PatientDetailsCubit(
           gh<_i338.FindPatientByIdUseCase>(),
           gh<_i507.GetVisitsForPatientUseCase>(),

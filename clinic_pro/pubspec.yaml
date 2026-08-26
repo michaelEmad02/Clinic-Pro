@@ -57,11 +57,8 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.3
   url_launcher: ^6.3.1
-<<<<<<< HEAD
   webview_flutter: ^4.10.0
-=======
   flutter_native_splash: ^2.4.4
->>>>>>> 339112cce38f85782626722f152f09adabb3e499
 
 dev_dependencies:
   flutter_test:

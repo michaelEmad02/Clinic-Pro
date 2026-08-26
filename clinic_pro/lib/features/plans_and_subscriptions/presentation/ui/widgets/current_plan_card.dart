@@ -50,7 +50,7 @@ class CurrentPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = _planTitle();
     final description = _planDescription();
-    final price = plan.monthlyPrice.toInt().toString();
+    final price = '${plan.monthlyPriceEgp.toInt()} ${AppStrings.egp}';
 
     final List<String> featuresList = [];
 

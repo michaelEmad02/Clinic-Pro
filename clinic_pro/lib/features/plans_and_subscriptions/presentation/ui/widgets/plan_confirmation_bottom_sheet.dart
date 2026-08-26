@@ -80,13 +80,13 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double price = targetPlan.monthlyPrice;
+    double price = targetPlan.monthlyPriceEgp;
     String cycleText = AppStrings.monthlyLabel;
     if (subscriptionType == 'yearly') {
-      price = targetPlan.yearlyPrice;
+      price = targetPlan.yearlyPriceEgp;
       cycleText = AppStrings.yearlyLabel;
     } else if (subscriptionType == 'lifetime') {
-      price = targetPlan.lifetimePrice;
+      price = targetPlan.lifetimePriceEgp;
       cycleText = AppStrings.lifetimeLabel;
     }
 
@@ -200,12 +200,11 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '\$${price.toInt()}',
+                        '${price.toInt()} ${AppStrings.egp}',
                         style: AppTextStyles.headlineMedium(context).copyWith(
                           fontWeight: FontWeight.bold,
                           color: context.primary,
                         ),
-                        textDirection: TextDirection.ltr,
                       ),
                       Text(
                         '/$cycleText',

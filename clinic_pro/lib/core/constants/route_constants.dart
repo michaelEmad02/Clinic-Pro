@@ -56,4 +56,5 @@ class RouteConstants {
   static const String paymentSuccess = '/subscriptions/payment-success';
   static const String paymentFailed = '/subscriptions/payment-failed';
   static const String aboutUs = '/settings/about-us';
+  static const String referralDashboard = '/settings/referrals';
 }

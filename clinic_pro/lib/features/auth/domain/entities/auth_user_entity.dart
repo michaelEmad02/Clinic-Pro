@@ -17,6 +17,7 @@ class AuthUserEntity {
   final bool isActive; // حالة نشاط الحساب (نشط أم موقوف)
   final String? ownerId; // معرف المالك التابع له الموظف (للموظفين فقط)
   final String? country; // الدولة (لمالك العيادة فقط)
+  final String? referralCode; // كود الدعوة الخاص بالمالك (DOC-XXXXX)
   final bool isNewUser; // هل المستخدم جديد وتم إنشاؤه للتو؟
 
   const AuthUserEntity({
@@ -31,6 +32,7 @@ class AuthUserEntity {
     this.isActive = true,
     this.ownerId,
     this.country,
+    this.referralCode,
     this.isNewUser = false,
   });
 
@@ -46,6 +48,7 @@ class AuthUserEntity {
     bool? isActive,
     String? ownerId,
     String? country,
+    String? referralCode,
   }) {
     return AuthUserEntity(
       id: id ?? this.id,
@@ -59,6 +62,8 @@ class AuthUserEntity {
       isActive: isActive ?? this.isActive,
       ownerId: ownerId ?? this.ownerId,
       country: country ?? this.country,
+      referralCode: referralCode ?? this.referralCode,
+      isNewUser: isNewUser,
     );
   }
 }

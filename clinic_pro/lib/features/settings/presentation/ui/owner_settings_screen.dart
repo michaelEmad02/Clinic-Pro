@@ -130,10 +130,22 @@ class OwnerSettingsScreen extends StatelessWidget {
             label: AppStrings.subscriptionAndPlan,
             onTap: () => context.push(RouteConstants.settingsSubscription),
           ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          NavSettingsItem(
+            icon: Icons.card_giftcard_rounded,
+            label: AppStrings.inviteDoctorsAndRewards,
+            onTap: () {
+              final user = context.read<AuthCubit>().state.user;
+              context.push(
+                RouteConstants.referralDashboard,
+                extra: {'ownerId': user?.id ?? ''},
+              );
+            },
+          ),
         ],
       ),
     );
-    }
+  }
   Widget _buildOtherSection(BuildContext context) {
     return SectionCard(
       title: AppStrings.other,

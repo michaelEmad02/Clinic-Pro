@@ -36,6 +36,7 @@ class PaymentCubit extends Cubit<PaymentState> {
     required String subscriptionType,
     required PaymentMethod paymentMethod,
     String? walletNumber,
+    String? couponCode,
   }) async {
     try {
       _currentPlan = plan;
@@ -50,6 +51,7 @@ class PaymentCubit extends Cubit<PaymentState> {
         subscriptionType: subscriptionType,
         paymentMethod: paymentMethod,
         walletNumber: walletNumber,
+        couponCode: couponCode,
       );
 
       result.fold(

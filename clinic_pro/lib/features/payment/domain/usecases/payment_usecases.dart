@@ -23,6 +23,7 @@ class CreatePaymentIntentUseCase {
     required String subscriptionType,
     required PaymentMethod paymentMethod,
     String? walletNumber,
+    String? couponCode,
   }) {
     return _repository.createPaymentIntent(
       ownerId: ownerId,
@@ -30,6 +31,7 @@ class CreatePaymentIntentUseCase {
       subscriptionType: subscriptionType,
       paymentMethod: paymentMethod,
       walletNumber: walletNumber,
+      couponCode: couponCode,
     );
   }
 }

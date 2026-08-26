@@ -25,6 +25,7 @@ class PaymentServiceImpl implements IPaymentService {
     required String subscriptionType,
     required PaymentMethod paymentMethod,
     String? walletNumber,
+    String? couponCode,
   }) async {
     final response = await _cloudService.invokeFunction(
       'create_payment_intent',
@@ -34,6 +35,7 @@ class PaymentServiceImpl implements IPaymentService {
         'subscription_type': subscriptionType,
         'payment_method': paymentMethod.value,
         if (walletNumber != null && walletNumber.isNotEmpty) 'wallet_number': walletNumber,
+        if (couponCode != null && couponCode.isNotEmpty) 'coupon_code': couponCode,
       },
     );
 

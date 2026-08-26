@@ -1,5 +1,6 @@
 // ════════════════════════════════════════════════════════════════════
-// Supabase Edge Function: paymob-webhook (نسخة محسنة فائقة الأمان والمرونة)
+// Supabase Edge Function: paymob-webhook
+// تفعيل الاشتراكات، استهلاك الكوبونات، واكتمال الإحالات بالسيرفر تلقائياً
 // ════════════════════════════════════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -13,8 +14,47 @@ function getCleanEnv(key: string): string {
 
 serve(async (req: Request) => {
   try {
-    const body = await req.json();
-    console.log("Paymob Webhook received payload:", JSON.stringify(body));
+    // ── 0. تحليل الـ Body بطريقة آمنة (Paymob ممكن ترسل JSON أو form-urlencoded أو GET) ──
+    let body: any;
+    const contentType = req.headers.get("content-type") || "";
+
+    if (req.method === "GET") {
+      // بعض إشعارات Paymob بتيجي كـ GET request
+      const url = new URL(req.url);
+      body = Object.fromEntries(url.searchParams.entries());
+      console.log("Webhook received as GET params");
+    } else {
+      const rawText = await req.text();
+      console.log("Webhook raw body length:", rawText.length, "| Content-Type:", contentType);
+
+      if (!rawText || rawText.trim().length === 0) {
+        console.error("❌ Empty body received from Paymob");
+        return new Response(JSON.stringify({ error: "Empty body" }), { status: 400 });
+      }
+
+      // محاولة 1: تحليل كـ JSON
+      try {
+        body = JSON.parse(rawText);
+      } catch {
+        // محاولة 2: تحليل كـ form-urlencoded
+        try {
+          const params = new URLSearchParams(rawText);
+          const entries = Object.fromEntries(params.entries());
+          // لو فيه مفتاح واحد بس واسمه طويل، ممكن يكون JSON مكسور
+          if (Object.keys(entries).length > 1) {
+            body = entries;
+          } else {
+            console.error("❌ Could not parse body as JSON or form-urlencoded:", rawText.substring(0, 500));
+            return new Response(JSON.stringify({ error: "Unparseable body" }), { status: 400 });
+          }
+        } catch {
+          console.error("❌ Could not parse body at all:", rawText.substring(0, 500));
+          return new Response(JSON.stringify({ error: "Unparseable body" }), { status: 400 });
+        }
+      }
+    }
+
+    console.log("Paymob Webhook received payload:", JSON.stringify(body).substring(0, 1000));
 
     const obj = body.obj || body;
     if (!obj) {
@@ -59,7 +99,7 @@ serve(async (req: Request) => {
       }
     }
 
-    // ── 2. إنشاء Supabase Client بـ Service Role لضمان التعديل الفوري ──
+    // ── 2. إنشاء Supabase Client بـ Service Role ──
     const supabaseUrl = getCleanEnv("SUPABASE_URL");
     const supabaseServiceKey = getCleanEnv("SUPABASE_SERVICE_ROLE_KEY");
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -83,12 +123,16 @@ serve(async (req: Request) => {
       );
     }
 
-    const isSuccess = obj.success === true && obj.pending === false;
+    // تحويل القيم لتعمل مع JSON و form-urlencoded (القيم ممكن تيجي string أو boolean)
+    const toBool = (val: any): boolean => val === true || val === "true";
+    const isSuccess = toBool(obj.success) && !toBool(obj.pending);
     const transactionId = obj.id?.toString();
 
+    console.log(`📋 Payment check: success=${obj.success} (${typeof obj.success}), pending=${obj.pending} (${typeof obj.pending}), isSuccess=${isSuccess}`);
+
     if (isSuccess) {
-      // ── 4a. الدفع نجح → تفعيل الاشتراك وتحديد تواريخ البدء والانتهاء ──
-      await supabase
+      // ── 4a. الدفع نجح → تحديث حالة المعاملة أولاً ──
+      const { error: txUpdateErr } = await supabase
         .from("payment_transactions")
         .update({
           status: "success",
@@ -101,30 +145,46 @@ serve(async (req: Request) => {
         })
         .eq("id", transaction.id);
 
-      // جلب بيانات الاشتراك لمعرفة النوع (monthly/yearly/lifetime)
+      if (txUpdateErr) {
+        console.error("❌ Failed to update payment_transactions:", txUpdateErr.message);
+        return new Response(
+          JSON.stringify({ error: "Failed to update transaction status", details: txUpdateErr.message }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // جلب بيانات الاشتراك لمعرفة النوع والخطة (monthly/yearly/lifetime & plan_id)
       const { data: subData } = await supabase
         .from("subscriptions")
-        .select("subscription_type")
+        .select("plan_id, subscription_type, owner_id")
         .eq("id", transaction.subscription_id)
         .single();
 
-      // حساب تاريخ البدء والانتهاء من لحظة نجاح الدفع
-      const now = new Date();
-      let endAt: string | null = null;
       const subType = subData?.subscription_type;
+      const ownerId = subData?.owner_id || transaction.owner_id;
+
+      // حساب تاريخ البدء والانتهاء الأساسي
+      const now = new Date();
+      const end = new Date(now);
 
       if (subType === "monthly") {
-        const end = new Date(now);
         end.setMonth(end.getMonth() + 1);
-        endAt = end.toISOString();
       } else if (subType === "yearly") {
-        const end = new Date(now);
         end.setFullYear(end.getFullYear() + 1);
-        endAt = end.toISOString();
       }
-      // lifetime → endAt = null (بلا نهاية)
 
-      await supabase
+      // إضافة أيام مجانية إذا كان الكوبون يمنح free_days أو free_month
+      const meta = transaction.metadata || {};
+      if (meta.reward_type === "free_days" && meta.reward_value) {
+        end.setDate(end.getDate() + Number(meta.reward_value));
+      } else if (meta.reward_type === "free_month") {
+        end.setMonth(end.getMonth() + 1);
+      }
+
+      const endAt = subType === "lifetime" ? null : end.toISOString();
+
+      // تفعيل الاشتراك (فقط بعد نجاح تحديث المعاملة)
+      const { error: subUpdateErr } = await supabase
         .from("subscriptions")
         .update({
           status: "active",
@@ -135,7 +195,57 @@ serve(async (req: Request) => {
         })
         .eq("id", transaction.subscription_id);
 
-      console.log(`✅ Subscription ${transaction.subscription_id} ACTIVATED (${subType}) — started_at: ${now.toISOString()}, end_at: ${endAt}`);
+      if (subUpdateErr) {
+        console.error("❌ Failed to activate subscription:", subUpdateErr.message);
+      } else {
+        console.log(`✅ Subscription ${transaction.subscription_id} ACTIVATED (${subType}) — started_at: ${now.toISOString()}, end_at: ${endAt}`);
+      }
+
+      // ── 5. استهلاك وحرق الكوبون تلقائياً بالسيرفر ──
+      if (meta.coupon_id && ownerId) {
+        const { data: redeemRes, error: redeemErr } = await supabase.rpc("redeem_coupon", {
+          p_coupon_id: meta.coupon_id,
+          p_owner_id: ownerId,
+          p_plan_id: subData?.plan_id || null,
+          p_billing_cycle: subType || "monthly",
+          p_discount_amount: meta.discount_amount || 0,
+          p_transaction_id: transaction.id,
+        });
+
+        if (redeemErr) {
+          console.error("⚠️ Failed to redeem coupon in webhook:", redeemErr.message);
+        } else {
+          console.log(`🎟️ Coupon ${meta.coupon_id} successfully REDEEMED for owner ${ownerId}:`, redeemRes);
+        }
+      }
+
+      // ── 6. إكمال سجل الدعوة والإحالة (Referral Completed) ──
+      // إذا كانت سياسة المكافأة 'after_subscription' وكانت معلقة، تكتمل الآن بنجاح الدفع
+      if (ownerId) {
+        const { data: pendingReferral } = await supabase
+          .from("referral_redemptions")
+          .select("id, status, trigger_event")
+          .eq("referee_owner_id", ownerId)
+          .eq("status", "pending")
+          .maybeSingle();
+
+        if (pendingReferral) {
+          const { error: refUpdateErr } = await supabase
+            .from("referral_redemptions")
+            .update({ 
+              status: "completed",
+              completed_at: new Date().toISOString()
+            })
+            .eq("id", pendingReferral.id);
+
+          if (refUpdateErr) {
+            console.error("⚠️ Failed to complete referral redemption:", refUpdateErr.message);
+          } else {
+            console.log(`🎉 Referral redemption ${pendingReferral.id} marked as COMPLETED (Trigger fired)`);
+          }
+        }
+      }
+
     } else {
       // ── 4b. الدفع فشل ──
       await supabase

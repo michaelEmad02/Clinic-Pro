@@ -1218,6 +1218,68 @@ class AppStrings {
   static String get transactionStatusQueryError => isArabic
       ? 'تعذر استعلام حالة المعاملة'
       : 'Failed to query transaction status';
+
+  // ────────────────────────────────────────────────────────
+  // Referrals & Coupons Localization
+  // ────────────────────────────────────────────────────────
+  static String get inviteDoctorsAndRewards =>
+      isArabic ? 'دعوة الاصدقاء والمكافآت' : 'Invite Friends & Rewards';
+  static String get yourReferralCode =>
+      isArabic ? 'كود الدعوة الخاص بك' : 'Your Referral Code';
+  static String get referralCodeDesc => isArabic
+      ? 'شارك هذا الكود مع زملائك الأطباء واربح شهور مجانية وكوبونات خصم'
+      : 'Share this code with your colleagues to earn free months and discount coupons';
+  static String get copyCode => isArabic ? 'نسخ الكود' : 'Copy Code';
+  static String referralCodeCopied(String code) => isArabic
+      ? 'تم نسخ كود الدعوة بنجاح: $code'
+      : 'Referral code copied successfully: $code';
+  static String get nextTarget => isArabic ? 'الهدف القادم:' : 'Next Goal:';
+  static String get allTargetsAchieved =>
+      isArabic ? 'تم تحقيق جميع الأهداف! 🎉' : 'All goals achieved! 🎉';
+  static String doctorsCountProgress(int current, int target) =>
+      isArabic ? '$current / $target أطباء' : '$current / $target Doctors';
+  static String remainingInvitesMsg(int remaining) => isArabic
+      ? '🔥 باقي لك ($remaining دعوة) فقط للحصول على هذه المكافأة!'
+      : '🔥 Only ($remaining invites) left to unlock this reward!';
+  static String get targetAchievedSuccessMsg => isArabic
+      ? '🎉 أحسنت! تم تحقيق الهدف بنجاح وإضافة المكافأة لحسابك.'
+      : '🎉 Well done! Goal achieved and reward added to your account.';
+  static String get milestoneRewardsTitle =>
+      isArabic ? 'أهداف ومحطات المكافآت' : 'Reward Goals & Milestones';
+  static String get rewardClaimedBadge =>
+      isArabic ? 'تم الاستلام 🎉' : 'Claimed 🎉';
+  static String doctorsRequiredCount(int count) =>
+      isArabic ? '$count أطباء' : '$count Doctors';
+  static String yourCouponCodeIs(String code) =>
+      isArabic ? 'كود الكوبون الخاص بك: $code' : 'Your coupon code: $code';
+
+  // Coupons
+  static String get couponInputHint =>
+      isArabic ? 'ادخل كود الكوبون...' : 'Enter coupon code...';
+  static String get applyCoupon => isArabic ? 'تطبيق' : 'Apply';
+  static String availableCouponsButton(int count) => isArabic
+      ? 'لديك ($count) كوبون متاح للاستخدام - عرض الكوبونات'
+      : 'You have ($count) coupons available - View Coupons';
+  static String couponAppliedSuccess(double amount) => isArabic
+      ? 'تم تطبيق خصم بقيمة $amount ج.م بنجاح! 🎉'
+      : 'Discount of $amount EGP applied successfully! 🎉';
+  static String get availableCouponsTitle =>
+      isArabic ? 'كوبوناتك المتاحة للاستخدام' : 'Your Available Coupons';
+  static String get noAvailableCoupons =>
+      isArabic ? 'لا توجد كوبونات متاحة حالياً' : 'No available coupons right now';
+  static String get referralGiftBadge =>
+      isArabic ? 'هدية إحالة' : 'Referral Gift';
+  static String get discountAvailableOnPlans =>
+      isArabic ? 'خصم متاح على باقات العيادة' : 'Discount available on clinic plans';
+  static String get haveReferralCode =>
+      isArabic ? 'هل تمت دعوتك من قِبل طبيب زميل؟' : 'Invited by a colleague?';
+  static String get enterReferralCodePrompt =>
+      isArabic ? 'أدخل كود الدعوة للاستفادة من المكافأة' : 'Enter referral code to claim your reward';
+  static String get applyReferralCodeSuccess =>
+      isArabic ? 'تم تفعيل كود الدعوة بنجاح! 🎉' : 'Referral code applied successfully! 🎉';
+  static String shareInvitationMessage(String code) => isArabic
+      ? 'مرحباً دكتور، أدعوك لتجربة تطبيق Clinic Pro لإدارة العيادات الطبية الذكية. استخدم كود الدعوة الخاص بي ($code) عند التسجيل للحصول على مكافأة وخصومات ترحيبية!\nرابط التطبيق: https://play.google.com/store/apps/details?id=com.clinicpro.app'
+      : 'Hello Doctor, I invite you to try Clinic Pro app for smart clinic management. Use my referral code ($code) on registration to get welcome discounts!\nApp link: https://play.google.com/store/apps/details?id=com.clinicpro.app';
 }
 
 

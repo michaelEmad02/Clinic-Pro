@@ -24,6 +24,7 @@ import '../../domain/entities/subscription_entity.dart';
 import '../manager/subscriptions_cubit.dart';
 import '../manager/subscriptions_state.dart';
 import 'widgets/plan_confirmation_bottom_sheet.dart';
+import '../../../owner_referrals/presentation/ui/widgets/enter_referral_code_bottom_sheet.dart';
 
 class PlansComparisonScreen extends StatelessWidget {
   final bool isOnboarding;
@@ -254,7 +255,44 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                             setState(() => _selectedCycle = cycle);
                           },
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
+
+                        // زر / بانر إدخال كود الدعوة إن كان مسجلاً جديداً أو عبر Google
+                        InkWell(
+                          onTap: () {
+                            final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
+                            EnterReferralCodeBottomSheet.show(
+                              context: context,
+                              ownerId: ownerId,
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: context.primary.withOpacity(0.06),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: context.primary.withOpacity(0.2)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.card_giftcard_rounded, color: context.primary, size: 18),
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppStrings.haveReferralCode,
+                                  style: AppTextStyles.bodyMedium(context).copyWith(
+                                    color: context.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Icon(Icons.arrow_forward_ios, color: context.primary, size: 12),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
 
                         // عرض كروت الخطط (الخطة الحالية تظهر أولاً دائماً)
                         LayoutBuilder(
@@ -365,13 +403,13 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
     PlanEntity plan,
     SubscriptionEntity? activeSub,
   ) {
-    double price = plan.monthlyPrice;
+    double price = plan.monthlyPriceEgp;
     String subText = AppStrings.perMonth;
     if (_selectedCycle == SubscriptionType.yearly) {
-      price = plan.yearlyPrice;
+      price = plan.yearlyPriceEgp;
       subText = AppStrings.perYear;
     } else if (_selectedCycle == SubscriptionType.lifetime) {
-      price = plan.lifetimePrice;
+      price = plan.lifetimePriceEgp;
       subText = AppStrings.lifetimeSuffix;
     }
 
@@ -429,7 +467,7 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
 
     return PlanCard(
       title: plan.name.toUpperCase(),
-      price: '\$${price.toInt()}',
+      price: '${price.toInt()} ${AppStrings.egp}',
       priceSubtext: subText,
       isFeatured: isPro,
       isCurrentPlan: isCurrentPlan,

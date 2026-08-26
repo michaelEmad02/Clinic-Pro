@@ -1,5 +1,6 @@
 // ════════════════════════════════════════════════════════════════════
-// Supabase Edge Function: create_payment_intent (معالجة الصلاحيات بالـ Service Role)
+// Supabase Edge Function: create_payment_intent
+// معالجة الصلاحيات بالـ Service Role وحساب الخصم والكوبونات بالسيرفر حصراً
 // ════════════════════════════════════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -15,7 +16,7 @@ function getCleanEnv(key: string): string {
 serve(async (req: Request) => {
   try {
     // ── 1. استخراج البيانات من الطلب ──
-    const { owner_id, plan_id, subscription_type, payment_method, wallet_number } =
+    const { owner_id, plan_id, subscription_type, payment_method, wallet_number, coupon_code } =
       await req.json();
 
     if (!owner_id || !plan_id || !subscription_type || !payment_method) {
@@ -34,7 +35,7 @@ serve(async (req: Request) => {
       auth: { persistSession: false, autoRefreshToken: false }
     });
 
-    // ── 3. جلب بيانات الخطة والسعر ──
+    // ── 3. جلب بيانات الخطة والسعر الأصلي ──
     const { data: plan, error: planError } = await supabase
       .from("plans")
       .select("*")
@@ -48,25 +49,61 @@ serve(async (req: Request) => {
       );
     }
 
-    // تحديد السعر حسب نوع الاشتراك والعملة
+    // تحديد السعر الأساسي حسب دورة الفوترة
     const currency = "EGP";
-    let amount = 0;
+    let originalAmount = 0;
     if (subscription_type === "monthly") {
-      amount = plan.monthly_price_egp || plan.monthly_price || 0;
+      originalAmount = plan.monthly_price_egp || plan.monthly_price || 0;
     } else if (subscription_type === "yearly") {
-      amount = plan.yearly_price_egp || plan.yearly_price || 0;
+      originalAmount = plan.yearly_price_egp || plan.yearly_price || 0;
     } else if (subscription_type === "lifetime") {
-      amount = plan.lifetime_price_egp || plan.lifetime_price || 0;
+      originalAmount = plan.lifetime_price_egp || plan.lifetime_price || 0;
     }
 
-    if (amount <= 0) {
+    if (originalAmount <= 0) {
       return new Response(
         JSON.stringify({ error: "Step 3.1 (Invalid Price) Failed" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const amountCents = Math.round(amount * 100);
+    // ── 3.2 التحقق من الكوبون واحتساب الخصم من السيرفر ──
+    let finalAmount = originalAmount;
+    let discountAmount = 0;
+    let validatedCouponId: string | null = null;
+    let couponRewardType: string | null = null;
+    let couponRewardValue: number | null = null;
+
+    if (coupon_code && typeof coupon_code === 'string' && coupon_code.trim() !== '') {
+      const { data: couponResult, error: couponError } = await supabase.rpc(
+        "validate_coupon",
+        {
+          p_code: coupon_code.trim(),
+          p_owner_id: owner_id,
+          p_plan_id: plan_id,
+          p_billing_cycle: subscription_type,
+        }
+      );
+
+      if (couponError || !couponResult || !couponResult.is_valid) {
+        const errorMsg = couponResult?.message || couponError?.message || "كوبون الخصم غير صالح أو منتهي الصلاحية";
+        console.error(`❌ Coupon validation failed: ${errorMsg}`);
+        return new Response(
+          JSON.stringify({ error: errorMsg }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      finalAmount = couponResult.final_amount ?? originalAmount;
+      discountAmount = couponResult.discount_amount ?? 0;
+      validatedCouponId = couponResult.coupon_id;
+      couponRewardType = couponResult.reward_type;
+      couponRewardValue = couponResult.reward_value;
+      console.log(`🎟️ Coupon Applied: ${coupon_code} | Discount: ${discountAmount} | Final: ${finalAmount}`);
+    }
+
+    // تحويل المبلغ من الجنيه المصري (EGP) إلى القروش (Cents / Piasters) لأن Paymob تتطلب أصغر وحدة نقدية
+    const amountCents = Math.round(finalAmount * 100);
 
     // ── 4. Paymob Authentication ──
     const apiKey = getCleanEnv("PAYMOB_API_KEY");
@@ -136,8 +173,7 @@ serve(async (req: Request) => {
       integrationId = getCleanEnv("PAYMOB_INTEGRATION_ID_CARD");
     }
 
-    // ── 7. إنشاء Payment Key (باستخدام ownerData من Step 5) ──
-
+    // ── 7. إنشاء Payment Key ──
     const paymentKeyRes = await fetch(
       `${PAYMOB_BASE_URL}/acceptance/payment_keys`,
       {
@@ -254,11 +290,9 @@ serve(async (req: Request) => {
         );
       }
       subscription = newSub;
-      console.log(`🆕 Created new subscription: ${subscription.id}`);
     }
 
-    // ── 9. إنشاء أو إعادة استخدام سجل المعاملة (Idempotent) ──
-    // البحث عن معاملة pending أو failed مرتبطة بنفس الاشتراك
+    // ── 9. إنشاء أو إعادة استخدام سجل المعاملة مع بيانات الكوبون ──
     const { data: existingTx } = await supabase
       .from("payment_transactions")
       .select("*")
@@ -270,23 +304,31 @@ serve(async (req: Request) => {
 
     let transaction: any;
 
+    const txMetadata = {
+      plan_name: plan.name,
+      subscription_type: subscription_type,
+      paymob_order_id: orderData.id,
+      merchant_order_id: orderData.merchant_order_id,
+      coupon_id: validatedCouponId,
+      coupon_code: coupon_code || null,
+      discount_amount: discountAmount,
+      original_amount: originalAmount,
+      final_amount: finalAmount,
+      reward_type: couponRewardType,
+      reward_value: couponRewardValue,
+    };
+
     if (existingTx) {
-      // تحديث المعاملة الموجودة بالـ Order الجديد
       const { data: updatedTx, error: updateTxError } = await supabase
         .from("payment_transactions")
         .update({
           status: "pending",
           gateway_order_id: orderData.id.toString(),
           payment_method: payment_method,
-          amount: amount,
+          amount: finalAmount,
           currency: currency,
           error_message: null,
-          metadata: {
-            plan_name: plan.name,
-            subscription_type: subscription_type,
-            paymob_order_id: orderData.id,
-            merchant_order_id: orderData.merchant_order_id,
-          },
+          metadata: txMetadata,
         })
         .eq("id", existingTx.id)
         .select()
@@ -310,15 +352,10 @@ serve(async (req: Request) => {
           gateway: "paymob",
           payment_method: payment_method,
           gateway_order_id: orderData.id.toString(),
-          amount: amount,
+          amount: finalAmount,
           currency: currency,
           status: "pending",
-          metadata: {
-            plan_name: plan.name,
-            subscription_type: subscription_type,
-            paymob_order_id: orderData.id,
-            merchant_order_id: orderData.merchant_order_id,
-          },
+          metadata: txMetadata,
         })
         .select()
         .single();
@@ -330,10 +367,10 @@ serve(async (req: Request) => {
         );
       }
       transaction = newTx;
-      console.log(`🆕 Created new transaction: ${transaction.id}`);
     }
 
     // ── 10. بناء رابط صفحة الدفع حسب طريقة الدفع ──
+    let paymentUrl = "";
     let fawryCode: string | null = null;
 
     if (payment_method === "wallet") {
@@ -417,20 +454,23 @@ serve(async (req: Request) => {
     // ── 11. إرجاع النتيجة للـ Flutter Client ──
     return new Response(
       JSON.stringify({
-        payment_url: paymentUrl,
         transaction_id: transaction.id,
         order_id: orderData.id.toString(),
-        reference_number: orderData.merchant_order_id,
+        payment_url: paymentUrl,
+        payment_token: paymentToken,
         fawry_code: fawryCode,
+        reference_number: orderData.merchant_order_id.toString(),
+        amount: finalAmount,
         subscription_id: subscription.id,
-        amount: amount,
         currency: currency,
+        discount_amount: discountAmount,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error("create_payment_intent Error:", error);
     return new Response(
-      JSON.stringify({ error: `Global Ex: ${error.message}` }),
+      JSON.stringify({ error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }

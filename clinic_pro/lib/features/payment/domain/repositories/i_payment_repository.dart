@@ -16,6 +16,7 @@ abstract class IPaymentRepository {
     required String subscriptionType,
     required PaymentMethod paymentMethod,
     String? walletNumber,
+    String? couponCode,
   });
 
   Future<Either<Failure, PaymentStatusEntity>> checkPaymentStatus(
