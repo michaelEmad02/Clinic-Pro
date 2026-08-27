@@ -95,7 +95,7 @@ class _CouponInputRowState extends State<CouponInputRow> {
                       ),
                       filled: true,
                       fillColor: appliedCoupon != null
-                          ? context.surfaceContainerLow.withOpacity(0.5)
+                          ? context.surfaceContainerLow.withOpacity(0.2)
                           : context.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(AppConstants.radiusButton),

@@ -49,11 +49,12 @@ class CouponValidationError extends CouponsState {
 /// حالة نجاح استهلاك الكوبون مباشرة (بدون بوابة دفع)
 class CouponRedeemSuccess extends CouponsState {
   final String message;
+  final int freeDaysGranted;
 
-  const CouponRedeemSuccess(this.message);
+  const CouponRedeemSuccess(this.message, {this.freeDaysGranted = 0});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, freeDaysGranted];
 }
 
 /// حالة فشل استهلاك الكوبون

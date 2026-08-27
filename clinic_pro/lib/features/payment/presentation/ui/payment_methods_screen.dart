@@ -156,7 +156,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
             right: AppConstants.spaceLg,
           ),
           decoration: BoxDecoration(
-            color: parentContext.surfaceColor,
+            color: parentContext.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -223,7 +223,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                   prefixIcon: const Icon(Icons.phone_android_rounded),
                   counterText: '',
                   filled: true,
-                  fillColor: parentContext.surfaceContainerLow,
+                  fillColor: parentContext.surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: parentContext.borderColor),
@@ -424,7 +424,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
           AppStrings.checkoutTitle,
           style: AppTextStyles.headlineMedium(context).copyWith(
             fontWeight: FontWeight.bold,
-            color: context.primary,
+            color: context.textPrimary,
           ),
           overflow: TextOverflow.ellipsis,
           maxLines: 1,
@@ -438,7 +438,24 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
         listener: (context, couponState) {
           if (couponState is CouponRedeemSuccess) {
             AppSnackbar.success(context, message: couponState.message);
-            context.go(RouteConstants.ownerDashboard);
+            final cycleText = couponState.freeDaysGranted > 0
+                ? (AppStrings.isArabic ? '${couponState.freeDaysGranted} يوم' : '${couponState.freeDaysGranted} Days')
+                : widget.subscriptionType;
+
+            context.push(
+              RouteConstants.paymentSuccess,
+              extra: {
+                'statusResult': PaymentStatusEntity(
+                  transactionId: 'COUPON-DIRECT',
+                  status: 'success',
+                  paymentMethod: 'coupon',
+                  amount: 0,
+                  currency: AppStrings.egp,
+                ),
+                'plan': widget.targetPlan,
+                'subscriptionType': cycleText,
+              },
+            );
           } else if (couponState is CouponRedeemError) {
             AppSnackbar.error(context, message: couponState.message);
           }
@@ -759,7 +776,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
               ),
               child: Icon(
                 icon,
-                color: isSelected ? context.primary : context.textSecondary,
+                color: isSelected ? context.primaryFixedDim : context.textSecondary,
                 size: 24,
               ),
             ),
@@ -772,7 +789,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                     title,
                     style: AppTextStyles.bodyLarge(context).copyWith(
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? context.primary : context.textPrimary,
+                      color: isSelected ? context.primaryFixedDim : context.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,

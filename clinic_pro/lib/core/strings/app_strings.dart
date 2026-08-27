@@ -774,15 +774,23 @@ class AppStrings {
       isArabic ? 'المدعوين ($count)' : 'Invitees ($count)';
   static String doctorWithName(String name) =>
       isArabic ? 'الطبيب: $name' : 'Doctor: $name';
-  static String supportClinics(int count) => isArabic
-      ? 'دعم حتى $count عيادات نشطة'
-      : 'Support up to $count active clinics';
-  static String supportStaff(int count) => isArabic
-      ? 'دعم حتى $count من طاقم العمل'
-      : 'Support up to $count staff members';
-  static String supportPatients(int count) => isArabic
-      ? 'دعم حتى $count مريض مسجل'
-      : 'Support up to $count registered patients';
+  static String supportClinics(int count) => count == -1
+      ? (isArabic ? 'دعم عدد غير محدود من العيادات' : 'Support unlimited clinics')
+      : (isArabic
+          ? 'دعم حتى $count عيادات نشطة'
+          : 'Support up to $count active clinics');
+
+  static String supportStaff(int count) => count == -1
+      ? (isArabic ? 'دعم عدد غير محدود من طاقم العمل' : 'Support unlimited staff members')
+      : (isArabic
+          ? 'دعم حتى $count من طاقم العمل'
+          : 'Support up to $count staff members');
+
+  static String supportPatients(int count) => count == -1
+      ? (isArabic ? 'دعم عدد غير محدود من المرضى' : 'Support unlimited patients')
+      : (isArabic
+          ? 'دعم حتى $count مريض مسجل'
+          : 'Support up to $count registered patients');
 
   // Success / Error messages
   static String get loadFailedMsg =>

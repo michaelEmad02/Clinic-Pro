@@ -127,11 +127,12 @@ class CouponsCubit extends Cubit<CouponsState> {
     result.fold(
       (failure) => emit(CouponRedeemError(failure.message)),
       (_) {
-        final message = _appliedCoupon!.freeDaysGranted > 0
-            ? 'تم تفعيل ${_appliedCoupon!.freeDaysGranted} يوم مجاناً بنجاح!'
+        final days = _appliedCoupon!.freeDaysGranted;
+        final message = days > 0
+            ? 'تم تفعيل $days يوم مجاناً بنجاح!'
             : 'تم تفعيل الاشتراك بنجاح!';
         _appliedCoupon = null;
-        emit(CouponRedeemSuccess(message));
+        emit(CouponRedeemSuccess(message, freeDaysGranted: days));
       },
     );
   }

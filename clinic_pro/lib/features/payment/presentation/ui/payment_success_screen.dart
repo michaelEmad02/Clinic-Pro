@@ -33,8 +33,11 @@ class PaymentSuccessScreen extends StatelessWidget {
         return AppStrings.yearlyLabel;
       case 'lifetime':
         return AppStrings.lifetimeLabel;
-      default:
+      case 'monthly':
         return AppStrings.monthlyLabel;
+      default:
+        // إذا كان نصاً مخصصاً (مثل "15 يوم" أو "30 يوم") نعرضه كما هو
+        return subscriptionType.isNotEmpty ? subscriptionType : AppStrings.monthlyLabel;
     }
   }
 
@@ -192,7 +195,9 @@ class PaymentSuccessScreen extends StatelessWidget {
                           _buildDetailRow(
                             context,
                             AppStrings.paidAmountLabel,
-                            '${statusResult.amount.toInt()} ${statusResult.currency}',
+                            statusResult.paymentMethod == 'coupon' || statusResult.amount == 0
+                                ? (AppStrings.isArabic ? 'مجاناً (كوبون)' : 'Free (Coupon)')
+                                : '${statusResult.amount.toInt()} ${statusResult.currency}',
                           ),
                           if ((statusResult.referenceNumber ?? '')
                               .isNotEmpty) ...[

@@ -251,17 +251,31 @@ class OwnerDashboardRemoteDataSourceImpl implements IOwnerDashboardRemoteDataSou
         eq: {'owner_id': ownerId},
       );
       if (subscriptions.isNotEmpty) {
-        final sub = subscriptions.first;
-        final status = sub['status'] as String?;
-        if (status == SubscriptionStatus.expired) {
-          alerts.add(DashboardAlertEntity(
-            id: 'sub-expired',
-            title: AppStrings.isArabic ? 'الاشتراك منتهي' : 'Subscription Expired',
-            message: AppStrings.isArabic
-                ? 'اشتراكك منتهي. يرجى تجديد الاشتراك للاستمرار في استخدام الخدمة.'
-                : 'Your subscription has expired. Please renew to continue using the service.',
-            type: DashboardAlertType.warning,
-          ));
+        // فحص هل يوجد أي اشتراك نشط وساري المفعول حالياً
+        final hasActiveSub = subscriptions.any((s) {
+          final status = s['status'] as String?;
+          final endAtStr = s['end_at'] as String?;
+          if (status != SubscriptionStatus.active) return false;
+          if (endAtStr == null) return true; // lifetime
+          final endAt = DateTime.tryParse(endAtStr);
+          return endAt == null || endAt.isAfter(DateTime.now());
+        });
+
+        // نعرض تنبيه انتهاء الاشتراك فقط إذا لم يكن لديه أي اشتراك نشط
+        if (!hasActiveSub) {
+          final hasExpiredSub = subscriptions.any(
+            (s) => s['status'] == SubscriptionStatus.expired,
+          );
+          if (hasExpiredSub) {
+            alerts.add(DashboardAlertEntity(
+              id: 'sub-expired',
+              title: AppStrings.isArabic ? 'الاشتراك منتهي' : 'Subscription Expired',
+              message: AppStrings.isArabic
+                  ? 'اشتراكك منتهي. يرجى تجديد الاشتراك للاستمرار في استخدام الخدمة.'
+                  : 'Your subscription has expired. Please renew to continue using the service.',
+              type: DashboardAlertType.warning,
+            ));
+          }
         }
       }
 

@@ -163,9 +163,9 @@ class PlanConfirmationBottomSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppConstants.spaceMd),
               decoration: BoxDecoration(
-                color: context.surfaceContainerLow,
+                color: context.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: context.borderColor),
+                border: Border.all(color: context.primary),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

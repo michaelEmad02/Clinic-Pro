@@ -194,7 +194,7 @@ BEGIN
                 ) VALUES (
                     p_owner_id,
                     p_plan_id,
-                    COALESCE(p_billing_cycle, 'monthly'),
+                    COALESCE(p_billing_cycle, 'monthly')::public.subscription_types,
                     'active',
                     'coupon',
                     NOW(),
