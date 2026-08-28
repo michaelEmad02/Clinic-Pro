@@ -26,18 +26,21 @@ import '../../../coupons/presentation/manager/coupons_cubit.dart';
 import '../../../coupons/presentation/manager/coupons_state.dart';
 import '../../../coupons/presentation/ui/widgets/coupon_input_row.dart';
 import '../../../coupons/presentation/ui/widgets/available_coupons_bottom_sheet.dart';
-
+import '../../../owner_referrals/presentation/ui/widgets/enter_referral_code_bottom_sheet.dart';
 
 class PaymentMethodsScreen extends StatelessWidget {
+
   final PlanEntity targetPlan;
   final String subscriptionType;
   final CompanyInfoEntity? companyInfo;
+  final String? initialCouponCode;
 
   const PaymentMethodsScreen({
     super.key,
     required this.targetPlan,
     required this.subscriptionType,
     this.companyInfo,
+    this.initialCouponCode,
   });
 
   @override
@@ -60,6 +63,7 @@ class PaymentMethodsScreen extends StatelessWidget {
         targetPlan: targetPlan,
         subscriptionType: subscriptionType,
         companyInfo: companyInfo,
+        initialCouponCode: initialCouponCode,
       ),
     );
   }
@@ -69,11 +73,13 @@ class _PaymentMethodsBody extends StatefulWidget {
   final PlanEntity targetPlan;
   final String subscriptionType;
   final CompanyInfoEntity? companyInfo;
+  final String? initialCouponCode;
 
   const _PaymentMethodsBody({
     required this.targetPlan,
     required this.subscriptionType,
     this.companyInfo,
+    this.initialCouponCode,
   });
 
   @override
@@ -83,6 +89,26 @@ class _PaymentMethodsBody extends StatefulWidget {
 class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
   PaymentMethod _selectedMethod = PaymentMethod.card;
   final TextEditingController _walletController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialCouponCode != null && widget.initialCouponCode!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
+          if (ownerId.isNotEmpty) {
+            context.read<CouponsCubit>().validateAndApplyCoupon(
+                  code: widget.initialCouponCode!,
+                  ownerId: ownerId,
+                  planId: widget.targetPlan.id,
+                  billingCycle: widget.subscriptionType,
+                );
+          }
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -603,29 +629,94 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
 
                   const SizedBox(height: AppConstants.spaceLg),
 
-                  // صف إدخال وتطبيق الكوبونات
+                  // صف إدخال وتطبيق الكوبونات وزر كود الدعوة (إذا لم تكن هناك كوبونات متاحة)
                   Builder(
                     builder: (context) {
                       final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
-                      return CouponInputRow(
-                        ownerId: ownerId,
-                        planId: widget.targetPlan.id,
-                        billingCycle: widget.subscriptionType,
-                        onOpenAvailableCoupons: () {
-                          final coupons = context.read<CouponsCubit>().availableCoupons;
-                          AvailableCouponsBottomSheet.show(
-                            context: context,
-                            coupons: coupons,
-                            onSelectCoupon: (coupon) {
-                              context.read<CouponsCubit>().validateAndApplyCoupon(
-                                    code: coupon.code,
-                                    ownerId: ownerId,
-                                    planId: widget.targetPlan.id,
-                                    billingCycle: widget.subscriptionType,
-                                  );
+                      final couponsCubit = context.watch<CouponsCubit>();
+                      final availableCoupons = couponsCubit.availableCoupons;
+                      final appliedCoupon = couponsCubit.appliedCoupon;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // يظهر فقط إذا لم تكن هناك أي كوبونات متاحة ولم يطبق كوبون بعد
+                          if (availableCoupons.isEmpty && appliedCoupon == null) ...[
+                            InkWell(
+                              onTap: () {
+                                EnterReferralCodeBottomSheet.show(
+                                  context: context,
+                                  ownerId: ownerId,
+                                  onSuccess: (result) {
+                                    final couponCode = result.couponCode;
+                                    // 1. تحديث قائمة الكوبونات المتاحة
+                                    context.read<CouponsCubit>().loadAvailableCoupons(ownerId);
+                                    // 2. تطبيق الكوبون فوراً وتلقائياً على الباقة الحالية
+                                    if (couponCode != null && couponCode.isNotEmpty) {
+                                      context.read<CouponsCubit>().validateAndApplyCoupon(
+                                            code: couponCode,
+                                            ownerId: ownerId,
+                                            planId: widget.targetPlan.id,
+                                            billingCycle: widget.subscriptionType,
+                                          );
+                                    }
+                                  },
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                margin: const EdgeInsets.only(bottom: AppConstants.spaceMd),
+                                decoration: BoxDecoration(
+                                  color: context.primary.withOpacity(0.06),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: context.primary.withOpacity(0.2)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.card_giftcard_rounded, color: context.primary, size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        AppStrings.haveReferralCode,
+                                        style: AppTextStyles.bodyMedium(context).copyWith(
+                                          color: context.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Icon(Icons.arrow_forward_ios, color: context.primary, size: 12),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+
+                          CouponInputRow(
+                            ownerId: ownerId,
+                            planId: widget.targetPlan.id,
+                            billingCycle: widget.subscriptionType,
+                            onOpenAvailableCoupons: () {
+                              final coupons = context.read<CouponsCubit>().availableCoupons;
+                              AvailableCouponsBottomSheet.show(
+                                context: context,
+                                coupons: coupons,
+                                onSelectCoupon: (coupon) {
+                                  context.read<CouponsCubit>().validateAndApplyCoupon(
+                                        code: coupon.code,
+                                        ownerId: ownerId,
+                                        planId: widget.targetPlan.id,
+                                        billingCycle: widget.subscriptionType,
+                                      );
+                                },
+                              );
                             },
-                          );
-                        },
+                          ),
+                        ],
                       );
                     },
                   ),

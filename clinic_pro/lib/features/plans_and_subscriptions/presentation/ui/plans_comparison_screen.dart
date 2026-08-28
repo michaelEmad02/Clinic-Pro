@@ -24,11 +24,20 @@ import '../../domain/entities/subscription_entity.dart';
 import '../manager/subscriptions_cubit.dart';
 import '../manager/subscriptions_state.dart';
 import 'widgets/plan_confirmation_bottom_sheet.dart';
-import '../../../owner_referrals/presentation/ui/widgets/enter_referral_code_bottom_sheet.dart';
+
+import '../../../owner_referrals/domain/entities/apply_referral_result_entity.dart';
 
 class PlansComparisonScreen extends StatelessWidget {
   final bool isOnboarding;
-  const PlansComparisonScreen({super.key, this.isOnboarding = false});
+  final String? initialCouponCode;
+  final ApplyReferralResultEntity? referralResult;
+
+  const PlansComparisonScreen({
+    super.key,
+    this.isOnboarding = false,
+    this.initialCouponCode,
+    this.referralResult,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,21 +45,33 @@ class PlansComparisonScreen extends StatelessWidget {
 
     return BlocProvider(
       create: (_) => sl<SubscriptionsCubit>()..loadSubscriptionsData(ownerId),
-      child: _PlansComparisonBody(isOnboarding: isOnboarding),
+      child: _PlansComparisonBody(
+        isOnboarding: isOnboarding,
+        initialCouponCode: initialCouponCode,
+        referralResult: referralResult,
+      ),
     );
   }
 }
 
 class _PlansComparisonBody extends StatefulWidget {
   final bool isOnboarding;
-  const _PlansComparisonBody({this.isOnboarding = false});
+  final String? initialCouponCode;
+  final ApplyReferralResultEntity? referralResult;
+
+  const _PlansComparisonBody({
+    this.isOnboarding = false,
+    this.initialCouponCode,
+    this.referralResult,
+  });
 
   @override
   State<_PlansComparisonBody> createState() => _PlansComparisonBodyState();
 }
 
 class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
-  String _selectedCycle = SubscriptionType.monthly; // 'monthly', 'yearly', 'lifetime'
+  String _selectedCycle =
+      SubscriptionType.monthly; // 'monthly', 'yearly', 'lifetime'
 
   int _cycleWeight(String type) {
     switch (type) {
@@ -80,8 +101,9 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
 
     // إذا كان المالك لديه اشتراك نشط ولم ينتهِ بعد
     if (activeSub != null && activeSub.isActive) {
-      final isSamePlan = activeSub.planId.toLowerCase() == selectedPlan.id.toLowerCase() ||
-          activeSub.planId.toLowerCase() == selectedPlan.name.toLowerCase();
+      final isSamePlan =
+          activeSub.planId.toLowerCase() == selectedPlan.id.toLowerCase() ||
+              activeSub.planId.toLowerCase() == selectedPlan.name.toLowerCase();
       final currentCycleWeight = _cycleWeight(activeSub.subscriptionType);
       final selectedCycleWeight = _cycleWeight(_selectedCycle);
       final currentPlanWeight = _planWeight(activeSub.planId);
@@ -116,8 +138,6 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
           onConfirm: () {
             context.read<SubscriptionsCubit>().requestSubscription(
                   ownerId: ownerId,
-                  targetPlan: selectedPlan,
-                  subscriptionType: _selectedCycle,
                 );
           },
           onPayOnline: () {
@@ -126,6 +146,7 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
               extra: {
                 'targetPlan': selectedPlan,
                 'subscriptionType': _selectedCycle,
+                'initialCouponCode': widget.initialCouponCode,
               },
             );
           },
@@ -152,8 +173,6 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
       onConfirm: () {
         context.read<SubscriptionsCubit>().requestSubscription(
               ownerId: ownerId,
-              targetPlan: selectedPlan,
-              subscriptionType: _selectedCycle,
             );
       },
       onPayOnline: () {
@@ -162,6 +181,7 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
           extra: {
             'targetPlan': selectedPlan,
             'subscriptionType': _selectedCycle,
+            'initialCouponCode': widget.initialCouponCode,
           },
         );
       },
@@ -257,41 +277,219 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                         ),
                         const SizedBox(height: 16),
 
-                        // زر / بانر إدخال كود الدعوة إن كان مسجلاً جديداً أو عبر Google
-                        InkWell(
-                          onTap: () {
-                            final ownerId = context.read<AuthCubit>().state.user?.id ?? '';
-                            EnterReferralCodeBottomSheet.show(
-                              context: context,
-                              ownerId: ownerId,
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: context.primary.withOpacity(0.06),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: context.primary.withOpacity(0.2)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.card_giftcard_rounded, color: context.primary, size: 18),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppStrings.haveReferralCode,
-                                  style: AppTextStyles.bodyMedium(context).copyWith(
-                                    color: context.primary,
-                                    fontWeight: FontWeight.bold,
+                        // زر / بانر إدخال كود الدعوة أو عرض الهدية الترحيبية المفعلة (تصميم متجاوب بالكامل)
+                        if (widget.initialCouponCode != null &&
+                            widget.initialCouponCode!.isNotEmpty)
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isSmallScreen = constraints.maxWidth < 400;
+
+                              return Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      context.accent.withOpacity(0.12),
+                                      context.primary.withOpacity(0.06),
+                                    ],
+                                    begin: AlignmentDirectional.centerStart,
+                                    end: AlignmentDirectional.centerEnd,
                                   ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: context.accent.withOpacity(0.35)),
                                 ),
-                                const SizedBox(width: 6),
-                                Icon(Icons.arrow_forward_ios, color: context.primary, size: 12),
-                              ],
-                            ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: context.accent,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.card_giftcard_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (isSmallScreen) ...[
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Flexible(
+                                                  child: Text(
+                                                    'هدية الدعوة مفعلة 🎁',
+                                                    style: AppTextStyles
+                                                            .bodyMedium(context)
+                                                        .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          context.textPrimary,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: context.accent
+                                                        .withOpacity(0.15),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6),
+                                                    border: Border.all(
+                                                        color: context.accent
+                                                            .withOpacity(0.3)),
+                                                  ),
+                                                  child: Text(
+                                                    widget.initialCouponCode!,
+                                                    style:
+                                                        AppTextStyles.caption(
+                                                                context)
+                                                            .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: context.accent,
+                                                      fontSize: 10,
+                                                      letterSpacing: 0.5,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ] else ...[
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    'هدية الدعوة مفعلة بنجاح 🎁',
+                                                    style: AppTextStyles
+                                                            .bodyMedium(context)
+                                                        .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          context.textPrimary,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: context.accent
+                                                        .withOpacity(0.15),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6),
+                                                    border: Border.all(
+                                                        color: context.accent
+                                                            .withOpacity(0.3)),
+                                                  ),
+                                                  child: Text(
+                                                    widget.initialCouponCode!,
+                                                    style:
+                                                        AppTextStyles.caption(
+                                                                context)
+                                                            .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: context.accent,
+                                                      letterSpacing: 1,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'سيتم تطبيق الخصم الترحيبي تلقائياً عند اختيار باقتك والمتابعة للدفع.',
+                                            style:
+                                                AppTextStyles.caption(context)
+                                                    .copyWith(
+                                              color: context.textSecondary,
+                                              fontSize: 11,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                        ),
+                        // else
+                        //   InkWell(
+                        //     onTap: () {
+                        //       final ownerId =
+                        //           context.read<AuthCubit>().state.user?.id ??
+                        //               '';
+                        //       EnterReferralCodeBottomSheet.show(
+                        //         context: context,
+                        //         ownerId: ownerId,
+                        //       );
+                        //     },
+                        //     borderRadius: BorderRadius.circular(10),
+                        //     child: Container(
+                        //       padding: const EdgeInsets.symmetric(
+                        //           horizontal: 14, vertical: 10),
+                        //       decoration: BoxDecoration(
+                        //         color: context.primary.withOpacity(0.06),
+                        //         borderRadius: BorderRadius.circular(10),
+                        //         border: Border.all(
+                        //             color: context.primary.withOpacity(0.2)),
+                        //       ),
+                        //       child: Row(
+                        //         mainAxisSize: MainAxisSize.min,
+                        //         children: [
+                        //           Icon(Icons.card_giftcard_rounded,
+                        //               color: context.primary, size: 18),
+                        //           const SizedBox(width: 8),
+                        //           Text(
+                        //             AppStrings.haveReferralCode,
+                        //             style: AppTextStyles.bodyMedium(context)
+                        //                 .copyWith(
+                        //               color: context.primary,
+                        //               fontWeight: FontWeight.bold,
+                        //             ),
+                        //           ),
+                        //           const SizedBox(width: 6),
+                        //           Icon(Icons.arrow_forward_ios,
+                        //               color: context.primary, size: 12),
+                        //         ],
+                        //       ),
+                        //     ),
+                        //   ),
                         const SizedBox(height: 24),
 
                         // عرض كروت الخطط (الخطة الحالية تظهر أولاً دائماً)
@@ -302,10 +500,14 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                             final sortedPlans = List<PlanEntity>.from(plans);
                             if (activeSub != null && activeSub.isActive) {
                               sortedPlans.sort((a, b) {
-                                final aIsCurrent = a.name.toLowerCase() == activeSub.planId.toLowerCase() ||
-                                    a.id.toLowerCase() == activeSub.planId.toLowerCase();
-                                final bIsCurrent = b.name.toLowerCase() == activeSub.planId.toLowerCase() ||
-                                    b.id.toLowerCase() == activeSub.planId.toLowerCase();
+                                final aIsCurrent = a.name.toLowerCase() ==
+                                        activeSub.planId.toLowerCase() ||
+                                    a.id.toLowerCase() ==
+                                        activeSub.planId.toLowerCase();
+                                final bIsCurrent = b.name.toLowerCase() ==
+                                        activeSub.planId.toLowerCase() ||
+                                    b.id.toLowerCase() ==
+                                        activeSub.planId.toLowerCase();
                                 if (aIsCurrent && !bIsCurrent) return -1;
                                 if (!aIsCurrent && bIsCurrent) return 1;
                                 return 0;
@@ -315,13 +517,16 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                             if (isWide) {
                               return IntrinsicHeight(
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: sortedPlans.map((plan) {
                                     return Expanded(
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceSm),
-                                        child: _buildPlanCardItem(context, plan, activeSub),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: AppConstants.spaceSm),
+                                        child: _buildPlanCardItem(
+                                            context, plan, activeSub),
                                       ),
                                     );
                                   }).toList(),
@@ -332,8 +537,10 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                             return Column(
                               children: sortedPlans.map((plan) {
                                 return Padding(
-                                  padding: const EdgeInsets.only(bottom: AppConstants.spaceLg),
-                                  child: _buildPlanCardItem(context, plan, activeSub),
+                                  padding: const EdgeInsets.only(
+                                      bottom: AppConstants.spaceLg),
+                                  child: _buildPlanCardItem(
+                                      context, plan, activeSub),
                                 );
                               }).toList(),
                             );
@@ -348,16 +555,14 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                             constraints: const BoxConstraints(maxWidth: 400),
                             child: ElevatedButton.icon(
                               onPressed: () {
-                                final basicPlan = plans.firstWhere(
-                                  (p) => p.name.toLowerCase() == PlanName.basic.toLowerCase(),
-                                );
-                                context.read<SubscriptionsCubit>().requestSubscription(
+                                context
+                                    .read<SubscriptionsCubit>()
+                                    .requestSubscription(
                                       ownerId: ownerId,
-                                      targetPlan: basicPlan,
-                                      subscriptionType: SubscriptionType.trail,
                                     );
                               },
-                              icon: const Icon(Icons.star_rounded, color: Colors.amber),
+                              icon: const Icon(Icons.star_rounded,
+                                  color: Colors.amber),
                               label: Flexible(
                                 child: Text(
                                   AppStrings.startFreeTrial14Days,
@@ -370,7 +575,8 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                                 foregroundColor: context.onPrimary,
                                 minimumSize: const Size(double.infinity, 48),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                                  borderRadius: BorderRadius.circular(
+                                      AppConstants.radiusButton),
                                 ),
                               ),
                             ),
@@ -418,7 +624,8 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
         (activeSub.planId.toLowerCase() == plan.name.toLowerCase() ||
             activeSub.planId.toLowerCase() == plan.id.toLowerCase());
 
-    final isSameCycle = activeSub != null && activeSub.subscriptionType == _selectedCycle;
+    final isSameCycle =
+        activeSub != null && activeSub.subscriptionType == _selectedCycle;
 
     final isPro = plan.name.toLowerCase() == PlanName.pro.toLowerCase();
 
@@ -435,9 +642,12 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
 
     final List<PlanFeature> planFeaturesList = [];
     if (plan.features != null) {
-      planFeaturesList.add(PlanFeature(text: AppStrings.supportClinics(plan.features!.maxClinics)));
-      planFeaturesList.add(PlanFeature(text: AppStrings.supportStaff(plan.features!.maxStaff)));
-      planFeaturesList.add(PlanFeature(text: AppStrings.supportPatients(plan.features!.maxPatients)));
+      planFeaturesList.add(PlanFeature(
+          text: AppStrings.supportClinics(plan.features!.maxClinics)));
+      planFeaturesList.add(
+          PlanFeature(text: AppStrings.supportStaff(plan.features!.maxStaff)));
+      planFeaturesList.add(PlanFeature(
+          text: AppStrings.supportPatients(plan.features!.maxPatients)));
 
       if (plan.features!.customFeatures != null) {
         final Map<String, dynamic> customFeats = plan.features!.customFeatures!;

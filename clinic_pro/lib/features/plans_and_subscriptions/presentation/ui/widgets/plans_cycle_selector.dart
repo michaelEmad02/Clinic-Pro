@@ -54,7 +54,7 @@ class PlansCycleSelector extends StatelessWidget {
         child: Text(
           label,
           style: AppTextStyles.bodyMedium(context).copyWith(
-            color: active ? context.primary : context.textSecondary,
+            color: active ? context.primary : context.textPrimary,
             fontWeight: active ? FontWeight.bold : FontWeight.normal,
           ),
           overflow: TextOverflow.ellipsis,

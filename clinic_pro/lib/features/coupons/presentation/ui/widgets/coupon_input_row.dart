@@ -61,13 +61,22 @@ class _CouponInputRowState extends State<CouponInputRow> {
       listener: (context, state) {
         if (state is CouponValidationError) {
           AppSnackbar.error(context, message: state.message);
+        } else if (state is CouponValidationSuccess) {
+          final code = state.validationResult.code ?? '';
+          if (code.isNotEmpty && _controller.text != code) {
+            _controller.text = code;
+          }
         }
       },
       builder: (context, state) {
         final cubit = context.read<CouponsCubit>();
         final appliedCoupon = cubit.appliedCoupon;
+        if (appliedCoupon != null && _controller.text.isEmpty) {
+          _controller.text = appliedCoupon.code ?? '';
+        }
         final availableCoupons = cubit.availableCoupons;
         final isLoading = state is CouponsLoading;
+
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +89,7 @@ class _CouponInputRowState extends State<CouponInputRow> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    enabled: appliedCoupon == null && !isLoading,
+                    readOnly: appliedCoupon != null || isLoading,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _applyCoupon(),
                     style: AppTextStyles.bodyMedium(context),
@@ -161,35 +170,155 @@ class _CouponInputRowState extends State<CouponInputRow> {
               ],
             ),
 
-            // شرط الظهور: يظهر فقط إذا كان لدى المالك كوبونات خاصة غير مستخدمة ومتاحة
+            // شرط الظهور: يظهر فقط إذا كان لدى المالك كوبونات خاصة غير مستخدمة ومتاحة (ستايل تذكرة قسيمة / Voucher متجاوب)
             if (availableCoupons.isNotEmpty && appliedCoupon == null) ...[
-              const SizedBox(height: AppConstants.spaceSm),
-              InkWell(
-                onTap: widget.onOpenAvailableCoupons,
-                borderRadius: BorderRadius.circular(AppConstants.radiusChip),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppConstants.spaceXs,
-                    horizontal: AppConstants.spaceXs,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.local_offer_outlined, color: context.primary, size: 18),
-                      const SizedBox(width: AppConstants.spaceXs + 2),
-                      Flexible(
-                        child: Text(
-                          AppStrings.availableCouponsButton(availableCoupons.length),
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: context.primary,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
+              const SizedBox(height: AppConstants.spaceSm + 2),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: widget.onOpenAvailableCoupons,
+                  borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.spaceMd,
+                      vertical: AppConstants.spaceSm + 2,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          context.primary.withOpacity(0.09),
+                          context.primary.withOpacity(0.03),
+                        ],
+                        begin: AlignmentDirectional.centerStart,
+                        end: AlignmentDirectional.centerEnd,
                       ),
-                    ],
+                      borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                      border: Border.all(
+                        color: context.primary.withOpacity(0.25),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isNarrow = constraints.maxWidth < 340;
+
+                        return Row(
+                          children: [
+                            // أيقونة الكوبون داخل شارة مميزة
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: context.primary,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: context.primary.withOpacity(0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.confirmation_num_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: AppConstants.spaceSm + 2),
+
+                            // تفاصيل العرض
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          AppStrings.isArabic
+                                              ? 'لديك (${availableCoupons.length}) قسائم متاحة'
+                                              : 'You have (${availableCoupons.length}) available vouchers',
+                                          style: AppTextStyles.bodyMedium(context).copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: context.textPrimary,
+                                            height: 1.2,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                      if (!isNarrow) ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                          decoration: BoxDecoration(
+                                            color: context.accent.withOpacity(0.15),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            AppStrings.isArabic ? 'خصم متاح' : 'Discount',
+                                            style: AppTextStyles.caption(context).copyWith(
+                                              color: context.accent,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    AppStrings.isArabic
+                                        ? 'اضغط هنا لاستعراض وتطبيق خصوماتك فوراً'
+                                        : 'Tap here to view and apply your discounts now',
+                                    style: AppTextStyles.caption(context).copyWith(
+                                      color: context.textSecondary,
+                                      fontSize: 11,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(width: AppConstants.spaceXs + 2),
+
+                            // زر الاختيار مع سهم
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isNarrow ? 8 : 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.primary.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    AppStrings.isArabic ? 'استعراض' : 'View',
+                                    style: AppTextStyles.caption(context).copyWith(
+                                      color: context.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    color: context.primary,
+                                    size: 11,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),

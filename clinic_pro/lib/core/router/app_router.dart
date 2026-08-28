@@ -30,7 +30,8 @@ import '../../features/plans_and_subscriptions/domain/entities/plan_entity.dart'
 import '../../features/plans_and_subscriptions/presentation/ui/subscription_screen.dart';
 import '../../features/plans_and_subscriptions/presentation/ui/plans_comparison_screen.dart';
 import '../../features/plans_and_subscriptions/presentation/ui/pending_subscription_screen.dart';
-import '../../features/payment/presentation/ui/payment_methods_screen.dart';
+import 'package:clinic_pro/features/owner_referrals/presentation/ui/enter_referral_code_screen.dart';
+import 'package:clinic_pro/features/payment/presentation/ui/payment_methods_screen.dart';
 import '../../features/payment/presentation/ui/payment_webview_screen.dart';
 import '../../features/payment/presentation/ui/payment_success_screen.dart';
 import '../../features/payment/presentation/ui/payment_failed_screen.dart';
@@ -70,8 +71,19 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: RouteConstants.onboardingReferral,
+      builder: (context, state) => const EnterReferralCodeScreen(),
+    ),
+    GoRoute(
       path: RouteConstants.onboardingPlan,
-      builder: (context, state) => const PlansComparisonScreen(isOnboarding: true),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final initialCouponCode = extra?['initialCouponCode'] as String?;
+        return PlansComparisonScreen(
+          isOnboarding: true,
+          initialCouponCode: initialCouponCode,
+        );
+      },
     ),
     GoRoute(
       path: RouteConstants.onboardingClinic,
@@ -232,6 +244,7 @@ final GoRouter appRouter = GoRouter(
           targetPlan: extra!['targetPlan'] as PlanEntity,
           subscriptionType: extra['subscriptionType'] as String,
           companyInfo: extra['companyInfo'] as CompanyInfoEntity?,
+          initialCouponCode: extra['initialCouponCode'] as String?,
         );
       },
     ),

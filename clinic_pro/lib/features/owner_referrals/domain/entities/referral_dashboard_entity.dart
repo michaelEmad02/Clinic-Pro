@@ -52,12 +52,14 @@ class ReferralDashboardEntity extends Equatable {
   final String referralCode;
   final int totalInvites;
   final int successfulInvites;
+  final int availableInvites;
   final List<MilestoneRewardEntity> milestones;
 
   const ReferralDashboardEntity({
     required this.referralCode,
     required this.totalInvites,
     required this.successfulInvites,
+    this.availableInvites = 0,
     required this.milestones,
   });
 
@@ -69,11 +71,11 @@ class ReferralDashboardEntity extends Equatable {
     return null;
   }
 
-  /// عدد الدعوات المتبقية لتحقيق الهدف القادم
+  /// عدد الدعوات المتبقية لتحقيق الهدف القادم بناءً على الرصيد المتاح
   int get remainingForNextMilestone {
     final next = nextMilestone;
     if (next == null) return 0;
-    return (next.targetCount - successfulInvites).clamp(0, next.targetCount);
+    return (next.targetCount - availableInvites).clamp(0, next.targetCount);
   }
 
   @override
@@ -81,6 +83,7 @@ class ReferralDashboardEntity extends Equatable {
         referralCode,
         totalInvites,
         successfulInvites,
+        availableInvites,
         milestones,
       ];
 }

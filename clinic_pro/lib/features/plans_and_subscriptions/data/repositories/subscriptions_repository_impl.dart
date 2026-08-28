@@ -42,12 +42,13 @@ class SubscriptionsRepositoryImpl implements ISubscriptionsRepository {
   }
 
   @override
-  Future<Either<Failure, SubscriptionEntity>> requestSubscription(
-      SubscriptionEntity subscription) async {
+  Future<Either<Failure, SubscriptionEntity>> requestSubscription({
+    required String ownerId,
+  }) async {
     try {
-      final model = SubscriptionModel.fromEntity(subscription);
-
-      final result = await _remoteDataSource.requestSubscription(model);
+      final result = await _remoteDataSource.requestSubscription(
+        ownerId: ownerId,
+      );
       return Right(result);
     } catch (e) {
       return Left(QueryFailure.fromException(e));

@@ -3,6 +3,10 @@
 // تتوافق تماماً مع قواعد Project Rules (Header comment, Subwidgets delegation, AppStrings, context colors)
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/widgets/app_error_widget.dart';
+import 'package:clinic_pro/core/widgets/app_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clinic_pro/core/di/injection_container.dart';
@@ -32,64 +36,59 @@ class ReferralDashboardScreen extends StatelessWidget {
           title: Text(AppStrings.inviteDoctorsAndRewards),
           centerTitle: true,
         ),
-        body: BlocBuilder<ReferralCubit, ReferralState>(
-          builder: (context, state) {
-            if (state is ReferralLoading) {
-              return Center(
-                child: CircularProgressIndicator(color: context.primary),
-              );
-            }
+        body: SafeArea(
+          child: BlocBuilder<ReferralCubit, ReferralState>(
+            builder: (context, state) {
+              if (state is ReferralLoading) {
+                return const Center(
+                  child: AppLoadingWidget(size: AppLoadingSize.large),
+                );
+              }
 
-            if (state is ReferralError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      state.message,
-                      style: AppTextStyles.bodyMedium(context),
+              if (state is ReferralError) {
+                return Center(
+                  child: AppErrorWidget(
+                    message: state.message,
+                    onRetry: () =>
+                        context.read<ReferralCubit>().loadReferralDashboard(ownerId),
+                  ),
+                );
+              }
+
+              if (state is ReferralDashboardLoaded) {
+                final dashboard = state.dashboard;
+
+                return ResponsiveHelper.responsiveCenter(
+                  maxWidth: AppConstants.maxContentWidth,
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.screenEdgeH,
+                      vertical: AppConstants.screenEdgeV,
                     ),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () => context.read<ReferralCubit>().loadReferralDashboard(ownerId),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.primary,
-                        foregroundColor: context.onPrimary,
+                    children: [
+                      ReferralCodeCard(referralCode: dashboard.referralCode),
+                      const SizedBox(height: AppConstants.spaceMd),
+                      MilestoneProgressCard(dashboard: dashboard),
+                      const SizedBox(height: AppConstants.spaceLg),
+                      Text(
+                        AppStrings.milestoneRewardsTitle,
+                        style: AppTextStyles.headlineSmall(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: context.textPrimary,
+                        ),
                       ),
-                      child: Text(AppStrings.retry),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            if (state is ReferralDashboardLoaded) {
-              final dashboard = state.dashboard;
-
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  ReferralCodeCard(referralCode: dashboard.referralCode),
-                  const SizedBox(height: 18),
-                  MilestoneProgressCard(dashboard: dashboard),
-                  const SizedBox(height: 24),
-                  Text(
-                    AppStrings.milestoneRewardsTitle,
-                    style: AppTextStyles.headlineSmall(context).copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: context.textPrimary,
-                    ),
+                      const SizedBox(height: AppConstants.spaceSm + 4),
+                      ...dashboard.milestones.map(
+                        (m) => MilestoneListItem(milestone: m),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  ...dashboard.milestones.map(
-                    (m) => MilestoneListItem(milestone: m),
-                  ),
-                ],
-              );
-            }
+                );
+              }
 
-            return const SizedBox.shrink();
-          },
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );

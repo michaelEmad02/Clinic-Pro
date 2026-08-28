@@ -11,6 +11,7 @@ class RouteConstants {
 
   // مسارات التهيئة والاشتراك (Onboarding)
   static const String onboardingAccount = '/onboarding/account';
+  static const String onboardingReferral = '/onboarding/referral';
   static const String onboardingPlan = '/onboarding/plan';
   static const String onboardingClinic = '/onboarding/clinic';
   static const String onboardingInvite = '/onboarding/invite';

@@ -11,7 +11,9 @@ import '../models/subscription_model.dart';
 abstract class ISubscriptionsRemoteDataSource {
   Future<List<PlanModel>> getPlans();
   Future<SubscriptionModel?> getActiveSubscription(String ownerId);
-  Future<SubscriptionModel> requestSubscription(SubscriptionModel model);
+  Future<SubscriptionModel> requestSubscription({
+    required String ownerId,
+  });
   Future<void> updateSubscriptionStatus(String subscriptionId, String status);
   Future<CompanyInfoModel> getCompanyInfo();
   Future<Map<String, int>> getSubscriptionUsage(String ownerId);
@@ -67,15 +69,21 @@ class SubscriptionsRemoteDataSource implements ISubscriptionsRemoteDataSource {
   }
 
   @override
-  Future<SubscriptionModel> requestSubscription(SubscriptionModel model) async {
+  Future<SubscriptionModel> requestSubscription({
+    required String ownerId,
+  }) async {
     try {
-      // إنشاء سطر جديد بـ status: pending باستخدام نموذج SubscriptionModel
-
-      final inserted = await _cloudService.insert(
-        table: SupabaseTables.subscriptions,
-        data: model.toJson(),
+      // استدعاء دالة السيرفر الآمنة — السيرفر يحدد الخطة والنوع والتاريخ والحالة تلقائياً
+      final response = await _cloudService.rpc(
+        'request_subscription_rpc',
+        params: {
+          'p_owner_id': ownerId,
+        },
       );
-      return SubscriptionModel.fromJson(inserted);
+
+      final Map<String, dynamic> data =
+          response is Map ? Map<String, dynamic>.from(response) : {};
+      return SubscriptionModel.fromJson(data);
     } catch (e) {
       throw Exception(e.toString());
     }

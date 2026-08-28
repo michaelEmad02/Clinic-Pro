@@ -5,6 +5,7 @@
 import 'package:clinic_pro/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
+import 'package:clinic_pro/features/owner_referrals/domain/entities/apply_referral_result_entity.dart';
 import 'package:clinic_pro/features/owner_referrals/domain/entities/referral_dashboard_entity.dart';
 import 'package:clinic_pro/features/owner_referrals/domain/repositories/owner_referral_repository.dart';
 
@@ -27,7 +28,7 @@ class ApplyReferralCodeOnRegistrationUseCase {
 
   ApplyReferralCodeOnRegistrationUseCase(this._repository);
 
-  Future<Either<Failure, void>> call({
+  Future<Either<Failure, ApplyReferralResultEntity>> call({
     required String referralCode,
     required String newOwnerId,
   }) {

@@ -61,26 +61,26 @@ class _AccountFormState extends State<AccountForm> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthRegistrationSuccess) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (dialogContext) => AlertDialog(
-              title: Text(AppStrings.accountVerification, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-              content: Text(
-                AppStrings.verificationEmailSent,
-                style: const TextStyle(fontFamily: 'Cairo'),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                    context.go(RouteConstants.onboardingPlan);
-                  },
-                  child: Text(AppStrings.continueLabel, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          );
+          context.go(RouteConstants.onboardingReferral);
+          // showDialog(
+          //   context: context,
+          //   barrierDismissible: false,
+          //   builder: (dialogContext) => AlertDialog(
+          //     title: Text(AppStrings.accountVerification, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+          //     content: Text(
+          //       AppStrings.verificationEmailSent,
+          //       style: const TextStyle(fontFamily: 'Cairo'),
+          //     ),
+          //     actions: [
+          //       TextButton(
+          //         onPressed: () {
+          //           Navigator.pop(dialogContext);
+          //         },
+          //         child: Text(AppStrings.continueLabel, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+          //       ),
+          //     ],
+          //   ),
+          // );
         } else if (state is AuthError) {
           AppSnackbar.error(context, message: state.message);
         }
@@ -124,7 +124,8 @@ class _AccountFormState extends State<AccountForm> {
                 decoration: InputDecoration(
                   hintText: 'د. أحمد العلي',
                   hintStyle: TextStyle(color: context.textHint),
-                  suffixIcon: Icon(Icons.person_outline, color: context.textHint),
+                  suffixIcon:
+                      Icon(Icons.person_outline, color: context.textHint),
                   border: InputBorder.none,
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -182,7 +183,8 @@ class _AccountFormState extends State<AccountForm> {
                     fontSize: 14,
                     color: context.textHint,
                   ),
-                  suffixIcon: Icon(Icons.email_outlined, color: context.textHint),
+                  suffixIcon:
+                      Icon(Icons.email_outlined, color: context.textHint),
                   border: InputBorder.none,
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -352,32 +354,32 @@ class _AccountFormState extends State<AccountForm> {
                 color: context.textPrimary,
               ),
             ),
-            const SizedBox(height: 8),
-            Container(
-              height: 46,
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: context.borderColor),
-              ),
-              child: TextFormField(
-                controller: _referralCodeController,
-                textCapitalization: TextCapitalization.characters,
-                style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: context.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'DOC-XXXXX',
-                  hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-                    color: context.textHint,
-                  ),
-                  prefixIcon: Icon(Icons.card_giftcard_outlined, color: context.primary, size: 20),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-              ),
-            ),
+            // const SizedBox(height: 8),
+            // Container(
+            //   height: 46,
+            //   decoration: BoxDecoration(
+            //     color: context.surfaceColor,
+            //     borderRadius: BorderRadius.circular(8),
+            //     border: Border.all(color: context.borderColor),
+            //   ),
+            //   child: TextFormField(
+            //     controller: _referralCodeController,
+            //     textCapitalization: TextCapitalization.characters,
+            //     style: AppTextStyles.bodyMedium(context).copyWith(
+            //       color: context.textPrimary,
+            //       fontWeight: FontWeight.w600,
+            //     ),
+            //     decoration: InputDecoration(
+            //       hintText: 'DOC-XXXXX',
+            //       hintStyle: AppTextStyles.bodyMedium(context).copyWith(
+            //         color: context.textHint,
+            //       ),
+            //       prefixIcon: Icon(Icons.card_giftcard_outlined, color: context.primary, size: 20),
+            //       border: InputBorder.none,
+            //       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            //     ),
+            //   ),
+            // ),
             const SizedBox(height: 16),
 
             // Terms Checkbox

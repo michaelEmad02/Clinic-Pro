@@ -42,7 +42,8 @@ CREATE TRIGGER trg_on_owner_created_generate_referral_code
     EXECUTE FUNCTION public.handle_new_owner_referral_code();
 
 -- ==============================================================================
--- 2. RPC: Get Owner Referral Dashboard (ملخص الدعوات والمحطات)
+-- ==============================================================================
+-- 2. RPC: Get Owner Referral Dashboard (ملخص الدعوات والمحطات بنظام استهلاك النقاط)
 -- ==============================================================================
 CREATE OR REPLACE FUNCTION public.get_owner_referral_dashboard(p_owner_id UUID)
 RETURNS JSONB AS $$
@@ -50,19 +51,32 @@ DECLARE
     v_referral_code VARCHAR(20);
     v_total_invites INT;
     v_successful_invites INT;
+    v_consumed_invites INT := 0;
+    v_available_invites INT := 0;
     v_milestones JSONB;
 BEGIN
     SELECT referral_code INTO v_referral_code 
     FROM public."Owners" 
     WHERE id = p_owner_id;
 
+    -- إجمالي كل الدعوات المسجلة
     SELECT COUNT(*) INTO v_total_invites 
     FROM public.referral_redemptions 
     WHERE referrer_owner_id = p_owner_id;
 
+    -- إجمالي الدعوات المكتملة بنجاح
     SELECT COUNT(*) INTO v_successful_invites 
     FROM public.referral_redemptions 
     WHERE referrer_owner_id = p_owner_id AND status = 'completed';
+
+    -- حساب إجمالي الدعوات المستهلكة في المكافآت التي تم استلامها مسبقاً
+    SELECT COALESCE(SUM(m.target_count), 0) INTO v_consumed_invites
+    FROM public.owner_claimed_milestones cm
+    JOIN public.referral_milestone_rewards m ON m.id = cm.milestone_id
+    WHERE cm.owner_id = p_owner_id;
+
+    -- رصيد الدعوات المتاحة حالياً للمحطات القادمة
+    v_available_invites := GREATEST(0, v_successful_invites - v_consumed_invites);
 
     SELECT COALESCE(jsonb_agg(jsonb_build_object(
         'id', m.id,
@@ -73,7 +87,7 @@ BEGIN
         'referrer_reward_value', m.referrer_reward_value,
         'referee_reward_type', m.referee_reward_type,
         'referee_reward_value', m.referee_reward_value,
-        'is_achieved', (v_successful_invites >= m.target_count),
+        'is_achieved', (cm.id IS NOT NULL OR v_available_invites >= m.target_count),
         'is_claimed', (cm.id IS NOT NULL),
         'claimed_at', cm.claimed_at,
         'coupon_code', c.code
@@ -89,6 +103,7 @@ BEGIN
         'referral_code', v_referral_code,
         'total_invites', v_total_invites,
         'successful_invites', v_successful_invites,
+        'available_invites', v_available_invites,
         'milestones', v_milestones
     );
 END;
@@ -96,11 +111,14 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ==============================================================================
 -- 3. Trigger: Automated Server-Side Reward Processing on Referral Completion
+-- يعتمد نظام استهلاك نقاط الدعوات (Invite Points Consumption)
 -- ==============================================================================
 CREATE OR REPLACE FUNCTION public.process_referral_completion()
 RETURNS TRIGGER AS $$
 DECLARE
     v_successful_count INT;
+    v_consumed_count INT := 0;
+    v_available_count INT := 0;
     v_milestone RECORD;
     v_already_claimed BOOLEAN;
     v_generated_coupon_code TEXT;
@@ -109,71 +127,66 @@ DECLARE
 BEGIN
     IF (NEW.status = 'completed' AND (OLD.status IS NULL OR OLD.status != 'completed')) THEN
         
+        -- حساب إجمالي الدعوات الناجحة المكتملة للداعي
         SELECT COUNT(*) INTO v_successful_count 
         FROM public.referral_redemptions 
         WHERE referrer_owner_id = NEW.referrer_owner_id AND status = 'completed';
 
-        FOR v_milestone IN 
-            SELECT * FROM public.referral_milestone_rewards 
-            WHERE is_active = TRUE AND target_count <= v_successful_count
-            ORDER BY target_count ASC
-        LOOP
-            SELECT EXISTS (
-                SELECT 1 FROM public.owner_claimed_milestones 
-                WHERE owner_id = NEW.referrer_owner_id AND milestone_id = v_milestone.id
-            ) INTO v_already_claimed;
+        -- حساب الدعوات المستهلكة مسبقاً
+        SELECT COALESCE(SUM(m.target_count), 0) INTO v_consumed_count
+        FROM public.owner_claimed_milestones cm
+        JOIN public.referral_milestone_rewards m ON m.id = cm.milestone_id
+        WHERE cm.owner_id = NEW.referrer_owner_id;
 
-            IF NOT v_already_claimed THEN
+        -- الرصيد الفعلي المتاح من الدعوات
+        v_available_count := GREATEST(0, v_successful_count - v_consumed_count);
+
+        -- فحص المحطات غير المستلمة وترتيبها تصاعدياً
+        FOR v_milestone IN 
+            SELECT m.* FROM public.referral_milestone_rewards m
+            WHERE m.is_active = TRUE 
+              AND NOT EXISTS (
+                  SELECT 1 FROM public.owner_claimed_milestones cm 
+                  WHERE cm.owner_id = NEW.referrer_owner_id AND cm.milestone_id = m.id
+              )
+            ORDER BY m.target_count ASC
+        LOOP
+            -- إذا كان الرصيد المتاح يكفي لتحقيق هذا الهدف
+            IF v_available_count >= v_milestone.target_count THEN
                 v_coupon_id := NULL;
                 v_generated_coupon_code := NULL;
 
-                -- 1) تمديد اشتراك مجاني للداعي تلقائياً بالسيرفر
-                IF (v_milestone.referrer_reward_type = 'free_days' OR v_milestone.referrer_reward_type = 'free_month') THEN
-                    DECLARE
-                        v_milestone_days INT := 0;
-                    BEGIN
-                        IF v_milestone.referrer_reward_type = 'free_month' THEN
-                            v_milestone_days := (v_milestone.referrer_reward_value::INT) * 30;
-                        ELSE
-                            v_milestone_days := v_milestone.referrer_reward_value::INT;
-                        END IF;
+                -- توليد كود كوبون فريد للداعي
+                LOOP
+                    v_generated_coupon_code := 'REF-' || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
+                    SELECT EXISTS(SELECT 1 FROM public.coupons WHERE code = v_generated_coupon_code) INTO v_code_exists;
+                    IF NOT v_code_exists THEN
+                        EXIT;
+                    END IF;
+                END LOOP;
+                
+                -- إنشاء الكوبون الخاص للداعي في جدول الكوبونات (Private Coupon)
+                INSERT INTO public.coupons (
+                    code, 
+                    scope, 
+                    owner_id, 
+                    reword_type, 
+                    value, 
+                    max_uses, 
+                    valid_until, 
+                    description
+                ) VALUES (
+                    v_generated_coupon_code,
+                    'private',
+                    NEW.referrer_owner_id,
+                    v_milestone.referrer_reward_type,
+                    v_milestone.referrer_reward_value,
+                    1,
+                    NOW() + INTERVAL '365 days',
+                    'مكافأة تحقيق هدف دعوات الأطباء: ' || v_milestone.title
+                ) RETURNING id INTO v_coupon_id;
 
-                        UPDATE public.subscriptions 
-                        SET end_at = GREATEST(COALESCE(end_at, NOW()), NOW()) + (v_milestone_days || ' days')::interval
-                        WHERE owner_id = NEW.referrer_owner_id AND status = 'active';
-                    END;
-
-                -- 2) توليد كوبون خصم خاص للطبيب
-                ELSIF (v_milestone.referrer_reward_type = 'discount_percent' OR v_milestone.referrer_reward_type = 'fixed_amount') THEN
-                    LOOP
-                        v_generated_coupon_code := 'REF-' || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
-                        SELECT EXISTS(SELECT 1 FROM public.coupons WHERE code = v_generated_coupon_code) INTO v_code_exists;
-                        IF NOT v_code_exists THEN
-                            EXIT;
-                        END IF;
-                    END LOOP;
-                    
-                    INSERT INTO public.coupons (
-                        code, 
-                        scope, 
-                        owner_id, 
-                        reword_type, 
-                        value, 
-                        max_uses, 
-                        valid_until, 
-                        description
-                    ) VALUES (
-                        v_generated_coupon_code,
-                        'private',
-                        NEW.referrer_owner_id,
-                        v_milestone.referrer_reward_type,
-                        v_milestone.referrer_reward_value,
-                        1,
-                        NOW() + INTERVAL '180 days',
-                        'مكافأة دعوة زملاء: ' || v_milestone.title
-                    ) RETURNING id INTO v_coupon_id;
-                END IF;
-
+                -- توثيق تحقيق المحطة في سجل owner_claimed_milestones
                 INSERT INTO public.owner_claimed_milestones (
                     owner_id, 
                     milestone_id, 
@@ -183,15 +196,19 @@ BEGIN
                 ) VALUES (
                     NEW.referrer_owner_id, 
                     v_milestone.id, 
-                    v_successful_count, 
+                    v_available_count, 
                     jsonb_build_object(
                         'milestone_title', v_milestone.title,
                         'reward_type', v_milestone.referrer_reward_type,
                         'reward_value', v_milestone.referrer_reward_value,
-                        'coupon_code', v_generated_coupon_code
+                        'coupon_code', v_generated_coupon_code,
+                        'target_consumed', v_milestone.target_count
                     ),
                     v_coupon_id
                 );
+
+                -- خصم نقاط/دعوات هذا الهدف من الرصيد المتاح للتحقق من الأهداف التالية في نفس الدورة
+                v_available_count := v_available_count - v_milestone.target_count;
             END IF;
         END LOOP;
     END IF;
@@ -217,10 +234,13 @@ RETURNS JSONB AS $$
 DECLARE
     v_referrer_owner_id UUID;
     v_rule RECORD;
+    v_has_paid_sub_before BOOLEAN := FALSE;
     v_initial_status referral_redemption_status := 'pending';
     v_trigger_event referral_reward_trigger_type := 'after_subscription';
     v_referee_coupon_id UUID := NULL;
     v_referee_coupon_code TEXT := NULL;
+    v_referee_reward_type reward_types := 'discount_percent';
+    v_referee_reward_value NUMERIC(10, 2) := 20.00;
     v_code_exists BOOLEAN;
 BEGIN
     -- 1. التحقق من كود الإحالة ومالكه
@@ -237,52 +257,86 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'message', 'لا يمكنك استخدام كود الدعوة الخاص بك');
     END IF;
 
-    -- 2. جلب قاعدة المكافأة
-    SELECT * INTO v_rule
-    FROM public.referral_milestone_rewards
-    WHERE is_active = TRUE
-    ORDER BY target_count ASC
+    -- 2. التحقق من أن الطبيب المدعو لا يملك أي اشتراك مدفوع سابق (يسمح فقط بالتجريبي trail)
+    SELECT EXISTS (
+        SELECT 1 FROM public.subscriptions 
+        WHERE owner_id = p_referee_owner_id 
+          AND subscription_type != 'trail' 
+          AND status IN ('active', 'expired')
+    ) INTO v_has_paid_sub_before;
+
+    IF v_has_paid_sub_before THEN
+        RETURN jsonb_build_object(
+            'success', false, 
+            'message', 'عذراً، كود الدعوة متاح فقط للأطباء الجدد الذين لم يسبق لهم الاشتراك المدفوع'
+        );
+    END IF;
+
+    -- 3. جلب التحدي الحالي النشط للداعي (أول تحدي لم يقم بتحصيله بعد)
+    SELECT m.* INTO v_rule
+    FROM public.referral_milestone_rewards m
+    WHERE m.is_active = TRUE
+      AND NOT EXISTS (
+          SELECT 1 FROM public.owner_claimed_milestones cm 
+          WHERE cm.owner_id = v_referrer_owner_id AND cm.milestone_id = m.id
+      )
+    ORDER BY m.target_count ASC
     LIMIT 1;
 
-    -- 3. تحديد الحالة وتوليد الهدية الترحيبية
+    -- في حال حصل الداعي جميع التحديات، نأخذ آخر تحدي كإعدادات افتراضية
+    IF NOT FOUND THEN
+        SELECT * INTO v_rule
+        FROM public.referral_milestone_rewards
+        WHERE is_active = TRUE
+        ORDER BY target_count DESC
+        LIMIT 1;
+    END IF;
+
     IF FOUND THEN
         v_trigger_event := COALESCE(v_rule.trigger_event, 'after_subscription');
-        IF v_trigger_event = 'after_register' THEN
-            v_initial_status := 'completed';
-        END IF;
-
-        IF v_rule.referee_reward_type IS NOT NULL AND v_rule.referee_reward_value > 0 THEN
-            LOOP
-                v_referee_coupon_code := 'WELCOME-' || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
-                SELECT EXISTS(SELECT 1 FROM public.coupons WHERE code = v_referee_coupon_code) INTO v_code_exists;
-                IF NOT v_code_exists THEN
-                    EXIT;
-                END IF;
-            END LOOP;
-
-            INSERT INTO public.coupons (
-                code,
-                scope,
-                owner_id,
-                reword_type,
-                value,
-                max_uses,
-                valid_until,
-                description
-            ) VALUES (
-                v_referee_coupon_code,
-                'private',
-                p_referee_owner_id,
-                v_rule.referee_reward_type,
-                v_rule.referee_reward_value,
-                1,
-                NOW() + INTERVAL '90 days',
-                'هدية ترحيبية لانضمامك عبر دعوة زميل'
-            ) RETURNING id INTO v_referee_coupon_id;
+        IF v_rule.referee_reward_type IS NOT NULL THEN
+            v_referee_reward_type := v_rule.referee_reward_type;
+            v_referee_reward_value := COALESCE(v_rule.referee_reward_value, 20.00);
         END IF;
     END IF;
 
-    -- 4. إدراج سجل الدعوة وربط كوبون المدعو به
+    -- 4. توليد كوبون ترحيبي خاص للمدعو دائماً (Private Coupon)
+    LOOP
+        v_referee_coupon_code := 'WELCOME-' || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
+        SELECT EXISTS(SELECT 1 FROM public.coupons WHERE code = v_referee_coupon_code) INTO v_code_exists;
+        IF NOT v_code_exists THEN
+            EXIT;
+        END IF;
+    END LOOP;
+
+    INSERT INTO public.coupons (
+        code,
+        scope,
+        owner_id,
+        reword_type,
+        value,
+        max_uses,
+        valid_until,
+        description
+    ) VALUES (
+        v_referee_coupon_code,
+        'private',
+        p_referee_owner_id,
+        v_referee_reward_type,
+        v_referee_reward_value,
+        1,
+        NOW() + INTERVAL '90 days',
+        'هدية ترحيبية لانضمامك عبر دعوة زميل'
+    ) RETURNING id INTO v_referee_coupon_id;
+
+    -- 5. تحديد الحالة الأولية حسب نوع الحدث (after_register يكتمل فوراً، أما after_subscription فيبقى pending حتى الاشتراك)
+    IF v_trigger_event = 'after_register' THEN
+        v_initial_status := 'completed';
+    ELSE
+        v_initial_status := 'pending';
+    END IF;
+
+    -- 6. إدراج سجل الدعوة في referral_redemptions
     INSERT INTO public.referral_redemptions (
         referrer_owner_id,
         referee_owner_id,
@@ -304,7 +358,9 @@ BEGIN
     RETURN jsonb_build_object(
         'success', true, 
         'message', 'تم تفعيل كود الدعوة وإضافة هديتك الترحيبية بنجاح! 🎁',
-        'status', v_initial_status,
+        'trigger_event', v_trigger_event,
+        'reward_type', v_referee_reward_type,
+        'reward_value', v_referee_reward_value,
         'referee_coupon_code', v_referee_coupon_code
     );
 EXCEPTION
@@ -312,3 +368,45 @@ EXCEPTION
         RETURN jsonb_build_object('success', false, 'message', 'تم استخدام كود دعوة لهذا الحساب مسبقاً');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ==============================================================================
+-- 5. Trigger: إتمام الإحالة تلقائياً عند بدء أول اشتراك (تجريبي Trial أو مدفوع)
+-- ==============================================================================
+CREATE OR REPLACE FUNCTION public.handle_subscription_referral_completion()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_has_previous_paid_sub BOOLEAN;
+BEGIN
+    -- التأكد أن الاشتراك أصبح نشطاً (في حالة INSERT جديد أو تحول الحالة إلى active)
+    IF NEW.status = 'active' AND (TG_OP = 'INSERT' OR OLD.status IS NULL OR OLD.status != 'active') THEN
+        
+        -- التحقق من عدم وجود أي اشتراكات سابقة غير تجريبية
+        SELECT EXISTS (
+            SELECT 1 FROM public.subscriptions 
+            WHERE owner_id = NEW.owner_id 
+              AND id != NEW.id 
+              AND subscription_type != 'trail' 
+              AND status IN ('active', 'expired')
+        ) INTO v_has_previous_paid_sub;
+
+        -- إذا كان الطبيب مؤهلاً (أول اشتراك له أو تجريبي)
+        IF NOT v_has_previous_paid_sub THEN
+            UPDATE public.referral_redemptions
+            SET status = 'completed',
+                completed_at = NOW()
+            WHERE referee_owner_id = NEW.owner_id 
+              AND status = 'pending';
+        END IF;
+
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_subscription_referral_completion ON public.subscriptions;
+CREATE TRIGGER trg_subscription_referral_completion
+    AFTER INSERT OR UPDATE OF status ON public.subscriptions
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_subscription_referral_completion();
+

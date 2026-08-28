@@ -56,6 +56,7 @@ class ReferralDashboardModel extends ReferralDashboardEntity {
     required super.referralCode,
     required super.totalInvites,
     required super.successfulInvites,
+    super.availableInvites = 0,
     required super.milestones,
   });
 
@@ -65,6 +66,7 @@ class ReferralDashboardModel extends ReferralDashboardEntity {
       referralCode: json['referral_code'] as String? ?? '',
       totalInvites: json['total_invites'] as int? ?? 0,
       successfulInvites: json['successful_invites'] as int? ?? 0,
+      availableInvites: json['available_invites'] as int? ?? 0,
       milestones: milestonesJson
           .map((m) => MilestoneRewardModel.fromJson(Map<String, dynamic>.from(m as Map)))
           .toList(),

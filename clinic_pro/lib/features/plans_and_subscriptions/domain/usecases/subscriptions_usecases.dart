@@ -77,37 +77,13 @@ class RequestSubscriptionUseCase {
 
   Future<Either<Failure, SubscriptionEntity>> call({
     required String ownerId,
-    required String planId,
-    required String subscriptionType,
   }) {
-    final now = DateTime.now();
-    DateTime? endAt;
-
-    // حساب تاريخ الانتهاء تلقائياً حسب الفئة المحددة
-    if (subscriptionType == 'monthly') {
-      endAt = DateTime(now.year, now.month + 1, now.day);
-    } else if (subscriptionType == 'yearly') {
-      endAt = DateTime(now.year + 1, now.month, now.day);
-    } else if (subscriptionType == 'trail') {
-      endAt = now.add(const Duration(days: 14));
-    }
-    // لـ lifetime يظل endAt null كما هو في النظام
-
-    final entity = SubscriptionEntity(
-      id: '', // Supabase auto-generates primary key
+    return _repository.requestSubscription(
       ownerId: ownerId,
-      planId: planId,
-      subscriptionType: subscriptionType,
-      status: 'pending',
-      startedAt: now,
-      endAt: endAt,
-      createdBy: ownerId,
-      createdAt: now,
     );
-
-    return _repository.requestSubscription(entity);
   }
 }
+
 
 @lazySingleton
 class GetCompanyInfoUseCase {

@@ -274,7 +274,30 @@ class MockData {
 // ❌ Always secure buttons and text in Rows/Grids with Flexible and TextOverflow.ellipsis to prevent Red Overflow
 ```
 
-### 4.6 Colors & Styles
+### 4.6 Core UI Components & Feedback Rules — STRICTLY ENFORCED
+```dart
+// 1. Loading Indicators (AppLoadingWidget / AppLoadingDialog)
+// ✅ Always use AppLoadingWidget instead of raw CircularProgressIndicator
+//    - Full Screen / Page Loading: AppLoadingWidget(size: AppLoadingSize.large)
+//    - Cards / Sections: AppLoadingWidget(size: AppLoadingSize.medium)
+//    - Buttons / Small Chips: AppLoadingWidget(size: AppLoadingSize.small, color: context.onPrimary)
+// ❌ Never use raw CircularProgressIndicator() or CupertinoActivityIndicator() directly in UI
+
+// 2. Notifications & Alerts (AppSnackbar)
+// ✅ Always use AppSnackbar instead of ScaffoldMessenger.showSnackBar
+//    - Success: AppSnackbar.success(context, message: '...')
+//    - Error: AppSnackbar.error(context, message: '...')
+//    - Warning: AppSnackbar.warning(context, message: '...')
+//    - Info: AppSnackbar.info(context, message: '...')
+// ❌ Never use ScaffoldMessenger.of(context).showSnackBar(SnackBar(...))
+
+// 3. Empty & Error States (AppEmptyState / AppErrorView)
+// ✅ Always use AppEmptyState when a list or data view has no items
+// ✅ Always use AppErrorView when data fails to load with an onRetry callback
+// ❌ Never leave screens blank or use plain Center(child: Text('No data'))
+```
+
+### 4.7 Colors & Styles
 ```dart
 // ✅ Always use AppColors and AppTextStyles
 Text('عنوان', style: AppTextStyles.h3)
@@ -305,6 +328,9 @@ Text('عنوان', style: TextStyle(fontSize: 16, color: Color(0xFF1A6B8A)))
 ❌ Business logic inside widgets
 ❌ Hardcoded strings in widgets (use localization keys)
 ❌ Hardcoded colors or text styles (use AppColors / AppTextStyles)
+❌ Raw ScaffoldMessenger / SnackBar (use AppSnackbar)
+❌ Raw CircularProgressIndicator / ProgressIndicator (use AppLoadingWidget)
+❌ Plain Center text for empty or error states (use AppEmptyState / AppErrorView)
 ❌ Raw data (Map) passed to UI — always use Entities
 ❌ More than 200 lines in a single widget file
 ❌ Importing data layer from domain layer

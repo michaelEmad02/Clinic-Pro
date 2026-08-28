@@ -78,3 +78,6 @@
 - [x] reports
 - [x] dashboard
 - [x] subscriptions
+- [x] payment
+- [x] coupons
+- [x] referrals

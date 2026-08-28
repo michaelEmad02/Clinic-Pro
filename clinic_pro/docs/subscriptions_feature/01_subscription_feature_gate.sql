@@ -12,6 +12,70 @@ DROP FUNCTION IF EXISTS get_patient_stats_report_rpc;
 DROP FUNCTION IF EXISTS get_clinics_report_rpc;
 DROP FUNCTION IF EXISTS verify_print_report_access_rpc;
 
+-- ==============================================================================
+-- 6. RPC: Request Subscription (إنشاء وتفعيل الاشتراك من جهة السيرفر بأمان)
+-- ==============================================================================
+CREATE OR REPLACE FUNCTION public.request_subscription_rpc(
+    p_owner_id UUID
+)
+RETURNS JSONB AS $$
+DECLARE
+    v_now TIMESTAMPTZ := NOW();
+    v_end_at TIMESTAMPTZ := NULL;
+    v_status subscription_status := 'active';
+    v_plan_id UUID;
+    v_subscription_type subscription_types := 'trail';
+    v_inserted_sub RECORD;
+    v_has_trial_before BOOLEAN;
+BEGIN
+    -- 1. التأكد من عدم وجود أي اشتراك سابق لهذا الحساب (أياً كان نوعه)
+    SELECT EXISTS (
+        SELECT 1 FROM public.subscriptions 
+        WHERE owner_id = p_owner_id
+    ) INTO v_has_trial_before;
+
+    IF v_has_trial_before THEN
+        RAISE EXCEPTION 'عذراً، الفترة التجريبية متاحة فقط للحسابات الجديدة التي لم يسبق لها الاشتراك';
+    END IF;
+
+    -- 2. جلب معرف الخطة الأساسية (Basic Plan) من جدول الخطط
+    SELECT id INTO v_plan_id 
+    FROM public.plans 
+    WHERE lower(name) = 'basic' 
+    LIMIT 1;
+
+    IF v_plan_id IS NULL THEN
+        RAISE EXCEPTION 'لم يتم العثور على الخطة الأساسية basic في جدول plans';
+    END IF;
+
+    v_end_at := v_now + INTERVAL '14 days';
+
+    -- 3. إدراج الاشتراك التجريبي في قاعدة البيانات
+    INSERT INTO public.subscriptions (
+        owner_id,
+        plan_id,
+        subscription_type,
+        status,
+        started_at,
+        end_at,
+        created_by
+    ) VALUES (
+        p_owner_id,
+        v_plan_id,
+        v_subscription_type,
+        v_status,
+        v_now,
+        v_end_at,
+        p_owner_id::UUID
+    ) RETURNING * INTO v_inserted_sub;
+
+    RETURN to_jsonb(v_inserted_sub);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+
+
 
 /* ------------------------------------------------------------------------------
    1. دالة الفحص المركزية للصلاحية (Centralized Security Access Check)

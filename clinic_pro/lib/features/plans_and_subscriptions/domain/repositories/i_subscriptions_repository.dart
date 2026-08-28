@@ -18,9 +18,10 @@ abstract class ISubscriptionsRepository {
   Future<Either<Failure, SubscriptionEntity?>> getActiveSubscription(
       String ownerId);
 
-  /// طلب اشتراك جديد أو ترقية (إدراج سطر بحالة pending)
-  Future<Either<Failure, SubscriptionEntity>> requestSubscription(
-      SubscriptionEntity subscription);
+  /// طلب اشتراك جديد أو ترقية (يتم عبر دالة السيرفر RPC لحساب التواريخ والتفعيل بأمان)
+  Future<Either<Failure, SubscriptionEntity>> requestSubscription({
+    required String ownerId,
+  });
 
   /// تحديث حالة اشتراك معين (مثلاً إلى expired)
   Future<Either<Failure, void>> updateSubscriptionStatus({

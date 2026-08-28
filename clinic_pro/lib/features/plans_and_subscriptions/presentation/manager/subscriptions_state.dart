@@ -31,7 +31,7 @@ class SubscriptionsLoaded extends SubscriptionsState {
 
 class SubscriptionPendingCreated extends SubscriptionsState {
   final SubscriptionEntity subscription;
-  final PlanEntity plan;
+  final PlanEntity? plan;
   final CompanyInfoEntity companyInfo;
 
   const SubscriptionPendingCreated({

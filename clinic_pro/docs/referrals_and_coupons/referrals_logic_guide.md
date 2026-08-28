@@ -5,73 +5,78 @@
 ## 1. المعمارية العامة ومبدأ العمل (Architecture Overview)
 
 يعتمد نظام الإحالة (Referrals) على مبدأ **Zero Client Trust (معالجة السيرفر الآمنة)** لضمان نزاهة تتبع الدعوات واحتساب المكافآت:
-1. **توليد أكواد الإحالة:** يتم تلقائياً لكل مالك عيادة (Owner) عند إنشاء الحساب عبر PostgreSQL Functions & Triggers.
-2. **تسجيل ومتابعة الدعوات:** يتم ربط الطبيب المدعو بالداعي في حالة `pending`، ولا تُحتسب الدعوة ناجحة إلا عند دفع أول اشتراك وتتحول الحالة إلى `completed`.
-3. **احتساب المكافآت والأهداف (Milestones):** يتم تلقائياً عبر Database Triggers فور اكتمال الدعوة، مع تمديد الاشتراك فوراً أو توليد كوبونات خصم خاصة.
+1. **توليد أكواد الإحالة:** يتم تلقائياً لكل مالك عيادة (Owner) عند إنشاء الحساب عبر Database Trigger (`trg_on_owner_created_generate_referral_code`).
+2. **تسجيل واستخدام الكود للمدعو (Referee):**
+   - بعد التسجيل، تظهر شاشة الترحيب وإدخال كود الدعوة (`EnterReferralCodeScreen`).
+   - يتم التأكد من أن الطبيب المدعو **لم يسبق له أي اشتراك مدفوع سابق** (يُسمح فقط بالتجريبي `trail`).
+   - يتم توليد **كوبون ترحيبي خاص** للمدعو (`scope = 'private'`).
+   - يتم حفظ الكود وتوجيه الطبيب لاختيار الخطة أو الدفع:
+     - إذا كانت المكافأة أيام/شهور مجانية: تفعيل فوري ومجاني للاشتراك عبر `redeem_coupon`.
+     - إذا كانت المكافأة نسبة خصم: يتم تطبيق الكوبون تلقائياً في شاشة الدفع ليخصم من الإجمالي.
+3. **شرط إتمام الإحالة (Referral Completion):**
+   - تتحول حالة الإحالة إلى `completed` فور:
+     - بدء اشتراك تجريبي (`subscription_type = 'trail'`).
+     - أو نجاح دفع أول اشتراك عبر Paymob.
+     - أو تفعيل الباقة المجانية الممنوحة كهدية ترحيبية.
+4. **احتساب المكافآت والأهداف للداعي (Referrer Milestones):**
+   - عند اكتمال عدد الدعوات المطلوب للمحطة (مثلاً دعوة 3 أو 5 أطباء)، يقوم السيرفر عبر الـ Trigger (`trg_on_referral_completed`) بتوليد **كوبون خاص (Private Coupon)** للداعي بدلاً من التمديد التلقائي المباشر، ليتمكن الداعي من استخدامه عند التجديد أو الترقية.
 
 ---
 
-## 2. مخطط تدفق دورة الإحالة والمكافآت (Referral & Milestones Lifecycle)
+## 2. مخطط تدفق دورة الإحالة والمكافآت (Referral Lifecycle)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Referrer as د. أحمد (الداعي)
-    actor Referee as د. سارة (المدعوة)
+    actor Referrer as الطبيب الداعي (Referrer)
+    actor Referee as الطبيب المدعو (Referee)
     participant App as تطبيق Clinic Pro
     participant DB as قاعدة بيانات Supabase
     participant Trigger as Database Trigger
 
-    App->>DB: يستدعي get_owner_referral_dashboard(أحمد)
-    DB-->>App: الكود الخاص (DOC-88) + الإحصائيات + شريط الأهداف (4/5)
-    
-    Referrer->>Referee: مشاركة رابط / كود الدعوة (DOC-88)
-    Referee->>App: إنشاء حساب كمالك عيادة وإدخال كود (DOC-88)
-    App->>DB: إدراج سجل في referral_redemptions (الحالة: pending)
-    
-    Note over Referee,DB: د. سارة تشترك وتدفع أول باقة
-    
-    App->>DB: تحديث حالة الدعوة إلى completed
-    DB->>Trigger: تشغيل trg_on_referral_completed تلقائياً
-    Trigger->>Trigger: حساب عدد دعوات د. أحمد الناجحة (أصبحت 5 دعوات)
-    Trigger->>Trigger: اكتشاف تحقيق هدف "مكافأة 5 أطباء = شهر مجاني"
-    Trigger->>DB: تمديد اشتراك د. أحمد 30 يوماً فوراً
-    Trigger->>DB: تسجيل العملية في owner_claimed_milestones
-    DB-->>Referrer: إشعار: 🎉 "مبروك! حققت 5 دعوات وتمت إضافة شهر مجاني لاشتراكك!"
+    Note over Referrer,DB: 1. مشاركة الكود
+    DB-->>Referrer: توليد كود فريد (DOC-XXXX)
+    Referrer->>Referee: مشاركة كود الدعوة
+
+    Note over Referee,DB: 2. تسجيل المدعو وإدخال الكود
+    Referee->>App: تسجيل حساب جديد
+    App->>Referee: عرض شاشة الترحيب (EnterReferralCodeScreen)
+    Referee->>App: إدخال كود زميله
+    App->>DB: apply_referral_code_on_registration
+    DB-->>Referee: إنشاء كوبون خاص للمدعو (WELCOME-XXXX)
+
+    Note over Referee,DB: 3. اختيار الخطة وتفعيل الاشتراك
+    alt اختيار النسخة التجريبية (Trial)
+        Referee->>App: بدء تجربة مجانية 14 يوماً
+        App->>DB: تفعيل اشتراك trail
+        DB->>Trigger: إتمام الإحالة (status = completed)
+    else باقة مدفوعة مع خصم
+        Referee->>App: سداد الباقة بالفيزا/المحفظة
+        DB->>Trigger: إتمام الإحالة (status = completed)
+    end
+
+    Note over Referrer,DB: 4. مكافأة الداعي عند اكتمال التحدي (Milestone)
+    Trigger->>Trigger: فحص وصول عدد الدعوات الناجحة لهدف التحدي (مثلاً 5)
+    Trigger->>DB: إنشاء كوبون خاص للداعي (REF-XXXX) في جدول coupons
+    DB-->>Referrer: إشعار: 🎉 "مبروك! حققت هدف 5 دعوات وتمت إضافة قسيمة مكافأة لحسابك!"
 ```
 
 ---
 
 ## 3. الجداول وقواعد البيانات الخاصة بنظام الإحالة
 
-### 1. `Owners / Profiles` (بيانات المالك وكود الدعوة)
-- يحتوي جدول الملاك على حقل `referral_code` (Unique Referral Code).
-- يتم توليده تلقائياً بواسطة Database Trigger عند تسجيل الطبيب كـ `clinic_owner`.
+### 1. `Owners`
+- حقل `referral_code` الفريد لكل طبيب.
 
-### 2. `referral_redemptions` (سجل تتبع الدعوات)
-- يسجل كل محاولة استخدام لكود الإحالة من قبل طبيب جديد.
-- **الحالات (Status):**
-  - `pending`: تم استخدام الكود عند التسجيل ولكن لم يقم المدعو بالدفع بعد.
-  - `completed`: قام المدعو بدفع أول اشتراك بنجاح، وهنا تُحتسب الدعوة للداعي.
-  - `cancelled`: تم إلغاء العملية أو استرجاع الدفع.
+### 2. `referral_redemptions`
+- يربط الداعي (`referrer_owner_id`) بالمدعو (`referee_owner_id`) مع حالة الدعوة (`status: pending / completed`).
 
-### 3. `referral_milestone_rewards` (قواعد ومستويات الأهداف)
-- يحدد الجوائز الممنوحة عند الوصول لعدد معين من الدعوات الناجحة:
-  - **1 زميل:** كوبون خصم 15% للداعي + خصم 20% ترحيبي للمدعو.
-  - **3 زملاء:** كوبون خصم 25% للداعي + خصم 20% ترحيبي للمدعو.
-  - **5 زملاء:** تمديد فوري للاشتراك لمدة شهر مجاناً (30 يوماً).
-  - **10 زملاء:** تمديد فوري للاشتراك لمدة 3 أشهر مجاناً (90 يوماً).
+### 3. `referral_milestone_rewards`
+- يحدد أهداف الدعوات والمكافآت الممنوحة.
 
-### 4. `owner_claimed_milestones` (سجل الجوائز المكتسبة)
-- يوثق الأهداف والمكافآت التي حصل عليها كل طبيب.
-- يمنع تكرار منح نفس الجائزة للمستوى نفسه عبر القيد `UNIQUE(owner_id, milestone_id)`.
+### 4. `owner_claimed_milestones`
+- يوثق الأهداف المحققة والكوبونات الممنوحة للداعي لمنع التكرار.
 
----
+### 5. `coupons`
+- يستقبل جميع الكوبونات الخاصة الناتجة عن الدعوات (`scope = 'private'`) للداعي والمدعو على حد سواء.
 
-## 4. الدوال و الـ RPCs الرئيسية
-
-| الدالة / الـ RPC | الوصف |
-| :--- | :--- |
-| `get_owner_referral_dashboard(p_owner_id)` | جلب بيانات لوحة تحكم الإحالات (كود الإحالة، إجمالي الدعوات، الدعوات الناجحة، قائمة الأهداف المحققة والقادمة). |
-| `apply_referral_code_on_registration(p_referral_code, p_referee_owner_id)` | التحقق من صحة كود الإحالة وتسجيله أثناء عملية إنشاء الحساب وتوليد الهدية الترحيبية للمدعو فوراً. |
-| `trg_on_referral_completed` | Trigger يعمل تلقائياً عند اكتمال الدعوة ودفع الاشتراك لفحص الأهداف وتوزيع المكافآت. |

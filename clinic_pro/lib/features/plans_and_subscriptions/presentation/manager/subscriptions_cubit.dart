@@ -88,15 +88,11 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
   /// طلب اشتراك جديد أو ترقية
   Future<void> requestSubscription({
     required String ownerId,
-    required PlanEntity targetPlan,
-    required String subscriptionType,
   }) async {
     emit(SubscriptionsLoading());
 
     final result = await _requestSubscriptionUseCase(
       ownerId: ownerId,
-      planId: targetPlan.id,
-      subscriptionType: subscriptionType,
     );
 
     result.fold(
@@ -113,7 +109,7 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
 
         emit(SubscriptionPendingCreated(
           subscription: newSubscription,
-          plan: targetPlan,
+          plan: null,
           companyInfo: companyInfo,
         ));
 

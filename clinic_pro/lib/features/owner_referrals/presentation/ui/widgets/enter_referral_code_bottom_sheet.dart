@@ -1,8 +1,8 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// نافذة إدخال كود الدعوة للمستخدمين الجدد (Enter Referral Code Sheet)
-// تتيح للأطباء المسجلين عبر Google أو من لم يدخلوا الكود بعد الاستفادة من الدعوة
-// ─────────────────────────────────────────────────────────────────────────────
-
+import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
+import 'package:clinic_pro/core/widgets/app_loading.dart';
+import 'package:clinic_pro/core/widgets/app_snackbar.dart';
+import 'package:clinic_pro/features/owner_referrals/domain/entities/apply_referral_result_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,9 +14,11 @@ import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/features/owner_referrals/presentation/manager/referral_cubit.dart';
 import 'package:clinic_pro/features/owner_referrals/presentation/manager/referral_state.dart';
 
+
+
 class EnterReferralCodeBottomSheet extends StatefulWidget {
   final String ownerId;
-  final VoidCallback? onSuccess;
+  final void Function(ApplyReferralResultEntity result)? onSuccess;
 
   const EnterReferralCodeBottomSheet({
     super.key,
@@ -27,7 +29,7 @@ class EnterReferralCodeBottomSheet extends StatefulWidget {
   static Future<void> show({
     required BuildContext context,
     required String ownerId,
-    VoidCallback? onSuccess,
+    void Function(ApplyReferralResultEntity result)? onSuccess,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -82,38 +84,28 @@ class _EnterReferralCodeBottomSheetState
   Future<void> _submitCode() async {
     final code = _controller.text.trim().toUpperCase();
     if (code.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppStrings.enterReferralCodePrompt,
-            style: AppTextStyles.bodyMedium(context).copyWith(color: context.onPrimary),
-          ),
-          backgroundColor: context.danger,
-        ),
+      AppSnackbar.error(
+        context,
+        message: AppStrings.enterReferralCodePrompt,
       );
       return;
     }
 
     setState(() => _isLoading = true);
-    final success = await context.read<ReferralCubit>().applyReferralCode(
+    final result = await context.read<ReferralCubit>().applyReferralCode(
           referralCode: code,
           newOwnerId: widget.ownerId,
         );
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success) {
+    if (result != null && result.success) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppStrings.applyReferralCodeSuccess,
-            style: AppTextStyles.bodyMedium(context).copyWith(color: context.onPrimary),
-          ),
-          backgroundColor: context.accent,
-        ),
+      AppSnackbar.success(
+        context,
+        message: AppStrings.applyReferralCodeSuccess,
       );
-      widget.onSuccess?.call();
+      widget.onSuccess?.call(result);
     }
   }
 
@@ -122,28 +114,27 @@ class _EnterReferralCodeBottomSheetState
     return BlocListener<ReferralCubit, ReferralState>(
       listener: (context, state) {
         if (state is ReferralError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.message,
-                style: AppTextStyles.bodyMedium(context).copyWith(color: context.onPrimary),
-              ),
-              backgroundColor: context.danger,
-            ),
+          AppSnackbar.error(
+            context,
+            message: state.message,
           );
         }
       },
-      child: Container(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
+      child: ResponsiveHelper.responsiveCenter(
+        maxWidth: AppConstants.maxDialogWidth,
+        child: Container(
+          padding: EdgeInsets.only(
+            left: AppConstants.spaceLg,
+            right: AppConstants.spaceLg,
+            top: AppConstants.spaceMd,
+            bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spaceLg,
+          ),
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppConstants.radiusSheet),
+            ),
+          ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,29 +199,32 @@ class _EnterReferralCodeBottomSheetState
                 ),
                 prefixIcon: const Icon(TablerIcons.ticket),
                 filled: true,
-                fillColor: context.surfaceContainerLow,
+                fillColor: context.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: context.borderColor),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppConstants.spaceMd),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppConstants.spaceSm + 4,
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusButton),
                       ),
                     ),
                     child: Text(AppStrings.skip),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppConstants.spaceSm + 4),
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
@@ -238,19 +232,18 @@ class _EnterReferralCodeBottomSheetState
                     style: ElevatedButton.styleFrom(
                       backgroundColor: context.primary,
                       foregroundColor: context.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppConstants.spaceSm + 4,
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusButton),
                       ),
                     ),
                     child: _isLoading
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: context.onPrimary,
-                            ),
+                        ? AppLoadingWidget(
+                            size: AppLoadingSize.small,
+                            color: context.onPrimary,
                           )
                         : Text(AppStrings.applyCoupon),
                   ),
@@ -260,6 +253,7 @@ class _EnterReferralCodeBottomSheetState
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

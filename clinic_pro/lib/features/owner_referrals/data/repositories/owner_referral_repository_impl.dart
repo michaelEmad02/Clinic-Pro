@@ -7,6 +7,7 @@ import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/features/owner_referrals/data/data_sources/owner_referral_remote_data_source.dart';
+import 'package:clinic_pro/features/owner_referrals/domain/entities/apply_referral_result_entity.dart';
 import 'package:clinic_pro/features/owner_referrals/domain/entities/referral_dashboard_entity.dart';
 import 'package:clinic_pro/features/owner_referrals/domain/repositories/owner_referral_repository.dart';
 
@@ -28,16 +29,16 @@ class OwnerReferralRepositoryImpl implements IOwnerReferralRepository {
   }
 
   @override
-  Future<Either<Failure, void>> applyReferralCodeOnRegistration({
+  Future<Either<Failure, ApplyReferralResultEntity>> applyReferralCodeOnRegistration({
     required String referralCode,
     required String newOwnerId,
   }) async {
     try {
-      await _remoteDataSource.applyReferralCodeOnRegistration(
+      final result = await _remoteDataSource.applyReferralCodeOnRegistration(
         referralCode: referralCode,
         newOwnerId: newOwnerId,
       );
-      return const Right(null);
+      return Right(result);
     } catch (e) {
       return Left(QueryFailure.fromException(e));
     }
