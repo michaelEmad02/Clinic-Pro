@@ -72,6 +72,26 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> sendPasswordResetEmail(String email) async {
+    try {
+      await _remoteDataSource.sendPasswordResetEmail(email);
+      return const Right(unit);
+    } catch (e) {
+      return Left(AuthFailure.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> updatePassword(String newPassword) async {
+    try {
+      await _remoteDataSource.updatePassword(newPassword);
+      return const Right(unit);
+    } catch (e) {
+      return Left(AuthFailure.fromException(e));
+    }
+  }
+
+  @override
   Future<Either<Failure, AuthUserEntity>> registerOwner({
     required String email,
     required String password,

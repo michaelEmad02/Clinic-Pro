@@ -9,6 +9,8 @@ import '../../features/appointments/domain/entities/appointment_entity.dart';
 import '../../features/auth/presentation/ui/splash_screen.dart';
 import '../../features/auth/presentation/ui/login_screen.dart';
 import '../../features/auth/presentation/ui/create_account_screen.dart';
+import '../../features/auth/presentation/ui/forgot_password_screen.dart';
+import '../../features/auth/presentation/ui/set_new_password_screen.dart';
 import '../../features/auth/presentation/ui/accept_invitation_screen.dart';
 import '../../features/clinics/presentation/ui/create_clinic_screen.dart';
 import '../../features/staff_and_invitations/presentation/ui/invite_staff_screen.dart';
@@ -62,6 +64,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouteConstants.register,
       builder: (context, state) => const CreateAccountScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.forgotPassword,
+      builder: (context, state) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: RouteConstants.resetPassword,
+      builder: (context, state) => const SetNewPasswordScreen(),
     ),
     GoRoute(
       path: RouteConstants.joinClinic,

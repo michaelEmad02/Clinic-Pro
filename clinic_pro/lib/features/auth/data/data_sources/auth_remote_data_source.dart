@@ -17,6 +17,8 @@ abstract class IAuthRemoteDataSource {
   Future<AuthUserModel> loginWithEmailAndPassword(
       String email, String password);
   Future<void> sendMagicLink(String email);
+  Future<void> sendPasswordResetEmail(String email);
+  Future<void> updatePassword(String newPassword);
   Future<AuthUserModel> registerOwner({
     required String email,
     required String password,
@@ -234,6 +236,16 @@ class AuthRemoteDataSourceImpl implements IAuthRemoteDataSource {
   @override
   Future<void> sendMagicLink(String email) {
     return _authServices.sendMagicLink(email);
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) {
+    return _authServices.resetPassword(email);
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) {
+    return _authServices.updatePassword(newPassword);
   }
 
   @override

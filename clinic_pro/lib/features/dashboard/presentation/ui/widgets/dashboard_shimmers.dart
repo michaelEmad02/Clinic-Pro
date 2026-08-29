@@ -58,6 +58,7 @@ class AlertsSectionShimmer extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
+                    const SizedBox(height: 10),
                   ],
                 ),
               ),
@@ -77,7 +78,7 @@ class DashboardSummaryShimmer extends StatelessWidget {
     final isMobile = ResponsiveHelper.isMobile(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Shimmer.fromColors(
         baseColor: context.borderColor.withOpacity(0.5),
         highlightColor: context.surfaceColor,

@@ -9,6 +9,7 @@ import '../di/injection_container.dart';
 import '../router/app_router.dart';
 import '../utils/app_bloc_observer.dart';
 import 'deep_link_service.dart';
+import 'i_network_info.dart';
 
 class AppInitializer {
   /// دالة التهيئة المركزية لجميع الخدمات عند بدء التطبيق
@@ -28,7 +29,13 @@ class AppInitializer {
     await configureDependencies();
     await sl.allReady();
 
-    // 3. تهيئة خدمة الروابط العميقة (Deep Links) لالتقاط روابط الدعوات
+    // 3. التحقق السريع في الخلفية بدون حظر الإقلاع (Non-blocking background check)
+    final networkInfo = sl<INetworkInfo>();
+    networkInfo.isConnected.then((isConnected) {
+      debugPrint('🌐 حالة الاتصال بالإنترنت عند الإقلاع: ${isConnected ? "متصل ✅" : "غير متصل ❌"}');
+    });
+
+    // 4. تهيئة خدمة الروابط العميقة (Deep Links) لالتقاط روابط الدعوات
     final deepLinkService = DeepLinkService(appRouter);
     await deepLinkService.init();
   }

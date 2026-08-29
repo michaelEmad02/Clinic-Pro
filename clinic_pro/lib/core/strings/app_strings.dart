@@ -1305,6 +1305,56 @@ class AppStrings {
   static String shareInvitationMessage(String code) => isArabic
       ? 'مرحباً دكتور، أدعوك لتجربة تطبيق Clinic Pro لإدارة العيادات الطبية الذكية. استخدم كود الدعوة الخاص بي ($code) عند التسجيل للحصول على مكافأة وخصومات ترحيبية!\nرابط التطبيق: https://play.google.com/store/apps/details?id=com.clinicpro.app'
       : 'Hello Doctor, I invite you to try Clinic Pro app for smart clinic management. Use my referral code ($code) on registration to get welcome discounts!\nApp link: https://play.google.com/store/apps/details?id=com.clinicpro.app';
+
+  // ────────────────────────────────────────────────────────
+  // Forgot Password Localization
+  // ────────────────────────────────────────────────────────
+  static String get forgotPassword =>
+      isArabic ? 'نسيت كلمة المرور؟' : 'Forgot Password?';
+  static String get forgotPasswordTitle =>
+      isArabic ? 'استعادة كلمة المرور' : 'Reset Password';
+  static String get forgotPasswordSubtitle => isArabic
+      ? 'أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور الخاصة بحسابك.'
+      : 'Enter your email and we will send you a link to reset your account password.';
+  static String get sendResetLink =>
+      isArabic ? 'إرسال رابط الاستعادة' : 'Send Reset Link';
+  static String get resetLinkSentSuccess => isArabic
+      ? 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني بنجاح! ✉️'
+      : 'Password reset link sent to your email successfully! ✉️';
+  static String get backToLogin =>
+      isArabic ? 'العودة لتسجيل الدخول' : 'Back to Login';
+  static String get rememberPasswordQuestion =>
+      isArabic ? 'تذكرت كلمة المرور؟' : 'Remembered your password?';
+
+  // ────────────────────────────────────────────────────────
+  // Set New Password Localization
+  // ────────────────────────────────────────────────────────
+  static String get setNewPasswordTitle =>
+      isArabic ? 'تعيين كلمة المرور الجديدة' : 'Set New Password';
+  static String get setNewPasswordSubtitle => isArabic
+      ? 'أدخل كلمة المرور الجديدة لحسابك لتتمكن من تسجيل الدخول مجدداً.'
+      : 'Enter your new account password to regain access.';
+  static String get newPassword =>
+      isArabic ? 'كلمة المرور الجديدة' : 'New Password';
+  static String get confirmNewPassword =>
+      isArabic ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password';
+  static String get passwordsDoNotMatch =>
+      isArabic ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match';
+  static String get updatePasswordBtn =>
+      isArabic ? 'حفظ كلمة المرور الجديدة' : 'Update Password';
+  static String get passwordUpdatedSuccess => isArabic
+      ? 'تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول.'
+      : 'Password updated successfully! You can now log in.';
+
+  // ────────────────────────────────────────────────────────
+  // Network & Connectivity Localization
+  // ────────────────────────────────────────────────────────
+  static String get noInternetConnection => isArabic
+      ? 'لا يوجد اتصال بالإنترنت، يرجى التحقق من الشبكة وإعادة المحاولة'
+      : 'No internet connection. Please check your network and retry.';
+  static String get internetRestored => isArabic
+      ? 'تمت استعادة الاتصال بالإنترنت بنجاح'
+      : 'Internet connection restored.';
 }
 
 

@@ -2,7 +2,10 @@
 // هذا الملف يحتوي على نموذج تسجيل الدخول بالبريد الإلكتروني وكلمة المرور
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/strings/app_strings.dart';
@@ -171,8 +174,35 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
               },
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppConstants.spaceSm),
 
+          // رابط نسيت كلمة المرور؟
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () {
+                context.push(RouteConstants.forgotPassword);
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spaceXs,
+                  vertical: AppConstants.spaceXs,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                foregroundColor: AppColors.primary,
+              ),
+              child: Text(
+                AppStrings.forgotPassword,
+                style: AppTextStyles.caption(context).copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppConstants.spaceLg),
           // زر تسجيل الدخول
           ElevatedButton(
             onPressed: _submit,

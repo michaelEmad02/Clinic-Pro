@@ -84,11 +84,6 @@ class MockAuthServices implements IAuthServices {
     throw UnimplementedError();
   }
 
-  @override
-  Future<void> updatePassword(String email, String password) {
-    // TODO: implement updatePassword
-    throw UnimplementedError();
-  }
 
   @override
   Future<void> signUp(
@@ -106,6 +101,12 @@ class MockAuthServices implements IAuthServices {
   @override
   Future<void> deleteUserFromAuth(String userId) async {
     // محاكاة ناجحة للحذف محلياً
+    return;
+  }
+  
+  @override
+  Future<void> updatePassword(String password) async {
+    // محاكاة نجاح تحديث كلمة المرور في وضع الاختبار
     return;
   }
 }

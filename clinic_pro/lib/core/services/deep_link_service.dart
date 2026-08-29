@@ -56,6 +56,12 @@ class DeepLinkService {
         _router.go('/join/$token');
       }
     }
+
+    // الصيغة المتوقعة: clinicpro://reset-password
+    if (uri.scheme == 'clinicpro' && (uri.host == 'reset-password' || uri.path.contains('reset-password'))) {
+      debugPrint('🔐 رابط استعادة كلمة المرور');
+      _router.go('/reset-password');
+    }
   }
 
   /// إيقاف الاستماع عند إنهاء التطبيق

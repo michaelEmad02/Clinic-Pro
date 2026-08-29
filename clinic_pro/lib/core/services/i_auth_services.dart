@@ -36,7 +36,8 @@ abstract class IAuthServices {
 
   Future<void> resetPassword(String email);
 
-  Future<void> updatePassword(String email, String password);
+  /// تحديث كلمة المرور للمستخدم الحالي (أثناء جلسة الاستعادة أو من الإعدادات)
+  Future<void> updatePassword(String password);
 
   /// تسجيل الخروج
   Future<void> signOut();

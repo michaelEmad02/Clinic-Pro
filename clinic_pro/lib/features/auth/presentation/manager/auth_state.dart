@@ -43,6 +43,17 @@ class AuthRegistrationSuccess extends AuthState {
   List<Object?> get props => [user];
 }
 
+class AuthPasswordResetSent extends AuthState {
+  final String email;
+
+  const AuthPasswordResetSent({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class AuthPasswordUpdatedSuccess extends AuthState {}
+
 class AuthUnauthenticated extends AuthState {}
 
 class AuthError extends AuthState {

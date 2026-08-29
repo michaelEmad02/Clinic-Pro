@@ -112,13 +112,15 @@ class SupabaseAuthServices extends IAuthServices {
 
   @override
   Future<void> resetPassword(String email) async {
-    await supabase.auth.resetPasswordForEmail(email);
+    await supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'clinicpro://reset-password',
+    );
   }
 
   @override
-  Future<void> updatePassword(String email, String password) {
-    return supabase.auth
-        .updateUser(UserAttributes(email: email, password: password));
+  Future<void> updatePassword(String password) {
+    return supabase.auth.updateUser(UserAttributes(password: password));
   }
 
   @override

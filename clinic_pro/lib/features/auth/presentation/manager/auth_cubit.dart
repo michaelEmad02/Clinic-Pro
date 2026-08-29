@@ -13,6 +13,8 @@ import '../../domain/use_cases/login_with_apple_use_case.dart';
 import '../../domain/use_cases/login_with_email_and_password_use_case.dart';
 import '../../domain/use_cases/register_owner_use_case.dart';
 import '../../domain/use_cases/logout_use_case.dart';
+import '../../domain/use_cases/send_password_reset_email_use_case.dart';
+import '../../domain/use_cases/update_password_use_case.dart';
 import 'auth_state.dart';
 
 @injectable
@@ -24,6 +26,8 @@ class AuthCubit extends Cubit<AuthState> {
   final RegisterOwnerUseCase _registerOwnerUseCase;
   final LogoutUseCase _logoutUseCase;
   final CheckSubscriptionStatusUseCase _checkSubscriptionStatusUseCase;
+  final SendPasswordResetEmailUseCase _sendPasswordResetEmailUseCase;
+  final UpdatePasswordUseCase _updatePasswordUseCase;
 
   /// الدور الأصلي للمستخدم (يُحفظ عند التبديل بين الأدوار)
   StaffRoles? _originalRole;
@@ -44,6 +48,8 @@ class AuthCubit extends Cubit<AuthState> {
     this._registerOwnerUseCase,
     this._logoutUseCase,
     this._checkSubscriptionStatusUseCase,
+    this._sendPasswordResetEmailUseCase,
+    this._updatePasswordUseCase,
   ) : super(AuthInitial());
 
   /// التحقق من حالة الجلسة الحالية
@@ -151,6 +157,26 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) => emit(AuthError(message: failure.message)),
       (_) => emit(AuthUnauthenticated()),
+    );
+  }
+
+  /// إرسال رابط إعادة تعيين كلمة المرور
+  Future<void> sendPasswordResetEmail(String email) async {
+    emit(AuthLoading());
+    final result = await _sendPasswordResetEmailUseCase(email);
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (_) => emit(AuthPasswordResetSent(email: email)),
+    );
+  }
+
+  /// تعيين وتحديث كلمة المرور الجديدة
+  Future<void> updatePassword(String newPassword) async {
+    emit(AuthLoading());
+    final result = await _updatePasswordUseCase(newPassword);
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (_) => emit(AuthPasswordUpdatedSuccess()),
     );
   }
 

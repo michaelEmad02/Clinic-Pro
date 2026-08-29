@@ -26,6 +26,12 @@ abstract class IAuthRepository {
   /// إرسال رابط الدخول السحري (Magic Link) إلى البريد الإلكتروني
   Future<Either<Failure, Unit>> sendMagicLink(String email);
 
+  /// إرسال رابط إعادة تعيين كلمة المرور إلى البريد الإلكتروني
+  Future<Either<Failure, Unit>> sendPasswordResetEmail(String email);
+
+  /// تحديث كلمة المرور للمستخدم (أثناء جلسة الاستعادة أو من الإعدادات)
+  Future<Either<Failure, Unit>> updatePassword(String newPassword);
+
   /// تسجيل مالك عيادة جديد بالكامل في النظام
   Future<Either<Failure, AuthUserEntity>> registerOwner({
     required String email,

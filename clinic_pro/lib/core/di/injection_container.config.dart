@@ -74,6 +74,10 @@ import '../../features/auth/domain/use_cases/register_owner_use_case.dart'
     as _i488;
 import '../../features/auth/domain/use_cases/send_magic_link_use_case.dart'
     as _i695;
+import '../../features/auth/domain/use_cases/send_password_reset_email_use_case.dart'
+    as _i954;
+import '../../features/auth/domain/use_cases/update_password_use_case.dart'
+    as _i110;
 import '../../features/auth/domain/use_cases/verify_email_use_case.dart'
     as _i421;
 import '../../features/auth/presentation/manager/accept_invitation_cubit.dart'
@@ -425,8 +429,10 @@ import '../localization/language_cubit.dart' as _i170;
 import '../services/i_auth_services.dart' as _i662;
 import '../services/i_cloud_service.dart' as _i239;
 import '../services/i_local_data_service.dart' as _i819;
+import '../services/i_network_info.dart' as _i809;
 import '../services/i_payment_service.dart' as _i693;
 import '../services/i_prescription_pdf_service.dart' as _i581;
+import '../services/network_info_impl.dart' as _i836;
 import '../services/payment_service_impl.dart' as _i757;
 import '../services/prescription_pdf_service_impl.dart' as _i926;
 import '../services/shared_preferences_service.dart' as _i29;
@@ -466,6 +472,7 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i965.ThemeCubit(gh<_i460.SharedPreferences>()));
     gh.lazySingleton<_i576.IImageCompressionService>(
         () => _i26.ImageCompressionService());
+    gh.lazySingleton<_i809.INetworkInfo>(() => _i836.NetworkInfoImpl());
     gh.lazySingleton<_i581.IPrescriptionPdfService>(
         () => _i926.PrescriptionPdfServiceImpl());
     gh.lazySingleton<_i321.ExpensesRepository>(
@@ -570,6 +577,11 @@ extension GetItInjectableX on _i174.GetIt {
             iCloudService: gh<_i239.ICloudService>()));
     gh.lazySingleton<_i247.IInvoicesRepository>(() =>
         _i1008.InvoicesRepositoryImpl(gh<_i446.IInvoicesRemoteDataSource>()));
+    gh.factory<_i321.CouponsCubit>(() => _i321.CouponsCubit(
+          gh<_i12.ValidateCouponUseCase>(),
+          gh<_i12.GetAvailableCouponsUseCase>(),
+          gh<_i12.RedeemCouponUseCase>(),
+        ));
     gh.lazySingleton<_i187.IReportsRepository>(() =>
         _i227.ReportsRepositoryImpl(gh<_i107.IReportsRemoteDataSource>()));
     gh.lazySingleton<_i482.IPrescriptionRemoteDataSource>(
@@ -610,15 +622,6 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i255.ISubscriptionsRepository>()));
     gh.lazySingleton<_i944.GetBillingHistoryUseCase>(() =>
         _i944.GetBillingHistoryUseCase(gh<_i255.ISubscriptionsRepository>()));
-    gh.factory<_i701.SubscriptionsCubit>(() => _i701.SubscriptionsCubit(
-          getPlansUseCase: gh<_i944.GetPlansUseCase>(),
-          checkSubscriptionStatusUseCase:
-              gh<_i944.CheckSubscriptionStatusUseCase>(),
-          requestSubscriptionUseCase: gh<_i944.RequestSubscriptionUseCase>(),
-          getCompanyInfoUseCase: gh<_i944.GetCompanyInfoUseCase>(),
-          getSubscriptionUsageUseCase: gh<_i944.GetSubscriptionUsageUseCase>(),
-          getBillingHistoryUseCase: gh<_i944.GetBillingHistoryUseCase>(),
-        ));
     gh.factory<_i1073.CancelInvitationUseCase>(() =>
         _i1073.CancelInvitationUseCase(
             staffRepository: gh<_i431.StaffRepository>()));
@@ -712,11 +715,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i69.IPatientsRepository>(),
           gh<_i255.ISubscriptionsRepository>(),
         ));
-    gh.factory<_i321.CouponsCubit>(() => _i321.CouponsCubit(
-          gh<_i12.ValidateCouponUseCase>(),
-          gh<_i12.GetAvailableCouponsUseCase>(),
-          gh<_i12.RedeemCouponUseCase>(),
-        ));
     gh.factory<_i334.OwnerSummaryStatsCubit>(() =>
         _i334.OwnerSummaryStatsCubit(gh<_i895.GetOwnerSummaryStatsUseCase>()));
     gh.factory<_i516.AboutUsCubit>(
@@ -745,9 +743,33 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i695.SendMagicLinkUseCase(gh<_i589.IAuthRepository>()));
     gh.factory<_i421.VerifyEmailUseCase>(
         () => _i421.VerifyEmailUseCase(gh<_i589.IAuthRepository>()));
+    gh.lazySingleton<_i954.SendPasswordResetEmailUseCase>(
+        () => _i954.SendPasswordResetEmailUseCase(gh<_i589.IAuthRepository>()));
+    gh.lazySingleton<_i110.UpdatePasswordUseCase>(
+        () => _i110.UpdatePasswordUseCase(gh<_i589.IAuthRepository>()));
+    gh.factory<_i701.SubscriptionsCubit>(() => _i701.SubscriptionsCubit(
+          getPlansUseCase: gh<_i944.GetPlansUseCase>(),
+          checkSubscriptionStatusUseCase:
+              gh<_i944.CheckSubscriptionStatusUseCase>(),
+          requestSubscriptionUseCase: gh<_i944.RequestSubscriptionUseCase>(),
+          getCompanyInfoUseCase: gh<_i944.GetCompanyInfoUseCase>(),
+          getSubscriptionUsageUseCase: gh<_i944.GetSubscriptionUsageUseCase>(),
+          getBillingHistoryUseCase: gh<_i944.GetBillingHistoryUseCase>(),
+        ));
     gh.lazySingleton<_i359.ClinicsRepository>(() =>
         _i0.ClinicsRepoImplementation(
             iClinicsRemoteDataSource: gh<_i256.IClinicsRemoteDataSource>()));
+    gh.factory<_i888.AuthCubit>(() => _i888.AuthCubit(
+          gh<_i129.GetCurrentUserUseCase>(),
+          gh<_i490.LoginWithGoogleUseCase>(),
+          gh<_i652.LoginWithAppleUseCase>(),
+          gh<_i394.LoginWithEmailAndPasswordUseCase>(),
+          gh<_i488.RegisterOwnerUseCase>(),
+          gh<_i698.LogoutUseCase>(),
+          gh<_i944.CheckSubscriptionStatusUseCase>(),
+          gh<_i954.SendPasswordResetEmailUseCase>(),
+          gh<_i110.UpdatePasswordUseCase>(),
+        ));
     gh.lazySingleton<_i845.IPrescriptionRepository>(() =>
         _i678.PrescriptionRepositoryImpl(
             gh<_i482.IPrescriptionRemoteDataSource>()));
@@ -964,15 +986,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i535.AddTemplateUseCase>(),
           gh<_i535.EditTemplateUseCase>(),
           gh<_i535.DeleteTemplateUseCase>(),
-        ));
-    gh.factory<_i888.AuthCubit>(() => _i888.AuthCubit(
-          gh<_i129.GetCurrentUserUseCase>(),
-          gh<_i490.LoginWithGoogleUseCase>(),
-          gh<_i652.LoginWithAppleUseCase>(),
-          gh<_i394.LoginWithEmailAndPasswordUseCase>(),
-          gh<_i488.RegisterOwnerUseCase>(),
-          gh<_i698.LogoutUseCase>(),
-          gh<_i944.CheckSubscriptionStatusUseCase>(),
         ));
     gh.factory<_i747.AddClinicUseCase>(() => _i747.AddClinicUseCase(
           clinicsRepository: gh<_i359.ClinicsRepository>(),

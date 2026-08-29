@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/router/app_router.dart';
+import 'core/services/i_network_info.dart';
+import 'core/strings/app_strings.dart';
 import 'core/themes/app_theme.dart';
 import 'core/services/app_initializer.dart';
+import 'core/widgets/app_snackbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/presentation/manager/auth_cubit.dart';
 import 'features/onboarding/presentation/manager/onboarding_cubit.dart';
@@ -18,8 +22,69 @@ void main() async {
   runApp(const ClinicPro());
 }
 
-class ClinicPro extends StatelessWidget {
+class ClinicPro extends StatefulWidget {
   const ClinicPro({super.key});
+
+  @override
+  State<ClinicPro> createState() => _ClinicProState();
+}
+
+class _ClinicProState extends State<ClinicPro> {
+  StreamSubscription<bool>? _networkSubscription;
+  bool _isFirstCheck = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenToNetworkChanges();
+  }
+
+  void _listenToNetworkChanges() {
+    final networkInfo = sl<INetworkInfo>();
+    _networkSubscription = networkInfo.onConnectivityChanged.listen((isConnected) {
+      if (_isFirstCheck) {
+        _isFirstCheck = false;
+        if (!isConnected) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showNoInternetNotification();
+          });
+        }
+        return;
+      }
+
+      if (!isConnected) {
+        _showNoInternetNotification();
+      } else {
+        _showInternetRestoredNotification();
+      }
+    });
+  }
+
+  void _showNoInternetNotification() {
+    final context = appRouter.routerDelegate.navigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      AppSnackbar.error(
+        context,
+        message: AppStrings.noInternetConnection,
+      );
+    }
+  }
+
+  void _showInternetRestoredNotification() {
+    final context = appRouter.routerDelegate.navigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      AppSnackbar.success(
+        context,
+        message: AppStrings.internetRestored,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _networkSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
