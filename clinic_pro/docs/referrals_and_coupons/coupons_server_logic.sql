@@ -144,7 +144,10 @@ DECLARE
     v_validation JSONB;
     v_free_days INT := 0;
     v_discount_amount DECIMAL := 0;
+    v_original_price DECIMAL := 0;
     v_has_active_sub BOOLEAN := FALSE;
+    v_sub_id UUID;
+    v_inserted_tx_id UUID;
 BEGIN
     -- 1. جلب الكوبون
     SELECT * INTO v_coupon 
@@ -175,12 +178,23 @@ BEGIN
         v_discount_amount := COALESCE((v_validation->>'discount_amount')::DECIMAL, 0);
         v_has_active_sub := COALESCE((v_validation->>'has_active_subscription')::BOOLEAN, FALSE);
 
+        -- حساب السعر الأصلي للخطة
+        SELECT 
+            CASE 
+                WHEN p_billing_cycle = 'yearly' THEN COALESCE(yearly_price_egp, yearly_price, 0)
+                WHEN p_billing_cycle = 'lifetime' THEN COALESCE(lifetime_price_egp, lifetime_price, 0)
+                ELSE COALESCE(monthly_price_egp, monthly_price, 0)
+            END INTO v_original_price
+        FROM public.plans
+        WHERE id = p_plan_id;
+
         -- معالجة تمديد أو تفعيل الاشتراك إذا كان الكوبون يمنح أياماً أو شهوراً مجانية
         IF v_free_days > 0 THEN
             IF v_has_active_sub THEN
                 UPDATE public.subscriptions 
                 SET end_at = GREATEST(COALESCE(end_at, NOW()), NOW()) + (v_free_days || ' days')::interval
-                WHERE owner_id = p_owner_id AND status = 'active';
+                WHERE owner_id = p_owner_id AND status = 'active'
+                RETURNING id INTO v_sub_id;
             ELSE
                 INSERT INTO public.subscriptions (
                     owner_id,
@@ -200,7 +214,42 @@ BEGIN
                     NOW(),
                     NOW() + (v_free_days || ' days')::interval,
                     NOW()
-                );
+                )
+                RETURNING id INTO v_sub_id;
+            END IF;
+
+            -- ⭐ إضافة سجل في جدول المعاملات المالية payment_transactions بقيمة 0
+            IF v_sub_id IS NOT NULL THEN
+                INSERT INTO public.payment_transactions (
+                    subscription_id,
+                    owner_id,
+                    gateway,
+                    payment_method,
+                    amount,
+                    currency,
+                    status,
+                    metadata,
+                    created_at
+                ) VALUES (
+                    v_sub_id,
+                    p_owner_id,
+                    'coupon',
+                    'coupon',
+                    0.00,
+                    'EGP',
+                    'success',
+                    jsonb_build_object(
+                        'coupon_id', v_coupon.id,
+                        'coupon_code', v_coupon.code,
+                        'subscription_type' , subscription_type,
+                        'original_amount', COALESCE(v_original_price, 0),
+                        'discount_amount', COALESCE(v_discount_amount, v_original_price, 0),
+                        'final_amount', 0.00,
+                        'free_days_granted', v_free_days
+                    ),
+                    NOW()
+                )
+                RETURNING id INTO v_inserted_tx_id;
             END IF;
         END IF;
     ELSE

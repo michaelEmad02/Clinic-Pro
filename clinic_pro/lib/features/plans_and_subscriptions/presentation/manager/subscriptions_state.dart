@@ -2,6 +2,7 @@
 // حالات Cubit لإدارة الخطط والاشتراكات (SubscriptionsState)
 // ────────────────────────────────────────────────────────
 
+import '../../domain/entities/billing_history_item_entity.dart';
 import '../../domain/entities/company_info_entity.dart';
 import '../../domain/entities/plan_entity.dart';
 import '../../domain/entities/subscription_entity.dart';
@@ -20,12 +21,14 @@ class SubscriptionsLoaded extends SubscriptionsState {
   final SubscriptionEntity? activeSubscription;
   final CompanyInfoEntity? companyInfo;
   final SubscriptionUsageEntity? usage;
+  final List<BillingHistoryItemEntity> billingHistory;
 
   const SubscriptionsLoaded({
     required this.plans,
     this.activeSubscription,
     this.companyInfo,
     this.usage,
+    this.billingHistory = const [],
   });
 }
 

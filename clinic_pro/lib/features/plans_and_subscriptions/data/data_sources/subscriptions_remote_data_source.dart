@@ -5,12 +5,15 @@
 import 'package:injectable/injectable.dart';
 import '../../../../core/constants/supabase_constants.dart';
 import '../../../../core/services/i_cloud_service.dart';
+import '../../../payment/data/models/payment_transaction_model.dart';
 import '../models/plan_model.dart';
 import '../models/subscription_model.dart';
 
 abstract class ISubscriptionsRemoteDataSource {
   Future<List<PlanModel>> getPlans();
   Future<SubscriptionModel?> getActiveSubscription(String ownerId);
+  Future<List<SubscriptionModel>> getAllSubscriptions(String ownerId);
+  Future<List<PaymentTransactionModel>> getPaymentTransactions(String ownerId);
   Future<SubscriptionModel> requestSubscription({
     required String ownerId,
   });
@@ -65,6 +68,41 @@ class SubscriptionsRemoteDataSource implements ISubscriptionsRemoteDataSource {
       return SubscriptionModel.fromJson(result.first);
     } catch (e) {
       throw Exception(e.toString());
+    }
+  }
+
+  @override
+  Future<List<SubscriptionModel>> getAllSubscriptions(String ownerId) async {
+    try {
+      final result = await _cloudService.select(
+        table: SupabaseTables.subscriptions,
+        eq: {'owner_id': ownerId},
+      );
+      if (result.isEmpty) return [];
+      result.sort((a, b) =>
+          (b['created_at'] as String).compareTo(a['created_at'] as String));
+      return result.map((json) => SubscriptionModel.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  @override
+  Future<List<PaymentTransactionModel>> getPaymentTransactions(String ownerId) async {
+    try {
+      final result = await _cloudService.select(
+        table: SupabaseTables.paymentTransactions,
+        eq: {'owner_id': ownerId},
+      );
+      if (result.isEmpty) return [];
+      result.sort((a, b) =>
+          (b['created_at'] as String).compareTo(a['created_at'] as String));
+      return result
+          .map((json) => PaymentTransactionModel.fromJson(json))
+          .toList();
+    } catch (e) {
+      // إذا حدث خطأ أو الجدول غير مهيأ نرجع قائمة فارغة
+      return [];
     }
   }
 

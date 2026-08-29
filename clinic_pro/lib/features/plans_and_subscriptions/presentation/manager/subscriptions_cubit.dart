@@ -4,6 +4,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../domain/entities/billing_history_item_entity.dart';
 import '../../domain/entities/company_info_entity.dart';
 import '../../domain/entities/plan_entity.dart';
 import '../../domain/entities/subscription_entity.dart';
@@ -18,11 +19,13 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
   final RequestSubscriptionUseCase _requestSubscriptionUseCase;
   final GetCompanyInfoUseCase _getCompanyInfoUseCase;
   final GetSubscriptionUsageUseCase _getSubscriptionUsageUseCase;
+  final GetBillingHistoryUseCase _getBillingHistoryUseCase;
 
   List<PlanEntity> _cachedPlans = [];
   SubscriptionEntity? _cachedSubscription;
   CompanyInfoEntity? _cachedCompanyInfo;
   SubscriptionUsageEntity? _cachedUsage;
+  List<BillingHistoryItemEntity> _cachedBillingHistory = [];
 
   SubscriptionsCubit({
     required GetPlansUseCase getPlansUseCase,
@@ -30,11 +33,13 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
     required RequestSubscriptionUseCase requestSubscriptionUseCase,
     required GetCompanyInfoUseCase getCompanyInfoUseCase,
     required GetSubscriptionUsageUseCase getSubscriptionUsageUseCase,
+    required GetBillingHistoryUseCase getBillingHistoryUseCase,
   })  : _getPlansUseCase = getPlansUseCase,
         _checkSubscriptionStatusUseCase = checkSubscriptionStatusUseCase,
         _requestSubscriptionUseCase = requestSubscriptionUseCase,
         _getCompanyInfoUseCase = getCompanyInfoUseCase,
         _getSubscriptionUsageUseCase = getSubscriptionUsageUseCase,
+        _getBillingHistoryUseCase = getBillingHistoryUseCase,
         super(SubscriptionsInitial());
 
   /// تحميل بيانات الخطط والاشتراك الحالي ومعلومات الشركة والاستخدام بالتوازي لحفظ الأداء
@@ -49,17 +54,29 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
         _getSubscriptionUsageUseCase(ownerId)
       else
         Future.value(null),
+      if (ownerId.isNotEmpty)
+        _getBillingHistoryUseCase(ownerId)
+      else
+        Future.value(null),
     ]);
 
     final plansResult = results[0] as dynamic;
     final subResult = results[1] as dynamic;
     final companyResult = results[2] as dynamic;
     final usageResult = results[3];
+    final historyResult = results[4];
 
     if (usageResult != null) {
       (usageResult as dynamic).fold(
         (_) => _cachedUsage = null,
         (u) => _cachedUsage = u,
+      );
+    }
+
+    if (historyResult != null) {
+      (historyResult as dynamic).fold(
+        (_) => _cachedBillingHistory = [],
+        (h) => _cachedBillingHistory = h,
       );
     }
 
@@ -80,6 +97,7 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
           activeSubscription: _cachedSubscription,
           companyInfo: _cachedCompanyInfo,
           usage: _cachedUsage,
+          billingHistory: _cachedBillingHistory,
         ));
       },
     );
@@ -119,6 +137,7 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
           activeSubscription: _cachedSubscription,
           companyInfo: _cachedCompanyInfo,
           usage: _cachedUsage,
+          billingHistory: _cachedBillingHistory,
         ));
       },
     );

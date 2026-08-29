@@ -919,6 +919,10 @@ class AppStrings {
       : 'Upgrade your plan now to ensure uninterrupted access to all your patient data.';
   static String get daysRemaining =>
       isArabic ? 'أيام متبقية' : 'Days remaining';
+  static String get subscriptionExpiresAt =>
+      isArabic ? 'تاريخ انتهاء الاشتراك' : 'Subscription expires at';
+  static String get subscriptionRenewsAt =>
+      isArabic ? 'تاريخ التجديد القادم' : 'Next renewal date';
   static String get remainingCount => isArabic ? 'متبقي' : 'Remaining';
   static String get overLimit =>
       isArabic ? 'تجاوز الحد المسموح' : 'Over the allowed limit';
@@ -1111,10 +1115,17 @@ class AppStrings {
       isArabic ? 'تم تقديم الطلب بنجاح' : 'Request Submitted Successfully';
   static String get subscriptionExpired =>
       isArabic ? 'انتهت صلاحية اشتراكك' : 'Subscription Expired';
+  static String get subscriptionCancelled =>
+      isArabic ? 'ملغى' : 'Cancelled';
+  static String get subscriptionPending =>
+      isArabic ? 'قيد الانتظار' : 'Pending';
   static String get subscriptionActivatedSuccess =>
       isArabic ? 'تم تفعيل اشتراكك بنجاح! مرحباً بك.' : 'Your subscription has been activated successfully!';
   static String get currentPlanBadge =>
       isArabic ? 'الخطة الحالية' : 'Current Plan';
+  static String get monthlyCycle => isArabic ? 'شهري' : 'Monthly';
+  static String get yearlyCycle => isArabic ? 'سنوي' : 'Yearly';
+  static String get lifetimeCycle => isArabic ? 'مدى الحياة' : 'Lifetime';
   static String get unlimited => isArabic ? 'غير محدود' : 'Unlimited';
 
   // Payment Methods & Flow

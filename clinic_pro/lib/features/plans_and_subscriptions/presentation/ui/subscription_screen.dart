@@ -131,6 +131,7 @@ class _SubscriptionBody extends StatelessWidget {
                               CurrentPlanCard(
                                 plan: currentPlan,
                                 planStatus: planStatus,
+                                endAt: activeSub?.endAt,
                               ),
                               const SizedBox(height: AppConstants.spaceLg),
                               if (isTrial) ...[
@@ -155,7 +156,7 @@ class _SubscriptionBody extends StatelessWidget {
                                 },
                               ),
                               const SizedBox(height: AppConstants.spaceXl),
-                              const BillingHistoryList(),
+                              BillingHistoryList(history: state.billingHistory),
                             ],
                           );
                         }
@@ -172,6 +173,7 @@ class _SubscriptionBody extends StatelessWidget {
                                   CurrentPlanCard(
                                     plan: currentPlan,
                                     planStatus: planStatus,
+                                    endAt: activeSub?.endAt,
                                   ),
                                   if (isTrial) ...[
                                     const SizedBox(height: AppConstants.spaceLg),
@@ -204,7 +206,7 @@ class _SubscriptionBody extends StatelessWidget {
                                     },
                                   ),
                                   const SizedBox(height: AppConstants.spaceXl),
-                                  const BillingHistoryList(),
+                                  BillingHistoryList(history: state.billingHistory),
                                 ],
                               ),
                             ),

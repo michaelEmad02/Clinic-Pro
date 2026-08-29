@@ -608,6 +608,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i944.GetSubscriptionUsageUseCase>(() =>
         _i944.GetSubscriptionUsageUseCase(
             gh<_i255.ISubscriptionsRepository>()));
+    gh.lazySingleton<_i944.GetBillingHistoryUseCase>(() =>
+        _i944.GetBillingHistoryUseCase(gh<_i255.ISubscriptionsRepository>()));
     gh.factory<_i701.SubscriptionsCubit>(() => _i701.SubscriptionsCubit(
           getPlansUseCase: gh<_i944.GetPlansUseCase>(),
           checkSubscriptionStatusUseCase:
@@ -615,6 +617,7 @@ extension GetItInjectableX on _i174.GetIt {
           requestSubscriptionUseCase: gh<_i944.RequestSubscriptionUseCase>(),
           getCompanyInfoUseCase: gh<_i944.GetCompanyInfoUseCase>(),
           getSubscriptionUsageUseCase: gh<_i944.GetSubscriptionUsageUseCase>(),
+          getBillingHistoryUseCase: gh<_i944.GetBillingHistoryUseCase>(),
         ));
     gh.factory<_i1073.CancelInvitationUseCase>(() =>
         _i1073.CancelInvitationUseCase(

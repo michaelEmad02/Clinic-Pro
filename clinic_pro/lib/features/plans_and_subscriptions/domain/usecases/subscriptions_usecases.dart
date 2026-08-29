@@ -5,6 +5,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
+import '../entities/billing_history_item_entity.dart';
 import '../entities/company_info_entity.dart';
 import '../entities/plan_entity.dart';
 import '../entities/subscription_entity.dart';
@@ -104,3 +105,14 @@ class GetSubscriptionUsageUseCase {
     return _repository.getSubscriptionUsage(ownerId);
   }
 }
+
+@lazySingleton
+class GetBillingHistoryUseCase {
+  final ISubscriptionsRepository _repository;
+  GetBillingHistoryUseCase(this._repository);
+
+  Future<Either<Failure, List<BillingHistoryItemEntity>>> call(String ownerId) {
+    return _repository.getBillingHistory(ownerId);
+  }
+}
+

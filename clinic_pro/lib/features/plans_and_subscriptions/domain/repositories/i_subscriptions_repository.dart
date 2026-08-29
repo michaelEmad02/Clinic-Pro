@@ -4,10 +4,10 @@
 
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../entities/billing_history_item_entity.dart';
 import '../entities/company_info_entity.dart';
 import '../entities/plan_entity.dart';
 import '../entities/subscription_entity.dart';
-
 import '../entities/subscription_usage_entity.dart';
 
 abstract class ISubscriptionsRepository {
@@ -35,4 +35,8 @@ abstract class ISubscriptionsRepository {
 
   /// جلب معلومات الاتصال بالشركة
   Future<Either<Failure, CompanyInfoEntity>> getCompanyInfo();
+
+  /// جلب سجل الاشتراكات والمدفوعات السابقة للمالك
+  Future<Either<Failure, List<BillingHistoryItemEntity>>> getBillingHistory(
+      String ownerId);
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
@@ -8,11 +9,13 @@ import '../../../domain/entities/plan_entity.dart';
 class CurrentPlanCard extends StatelessWidget {
   final PlanEntity plan;
   final String planStatus;
+  final DateTime? endAt;
 
   const CurrentPlanCard({
     super.key,
     required this.plan,
     required this.planStatus,
+    this.endAt,
   });
 
   String _planTitle() {
@@ -154,20 +157,64 @@ class CurrentPlanCard extends StatelessWidget {
           ),
           const SizedBox(height: AppConstants.spaceMd),
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                price,
-                style: AppTextStyles.headlineLarge(context).copyWith(
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 32,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                AppStrings.perMonth,
-                style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary),
+              if (endAt != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.event_outlined,
+                          size: 15,
+                          color: context.textSecondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          planStatus == 'active'
+                              ? AppStrings.subscriptionRenewsAt
+                              : AppStrings.subscriptionExpiresAt,
+                          style: AppTextStyles.caption(context).copyWith(
+                            color: context.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      DateFormat('d MMMM yyyy', AppStrings.isArabic ? 'ar' : 'en').format(endAt!),
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: context.textPrimary,
+                      ),
+                    ),
+                  ],
+                )
+              else
+                const SizedBox.shrink(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    price,
+                    style: AppTextStyles.headlineLarge(context).copyWith(
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 30,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    AppStrings.perMonth,
+                    style: AppTextStyles.bodyMedium(context).copyWith(color: context.textSecondary),
+                  ),
+                ],
               ),
             ],
           ),
