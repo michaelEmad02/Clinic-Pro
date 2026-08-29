@@ -13,6 +13,8 @@ class MilestoneRewardModel extends MilestoneRewardEntity {
     super.description,
     required super.rewardType,
     required super.rewardValue,
+    super.refereeRewardType,
+    super.refereeRewardValue,
     required super.isAchieved,
     required super.isClaimed,
     super.claimedAt,
@@ -27,6 +29,8 @@ class MilestoneRewardModel extends MilestoneRewardEntity {
       description: json['description'] as String?,
       rewardType: _mapRewardType(json['referrer_reward_type'] as String? ?? json['reward_type'] as String?),
       rewardValue: (json['referrer_reward_value'] as num?)?.toDouble() ?? (json['reward_value'] as num?)?.toDouble() ?? 0.0,
+      refereeRewardType: json['referee_reward_type'] != null ? _mapRewardType(json['referee_reward_type'] as String) : null,
+      refereeRewardValue: (json['referee_reward_value'] as num?)?.toDouble(),
       isAchieved: json['is_achieved'] as bool? ?? false,
       isClaimed: json['is_claimed'] as bool? ?? false,
       claimedAt: json['claimed_at'] != null

@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
@@ -38,66 +39,139 @@ class MilestoneProgressCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isNarrow = constraints.maxWidth < 320;
-
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // 1. شريط العنوان العلوي: أيقونة الهدف + تسمية الهدف القادم + عداد التقدم
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
+                  Icon(TablerIcons.target_arrow, color: context.warning, size: 20),
+                  const SizedBox(width: AppConstants.spaceSm),
+                  Text(
+                    AppStrings.nextTarget,
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      color: context.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spaceSm + 2,
+                  vertical: AppConstants.spaceXs,
+                ),
+                decoration: BoxDecoration(
+                  color: context.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusChip),
+                ),
+                child: Text(
+                  AppStrings.doctorsCountProgress(available, target),
+                  style: AppTextStyles.caption(context).copyWith(
+                    color: context.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // 2. عنوان التحدي يأخذ العرض بالكامل
+          Text(
+            nextMilestone != null
+                ? nextMilestone.title
+                : AppStrings.allTargetsAchieved,
+            style: AppTextStyles.bodyLarge(context).copyWith(
+              fontWeight: FontWeight.bold,
+              color: context.textPrimary,
+              fontSize: 16,
+            ),
+          ),
+          if (nextMilestone?.description != null &&
+              nextMilestone!.description!.isNotEmpty) ...[
+            const SizedBox(height: 3),
+            Text(
+              nextMilestone.description!,
+              style: AppTextStyles.caption(context).copyWith(
+                color: context.textSecondary,
+              ),
+            ),
+          ],
+          if (nextMilestone != null) ...[
+            const SizedBox(height: AppConstants.spaceSm + 2),
+            // 3. بطاقات مكافأة الداعي والمدعو كاملة العرض بالتساوي
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: context.primary.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(AppConstants.radiusXs + 2),
+                      border: Border.all(color: context.primary.withOpacity(0.15)),
+                    ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(TablerIcons.target_arrow,
-                            color: context.warning, size: 20),
-                        const SizedBox(width: AppConstants.spaceSm),
-                        if (!isNarrow) ...[
-                          Text(
-                            AppStrings.nextTarget,
-                            style: AppTextStyles.bodyMedium(context).copyWith(
-                              color: context.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                        ],
-                        Expanded(
+                        Icon(TablerIcons.gift, size: 14, color: context.primary),
+                        const SizedBox(width: 5),
+                        Flexible(
                           child: Text(
-                            nextMilestone != null
-                                ? nextMilestone.title
-                                : AppStrings.allTargetsAchieved,
-                            style: AppTextStyles.bodyLarge(context).copyWith(
+                            AppStrings.referrerRewardBadge(_formatRewardText(
+                              nextMilestone.rewardType,
+                              nextMilestone.rewardValue,
+                            )),
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: context.primary,
                               fontWeight: FontWeight.bold,
-                              color: context.textPrimary,
+                              fontSize: 11.5,
                             ),
                             overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: AppConstants.spaceSm),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppConstants.spaceSm + 2,
-                      vertical: AppConstants.spaceXs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusChip),
-                    ),
-                    child: Text(
-                      AppStrings.doctorsCountProgress(available, target),
-                      style: AppTextStyles.caption(context).copyWith(
-                        color: context.primary,
-                        fontWeight: FontWeight.bold,
+                ),
+                if (nextMilestone.refereeRewardType != null &&
+                    nextMilestone.refereeRewardValue != null) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: context.accent.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(AppConstants.radiusXs + 2),
+                        border: Border.all(color: context.accent.withOpacity(0.15)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(TablerIcons.user_plus, size: 14, color: context.accent),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              AppStrings.refereeRewardBadge(_formatRewardText(
+                                nextMilestone.refereeRewardType!,
+                                nextMilestone.refereeRewardValue!,
+                              )),
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.accent,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 11.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
-              );
-            },
-          ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppConstants.spaceSm + 4),
           ClipRRect(
             borderRadius: BorderRadius.circular(AppConstants.radiusXs + 2),
@@ -132,5 +206,19 @@ class MilestoneProgressCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatRewardText(CouponRewardType type, double value) {
+    final isAr = AppStrings.isArabic;
+    switch (type) {
+      case CouponRewardType.discountPercent:
+        return isAr ? 'خصم ${value.toInt()}%' : '${value.toInt()}% Discount';
+      case CouponRewardType.fixedAmount:
+        return isAr ? 'خصم ${value.toInt()} ج.م' : '${value.toInt()} EGP Off';
+      case CouponRewardType.freeMonth:
+        return isAr ? 'شهر كامل مجاناً' : '1 Free Month';
+      case CouponRewardType.freeDays:
+        return isAr ? '${value.toInt()} يوم مجاناً' : '${value.toInt()} Free Days';
+    }
   }
 }

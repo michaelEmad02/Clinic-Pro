@@ -1269,8 +1269,14 @@ class AppStrings {
       isArabic ? 'تم الاستلام 🎉' : 'Claimed 🎉';
   static String doctorsRequiredCount(int count) =>
       isArabic ? '$count أطباء' : '$count Doctors';
-  static String yourCouponCodeIs(String code) =>
-      isArabic ? 'كود الكوبون الخاص بك: $code' : 'Your coupon code: $code';
+  static String get referrerRewardTitle =>
+      isArabic ? 'مكافأتك كداعي:' : 'Your Reward:';
+  static String get refereeRewardTitle =>
+      isArabic ? 'هدية الطبيب المدعو:' : 'Invited Doctor Reward:';
+  static String referrerRewardBadge(String reward) =>
+      isArabic ? 'لك: $reward' : 'You: $reward';
+  static String refereeRewardBadge(String reward) =>
+      isArabic ? 'للمدعو: $reward' : 'Invitee: $reward';
 
   // Coupons
   static String get couponInputHint =>

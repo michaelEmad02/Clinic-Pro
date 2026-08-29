@@ -14,6 +14,8 @@ class MilestoneRewardEntity extends Equatable {
   final String? description;
   final CouponRewardType rewardType;
   final double rewardValue;
+  final CouponRewardType? refereeRewardType;
+  final double? refereeRewardValue;
   final bool isAchieved;
   final bool isClaimed;
   final DateTime? claimedAt;
@@ -26,6 +28,8 @@ class MilestoneRewardEntity extends Equatable {
     this.description,
     required this.rewardType,
     required this.rewardValue,
+    this.refereeRewardType,
+    this.refereeRewardValue,
     required this.isAchieved,
     required this.isClaimed,
     this.claimedAt,
@@ -40,6 +44,8 @@ class MilestoneRewardEntity extends Equatable {
         description,
         rewardType,
         rewardValue,
+        refereeRewardType,
+        refereeRewardValue,
         isAchieved,
         isClaimed,
         claimedAt,
