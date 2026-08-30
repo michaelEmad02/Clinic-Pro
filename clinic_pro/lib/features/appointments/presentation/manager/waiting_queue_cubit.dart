@@ -79,10 +79,21 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
             : 'Failed to load queue')),
         (allAppointments) {
           final activeCandidates = _filterActiveQueueCandidates(allAppointments, today, now);
+          
+          final currentPatient = activeCandidates
+              .where((a) => a.status == AppointmentStatus.inProgress)
+              .firstOrNull;
+
           final sorted = _sortQueueUseCase(appointments: activeCandidates, rule: _cachedRule);
+
+          final waitingQueue = sorted
+              .where((a) => a.status == AppointmentStatus.confirmed && a.arrivedAt != null)
+              .toList();
+
           emit(WaitingQueueLoaded(
-            queue: _mapEntitiesToQueuePatients(sorted),
-            rawQueue: sorted.cast<AppointmentEntity>(),
+            queue: _mapEntitiesToQueuePatients(waitingQueue),
+            rawQueue: waitingQueue,
+            currentPatient: currentPatient,
             doctorName: _doctorName,
           ));
         },
@@ -201,12 +212,21 @@ class WaitingQueueCubit extends Cubit<WaitingQueueState> {
       final today = now.toIso8601String().substring(0, 10);
       final activeCandidates = _filterActiveQueueCandidates(allAppointments, today, now);
 
+      final currentPatient = activeCandidates
+          .where((a) => a.status == AppointmentStatus.inProgress)
+          .firstOrNull;
+
       final sorted = _sortQueueUseCase(appointments: activeCandidates, rule: _cachedRule);
+
+      final waitingQueue = sorted
+          .where((a) => a.status == AppointmentStatus.confirmed && a.arrivedAt != null)
+          .toList();
 
       if (!isClosed) {
         emit(WaitingQueueLoaded(
-          queue: _mapEntitiesToQueuePatients(sorted),
-          rawQueue: sorted.cast<AppointmentEntity>(),
+          queue: _mapEntitiesToQueuePatients(waitingQueue),
+          rawQueue: waitingQueue,
+          currentPatient: currentPatient,
           doctorName: _doctorName,
         ));
       }

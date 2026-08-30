@@ -1,19 +1,22 @@
 // ────────────────────────────────────────────────────────
-// تنفيذ مصدر بيانات المواعيد (AppointmentRemoteDataSourceImpl)
-// يتعامل مباشرة مع ICloudService لجلب البيانات وإغنائها
+// تنفيذ مصدر بيانات المواعيد السريع عبر Postgres RPC (AppointmentRpcRemoteDataSourceImpl)
+// يقوم بجلب كافة بيانات المواعيد والمرضى والأطباء والأسعار والفواتير والروشتات
+// من خلال استدعاء دالة RPC واحدة على السيرفر، مع دعم الـ Realtime والـ Fallback التلقائي
 // ────────────────────────────────────────────────────────
 
+import 'dart:async';
+import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import '../../../../core/services/i_cloud_service.dart';
 import '../models/appointment_model.dart';
 import 'i_appointment_remote_data_source.dart';
 import '../../../prescription/data/models/drug_model.dart';
 
-// @LazySingleton(as: IAppointmentRemoteDataSource)
-class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
+@LazySingleton(as: IAppointmentRemoteDataSource)
+class AppointmentRpcRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
   final ICloudService _cloud;
 
-  AppointmentRemoteDataSourceImpl(this._cloud);
+  AppointmentRpcRemoteDataSourceImpl(this._cloud);
 
   @override
   Future<List<AppointmentModel>> getAppointments({
@@ -22,46 +25,63 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
     String? date,
     String? status,
   }) async {
-    final Map<String, dynamic> eq = {'clinic_id': clinicId};
-    if (doctorId != null && doctorId.isNotEmpty) eq['doctor_id'] = doctorId;
-    if (date != null && date.isNotEmpty) eq['date'] = date;
-    if (status != null && status.isNotEmpty) eq['status'] = status;
+    try {
+      // 1. محاولة الجلب السريع جداً عبر دالة الـ RPC من السيرفر
+      final response = await _cloud.rpc(
+        'get_enriched_appointments_rpc',
+        params: {
+          'p_clinic_id': clinicId,
+          'p_doctor_id': (doctorId != null && doctorId.isNotEmpty) ? doctorId : null,
+          'p_date': (date != null && date.isNotEmpty) ? date : null,
+          'p_status': (status != null && status.isNotEmpty) ? status : null,
+        },
+      );
 
-    Map<String, dynamic>? gte;
-    if (date == null || date.isEmpty) {
-      final defaultStartDate = DateTime.now().subtract(const Duration(days: 30)).toIso8601String().substring(0, 10);
-      gte = {'date': defaultStartDate};
+      if (response is List) {
+        return response
+            .map((e) => AppointmentModel.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      }
+    } catch (_) {
+      // 2. في حالة حدوث أي استثناء أو عدم توفر الـ RPC على السيرفر، نلجأ للـ Fallback الآمن
+      return await _fallbackGetAppointments(
+        clinicId: clinicId,
+        doctorId: doctorId,
+        date: date,
+        status: status,
+      );
     }
 
-    final appointments = await _cloud.select(
-      table: SupabaseTables.appointments,
-      eq: eq,
-      gte: gte,
-    );
-
-    if (appointments.isEmpty) return [];
-
-    final enrichedList = await _enrichAppointmentsBatch(appointments);
-    return enrichedList.map((e) => AppointmentModel.fromJson(e)).toList();
+    return [];
   }
 
   @override
   Future<AppointmentModel> getAppointmentById(String id) async {
-    final appointments = await _cloud.select(
-      table: SupabaseTables.appointments,
-      eq: {'id': id},
-    );
-
-    if (appointments.isEmpty) {
-      throw Exception('الموعد غير موجود');
-    }
-
-    final enriched = await _enrichAppointmentData(appointments.first, detailed: true);
-    return AppointmentModel.fromJson(enriched);
+    return await _getAppointmentDetails(id, detailed: true);
   }
 
   @override
   Future<AppointmentModel> getEnrichedAppointmentById(String id) async {
+    return await _getAppointmentDetails(id, detailed: false);
+  }
+
+  Future<AppointmentModel> _getAppointmentDetails(String id, {required bool detailed}) async {
+    try {
+      // محاولة جلب الموعد بالكامل عبر الـ RPC
+      final response = await _cloud.rpc(
+        'get_enriched_appointments_rpc',
+        params: {
+          'p_clinic_id': null,
+          'p_appointment_id': id,
+        },
+      );
+
+      if (response is List && response.isNotEmpty) {
+        return AppointmentModel.fromJson(Map<String, dynamic>.from(response.first as Map));
+      }
+    } catch (_) {}
+
+    // Fallback: جلب الموعد بالطريقة التقليدية
     final appointments = await _cloud.select(
       table: SupabaseTables.appointments,
       eq: {'id': id},
@@ -71,15 +91,14 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
       throw Exception('الموعد غير موجود');
     }
 
-    final enriched = await _enrichAppointmentData(appointments.first, detailed: false);
+    final enriched = await _enrichSingleAppointmentFallback(appointments.first, detailed: detailed);
     return AppointmentModel.fromJson(enriched);
   }
 
   @override
-  Future<AppointmentModel> insertAppointment(
-      AppointmentModel appointment) async {
+  Future<AppointmentModel> insertAppointment(AppointmentModel appointment) async {
     final data = appointment.toJson();
-    
+
     // جلب السعر الفعلي من نوع الزيارة
     try {
       final typeResult = await _cloud.select(
@@ -95,7 +114,7 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
       table: SupabaseTables.appointments,
       data: data,
     );
-    final enriched = await _enrichAppointmentData(result, detailed: false);
+    final enriched = await _enrichSingleAppointmentFallback(result, detailed: false);
     return AppointmentModel.fromJson(enriched);
   }
 
@@ -103,7 +122,7 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
   Future<AppointmentModel> updateAppointment(AppointmentModel appointment) async {
     final data = appointment.toJson();
 
-    // جلب السعر الفعلي من نوع الزيارة عند التحديث أيضاً
+    // جلب السعر الفعلي من نوع الزيارة عند التحديث
     try {
       final typeResult = await _cloud.select(
         table: SupabaseTables.doctorAppointmentTypes,
@@ -123,7 +142,7 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
     if (results.isEmpty) {
       throw Exception('فشل تحديث الموعد');
     }
-    final enriched = await _enrichAppointmentData(results.first, detailed: false);
+    final enriched = await _enrichSingleAppointmentFallback(results.first, detailed: false);
     return AppointmentModel.fromJson(enriched);
   }
 
@@ -162,6 +181,7 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
   Stream<List<Map<String, dynamic>>> subscribeAppointments({
     required String clinicId,
   }) {
+    // استخدام قناة Realtime لمراقبة جدول المواعيد
     return _cloud.subscribe(
       table: SupabaseTables.appointments,
       primaryKey: 'id',
@@ -169,8 +189,43 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
     );
   }
 
-  /// إغناء مجموعة مواعيد دفعة واحدة (Batch/Parallel Queries) متوافق تماماً مع ICloudService
-  Future<List<Map<String, dynamic>>> _enrichAppointmentsBatch(
+  // ────────────────────────────────────────────────────────
+  // دوال الـ Fallback الاحتياطية (تضمن عمل التطبيق بنسبة 100%)
+  // ────────────────────────────────────────────────────────
+
+  Future<List<AppointmentModel>> _fallbackGetAppointments({
+    required String clinicId,
+    String? doctorId,
+    String? date,
+    String? status,
+  }) async {
+    final Map<String, dynamic> eq = {'clinic_id': clinicId};
+    if (doctorId != null && doctorId.isNotEmpty) eq['doctor_id'] = doctorId;
+    if (date != null && date.isNotEmpty) eq['date'] = date;
+    if (status != null && status.isNotEmpty) eq['status'] = status;
+
+    Map<String, dynamic>? gte;
+    if (date == null || date.isEmpty) {
+      final defaultStartDate = DateTime.now()
+          .subtract(const Duration(days: 30))
+          .toIso8601String()
+          .substring(0, 10);
+      gte = {'date': defaultStartDate};
+    }
+
+    final appointments = await _cloud.select(
+      table: SupabaseTables.appointments,
+      eq: eq,
+      gte: gte,
+    );
+
+    if (appointments.isEmpty) return [];
+
+    final enrichedList = await _enrichBatchFallback(appointments);
+    return enrichedList.map((e) => AppointmentModel.fromJson(e)).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> _enrichBatchFallback(
     List<Map<String, dynamic>> rawList,
   ) async {
     if (rawList.isEmpty) return [];
@@ -180,11 +235,8 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
     final typeIds = rawList.map((r) => r['type_id'] as String?).whereType<String>().toSet();
 
     final results = await Future.wait([
-      // 1. جلب مرضى المواعيد بالتوازي
       Future.wait(patientIds.map((id) => _cloud.select(table: SupabaseTables.patients, eq: {'id': id}))),
-      // 2. جلب أطباء المواعيد بالتوازي
       Future.wait(doctorIds.map((id) => _cloud.select(table: 'users', eq: {'id': id}))),
-      // 3. جلب أنواع المواعيد للأطباء بالتوازي
       Future.wait(typeIds.map((id) => _cloud.select(table: SupabaseTables.doctorAppointmentTypes, eq: {'id': id}))),
     ]);
 
@@ -228,7 +280,6 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
       }
     }
 
-    // ربط البيانات الجاهزة فوراً
     return rawList.map((raw) {
       final pId = raw['patient_id'] as String?;
       final dId = raw['doctor_id'] as String?;
@@ -252,17 +303,15 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
     }).toList();
   }
 
-  /// دالة مساعدة لإغناء بيانات موعد واحد خام التفصيلية
-  Future<Map<String, dynamic>> _enrichAppointmentData(
-      Map<String, dynamic> raw, {
-      required bool detailed,
+  Future<Map<String, dynamic>> _enrichSingleAppointmentFallback(
+    Map<String, dynamic> raw, {
+    required bool detailed,
   }) async {
     final patientId = raw['patient_id'];
     final typeId = raw['type_id'];
     final doctorId = raw['doctor_id'];
     final clinicId = raw['clinic_id'];
 
-    // جلب بيانات المريض
     final patients = await _cloud.select(
       table: SupabaseTables.patients,
       eq: {'id': patientId},
@@ -276,88 +325,62 @@ class AppointmentRemoteDataSourceImpl implements IAppointmentRemoteDataSource {
       eq: {'doctor_id': doctorId, 'clinic_id': clinicId, 'id': typeId},
     );
 
-    // جلب بيانات نوع الموعد
+    String appointmentTypeId = '';
+    if (doctorTypes.isNotEmpty) {
+      appointmentTypeId = doctorTypes.first['appointment_type_id'] ?? '';
+    }
+
     final types = await _cloud.select(
       table: SupabaseTables.appointmentTypes,
-      eq: {'id': doctorTypes.isNotEmpty ? doctorTypes.first['appointment_type_id'] : null},
+      eq: {'id': appointmentTypeId},
     );
-
     final type = types.isNotEmpty ? types.first : {'name': 'كشف عادي'};
 
-    // جلب بيانات الطبيب
-    final doctors = await _cloud.select(
+    final users = await _cloud.select(
       table: 'users',
       eq: {'id': doctorId},
     );
-    final doctor =
-        doctors.isNotEmpty ? doctors.first : {'name': 'طبيب غير معروف'};
+    final doctor = users.isNotEmpty ? users.first : {'name': 'طبيب غير معروف'};
 
     List<Map<String, dynamic>> prescriptions = [];
     List<Map<String, dynamic>> invoices = [];
     List<Map<String, dynamic>> prescriptionDrugs = [];
 
     if (detailed) {
-      // جلب الروشتة المرتبطة بالزيارة إن وجدت
       prescriptions = await _cloud.select(
         table: SupabaseTables.prescriptions,
         eq: {'appointment_id': raw['id']},
       );
 
-      if (prescriptions.isNotEmpty) {
-        final prescriptionId = prescriptions.first['id'];
-        
-        // جلب عناصر الروشتة
-        final items = await _cloud.select(
-          table: SupabaseTables.prescriptionItems,
-          eq: {'prescription_id': prescriptionId},
-        );
-
-        // جلب قائمة الأدوية بالكامل للمطابقة
-        final drugs = await _cloud.select(table: SupabaseTables.drugs);
-        final drugsMap = {for (final d in drugs) d['id']: d};
-
-        for (final item in items) {
-          final drug = drugsMap[item['drug_id']];
-          
-          final drugModel = drug != null ? DrugModel(
-            id: drug['id'] as String,
-            tradeName: drug['trade_name'] as String?,
-            genericName: drug['generic_name'] as String?,
-            category: drug['category'] as String?,
-          ) : null;
-
-          prescriptionDrugs.add({
-            'id': item['id'],
-            'prescription_id': prescriptionId,
-            'drug_id': item['drug_id'],
-            'frequency': item['frequency'],
-            'duration': item['duration'],
-            'timing': item['timing'],
-            'is_prn': item['is_prn'] ?? false,
-            'drugs': drugModel?.toJson(),
-          });
-        }
-      }
-
-      // جلب الفواتير المرتبطة بالزيارة إن وجدت
       invoices = await _cloud.select(
         table: SupabaseTables.invoices,
         eq: {'source_id': raw['id']},
       );
 
-      for (final inv in invoices) {
-        final creatorId = inv['created_by'];
-        if (creatorId != null && (creatorId as String).isNotEmpty) {
-          try {
-            final userRes = await _cloud.select(
-              table: SupabaseTables.users,
-              eq: {'id': creatorId},
-            );
-            if (userRes.isNotEmpty) {
-              inv['creator_name'] = userRes.first['name'] as String?;
-            }
-          } catch (_) {}
-        }
+      if (prescriptions.isNotEmpty) {
+        final pId = prescriptions.first['id'];
+        final pItems = await _cloud.select(
+          table: SupabaseTables.prescriptionItems,
+          eq: {'prescription_id': pId},
+        );
+
+        final allDrugs = await _cloud.select(table: SupabaseTables.drugs);
+        final drugsMap = {for (var d in allDrugs) d['id']: DrugModel.fromJson(d)};
+
+        prescriptionDrugs = pItems.map((item) {
+          final dModel = drugsMap[item['drug_id']];
+          return {
+            ...item,
+            'drug': dModel != null
+                ? {
+                    'id': dModel.id,
+                    'trade_name': dModel.tradeName ?? '',
+                    'generic_name': dModel.genericName,
+                    'category': dModel.category,
+                  }
+                : null,
+          };
+        }).toList();
       }
     }
 

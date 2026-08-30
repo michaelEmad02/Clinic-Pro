@@ -168,10 +168,8 @@ class _WaitingQueueBody extends StatelessWidget {
             final authState = context.read<AuthCubit>().state;
             final isDoctor = authState is AuthAuthenticated &&
                 authState.user.role == StaffRoles.doctor;
-            final hasNext = state.queue.any((p) => p.status == 'confirmed');
-            final currentPatient = state.rawQueue
-                .where((a) => a.status == AppointmentStatus.inProgress)
-                .firstOrNull;
+            final hasNext = state.queue.any((p) => p.status == AppointmentStatus.confirmed);
+            final currentPatient = state.currentPatient;
 
             return RefreshIndicator(
               onRefresh: () async {

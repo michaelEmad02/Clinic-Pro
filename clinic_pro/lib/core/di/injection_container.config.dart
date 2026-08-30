@@ -13,8 +13,8 @@ import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 import 'package:supabase_flutter/supabase_flutter.dart' as _i454;
 
-import '../../features/appointments/data/data_sources/appointment_remote_data_source_impl.dart'
-    as _i590;
+import '../../features/appointments/data/data_sources/appointment_rpc_remote_data_source_impl.dart'
+    as _i103;
 import '../../features/appointments/data/data_sources/i_appointment_remote_data_source.dart'
     as _i720;
 import '../../features/appointments/data/repositories/appointment_repository_impl.dart'
@@ -483,8 +483,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i693.SupabaseAuthServices(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i239.ICloudService>(
         () => _i1019.SupabaseServices(supabase: gh<_i454.SupabaseClient>()));
-    gh.lazySingleton<_i720.IAppointmentRemoteDataSource>(
-        () => _i590.AppointmentRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i543.IOwnerReferralRemoteDataSource>(() =>
         _i543.OwnerReferralRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i816.IPatientsRemoteDataSource>(
@@ -494,6 +492,8 @@ extension GetItInjectableX on _i174.GetIt {
               iAuthServices: gh<_i662.IAuthServices>(),
               iCloudService: gh<_i239.ICloudService>(),
             ));
+    gh.lazySingleton<_i720.IAppointmentRemoteDataSource>(() =>
+        _i103.AppointmentRpcRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i124.ICouponsRemoteDataSource>(
         () => _i124.CouponsRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i347.ISubscriptionsRemoteDataSource>(

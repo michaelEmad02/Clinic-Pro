@@ -85,8 +85,8 @@ class QueueSorter {
     } else {
       sortedNormal = _sortByArrival(normalWaiting);
     }
-
-    return [...fixedAppointments, ...urgentWaiting, ...sortedNormal];
+//    return [...fixedAppointments, ...urgentWaiting, ...sortedNormal];
+    return [...urgentWaiting, ...sortedNormal];
   }
 
   // ① ترتيب الحضور (arrivedAt تصاعدياً)
