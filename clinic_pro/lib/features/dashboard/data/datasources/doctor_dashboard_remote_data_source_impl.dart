@@ -54,7 +54,10 @@ class DoctorDashboardRemoteDataSourceImpl
     try {
       final invoices = await _cloudService.select(
         table: SupabaseTables.invoices,
-        eq: {'clinic_id': clinicId , 'created_at' : DateTime.now().toIso8601String().substring(0, 10)},
+        eq: {
+          'clinic_id': clinicId,
+          'created_at': DateTime.now().toIso8601String().substring(0, 10)
+        },
       );
 
       final apptIdSet = appointmentIds.toSet();

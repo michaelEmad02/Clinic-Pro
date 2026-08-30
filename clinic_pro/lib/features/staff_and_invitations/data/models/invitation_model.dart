@@ -8,6 +8,14 @@ import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/features/staff_and_invitations/domain/entities/invitation_entity.dart';
 
 class InvitationModel extends InvitationEntity {
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
+  }
+
   InvitationModel({
     required super.id,
     required super.ownerId,
@@ -41,8 +49,8 @@ class InvitationModel extends InvitationEntity {
       role: roleType,
       token: json['token'] as String,
       status: statusStr,
-      expiredAt: DateTime.parse(json['expires_at'] as String),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      expiredAt: _parseUtc(json['expires_at'] as String),
+      createdAt: _parseUtc(json['created_at'] as String),
     );
   }
 
@@ -57,7 +65,7 @@ class InvitationModel extends InvitationEntity {
       'role': role.name,
       'token': token,
       'status': status,
-      'expires_at': expiredAt.toIso8601String(),
+      'expires_at': expiredAt.toUtc().toIso8601String(),
     };
   }
 

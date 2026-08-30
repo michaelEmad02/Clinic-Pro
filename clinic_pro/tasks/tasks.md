@@ -65,6 +65,13 @@
 ## expenses
   - عمل مصاريف خاصه بالطبيب وليس العياده 
 
+## error
+- [ ] datetime  timezone error
+- pause exception () 
+
+## invoices 
+- [] add filters
+
 ## features
 - [x] auth
 - [x] settings

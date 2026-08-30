@@ -5,6 +5,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../../../core/error/failures.dart';
+import '../../../../../../core/strings/failure_strings.dart';
 import '../../entities/appointment_entity.dart';
 import '../../repositories/i_appointment_repository.dart';
 
@@ -16,12 +17,19 @@ class UpdateAppointmentUseCase {
 
   Future<Either<Failure, Unit>> call(AppointmentEntity appointment) async {
     if (appointment.id.isEmpty) {
-      return const Left(UpdateAppointmentFailure('معرف الموعد مطلوب لتعديله'));
+      return const Left(AppointmentIdRequiredFailure());
     }
     return _repository.updateAppointment(appointment);
   }
 }
 
 class UpdateAppointmentFailure extends Failure {
-  const UpdateAppointmentFailure(super.message);
+  const UpdateAppointmentFailure([super.customMessage]);
+}
+
+class AppointmentIdRequiredFailure extends Failure {
+  const AppointmentIdRequiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.appointmentIdRequired;
 }

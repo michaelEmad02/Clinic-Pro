@@ -54,7 +54,7 @@ class ReportsSummaryGrid extends StatelessWidget {
     final cardNetProfit = Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: context.primary,
+        color: context.primaryContainer,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
@@ -110,7 +110,7 @@ class ReportsSummaryGrid extends StatelessWidget {
               Text(
                 AppStrings.isArabic ? 'الصافي (الاجمالي - المصروفات)' : 'Net Profit',
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: context.onPrimaryContainer,
+                  color: context.textPrimary,
                   fontSize: 11,
                 ),
                 maxLines: 1,

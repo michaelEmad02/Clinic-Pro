@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/constants/route_constants.dart';
+import '../../../../../core/router/app_router.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -84,15 +86,19 @@ class ClinicPickerSheet extends StatelessWidget {
                           name: name,
                           address: address,
                           isActive: isActive,
-                          onTap: () {
+                          onTap: () async {
                             if (!isActive && user != null) {
-                              context.read<SettingsCubit>().changeClinic(
+                              final settingsCubit = context.read<SettingsCubit>();
+                              Navigator.pop(context);
+                              await settingsCubit.changeClinic(
                                     user.id,
                                     id,
                                     user.role,
                                   );
+                              appRouter.go(RouteConstants.splash);
+                            } else {
+                              Navigator.pop(context);
                             }
-                            Navigator.pop(context);
                           },
                         ),
                       );

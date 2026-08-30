@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
@@ -73,7 +74,7 @@ class LoginScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             decoration: BoxDecoration(
               color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppConstants.radiusCard),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.08),
@@ -98,10 +99,10 @@ class LoginScreen extends StatelessWidget {
                           height: 120,
                           decoration: BoxDecoration(
                             color: context.primaryLightColor,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.15),
+                                color: context.primary.withOpacity(0.15),
                                 blurRadius: 16,
                                 offset: const Offset(0, 4),
                               ),
@@ -117,14 +118,6 @@ class LoginScreen extends StatelessWidget {
                           AppStrings.welcomeGreeting,
                           style: AppTextStyles.headlineLarge(context),
                         ),
-                        // const SizedBox(height: 8),
-                        // Text(
-                        //   AppStrings.loginSubtitle,
-                        //   style: AppTextStyles.bodyLarge(context).copyWith(
-                        //     color: context.textSecondary,
-                        //   ),
-                        //   textAlign: TextAlign.center,
-                        // ),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -140,7 +133,6 @@ class LoginScreen extends StatelessWidget {
                       onGooglePressed: isLoading
                           ? () {}
                           : () {
-                              // context.read<AuthCubit>().login('sara@clinicpro.com', 'mock');
                               context.read<AuthCubit>().loginWithGoogle();
                             },
                     ),
@@ -155,7 +147,7 @@ class LoginScreen extends StatelessWidget {
                           child: Text(
                             AppStrings.orText,
                             style: AppTextStyles.caption(context).copyWith(
-                              color: AppColors.textHint,
+                              color: context.textHint,
                             ),
                           ),
                         ),
@@ -183,7 +175,7 @@ class LoginScreen extends StatelessWidget {
                           context.push(RouteConstants.register);
                         },
                         style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primary,
+                          foregroundColor: context.primary,
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -193,7 +185,7 @@ class LoginScreen extends StatelessWidget {
                                 AppStrings.newClinicOwner,
                                 style: AppTextStyles.headlineSmall(context)
                                     .copyWith(
-                                  color: AppColors.primary,
+                                  color: context.primary,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),

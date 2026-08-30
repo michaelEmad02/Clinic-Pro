@@ -87,7 +87,12 @@ class LinkedInvoiceCard extends StatelessWidget {
                 final total = (inv['total_amount'] as num?)?.toDouble() ?? 0.0;
                 final paid = (inv['paid_amount'] as num?)?.toDouble() ?? 0.0;
                 final createdAtStr = inv['created_at'] as String? ?? '';
-                final parsedDate = DateTime.tryParse(createdAtStr);
+                final rawDate = DateTime.tryParse(createdAtStr);
+                // Supabase يحفظ بـ UTC — نضمن تفسيرها كـ UTC
+                final parsedDate = rawDate != null && !rawDate.isUtc
+                    ? DateTime.utc(rawDate.year, rawDate.month, rawDate.day,
+                        rawDate.hour, rawDate.minute, rawDate.second)
+                    : rawDate;
                 final dateFormatted = parsedDate != null
                     ? '${parsedDate.toLocal().day}/${parsedDate.toLocal().month}/${parsedDate.toLocal().year}'
                     : '';

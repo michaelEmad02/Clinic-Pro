@@ -450,6 +450,38 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       } catch (_) {}
     }
 
+    // 3. إذا لم تكن هناك علاقات مخصصة في جدول doctor_secretary_schedule، نجلب جميع أطباء العيادة من clinic_staff
+    if (results.isEmpty) {
+      try {
+        final staffDoctors = await _cloudService.select(
+          table: SupabaseTables.clinicStaff,
+          eq: {'clinic_id': clinicId, 'role': 'doctor'},
+        );
+        for (final staff in staffDoctors) {
+          final doctorId =
+              (staff['user_id'] ?? staff['id'])?.toString() ?? '';
+          if (doctorId.isEmpty) continue;
+          final docResults = await _cloudService.select(
+            table: SupabaseTables.users,
+            eq: {'id': doctorId},
+          );
+          if (docResults.isNotEmpty) {
+            results.add({
+              'schedule_id': staff['id']?.toString() ?? '',
+              'doctor_id': doctorId,
+              'is_active': staff['is_active'] as bool? ?? true,
+              'name': docResults.first['name'] as String? ?? '',
+              'email': docResults.first['email'] as String? ?? '',
+              'phone': docResults.first['phone'] as String? ?? '',
+              'specialty': docResults.first['specialty'] as String? ?? '',
+              'avatar_url':
+                  docResults.first['image_url'] ?? docResults.first['avatar_url'],
+            });
+          }
+        }
+      } catch (_) {}
+    }
+
     return results;
   }
 

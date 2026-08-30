@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/constants/route_constants.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_state.dart';
@@ -45,7 +46,6 @@ class _AccountFormState extends State<AccountForm> {
         AppSnackbar.info(context, message: AppStrings.agreeToTerms);
         return;
       }
-      // Navigate to plan selection on success
       context.read<AuthCubit>().register(
           email: _emailController.text,
           password: _passwordController.text,
@@ -62,25 +62,6 @@ class _AccountFormState extends State<AccountForm> {
       listener: (context, state) {
         if (state is AuthRegistrationSuccess) {
           context.go(RouteConstants.onboardingReferral);
-          // showDialog(
-          //   context: context,
-          //   barrierDismissible: false,
-          //   builder: (dialogContext) => AlertDialog(
-          //     title: Text(AppStrings.accountVerification, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-          //     content: Text(
-          //       AppStrings.verificationEmailSent,
-          //       style: const TextStyle(fontFamily: 'Cairo'),
-          //     ),
-          //     actions: [
-          //       TextButton(
-          //         onPressed: () {
-          //           Navigator.pop(dialogContext);
-          //         },
-          //         child: Text(AppStrings.continueLabel, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-          //       ),
-          //     ],
-          //   ),
-          // );
         } else if (state is AuthError) {
           AppSnackbar.error(context, message: state.message);
         }
@@ -102,7 +83,7 @@ class _AccountFormState extends State<AccountForm> {
             Container(
               decoration: BoxDecoration(
                 color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                 border: Border.all(color: context.borderColor),
                 boxShadow: [
                   BoxShadow(
@@ -122,7 +103,7 @@ class _AccountFormState extends State<AccountForm> {
                   return null;
                 },
                 decoration: InputDecoration(
-                  hintText: 'د. أحمد العلي',
+                  hintText: AppStrings.isArabic ? 'د. أحمد العلي' : 'Dr. John Doe',
                   hintStyle: TextStyle(color: context.textHint),
                   suffixIcon:
                       Icon(Icons.person_outline, color: context.textHint),
@@ -146,7 +127,7 @@ class _AccountFormState extends State<AccountForm> {
             Container(
               decoration: BoxDecoration(
                 color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                 border: Border.all(color: context.borderColor),
                 boxShadow: [
                   BoxShadow(
@@ -205,7 +186,7 @@ class _AccountFormState extends State<AccountForm> {
             Container(
               decoration: BoxDecoration(
                 color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                 border: Border.all(color: context.borderColor),
                 boxShadow: [
                   BoxShadow(
@@ -274,7 +255,7 @@ class _AccountFormState extends State<AccountForm> {
               height: 46,
               decoration: BoxDecoration(
                 color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                 border: Border.all(color: context.borderColor),
                 boxShadow: [
                   BoxShadow(
@@ -287,17 +268,14 @@ class _AccountFormState extends State<AccountForm> {
               child: Row(
                 textDirection: TextDirection.ltr,
                 children: [
-                  // Prefix
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: context.isDarkMode
-                          ? AppColors.darkBackground
-                          : AppColors.surfaceContainerLow,
+                      color: context.surfaceContainerLow,
                       border: Border(
                           right: BorderSide(
-                              color: context.borderColor)), // because of LTR
+                              color: context.borderColor)),
                     ),
                     child: Text(
                       '+20',
@@ -309,7 +287,6 @@ class _AccountFormState extends State<AccountForm> {
                       ),
                     ),
                   ),
-                  // Input
                   Expanded(
                     child: TextFormField(
                       controller: _mobileController,
@@ -416,7 +393,7 @@ class _AccountFormState extends State<AccountForm> {
                 foregroundColor: context.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                 ),
                 elevation: 4,
                 shadowColor: context.primaryContainer.withOpacity(0.4),
@@ -445,6 +422,3 @@ class _AccountFormState extends State<AccountForm> {
     );
   }
 }
-/*
-
-*/

@@ -84,9 +84,9 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                 if (clinicsState.clinics.isEmpty) {
                   return Scaffold(
                     backgroundColor: context.background,
-                    body: const EmptyState(
-                        title: "لا يوجد عيادات",
-                        subtitle: "قم باضافه عياده اولا",
+                    body: EmptyState(
+                        title: AppStrings.noClinicsFound,
+                        subtitle: AppStrings.addClinicFirst,
                         icon: Icons.person_4_outlined),
                   );
                 }

@@ -5,6 +5,14 @@
 import '../../domain/entities/payment_status_entity.dart';
 
 class PaymentStatusModel extends PaymentStatusEntity {
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
+  }
+
   const PaymentStatusModel({
     required super.transactionId,
     super.referenceNumber,
@@ -39,10 +47,10 @@ class PaymentStatusModel extends PaymentStatusEntity {
       subscriptionType: json['subscription_type'] as String?,
       planId: json['plan_id'] as String?,
       startedAt: json['started_at'] != null
-          ? DateTime.tryParse(json['started_at'] as String)
+          ? _parseUtc(json['started_at'] as String)
           : null,
       endAt: json['end_at'] != null
-          ? DateTime.tryParse(json['end_at'] as String)
+          ? _parseUtc(json['end_at'] as String)
           : null,
     );
   }
@@ -59,8 +67,8 @@ class PaymentStatusModel extends PaymentStatusEntity {
       'subscription_status': subscriptionStatus,
       'subscription_type': subscriptionType,
       'plan_id': planId,
-      'started_at': startedAt?.toIso8601String(),
-      'end_at': endAt?.toIso8601String(),
+      'started_at': startedAt?.toUtc().toIso8601String(),
+      'end_at': endAt?.toUtc().toIso8601String(),
     };
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/strings/app_strings.dart';
@@ -41,7 +42,7 @@ class _MagicLinkFormState extends State<MagicLinkForm> {
         Container(
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppConstants.radiusInput),
             border: Border.all(color: context.borderColor),
             boxShadow: [
               BoxShadow(
@@ -64,15 +65,15 @@ class _MagicLinkFormState extends State<MagicLinkForm> {
             ),
             decoration: InputDecoration(
               hintText: 'dr@clinic.com',
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textHint,
+                color: context.textHint,
               ),
-              suffixIcon: const Icon(
+              suffixIcon: Icon(
                 Icons.mail_outline,
-                color: AppColors.textHint,
+                color: context.textHint,
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -83,14 +84,14 @@ class _MagicLinkFormState extends State<MagicLinkForm> {
         ElevatedButton(
           onPressed: _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryContainer,
-            foregroundColor: AppColors.onPrimaryContainer,
+            backgroundColor: context.primaryContainer,
+            foregroundColor: context.onPrimaryContainer,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppConstants.radiusButton),
             ),
             elevation: 4,
-            shadowColor: AppColors.primaryContainer.withOpacity(0.4),
+            shadowColor: context.primaryContainer.withOpacity(0.4),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -100,7 +101,7 @@ class _MagicLinkFormState extends State<MagicLinkForm> {
               Text(
                 AppStrings.sendMagicLink,
                 style: AppTextStyles.headlineSmall(context).copyWith(
-                  color: AppColors.onPrimaryContainer,
+                  color: context.onPrimaryContainer,
                 ),
               ),
             ],

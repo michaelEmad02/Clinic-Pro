@@ -32,7 +32,9 @@ class DrugReportsScreen extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(value: sl<DrugReportsCubit>()),
+        BlocProvider(
+          create: (_) => sl<DrugReportsCubit>()..loadReports(doctorId: doctorId),
+        ),
         BlocProvider(
           create: (_) => sl<ClinicsCubit>()..fetchClinics(userId),
         ),
@@ -42,26 +44,9 @@ class DrugReportsScreen extends StatelessWidget {
   }
 }
 
-class _DrugReportsBody extends StatefulWidget {
+class _DrugReportsBody extends StatelessWidget {
   final String? doctorId;
   const _DrugReportsBody({this.doctorId});
-
-  @override
-  State<_DrugReportsBody> createState() => _DrugReportsBodyState();
-}
-
-class _DrugReportsBodyState extends State<_DrugReportsBody> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<DrugReportsCubit>().loadReports(doctorId: widget.doctorId);
-  }
-
-  @override
-  void dispose() {
-    sl<DrugReportsCubit>().clear();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +92,7 @@ class _DrugReportsBodyState extends State<_DrugReportsBody> {
                   Text(state.message),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => context.read<DrugReportsCubit>().loadReports(doctorId: widget.doctorId, forceRefresh: true),
+                    onPressed: () => context.read<DrugReportsCubit>().loadReports(doctorId: doctorId, forceRefresh: true),
                     child: Text(AppStrings.retry),
                   ),
                 ],
@@ -119,7 +104,7 @@ class _DrugReportsBodyState extends State<_DrugReportsBody> {
               onRefresh: () async {
                 await context
                     .read<DrugReportsCubit>()
-                    .loadReports(doctorId: widget.doctorId, forceRefresh: true);
+                    .loadReports(doctorId: doctorId, forceRefresh: true);
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -201,7 +186,7 @@ class _DrugReportsBodyState extends State<_DrugReportsBody> {
                                         onChanged: (clinicId) {
                                           context
                                               .read<DrugReportsCubit>()
-                                              .changeClinic(clinicId, doctorId: widget.doctorId);
+                                              .changeClinic(clinicId, doctorId: doctorId);
                                         },
                                       ),
                                     ),
@@ -216,7 +201,7 @@ class _DrugReportsBodyState extends State<_DrugReportsBody> {
                       ReportsDateRangeChips(
                         activeRange: state.activeRange,
                         onChanged: (range) {
-                          context.read<DrugReportsCubit>().changeRange(range, doctorId: widget.doctorId);
+                          context.read<DrugReportsCubit>().changeRange(range, doctorId: doctorId);
                         },
                       ),
                       const SizedBox(height: 16),

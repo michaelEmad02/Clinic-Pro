@@ -84,7 +84,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                     Text(
                       (statusResult.isPending ||
                               (statusResult.fawryCode ?? '').isNotEmpty)
-                          ? 'طلب الدفع قيد الانتظار'
+                          ? AppStrings.paymentPendingTitle
                           : AppStrings.paymentSuccessTitle,
                       style: AppTextStyles.headlineMedium(context).copyWith(
                         fontWeight: FontWeight.bold,
@@ -97,7 +97,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                     Text(
                       (statusResult.isPending ||
                               (statusResult.fawryCode ?? '').isNotEmpty)
-                          ? 'تم إصدار كود فوري بنجاح، يرجى السداد في أقرب ماكينة فوري لتفعيل الاشتراك تلقائياً'
+                          ? AppStrings.fawryIssuedPendingDesc
                           : AppStrings.paymentSuccessDesc(
                               plan.name.toUpperCase(),
                               _getCycleTitle(),
@@ -129,7 +129,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                                     color: Colors.amber, size: 28),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'كود الدفع في فوري (Fawry Code)',
+                                  AppStrings.fawryPaymentCodeTitle,
                                   style: AppTextStyles.headlineSmall(context)
                                       .copyWith(
                                     fontWeight: FontWeight.bold,
@@ -153,10 +153,10 @@ class PaymentSuccessScreen extends StatelessWidget {
                                 Clipboard.setData(ClipboardData(
                                     text: statusResult.fawryCode!));
                                 AppSnackbar.success(context,
-                                    message: 'تم نسخ كود فوري بنجاح!');
+                                    message: AppStrings.fawryCodeCopiedSuccess);
                               },
                               icon: const Icon(Icons.copy_rounded),
-                              label: const Text('نسخ كود فوري'),
+                              label: Text(AppStrings.copyFawryCode),
                               style: OutlinedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
@@ -204,7 +204,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                             const Divider(height: 20),
                             _buildDetailRow(
                               context,
-                              'رقم الطلب المرجعي (Merchant Order ID)',
+                              AppStrings.merchantOrderIdLabel,
                               statusResult.referenceNumber!,
                             ),
                           ],
@@ -213,7 +213,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                             const Divider(height: 20),
                             _buildDetailRow(
                               context,
-                              'رقم طلب Paymob',
+                              AppStrings.paymobOrderIdLabel,
                               statusResult.gatewayOrderId!,
                             ),
                           ] else if ((statusResult.referenceNumber ?? '')
@@ -247,7 +247,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       icon: const Icon(Icons.dashboard_rounded),
                       label: Flexible(
                         child: Text(
-                            (statusResult.fawryCode != null && statusResult.fawryCode!.isNotEmpty )? AppStrings.isArabic? "دفع بطريقه اخري" : "Pay with another method" : AppStrings.goToDashboard,
+                            (statusResult.fawryCode != null && statusResult.fawryCode!.isNotEmpty )? AppStrings.payWithAnotherMethod : AppStrings.goToDashboard,
                           style: AppTextStyles.bodyMedium(context).copyWith(
                             fontWeight: FontWeight.bold,
                             color: context.onPrimary,

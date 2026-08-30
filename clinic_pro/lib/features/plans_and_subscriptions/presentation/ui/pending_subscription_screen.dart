@@ -99,11 +99,13 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
     final cleanPhone =
         rawPhone.replaceAll('+', '').replaceAll(' ', '').replaceAll('-', '');
     final message = Uri.encodeComponent(
-      'مرحباً ${companyInfo.name}، لقد قمت بطلب الاشتراك في خطة ($planName) بالباقة ${_getCycleTitle(type)}.\n'
-      'تفاصيل الحساب:\n'
-      '- الاسم: $userName\n'
-      '- البريد الإلكتروني: $userEmail\n'
-      'يرجى تفعيل الاشتراك.',
+      AppStrings.whatsAppActivationMsg(
+        companyName: companyInfo.name,
+        planName: planName,
+        cycleTitle: _getCycleTitle(type),
+        userName: userName,
+        userEmail: userEmail,
+      ),
     );
 
     final url = Uri.parse('https://wa.me/+2$cleanPhone?text=$message');

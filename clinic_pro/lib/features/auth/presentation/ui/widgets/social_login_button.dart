@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -20,13 +21,13 @@ class SocialLoginButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppConstants.radiusButton),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: type == SocialLoginType.google ? (context.isDarkMode ? AppColors.darkBackground : AppColors.surfaceContainerLow) : context.surfaceColor,
-          borderRadius: BorderRadius.circular(12),
+          color: type == SocialLoginType.google ? context.primaryContainer : context.surfaceColor,
+          borderRadius: BorderRadius.circular(AppConstants.radiusButton),
           border: Border.all(
             color: type == SocialLoginType.google ? Colors.transparent : context.borderColor,
           ),

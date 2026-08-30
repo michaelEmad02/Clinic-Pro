@@ -9,6 +9,18 @@ import '../../domain/entities/appointment_entity.dart';
 import '../../../prescription/data/models/prescription_model.dart';
 
 class AppointmentModel extends AppointmentEntity {
+  /// يُفسّر أي timestamp من Supabase كـ UTC
+  /// لأن Supabase يحفظ بـ UTC لكن أعمدة timestamp بدون tz لا تحمل +00:00
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(
+      parsed.year, parsed.month, parsed.day,
+      parsed.hour, parsed.minute, parsed.second,
+      parsed.millisecond, parsed.microsecond,
+    );
+  }
+
   const AppointmentModel({
     required super.id,
     required super.clinicId,
@@ -77,15 +89,15 @@ class AppointmentModel extends AppointmentEntity {
       notes: json['notes'] as String?,
       isUrgent: json['is_urgent'] as bool? ?? false,
       arrivedAt: json['arrived_at'] != null
-          ? DateTime.parse(json['arrived_at'] as String)
+          ? _parseUtc(json['arrived_at'] as String)
           : null,
       calledAt: json['called_at'] != null
-          ? DateTime.parse(json['called_at'] as String)
+          ? _parseUtc(json['called_at'] as String)
           : null,
       createdBy: json['created_by'] as String? ?? '',
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : DateTime.now(),
+          ? _parseUtc(json['created_at'] as String)
+          : DateTime.now().toUtc(),
       patientName: patient['name'] as String?,
       patientPhone: patient['phone'] as String?,
       doctorName: doctor['name'] as String?,
@@ -138,8 +150,8 @@ class AppointmentModel extends AppointmentEntity {
       'price': price,
       'notes': notes,
       'is_urgent': isUrgent,
-      'arrived_at': arrivedAt?.toIso8601String(),
-      'called_at': calledAt?.toIso8601String(),
+      'arrived_at': arrivedAt?.toUtc().toIso8601String(),
+      'called_at': calledAt?.toUtc().toIso8601String(),
       'created_by': createdBy.isEmpty ? null : createdBy,
     };
   }

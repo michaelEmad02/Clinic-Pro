@@ -3,10 +3,11 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/strings/failure_strings.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class AuthFailure extends Failure {
-  const AuthFailure({required String message}) : super(message);
+  const AuthFailure([super.customMessage]);
 
   factory AuthFailure.fromException(Object e) {
     if (e is AuthException) {
@@ -14,14 +15,13 @@ abstract class AuthFailure extends Failure {
     }
 
     final message = e.toString();
-    if (message.contains('لم يتم العثور على بيانات المستخدم')) {
+    if (message.contains('UserNotFound') || message.contains('لم يتم العثور')) {
       return const UserNotFoundFailure();
     }
-    if (message.contains('يجب تسجيل الدخول')) {
+    if (message.contains('NotAuthenticated') || message.contains('تسجيل الدخول')) {
       return const NotAuthenticatedFailure();
     }
-    if (message.contains('الدعوة غير موجودة') ||
-        message.contains('منتهية الصلاحية')) {
+    if (message.contains('InvitationNotFound') || message.contains('الدعوة')) {
       return const InvitationNotFoundFailure();
     }
     if (message.contains('socket') ||
@@ -32,128 +32,152 @@ abstract class AuthFailure extends Failure {
       return const NetworkAuthFailure();
     }
 
-    return UnknownAuthFailure(message: message);
+    return UnknownAuthFailure(message);
   }
 
   factory AuthFailure.fromAuthException(AuthException e) {
     switch (e.code) {
       case 'invalid_credentials':
         return const InvalidCredentialsFailure();
-      case 'weak_password':
-        if (e is AuthWeakPasswordException && e.reasons.isNotEmpty) {
-          return WeakPasswordFailure._withReasons(e.reasons);
-        }
-        return const WeakPasswordFailure();
-      case 'email_not_confirmed':
-        return const EmailNotVerifiedFailure();
-      case 'email_exists':
-      case 'user_already_exists':
-        return const EmailAlreadyInUseFailure();
       case 'user_not_found':
         return const UserNotFoundFailure();
+      case 'user_already_exists':
+      case 'email_exists':
+        return const EmailAlreadyInUseFailure();
+      case 'weak_password':
+        return const WeakPasswordFailure();
+      case 'over_email_send_rate_limit':
+      case 'email_rate_limit_exceeded':
+        return UnknownAuthFailure(e.message);
+      case 'email_not_confirmed':
+        return const EmailNotVerifiedFailure();
+      case 'bad_jwt':
       case 'session_not_found':
-      case 'session_missing':
-      case 'session_expired':
         return const NotAuthenticatedFailure();
-      case 'invite_not_found':
-        return const InvitationNotFoundFailure();
+      case 'user_banned':
+        return UnknownAuthFailure(e.message);
+      case 'invalid_grant':
+        return const InvalidCredentialsFailure();
       case 'validation_failed':
         if (e.message.contains('email') || e.message.contains('بريد')) {
           return const InvalidEmailFailure();
         }
-        break;
-      case 'over_request_rate_limit':
-      case 'over_email_send_rate_limit':
-      case 'request_timeout':
-        return const NetworkAuthFailure();
-      case 'provider_disabled':
-        if (e.message.contains('Google')) {
-          return const GoogleSignInFailure();
+        if (e.message.contains('password') ||
+            e.message.contains('كلمة المرور')) {
+          return const WeakPasswordFailure();
         }
-        if (e.message.contains('Apple')) {
-          return const AppleSignInFailure();
-        }
-        break;
+        return UnknownAuthFailure(e.message);
     }
 
-    if (e.message.contains('socket') ||
+    if (e.message.contains('Invalid login credentials') ||
+        e.message.contains('invalid_grant')) {
+      return const InvalidCredentialsFailure();
+    }
+    if (e.message.contains('User already registered') ||
+        e.message.contains('already exists')) {
+      return const EmailAlreadyInUseFailure();
+    }
+    if (e.message.contains('Email not confirmed')) {
+      return const EmailNotVerifiedFailure();
+    }
+    if (e.message.contains('Password should be') ||
+        e.message.contains('weak_password')) {
+      return const WeakPasswordFailure();
+    }
+    if (e.message.contains('SocketException') ||
         e.message.contains('Network') ||
         e.message.contains('network') ||
         e.message.contains('Timeout')) {
       return const NetworkAuthFailure();
     }
 
-    return UnknownAuthFailure(message: e.message);
+    return UnknownAuthFailure(e.message);
   }
 }
 
 class InvalidCredentialsFailure extends AuthFailure {
-  const InvalidCredentialsFailure()
-      : super(message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+  const InvalidCredentialsFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.invalidCredentials;
 }
 
 class UserNotFoundFailure extends AuthFailure {
-  const UserNotFoundFailure()
-      : super(message: 'لم يتم العثور على بيانات المستخدم.');
+  const UserNotFoundFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.userNotFound;
 }
 
 class EmailAlreadyInUseFailure extends AuthFailure {
-  const EmailAlreadyInUseFailure()
-      : super(message: 'البريد الإلكتروني مستخدم بالفعل.');
+  const EmailAlreadyInUseFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.emailAlreadyInUse;
 }
 
 class WeakPasswordFailure extends AuthFailure {
   final List<String>? reasons;
 
-  const WeakPasswordFailure()
-      : reasons = null,
-        super(
-            message:
-                'كلمة المرور ضعيفة جداً. يجب أن تحتوي على 6 أحرف على الأقل.');
+  const WeakPasswordFailure([super.customMessage]) : reasons = null;
 
-  WeakPasswordFailure._withReasons(List<String> reasonsList)
+  WeakPasswordFailure.withReasons(List<String> reasonsList)
       : reasons = reasonsList,
-        super(
-          message:
-              'كلمة المرور ضعيفة جداً:\n${reasonsList.map((r) => '• $r').join('\n')}',
-        );
+        super(FailureStrings.weakPasswordWithReasons(reasonsList));
+
+  @override
+  String get defaultMessage => FailureStrings.weakPassword;
 }
 
 class InvalidEmailFailure extends AuthFailure {
-  const InvalidEmailFailure()
-      : super(message: 'صيغة البريد الإلكتروني غير صالحة.');
+  const InvalidEmailFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.invalidEmail;
 }
 
 class EmailNotVerifiedFailure extends AuthFailure {
-  const EmailNotVerifiedFailure()
-      : super(
-            message:
-                'البريد الإلكتروني غير مفعل. يرجى التحقق من بريدك الإلكتروني.');
+  const EmailNotVerifiedFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.emailNotVerified;
 }
 
 class InvitationNotFoundFailure extends AuthFailure {
-  const InvitationNotFoundFailure()
-      : super(message: 'الدعوة غير موجودة أو منتهية الصلاحية.');
+  const InvitationNotFoundFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.invitationNotFound;
 }
 
 class NotAuthenticatedFailure extends AuthFailure {
-  const NotAuthenticatedFailure() : super(message: 'يجب تسجيل الدخول أولاً.');
+  const NotAuthenticatedFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.notAuthenticated;
 }
 
 class GoogleSignInFailure extends AuthFailure {
-  const GoogleSignInFailure()
-      : super(message: 'فشل تسجيل الدخول بحساب Google.');
+  const GoogleSignInFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.googleSignInFailed;
 }
 
 class AppleSignInFailure extends AuthFailure {
-  const AppleSignInFailure() : super(message: 'فشل تسجيل الدخول بحساب Apple.');
+  const AppleSignInFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.appleSignInFailed;
 }
 
 class NetworkAuthFailure extends AuthFailure {
-  const NetworkAuthFailure()
-      : super(message: 'لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك.');
+  const NetworkAuthFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.networkError;
 }
 
 class UnknownAuthFailure extends AuthFailure {
-  const UnknownAuthFailure({required super.message});
+  const UnknownAuthFailure([super.customMessage]);
 }

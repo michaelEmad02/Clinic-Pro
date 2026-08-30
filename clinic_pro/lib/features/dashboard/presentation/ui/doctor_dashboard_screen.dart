@@ -24,6 +24,7 @@ import 'widgets/doctor_stats_row.dart';
 import 'widgets/doctor_quick_actions.dart';
 import 'widgets/doctor_dashboard_shimmer.dart';
 import '../../../appointments/presentation/ui/waiting_queue_screen.dart';
+import '../../../../core/widgets/app_error_widget.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
   const DoctorDashboardScreen({super.key});
@@ -57,7 +58,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     _tryLoadDashboard();
   }
 
-  void _tryLoadDashboard({bool autoCallNext = false, BuildContext? customContext, String? forceClinicId}) {
+  void _tryLoadDashboard({bool forceRefresh = false, BuildContext? customContext, String? forceClinicId}) {
     final activeContext = customContext ?? context;
     final settingsState = activeContext.read<SettingsCubit>().state;
     final newClinicId = forceClinicId ?? settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
@@ -68,7 +69,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     final newDoctorId = currentUser.id;
 
     final hasChanges = newClinicId != _clinicId || newDoctorId != _doctorId;
-    if (_hasLoaded && !hasChanges && !autoCallNext) return;
+    if (_hasLoaded && !hasChanges && !forceRefresh) return;
 
     _clinicId = newClinicId;
     _doctorId = newDoctorId;
@@ -79,13 +80,16 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       clinicId: _clinicId,
       doctorName: currentUser.name,
       clinicName: settingsState.clinicEntity?.name,
-      autoCallNext: autoCallNext,
-    );
+      //autoCallNext: autoCallNext,
+      showLoading: hasChanges,
+    );//
   }
 
   @override
   Widget build(BuildContext context) {
-    _tryLoadDashboard();
+    if (!_hasLoaded) {
+      _tryLoadDashboard();
+    }
 
     return BlocProvider.value(
       value: _cubit,
@@ -94,9 +98,11 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             previous.clinicEntity?.id != current.clinicEntity?.id,
         listener: (context, settingsState) {
           if (settingsState.clinicEntity != null) {
+            _clinicId = '';
             _tryLoadDashboard(
               customContext: context,
               forceClinicId: settingsState.clinicEntity!.id,
+              forceRefresh: true,
             );
           }
         },
@@ -107,7 +113,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
               _currentIndex = index;
             });
             if (index == 0) {
-              _tryLoadDashboard(customContext: context);
+            // _tryLoadDashboard(customContext: context);
+              _tryLoadDashboard(customContext: context, forceRefresh: true);
             }
           },
           destinations: [
@@ -204,11 +211,15 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   Widget _buildMainDashboardTab() {
     return BlocBuilder<DoctorDashboardCubit, DoctorDashboardState>(
       builder: (context, state) {
-        if (state is DoctorDashboardLoading) {
+        if (state is DoctorDashboardLoading || state is DoctorDashboardInitial) {
           return const DoctorDashboardShimmer();
         }
         if (state is DoctorDashboardError) {
-          return Center(child: Text(state.message));
+          return AppErrorWidget.buildErrorView(
+            context: context,
+            error: state.message,
+            onRetry: () => _tryLoadDashboard(forceRefresh: true),
+          );
         }
         if (state is DoctorDashboardLoaded) {
           return RefreshIndicator(
@@ -240,7 +251,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                           extra: state.currentPatient,
                         );
                         if (context.mounted) {
-                          _tryLoadDashboard(autoCallNext: true, customContext: context);
+                        //     _tryLoadDashboard(autoCallNext: true, customContext: context);
+                          _tryLoadDashboard(forceRefresh: true, customContext: context);
                         }
                       }
                     },

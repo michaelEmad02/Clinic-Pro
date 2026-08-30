@@ -205,28 +205,7 @@ class SettingsFooter extends StatelessWidget {
             style: AppTextStyles.caption(context)
                 .copyWith(color: context.textHint),
           ),
-          if (showSystemStatus) ...[
-            const SizedBox(height: AppConstants.spaceSm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: context.successText,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: AppConstants.spaceSm),
-                Text(
-                  AppStrings.allSystemsNormal,
-                  style: AppTextStyles.caption(context)
-                      .copyWith(color: context.textHint),
-                ),
-              ],
-            ),
-          ],
+          
         ],
       ),
     );

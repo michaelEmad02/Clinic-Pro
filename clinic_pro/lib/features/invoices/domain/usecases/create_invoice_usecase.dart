@@ -3,7 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/error/failures.dart';
-import 'package:clinic_pro/core/error/query_failure.dart';
+import 'package:clinic_pro/core/strings/failure_strings.dart';
 import 'package:clinic_pro/features/invoices/domain/repositories/i_invoices_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -24,19 +24,19 @@ class CreateInvoiceUseCase {
     required String createdBy,
   }) {
     if (patientId.isEmpty) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'يرجى اختيار المريض')));
+      return Future.value(const Left(SelectPatientRequiredFailure()));
     }
     if (sourceId.isEmpty) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'يرجى اختيار الموعد المرتبط بالفاتورة')));
+      return Future.value(const Left(SelectSourceAppointmentRequiredFailure()));
     }
     if (totalAmount <= 0) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'يجب أن يكون المبلغ الإجمالي أكبر من الصفر')));
+      return Future.value(const Left(TotalAmountMustBePositiveFailure()));
     }
     if (paidAmount < 0) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'المبلغ المدفوع لا يمكن أن يكون بالسالب')));
+      return Future.value(const Left(PaidAmountCannotBeNegativeFailure()));
     }
     if (paidAmount > totalAmount) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'المبلغ المدفوع لا يمكن أن يتجاوز المبلغ الإجمالي')));
+      return Future.value(const Left(PaidCannotExceedTotalFailure()));
     }
 
     return _repository.createInvoice(
@@ -49,4 +49,39 @@ class CreateInvoiceUseCase {
       createdBy: createdBy,
     );
   }
+}
+
+class SelectPatientRequiredFailure extends Failure {
+  const SelectPatientRequiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.selectPatientRequired;
+}
+
+class SelectSourceAppointmentRequiredFailure extends Failure {
+  const SelectSourceAppointmentRequiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.selectSourceAppointmentRequired;
+}
+
+class TotalAmountMustBePositiveFailure extends Failure {
+  const TotalAmountMustBePositiveFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.totalAmountMustBePositive;
+}
+
+class PaidAmountCannotBeNegativeFailure extends Failure {
+  const PaidAmountCannotBeNegativeFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.paidAmountCannotBeNegative;
+}
+
+class PaidCannotExceedTotalFailure extends Failure {
+  const PaidCannotExceedTotalFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.paidCannotExceedTotal;
 }

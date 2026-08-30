@@ -147,9 +147,10 @@ class AppointmentStatusTimeline extends StatelessWidget {
   }
 
   String _formatTime(DateTime dt) {
-    final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
-    final period = dt.hour >= 12 ? (AppStrings.isArabic ? 'م' : 'PM') : (AppStrings.isArabic ? 'ص' : 'AM');
-    return '$hour:${dt.minute.toString().padLeft(2, '0')} $period';
+    final local = dt.toLocal();
+    final hour = local.hour > 12 ? local.hour - 12 : (local.hour == 0 ? 12 : local.hour);
+    final period = local.hour >= 12 ? (AppStrings.isArabic ? 'م' : 'PM') : (AppStrings.isArabic ? 'ص' : 'AM');
+    return '$hour:${local.minute.toString().padLeft(2, '0')} $period';
   }
 
   Widget _buildCancelledBanner(BuildContext context) {

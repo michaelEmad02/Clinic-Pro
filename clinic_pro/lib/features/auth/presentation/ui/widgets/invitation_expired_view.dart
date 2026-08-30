@@ -8,39 +8,47 @@ import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/constants/route_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 
 class InvitationExpiredView extends StatelessWidget {
-  final String message;
+  final String? message;
   final IconData icon;
-  final Color iconColor;
+  final Color? iconColor;
 
   const InvitationExpiredView({
     super.key,
-    required this.message,
+    this.message,
     this.icon = Icons.timer_off_rounded,
-    this.iconColor = AppColors.warning,
+    this.iconColor,
   });
 
   /// عرض حالة الدعوة المنتهية
   factory InvitationExpiredView.expired({String? message}) {
     return InvitationExpiredView(
-      message: message ?? 'انتهت صلاحية هذه الدعوة.\nيرجى التواصل مع مالك العيادة لإرسال دعوة جديدة.',
+      message: message,
       icon: Icons.timer_off_rounded,
-      iconColor: AppColors.warning,
     );
   }
 
   /// عرض حالة الدعوة المقبولة مسبقاً
   factory InvitationExpiredView.alreadyAccepted({String? message}) {
     return InvitationExpiredView(
-      message: message ?? 'تم قبول هذه الدعوة مسبقاً.\nيمكنك تسجيل الدخول مباشرة.',
+      message: message,
       icon: Icons.check_circle_outline_rounded,
-      iconColor: AppColors.accent,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor = iconColor ?? context.warning;
+    final defaultMessage = icon == Icons.check_circle_outline_rounded
+        ? (AppStrings.isArabic
+            ? 'تم قبول هذه الدعوة مسبقاً.\nيمكنك تسجيل الدخول مباشرة.'
+            : 'This invitation has already been accepted.\nYou can log in directly.')
+        : (AppStrings.isArabic
+            ? 'انتهت صلاحية هذه الدعوة.\nيرجى التواصل مع مالك العيادة لإرسال دعوة جديدة.'
+            : 'This invitation has expired.\nPlease contact the clinic owner for a new invite.');
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       body: SafeArea(
@@ -54,20 +62,20 @@ class InvitationExpiredView extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1),
+                    color: effectiveColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     icon,
                     size: 64,
-                    color: iconColor,
+                    color: effectiveColor,
                   ),
                 ),
                 const SizedBox(height: AppConstants.spaceLg),
 
                 // رسالة الحالة
                 Text(
-                  message,
+                  message ?? defaultMessage,
                   style: AppTextStyles.bodyLarge(context).copyWith(
                     color: context.textSecondary,
                     height: 1.8,
@@ -80,16 +88,14 @@ class InvitationExpiredView extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () { 
-                    
-                    context.go(RouteConstants.login);
-                    
+                    onPressed: () {
+                      context.go(RouteConstants.login);
                     },
                     icon: const Icon(Icons.login_rounded),
-                    label: const Text('الذهاب لتسجيل الدخول'),
+                    label: Text(AppStrings.backToLogin),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: context.primary,
-                      side:  BorderSide(color: context.primary),
+                      side: BorderSide(color: context.primary),
                       padding: const EdgeInsets.symmetric(
                         vertical: AppConstants.spaceMd,
                       ),

@@ -73,17 +73,17 @@ class QueueItem extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    patient.doctorName ?? AppStrings.generalPractitioner,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: context.textSecondary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  // const SizedBox(height: 4),
+                  // Text(
+                  //   patient.doctorName ?? AppStrings.generalPractitioner,
+                  //   style: AppTextStyles.bodyMedium(context).copyWith(
+                  //     color: context.textSecondary,
+                  //     fontSize: 13,
+                  //     fontWeight: FontWeight.w500,
+                  //   ),
+                  //   maxLines: 1,
+                  //   overflow: TextOverflow.ellipsis,
+                  // ),
                   const SizedBox(height: 2),
                   Text(
                     patient.typeName ?? AppStrings.normalCheckup,
@@ -151,7 +151,7 @@ class QueueItem extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                '${AppStrings.isArabic ? 'الحجز:' : 'Booked:'} ${patient.displayTime}',
+                                '${AppStrings.isArabic ? 'الحجز:' : 'Booked:'} ${_formatDate(patient.date)} ${patient.displayTime}',
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: context.textSecondary,
                                   fontWeight: FontWeight.w600,
@@ -352,6 +352,15 @@ class QueueItem extends StatelessWidget {
     final period = hour >= 12 ? (isAr ? 'م' : 'PM') : (isAr ? 'ص' : 'AM');
     final h12 = hour % 12 == 0 ? 12 : hour % 12;
     final timeStr = '$h12:$minute $period';
-    return isAr ? 'وصل $timeStr' : 'Arrived $timeStr';
+    final dateStr = '${local.day}/${local.month}';
+    return isAr ? 'وصل $dateStr $timeStr' : 'Arrived $dateStr $timeStr';
+  }
+
+  String _formatDate(String date) {
+    final parts = date.split('-');
+    if (parts.length == 3) {
+      return '${int.tryParse(parts[2]) ?? parts[2]}/${int.tryParse(parts[1]) ?? parts[1]}';
+    }
+    return date;
   }
 }

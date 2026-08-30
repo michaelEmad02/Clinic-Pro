@@ -2,7 +2,7 @@
 // حالات استخدام إدارة الأدوية (Drugs UseCases)
 // ────────────────────────────────────────────────────────
 
-import 'package:clinic_pro/core/error/query_failure.dart';
+import 'package:clinic_pro/core/strings/failure_strings.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
@@ -26,7 +26,7 @@ class AddDrugUseCase {
 
   Future<Either<Failure, DrugEntity>> call(DrugEntity drug) {
     if (drug.tradeName == null || drug.tradeName!.trim().isEmpty) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'اسم الدواء التجاري مطلوب')));
+      return Future.value(const Left(DrugTradeNameRequiredFailure()));
     }
     return _repository.addDrug(drug);
   }
@@ -39,7 +39,7 @@ class UpdateDrugUseCase {
 
   Future<Either<Failure, void>> call(DrugEntity drug) {
     if (drug.tradeName == null || drug.tradeName!.trim().isEmpty) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'اسم الدواء التجاري مطلوب')));
+      return Future.value(const Left(DrugTradeNameRequiredFailure()));
     }
     return _repository.updateDrug(drug);
   }
@@ -53,4 +53,11 @@ class DeleteDrugUseCase {
   Future<Either<Failure, void>> call(String id) {
     return _repository.deleteDrug(id);
   }
+}
+
+class DrugTradeNameRequiredFailure extends Failure {
+  const DrugTradeNameRequiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.drugTradeNameRequired;
 }

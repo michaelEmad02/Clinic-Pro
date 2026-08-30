@@ -317,13 +317,42 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
   ) async {
     try {
       final models = await _remoteDataSource.getTemplates(doctorId);
-      return Right(models
-          .map((m) => PrescriptionTemplateEntity(
-                id: m.id,
-                name: m.name,
-                doctorId: m.doctorId,
-              ))
-          .toList());
+      final drugs = await _remoteDataSource.getDrugList();
+      final drugsMap = {for (var d in drugs) d.id: d};
+
+      final List<PrescriptionTemplateEntity> templates = [];
+      for (final m in models) {
+        final itemModels = await _remoteDataSource.getTemplateItems(m.id);
+        final items = itemModels.map((im) {
+          final dModel = drugsMap[im.drugId];
+          return PrescriptionTemplateItemEntity(
+            id: im.id,
+            templateId: m.id,
+            drugId: im.drugId,
+            frequency: im.frequency,
+            duration: im.duration,
+            timing: im.timing,
+            isPrn: im.isPrn,
+            drug: dModel != null
+                ? DrugEntity(
+                    id: dModel.id,
+                    tradeName: dModel.tradeName ?? '',
+                    genericName: dModel.genericName,
+                    category: dModel.category,
+                  )
+                : null,
+          );
+        }).toList();
+
+        templates.add(PrescriptionTemplateEntity(
+          id: m.id,
+          name: m.name,
+          doctorId: m.doctorId,
+          userCount: m.userCount,
+          items: items,
+        ));
+      }
+      return Right(templates);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));
     }
@@ -341,10 +370,26 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         doctorId: doctorId,
       );
       final saved = await _remoteDataSource.insertTemplate(model);
+
+      for (final item in template.items) {
+        final itemModel = PrescriptionTemplateItemModel(
+          id: '',
+          templateId: saved.id,
+          drugId: item.drugId,
+          frequency: item.frequency,
+          duration: item.duration,
+          timing: item.timing,
+          isPrn: item.isPrn,
+        );
+        await _remoteDataSource.insertTemplateItem(itemModel);
+      }
+
       return Right(PrescriptionTemplateEntity(
         id: saved.id,
         name: saved.name,
         doctorId: saved.doctorId,
+        userCount: 0,
+        items: template.items,
       ));
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));
@@ -362,6 +407,22 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         doctorId: template.doctorId,
       );
       await _remoteDataSource.updateTemplate(model);
+
+      // إعادة تعيين أدوية القالب
+      await _remoteDataSource.deleteTemplateItems(template.id);
+      for (final item in template.items) {
+        final itemModel = PrescriptionTemplateItemModel(
+          id: '',
+          templateId: template.id,
+          drugId: item.drugId,
+          frequency: item.frequency,
+          duration: item.duration,
+          timing: item.timing,
+          isPrn: item.isPrn,
+        );
+        await _remoteDataSource.insertTemplateItem(itemModel);
+      }
+
       return const Right(null);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));

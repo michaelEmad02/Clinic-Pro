@@ -133,7 +133,11 @@ class _ExpensesBody extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(AppStrings.deleteExpense),
-        content: Text('هل أنت متأكد من حذف "${expense.title}"؟'),
+        content: Text(
+          AppStrings.isArabic
+              ? 'هل أنت متأكد من حذف "${expense.title}"؟'
+              : 'Are you sure you want to delete "${expense.title}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),

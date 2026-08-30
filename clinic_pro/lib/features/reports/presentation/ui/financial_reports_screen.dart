@@ -30,7 +30,9 @@ class FinancialReportsScreen extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(value: sl<FinancialReportsCubit>()),
+        BlocProvider(
+          create: (_) => sl<FinancialReportsCubit>()..loadReports(doctorId: doctorId),
+        ),
         BlocProvider(
           create: (_) => sl<ClinicsCubit>()..fetchClinics(userId),
         ),
@@ -40,26 +42,9 @@ class FinancialReportsScreen extends StatelessWidget {
   }
 }
 
-class _FinancialReportsBody extends StatefulWidget {
+class _FinancialReportsBody extends StatelessWidget {
   final String? doctorId;
   const _FinancialReportsBody({this.doctorId});
-
-  @override
-  State<_FinancialReportsBody> createState() => _FinancialReportsBodyState();
-}
-
-class _FinancialReportsBodyState extends State<_FinancialReportsBody> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<FinancialReportsCubit>().loadReports(doctorId: widget.doctorId);
-  }
-
-  @override
-  void dispose() {
-    sl<FinancialReportsCubit>().clear();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +71,7 @@ class _FinancialReportsBodyState extends State<_FinancialReportsBody> {
             tooltip: AppStrings.isArabic ? 'تحديث' : 'Refresh',
             onPressed: () {
               context.read<FinancialReportsCubit>().loadReports(
-                    doctorId: widget.doctorId,
+                    doctorId: doctorId,
                     forceRefresh: true,
                   );
             },
@@ -159,7 +144,7 @@ class _FinancialReportsBodyState extends State<_FinancialReportsBody> {
               onRefresh: () async {
                 await context
                     .read<FinancialReportsCubit>()
-                    .loadReports(doctorId: widget.doctorId, forceRefresh: true);
+                    .loadReports(doctorId: doctorId, forceRefresh: true);
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -242,7 +227,7 @@ class _FinancialReportsBodyState extends State<_FinancialReportsBody> {
                                           onChanged: (clinicId) {
                                             context
                                                 .read<FinancialReportsCubit>()
-                                                .changeClinic(clinicId, doctorId: widget.doctorId);
+                                                .changeClinic(clinicId, doctorId: doctorId);
                                           },
                                         ),
                                       ),
@@ -261,13 +246,13 @@ class _FinancialReportsBodyState extends State<_FinancialReportsBody> {
                         activeRange: state.activeRange,
                         customDateRange: state.customDateRange,
                         onChanged: (range) {
-                          context.read<FinancialReportsCubit>().changeRange(range, doctorId: widget.doctorId);
+                          context.read<FinancialReportsCubit>().changeRange(range, doctorId: doctorId);
                         },
                         onCustomRangeSelected: (customRange) {
                           context.read<FinancialReportsCubit>().changeRange(
                                 ReportsDateRange.custom,
                                 customDateRange: customRange,
-                                doctorId: widget.doctorId,
+                                doctorId: doctorId,
                               );
                         },
                       ),

@@ -142,7 +142,15 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 }
                 Navigator.pop(context);
               },
-              child: Text(AppStrings.save),
+              style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(context.primary),
+              ),
+              child: Text(
+                AppStrings.save,
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: context.onPrimary,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: AppConstants.spaceXl),

@@ -24,7 +24,9 @@ class DoctorReportsScreen extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(value: sl<DoctorPerformanceCubit>()),
+        BlocProvider(
+          create: (_) => sl<DoctorPerformanceCubit>()..loadReports(),
+        ),
         BlocProvider(
           create: (_) => sl<ClinicsCubit>()..fetchClinics(userId),
         ),
@@ -34,19 +36,8 @@ class DoctorReportsScreen extends StatelessWidget {
   }
 }
 
-class _DoctorReportsBody extends StatefulWidget {
+class _DoctorReportsBody extends StatelessWidget {
   const _DoctorReportsBody();
-
-  @override
-  State<_DoctorReportsBody> createState() => _DoctorReportsBodyState();
-}
-
-class _DoctorReportsBodyState extends State<_DoctorReportsBody> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<DoctorPerformanceCubit>().loadReports();
-  }
 
   @override
   Widget build(BuildContext context) {

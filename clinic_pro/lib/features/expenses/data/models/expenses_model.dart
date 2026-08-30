@@ -22,7 +22,15 @@ class ClinicModel extends ClinicEntity {
         phone2: data['phone2'] as String? ?? '',
         logoUrl: data['logo_url'] as String? ?? '',
         isActive: data['is_active'] as bool? ?? false,
-        createdAt: DateTime.parse(data['created_at'] as String));
+        createdAt: _parseUtc(data['created_at'] as String));
+  }
+
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
   }
 
   Map<String, dynamic> toJson() {
@@ -34,7 +42,7 @@ class ClinicModel extends ClinicEntity {
       'phone2': phone2,
       'logo_url': logoUrl,
       'is_active': isActive,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
     };
   }
 }

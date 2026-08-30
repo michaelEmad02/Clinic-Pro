@@ -283,7 +283,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
         ),
       );
       setState(() => _isLoading = false);
-      if (success && context.mounted) {
+      if (success && mounted) {
         Navigator.pop(context);
         AppSnackbar.success(context, message: AppStrings.operationSuccessful);
       }
@@ -302,7 +302,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
 
     setState(() => _isLoading = false);
 
-    if (success && context.mounted) {
+    if (success && mounted) {
       Navigator.pop(context);
       AppSnackbar.success(context, message: AppStrings.operationSuccessful);
     }

@@ -50,15 +50,15 @@ class PrescriptionNotesField extends StatelessWidget {
                 color: context.textHint,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                 borderSide: BorderSide(color: context.borderColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                 borderSide: BorderSide(color: context.primary),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                 borderSide: BorderSide(color: context.borderColor),
               ),
             ),
@@ -82,15 +82,15 @@ class PrescriptionNotesField extends StatelessWidget {
                 color: context.textHint,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                 borderSide: BorderSide(color: context.borderColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                 borderSide: BorderSide(color: context.primary),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                 borderSide: BorderSide(color: context.borderColor),
               ),
             ),

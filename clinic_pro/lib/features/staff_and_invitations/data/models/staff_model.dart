@@ -4,6 +4,14 @@ import 'package:clinic_pro/features/staff_and_invitations/data/models/doctor_sec
 import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 
 class StaffModel extends StaffEntity {
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
+  }
+
   StaffModel({
     required super.id,
     required super.clinicId,
@@ -47,7 +55,7 @@ class StaffModel extends StaffEntity {
       specialty: specialty,
       role: role,
       isActive: json['is_active'] as bool? ?? true,
-      joinedAt: DateTime.parse(
+      joinedAt: _parseUtc(
         json['joined_at'] as String,
       ),
       doctorSchedules: (json['doctor_schedules'] as List?)
@@ -65,7 +73,7 @@ class StaffModel extends StaffEntity {
       "user_id": userId,
       "role": role.name,
       "is_active": isActive,
-      "joined_at": joinedAt.toIso8601String(),
+      "joined_at": joinedAt.toUtc().toIso8601String(),
       // "name": name,
       // "email": email,
       // "phone": phone,

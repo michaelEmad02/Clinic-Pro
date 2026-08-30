@@ -134,8 +134,8 @@ class _AboutUsBody extends StatelessWidget {
         const SizedBox(height: AppConstants.spaceLg),
         // شعار التطبيق / الشركة
         Container(
-          width: 100,
-          height: 100,
+          width: 120,
+          height: 120,
           decoration: BoxDecoration(
             color: context.primary.withOpacity(0.1),
             shape: BoxShape.circle,
@@ -156,11 +156,10 @@ class _AboutUsBody extends StatelessWidget {
                     ),
                   ),
                 )
-              : Icon(
-                  Icons.local_hospital_rounded,
-                  size: 50,
-                  color: context.primary,
-                ),
+              : Image.asset(
+                "images/logo.png",
+                fit: BoxFit.cover,
+              ),
         ),
         const SizedBox(height: AppConstants.spaceMd),
 
@@ -309,7 +308,7 @@ class _ContactActionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppConstants.spaceMd),
         decoration: BoxDecoration(
-          color: context.surfaceBright,
+          color: context.surface,
           borderRadius: BorderRadius.circular(AppConstants.radiusButton),
           border: Border.all(color: context.border, width: 0.5),
         ),

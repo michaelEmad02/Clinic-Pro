@@ -50,7 +50,7 @@ class AppColors {
   static const Color surfaceContainer =
       Color(0xFFECEEF1); // DESIGN.md surface-container
   static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const Color primaryFixedDim = Color(0xFF38B2D6  );
+  static const Color primaryFixedDim = Color.fromARGB(255, 43, 166, 204);
   static const Color surfaceTint = Color(0xFF106685); // DESIGN.md surface-tint
   static const Color warningLight = Color(0xFFFEF3C7); // خلفية خفيفة للتحذير
 

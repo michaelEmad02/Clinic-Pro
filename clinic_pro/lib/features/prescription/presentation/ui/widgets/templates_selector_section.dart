@@ -1,3 +1,4 @@
+import 'package:clinic_pro/features/prescription/presentation/manager/prescription_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
@@ -124,38 +125,58 @@ class TemplatesSelectorSection extends StatelessWidget {
                       child: Text(state.message,
                           style: TextStyle(color: context.danger)))
                 else if (filteredTemplates.isNotEmpty)
-                  Wrap(
-                    spacing: AppConstants.spaceSm,
-                    runSpacing: AppConstants.spaceSm,
-                    children: filteredTemplates.map((t) {
-                      final String name = t['name'] ?? '';
+                  BlocBuilder<PrescriptionBloc, PrescriptionState>(
+                    builder: (context, presState) {
+                      final appliedIds = presState.appliedTemplateIds;
 
-                      return ActionChip(
-                        avatar:
-                            Icon(Icons.bolt, size: AppConstants.iconSizeSm, color: context.primary),
-                        label: Text(
-                          name,
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: context.textPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        backgroundColor: context.primaryLightColor,
-                        side: BorderSide(color: context.borderColor),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppConstants.radiusChip)),
-                        onPressed: () {
-                          context
-                              .read<PrescriptionBloc>()
-                              .add(ApplyTemplateEvent(t['id']));
+                      return Wrap(
+                        spacing: AppConstants.spaceSm,
+                        runSpacing: AppConstants.spaceSm,
+                        children: filteredTemplates.map((t) {
+                          final String id = t['id'] ?? '';
+                          final String name = t['name'] ?? '';
+                          final isApplied = appliedIds.contains(id);
 
-                          AppSnackbar.success(
-                            context,
-                            message: '${AppStrings.template} $name ✓',
+                          return FilterChip(
+                            selected: isApplied,
+                            avatar: Icon(
+                              isApplied ? Icons.check_circle : Icons.bolt,
+                              size: AppConstants.iconSizeSm,
+                              color: isApplied ? context.primary : context.textSecondary,
+                            ),
+                            label: Text(
+                              name,
+                              style: AppTextStyles.labelChip(context).copyWith(
+                                color: isApplied ? context.primary : context.textSecondary,
+                                fontWeight: isApplied ? FontWeight.bold : FontWeight.w500,
+                              ),
+                            ),
+                            selectedColor: context.primaryLightColor,
+                            backgroundColor: context.surface,
+                            showCheckmark: false,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: isApplied ? context.primary : context.border,
+                                width: 1,
+                              ),
+                            ),
+                            onSelected: (selected) {
+                              if (!isApplied) {
+                                context
+                                    .read<PrescriptionBloc>()
+                                    .add(ApplyTemplateEvent(id));
+
+                                AppSnackbar.success(
+                                  context,
+                                  message: '${AppStrings.template} $name ✓',
+                                );
+                              }
+                            },
                           );
-                        },
+                        }).toList(),
                       );
-                    }).toList(),
+                    },
                   )
                 else
                   Padding(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/constants/route_constants.dart';
+import '../../../../../core/router/app_router.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -88,15 +90,20 @@ class DoctorPickerSheet extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppConstants.spaceSm),
                       child: InkWell(
-                        onTap: () {
-                          if (user != null) {
-                            context.read<SettingsCubit>().changeActiveDoctor(
+                        onTap: () async {
+                          if (!isActive && user != null) {
+                            final settingsCubit = context.read<SettingsCubit>();
+                            final clinicId = state.clinicEntity?.id ?? '';
+                            Navigator.pop(context);
+                            await settingsCubit.changeActiveDoctor(
                                   user.id,
-                                  state.clinicEntity?.id ?? '',
+                                  clinicId,
                                   docId,
                                 );
+                            appRouter.go(RouteConstants.splash);
+                          } else {
+                            Navigator.pop(context);
                           }
-                          Navigator.pop(context);
                         },
                         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                         child: Container(

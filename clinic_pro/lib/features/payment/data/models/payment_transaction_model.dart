@@ -5,6 +5,14 @@
 import '../../domain/entities/payment_transaction_entity.dart';
 
 class PaymentTransactionModel extends PaymentTransactionEntity {
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
+  }
+
   final Map<String, dynamic>? metadata;
 
   const PaymentTransactionModel({
@@ -37,8 +45,8 @@ class PaymentTransactionModel extends PaymentTransactionEntity {
       status: json['status'] as String? ?? 'pending',
       errorMessage: json['error_message'] as String?,
       createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
-          : DateTime.now(),
+          ? _parseUtc(json['created_at'] as String)
+          : DateTime.now().toUtc(),
       metadata: json['metadata'] is Map<String, dynamic>
           ? json['metadata'] as Map<String, dynamic>
           : null,

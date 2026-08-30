@@ -82,8 +82,8 @@ class _SplashScreenState extends State<SplashScreen>
             width: 12,
             height: 12,
             margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
+            decoration: BoxDecoration(
+              color: context.primary,
               shape: BoxShape.circle,
             ),
           ),
@@ -95,14 +95,16 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is AuthAuthenticated) {
           final role = state.user.role;
           final userId = state.user.id;
 
           // تحميل الإعدادات (العيادة والطبيب النشط) في الـ SettingsCubit العام
           // قبل الانتقال لأي شاشة حتى تكون البيانات جاهزة
-          context.read<SettingsCubit>().loadSettings(role, userId);
+          await context.read<SettingsCubit>().loadSettings(role, userId);
+
+          if (!context.mounted) return;
 
           if (role == StaffRoles.owner) {
             final sub = state.activeSubscription;
@@ -119,7 +121,8 @@ class _SplashScreenState extends State<SplashScreen>
               }
             } else if (sub.isExpired) {
               if (sub.isManualPending) {
-                context.go(RouteConstants.pendingSubscription, extra: {'isExpired': true});
+                context.go(RouteConstants.pendingSubscription,
+                    extra: {'isExpired': true});
               } else {
                 context.go(RouteConstants.onboardingPlan);
               }
@@ -203,7 +206,7 @@ class _SplashScreenState extends State<SplashScreen>
                       Text(
                         'ClinicPro',
                         style: AppTextStyles.headlineLarge(context).copyWith(
-                          color: AppColors.primary,
+                          color: context.primary,
                           letterSpacing: -0.5,
                         ),
                       ),

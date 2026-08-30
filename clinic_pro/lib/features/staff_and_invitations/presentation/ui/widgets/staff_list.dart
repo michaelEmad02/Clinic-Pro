@@ -5,7 +5,6 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
-import '../../../../../core/utils/responsive_helper.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import 'staff_list_item.dart';
@@ -38,8 +37,15 @@ class StaffList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isMobile = ResponsiveHelper.isMobile(context);
-          final crossAxisCount = ResponsiveHelper.gridColumns(context);
+          final width = constraints.maxWidth;
+          final int crossAxisCount = width >= 900
+              ? 3
+              : (width >= 600 ? 2 : 1);
+
+          final double childAspectRatio = crossAxisCount == 1
+              ? (width < 380 ? 2.4 : 2.8)
+              : (width >= 1100 ? 2.2 : 1.95);
+
           return GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -47,7 +53,7 @@ class StaffList extends StatelessWidget {
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: isMobile ? 1.55 : 1.85,
+              childAspectRatio: childAspectRatio,
             ),
             itemCount: staffList.length,
             itemBuilder: (context, index) {

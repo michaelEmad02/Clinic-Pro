@@ -74,13 +74,13 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
 
   Future<void> _submit() async {
     if (_titleController.text.trim().isEmpty) {
-      AppSnackbar.info(context, message: 'يرجى إدخال عنوان المصروف');
+      AppSnackbar.info(context, message: AppStrings.enterExpenseTitle);
       return;
     }
 
     final amount = double.tryParse(_amountController.text) ?? 0;
     if (amount <= 0) {
-      AppSnackbar.info(context, message: 'المبلغ يجب أن يكون أكبر من 0');
+      AppSnackbar.info(context, message: AppStrings.amountMustBeGreaterThanZero);
       return;
     }
 
@@ -105,7 +105,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
       );
     }
 
-    if (context.mounted) {
+    if (mounted) {
       Navigator.pop(context);
       AppSnackbar.success(context, message: AppStrings.operationSuccessful);
     }
@@ -170,7 +170,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                         isExpanded: true,
                         icon: Icon(Icons.expand_more,
                             color: context.textSecondary, size: 20),
-                        hint: Text(widget.categories.isEmpty ? 'لا توجد تصنيفات' : 'اختر التصنيف'),
+                        hint: Text(widget.categories.isEmpty ? AppStrings.noCategories : AppStrings.chooseCategory),
                         items: widget.categories.map((cat) {
                           return DropdownMenuItem(
                             value: cat.id,
@@ -256,7 +256,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                   TextField(
                     controller: _notesController,
                     maxLines: 3,
-                    decoration: _inputDecoration('أضف تفاصيل إضافية هنا...'),
+                    decoration: _inputDecoration(AppStrings.addAdditionalDetailsHint),
                   ),
                   const SizedBox(height: 24),
                   SizedBox(

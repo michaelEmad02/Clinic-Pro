@@ -56,14 +56,13 @@ class ClinicPerformanceChart extends StatelessWidget {
                 final monthName = AppStrings.fullMonths[data.month.month - 1];
                 final value = data.amount;
                 final percentage = maxVal > 0 ? value / maxVal : 0.0;
-                final barHeight =
-                    percentage * 120; // الحد الأقصى لطول العمود 120 بكسل
+                final barHeight = percentage * 120;
 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      (value).toStringAsFixed(0),
+                      value.toStringAsFixed(0),
                       style: AppTextStyles.caption(context).copyWith(
                         color: context.textSecondary,
                         fontWeight: FontWeight.bold,
@@ -75,7 +74,7 @@ class ClinicPerformanceChart extends StatelessWidget {
                       height: barHeight,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [context.primary, AppColors.darkPrimaryLight],
+                          colors: [context.primary, context.primaryContainer],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),

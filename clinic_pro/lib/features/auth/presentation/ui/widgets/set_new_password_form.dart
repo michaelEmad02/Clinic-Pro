@@ -89,27 +89,31 @@ class _SetNewPasswordFormState extends State<SetNewPasswordForm> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'الرجاء إدخال كلمة المرور الجديدة';
+                      return AppStrings.isArabic
+                          ? 'الرجاء إدخال كلمة المرور الجديدة'
+                          : 'Please enter your new password';
                     }
                     if (value.length < 6) {
-                      return 'يجب ألا تقل كلمة المرور عن 6 أحرف';
+                      return AppStrings.isArabic
+                          ? 'يجب ألا تقل كلمة المرور عن 6 أحرف'
+                          : 'Password must be at least 6 characters';
                     }
                     return null;
                   },
                   decoration: InputDecoration(
                     hintText: '••••••••',
-                    hintStyle: const TextStyle(
+                    hintStyle: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textHint,
+                      color: context.textHint,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         obscured
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: AppColors.textHint,
+                        color: context.textHint,
                       ),
                       onPressed: () {
                         _isPasswordObscured.value = !obscured;
@@ -163,7 +167,9 @@ class _SetNewPasswordFormState extends State<SetNewPasswordForm> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'الرجاء تأكيد كلمة المرور';
+                      return AppStrings.isArabic
+                          ? 'الرجاء تأكيد كلمة المرور'
+                          : 'Please confirm your password';
                     }
                     if (value != _passwordController.text) {
                       return AppStrings.passwordsDoNotMatch;
@@ -172,18 +178,18 @@ class _SetNewPasswordFormState extends State<SetNewPasswordForm> {
                   },
                   decoration: InputDecoration(
                     hintText: '••••••••',
-                    hintStyle: const TextStyle(
+                    hintStyle: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textHint,
+                      color: context.textHint,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         obscured
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: AppColors.textHint,
+                        color: context.textHint,
                       ),
                       onPressed: () {
                         _isConfirmObscured.value = !obscured;
@@ -205,8 +211,8 @@ class _SetNewPasswordFormState extends State<SetNewPasswordForm> {
           ElevatedButton(
             onPressed: widget.isLoading ? null : _submit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryContainer,
-              foregroundColor: AppColors.onPrimaryContainer,
+              backgroundColor: context.primaryContainer,
+              foregroundColor: context.onPrimaryContainer,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(
@@ -214,7 +220,7 @@ class _SetNewPasswordFormState extends State<SetNewPasswordForm> {
                 ),
               ),
               elevation: 4,
-              shadowColor: AppColors.primaryContainer.withOpacity(0.4),
+              shadowColor: context.primaryContainer.withOpacity(0.4),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -226,7 +232,7 @@ class _SetNewPasswordFormState extends State<SetNewPasswordForm> {
                   child: Text(
                     AppStrings.updatePasswordBtn,
                     style: AppTextStyles.headlineSmall(context).copyWith(
-                      color: AppColors.onPrimaryContainer,
+                      color: context.onPrimaryContainer,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

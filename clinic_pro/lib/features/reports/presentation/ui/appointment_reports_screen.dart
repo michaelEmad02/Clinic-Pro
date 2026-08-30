@@ -28,7 +28,9 @@ class AppointmentReportsScreen extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(value: sl<AppointmentReportsCubit>()),
+        BlocProvider(
+          create: (_) => sl<AppointmentReportsCubit>()..loadReports(doctorId: doctorId),
+        ),
         BlocProvider(
           create: (_) => sl<ClinicsCubit>()..fetchClinics(userId),
         ),
@@ -38,27 +40,9 @@ class AppointmentReportsScreen extends StatelessWidget {
   }
 }
 
-class _AppointmentReportsBody extends StatefulWidget {
+class _AppointmentReportsBody extends StatelessWidget {
   final String? doctorId;
   const _AppointmentReportsBody({this.doctorId});
-
-  @override
-  State<_AppointmentReportsBody> createState() =>
-      _AppointmentReportsBodyState();
-}
-
-class _AppointmentReportsBodyState extends State<_AppointmentReportsBody> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<AppointmentReportsCubit>().loadReports(doctorId: widget.doctorId);
-  }
-
-  @override
-  void dispose() {
-    sl<AppointmentReportsCubit>().clear();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +102,7 @@ class _AppointmentReportsBodyState extends State<_AppointmentReportsBody> {
               onRefresh: () async {
                 await context
                     .read<AppointmentReportsCubit>()
-                    .loadReports(doctorId: widget.doctorId, forceRefresh: true);
+                    .loadReports(doctorId: doctorId, forceRefresh: true);
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -201,7 +185,7 @@ class _AppointmentReportsBodyState extends State<_AppointmentReportsBody> {
                                           onChanged: (clinicId) {
                                             context
                                                 .read<AppointmentReportsCubit>()
-                                                .changeClinic(clinicId, doctorId: widget.doctorId);
+                                                .changeClinic(clinicId, doctorId: doctorId);
                                           },
                                         ),
                                       ),
@@ -223,13 +207,13 @@ class _AppointmentReportsBodyState extends State<_AppointmentReportsBody> {
                         onChanged: (range) {
                           context
                               .read<AppointmentReportsCubit>()
-                              .changeRange(range, doctorId: widget.doctorId);
+                              .changeRange(range, doctorId: doctorId);
                         },
                         onCustomRangeSelected: (customRange) {
                           context.read<AppointmentReportsCubit>().changeRange(
                                 ReportsDateRange.custom,
                                 customDateRange: customRange,
-                                doctorId: widget.doctorId,
+                                doctorId: doctorId,
                               );
                         },
                       ),

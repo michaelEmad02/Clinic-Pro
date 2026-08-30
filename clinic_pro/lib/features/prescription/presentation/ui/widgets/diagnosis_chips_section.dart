@@ -126,9 +126,18 @@ class _DiagnosisChipsSectionState extends State<DiagnosisChipsSection> {
                         ),
                       ),
                       backgroundColor: context.primaryLightColor,
-                      side: BorderSide(color: context.primary, width: 0.5),
-                      deleteIcon:
-                          Icon(Icons.close, size: 14, color: context.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: context.primary,
+                          width: 1,
+                        ),
+                      ),
+                      deleteIcon: Icon(
+                        Icons.cancel,
+                        size: 16,
+                        color: context.primary,
+                      ),
                       onDeleted: () => widget.onToggleDiagnosis(diag),
                     );
                   }),
@@ -140,14 +149,26 @@ class _DiagnosisChipsSectionState extends State<DiagnosisChipsSection> {
                   }).map((t) {
                     final String name = t['name'] ?? '';
                     return ActionChip(
+                      avatar: Icon(
+                        Icons.add,
+                        size: 14,
+                        color: context.textSecondary,
+                      ),
                       label: Text(
                         name,
                         style: AppTextStyles.labelChip(context).copyWith(
                           color: context.textSecondary,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      backgroundColor: context.surfaceBright,
-                      side: BorderSide.none,
+                      backgroundColor: context.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: context.border,
+                          width: 1,
+                        ),
+                      ),
                       onPressed: () => widget.onToggleDiagnosis(name),
                     );
                   }),

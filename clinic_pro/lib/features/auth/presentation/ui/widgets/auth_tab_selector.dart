@@ -3,6 +3,8 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
@@ -21,10 +23,8 @@ class AuthTabSelector extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: context.isDarkMode
-            ? AppColors.darkBackground
-            : AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(12),
+        color: context.primaryLightColor,
+        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
       ),
       child: Row(
         children: [
@@ -36,7 +36,7 @@ class AuthTabSelector extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: activeTab == 0 ? context.surfaceColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                   boxShadow: activeTab == 0
                       ? [
                           BoxShadow(
@@ -49,9 +49,9 @@ class AuthTabSelector extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'كلمة المرور',
+                    AppStrings.password,
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: activeTab == 0 ? AppColors.primary : context.textSecondary,
+                      color: activeTab == 0 ? context.primary : context.textSecondary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -67,7 +67,7 @@ class AuthTabSelector extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: activeTab == 1 ? context.surfaceColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusInput),
                   boxShadow: activeTab == 1
                       ? [
                           BoxShadow(
@@ -80,9 +80,9 @@ class AuthTabSelector extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'الرابط السحري',
+                    AppStrings.isArabic ? 'الرابط السحري' : 'Magic Link',
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: activeTab == 1 ? AppColors.primary : context.textSecondary,
+                      color: activeTab == 1 ? context.primary : context.textSecondary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

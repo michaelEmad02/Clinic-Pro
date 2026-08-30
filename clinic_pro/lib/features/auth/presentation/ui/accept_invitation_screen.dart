@@ -11,6 +11,7 @@ import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/constants/staff_roles.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/di/injection_container.dart';
 import '../manager/accept_invitation_cubit.dart';
 import '../manager/accept_invitation_state.dart';
@@ -93,12 +94,17 @@ class _AcceptInvitationBody extends StatelessWidget {
 
   /// عرض مؤشر التحميل أثناء جلب بيانات الدعوة
   Widget _buildLoadingView(BuildContext context) {
-    return const AppLoadingScreen(message: 'جاري تحميل بيانات الدعوة...');
+    return const Scaffold(
+      body: Center(child: AppLoadingWidget()),
+    );
   }
 
   /// عرض مؤشر التحميل أثناء تنفيذ القبول
   Widget _buildAcceptingView(BuildContext context) {
-    return const AppLoadingScreen(message: 'جاري قبول الدعوة والانضمام...');
+    return Scaffold(
+      backgroundColor: context.backgroundColor,
+      body: const Center(child: AppLoadingWidget()),
+    );
   }
 
   /// عرض تفاصيل الدعوة الصالحة مع أزرار القبول
@@ -123,7 +129,7 @@ class _AcceptInvitationBody extends StatelessWidget {
 
                 // عنوان "سجّل الدخول للقبول"
                 Text(
-                  'سجّل الدخول لقبول الدعوة',
+                  AppStrings.isArabic ? 'سجّل الدخول لقبول الدعوة' : 'Sign in to accept invitation',
                   style: AppTextStyles.bodyMedium(context).copyWith(
                     color: context.textSecondary,
                   ),
@@ -143,9 +149,9 @@ class _AcceptInvitationBody extends StatelessWidget {
                 TextButton(
                   onPressed: () => context.go(RouteConstants.login),
                   child: Text(
-                    'لديّ حساب بالفعل',
+                    AppStrings.isArabic ? 'لديّ حساب بالفعل' : 'I already have an account',
                     style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.primary,
+                      color: context.primary,
                     ),
                   ),
                 ),
@@ -162,11 +168,13 @@ class _AcceptInvitationBody extends StatelessWidget {
           ? formContent
           : Row(
               children: [
-                const Expanded(
+                Expanded(
                   flex: 5,
                   child: AuthBrandingPanel(
-                    title: 'دعوة انضمام للطاقم الطبي',
-                    subtitle: 'يسعدنا انضمامك لبرنامج إدارة العيادات ClinicPro',
+                    title: AppStrings.isArabic ? 'دعوة انضمام للطاقم الطبي' : 'Medical Staff Invitation',
+                    subtitle: AppStrings.isArabic
+                        ? 'يسعدنا انضمامك لبرنامج إدارة العيادات ClinicPro'
+                        : 'We are delighted to have you join ClinicPro management system',
                   ),
                 ),
                 Expanded(
@@ -181,16 +189,14 @@ class _AcceptInvitationBody extends StatelessWidget {
   /// زر تسجيل الدخول بجوجل
   Widget _buildGoogleButton(BuildContext context) {
     return ElevatedButton.icon(
-      onPressed: () =>
-          context.read<AcceptInvitationCubit>().acceptWithGoogle(),
+      onPressed: () => context.read<AcceptInvitationCubit>().acceptWithGoogle(),
       icon: Image.network(
         'https://www.google.com/favicon.ico',
         width: 20,
         height: 20,
-        errorBuilder: (_, __, ___) =>
-            const Icon(Icons.g_mobiledata, size: 24),
+        errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, size: 24),
       ),
-      label: const Text('المتابعة بحساب Google'),
+      label: Text(AppStrings.continueWithGoogle),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
@@ -209,10 +215,9 @@ class _AcceptInvitationBody extends StatelessWidget {
   /// زر تسجيل الدخول بـ Apple
   Widget _buildAppleButton(BuildContext context) {
     return ElevatedButton.icon(
-      onPressed: () =>
-          context.read<AcceptInvitationCubit>().acceptWithApple(),
+      onPressed: () => context.read<AcceptInvitationCubit>().acceptWithApple(),
       icon: const Icon(Icons.apple, size: 24),
-      label: const Text('المتابعة بحساب Apple'),
+      label: Text(AppStrings.continueWithApple),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
@@ -243,13 +248,13 @@ class _AcceptInvitationBody extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppColors.danger.withOpacity(0.1),
+                    color: context.dangerBg,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.error_outline_rounded,
                     size: 64,
-                    color: AppColors.danger,
+                    color: context.danger,
                   ),
                 ),
                 const SizedBox(height: AppConstants.spaceLg),
@@ -265,10 +270,10 @@ class _AcceptInvitationBody extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: () => context.go(RouteConstants.login),
                   icon: const Icon(Icons.login_rounded),
-                  label: const Text('العودة لتسجيل الدخول'),
+                  label: Text(AppStrings.backToLogin),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.primary),
+                    foregroundColor: context.primary,
+                    side: BorderSide(color: context.primary),
                     padding: const EdgeInsets.symmetric(
                       vertical: AppConstants.spaceMd,
                       horizontal: AppConstants.spaceLg,
@@ -295,7 +300,9 @@ class _AcceptInvitationBody extends StatelessWidget {
   ) {
     AppSnackbar.success(
       context,
-      message: 'تم قبول الدعوة بنجاح! مرحباً بك في ${state.clinicName}',
+      message: AppStrings.isArabic
+          ? 'تم قبول الدعوة بنجاح! مرحباً بك في ${state.clinicName}'
+          : 'Invitation accepted successfully! Welcome to ${state.clinicName}',
     );
 
     // التوجيه حسب الدور بعد تأخير قصير

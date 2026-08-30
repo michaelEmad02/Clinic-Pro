@@ -33,7 +33,7 @@ class StaffListItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: context.border),
@@ -47,32 +47,28 @@ class StaffListItem extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // رأس البطاقة: الصورة + الاسم والتخصص + زر more
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // الصورة مع نقطة الحالة
-                  Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: context.primaryLightColor,
-                        backgroundImage: staff.avatarUrl != null
-                            ? NetworkImage(staff.avatarUrl!)
-                            : null,
-                        child: staff.avatarUrl == null
-                            ? Text(
-                                staff.initials,
-                                style: AppTextStyles.headlineSmall(context)
-                                    .copyWith(
-                                  color: context.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            : null,
-                      ),
-                    ],
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: context.primaryLightColor,
+                    backgroundImage: staff.avatarUrl != null
+                        ? NetworkImage(staff.avatarUrl!)
+                        : null,
+                    child: staff.avatarUrl == null
+                        ? Text(
+                            staff.initials,
+                            style: AppTextStyles.bodyLarge(context).copyWith(
+                              color: context.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 12),
                   // الاسم والتخصص

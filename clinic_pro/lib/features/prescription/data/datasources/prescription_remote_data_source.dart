@@ -323,7 +323,9 @@ class PrescriptionRemoteDataSourceImpl
   }) async {
     // 1. جلب بيانات المريض إذا لم تكن ممررة
     PatientEntity? currentPatient = patient;
-    if (currentPatient == null && prescription.patientId != null && prescription.patientId!.isNotEmpty) {
+    if (currentPatient == null &&
+        prescription.patientId != null &&
+        prescription.patientId!.isNotEmpty) {
       try {
         currentPatient = await getPatient(prescription.patientId!);
       } catch (_) {}

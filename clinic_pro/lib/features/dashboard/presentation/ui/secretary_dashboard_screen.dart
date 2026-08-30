@@ -27,6 +27,7 @@ import 'widgets/live_queue_section.dart';
 import 'widgets/secretary_quick_actions.dart';
 import 'widgets/daily_summary_row.dart';
 import '../../../invoices/presentation/ui/invoices_screen.dart';
+import '../../../../core/widgets/app_error_widget.dart';
 
 
 class SecretaryDashboardScreen extends StatefulWidget {
@@ -61,7 +62,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
     _tryLoadDashboard();
   }
 
-  void _tryLoadDashboard({BuildContext? customContext, String? forceClinicId}) {
+  void _tryLoadDashboard({bool forceRefresh = false, BuildContext? customContext, String? forceClinicId}) {
     final activeContext = customContext ?? context;
     final settingsState = activeContext.read<SettingsCubit>().state;
     final newClinicId = forceClinicId ?? settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
@@ -72,7 +73,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
     final newSecretaryId = currentUser.id;
 
     final hasChanges = newClinicId != _clinicId || newSecretaryId != _secretaryId;
-    if (_hasLoaded && !hasChanges) return;
+    if (_hasLoaded && !hasChanges && !forceRefresh) return;
 
     _clinicId = newClinicId;
     _secretaryId = newSecretaryId;
@@ -83,13 +84,15 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
       clinicId: _clinicId,
       secretaryName: currentUser.name,
       clinicName: settingsState.clinicEntity?.name,
+      showLoading: hasChanges,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // تحديث البيانات تلقائياً عند الدخول أو إعادة بناء الواجهة
-    _tryLoadDashboard();
+    if (!_hasLoaded) {
+      _tryLoadDashboard();
+    }
 
     return BlocProvider.value(
       value: _cubit,
@@ -98,9 +101,11 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
             previous.clinicEntity?.id != current.clinicEntity?.id,
         listener: (context, settingsState) {
           if (settingsState.clinicEntity != null) {
+            _clinicId = '';
             _tryLoadDashboard(
               customContext: context,
               forceClinicId: settingsState.clinicEntity!.id,
+              forceRefresh: true,
             );
           }
         },
@@ -111,7 +116,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
               _currentIndex = index;
             });
             if (index == 0) {
-              _tryLoadDashboard(customContext: context);
+              _tryLoadDashboard(customContext: context, forceRefresh: true);
             }
           },
           destinations: [
@@ -161,18 +166,20 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
       scrolledUnderElevation: 0,
       title: BlocBuilder<SecretaryDashboardCubit, SecretaryDashboardState>(
         builder: (context, state) {
-          String title = AppStrings.secretaryDashboardTitle;
-          String sub = AppStrings.receptionOffice;
+          String clinicName = AppStrings.isArabic
+              ? 'عيادتك المتكاملة'
+              : 'Your Integrated Clinic';
+          String sub = AppStrings.secretaryDashboardTitle;
           if (state is SecretaryDashboardLoaded) {
-            String str = AppStrings.isArabic ? 'الطبيب : ' : 'Doctor';
-            title = state.clinicName;
-            sub = '• ${AppStrings.welcomeBack}${state.secretaryName}         •  ${str + state.doctorName}';
+            clinicName = state.clinicName;
+            sub =
+                '${state.doctorName.isNotEmpty ? state.doctorName : AppStrings.welcomeBack} • ${state.secretaryName}';
           }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                title,
+                clinicName,
                 style: AppTextStyles.headlineMedium(context).copyWith(
                   fontWeight: FontWeight.bold,
                   color: context.textPrimary,
@@ -188,29 +195,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
           );
         },
       ),
-      actions: const [
-        // IconButton(
-        //   icon: const Icon(Icons.notifications_none_outlined, color: AppColors.textSecondary),
-        //   onPressed: () {},
-        // ),
-        // const SizedBox(width: 8),
-        // Container(
-        //   margin: const EdgeInsets.only(left: 16),
-        //   width: 36,
-        //   height: 36,
-        //   decoration: const BoxDecoration(
-        //     color: AppColors.primaryLight,
-        //     shape: BoxShape.circle,
-        //   ),
-        //   child: const Center(
-        //     child: Icon(
-        //       Icons.support_agent,
-        //       color: AppColors.primary,
-        //       size: 20,
-        //     ),
-        //   ),
-        // ),
-      ],
+      actions: const [],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(
@@ -224,11 +209,15 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
   Widget _buildMainDashboardTab() {
     return BlocBuilder<SecretaryDashboardCubit, SecretaryDashboardState>(
       builder: (context, state) {
-        if (state is SecretaryDashboardLoading) {
+        if (state is SecretaryDashboardLoading || state is SecretaryDashboardInitial) {
           return const Center(child: AppLoadingWidget());
         }
         if (state is SecretaryDashboardError) {
-          return Center(child: Text(state.message));
+          return AppErrorWidget.buildErrorView(
+            context: context,
+            error: state.message,
+            onRetry: () => _tryLoadDashboard(forceRefresh: true),
+          );
         }
         if (state is SecretaryDashboardLoaded) {
           return RefreshIndicator(

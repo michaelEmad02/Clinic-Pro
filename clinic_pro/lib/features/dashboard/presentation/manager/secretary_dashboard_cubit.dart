@@ -32,10 +32,14 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
     required String clinicId,
     String? secretaryName,
     String? clinicName,
+    bool showLoading = false,
   }) async {
     _secretaryId = secretaryId;
     _clinicId = clinicId;
-    emit(SecretaryDashboardLoading());
+
+    if (state is SecretaryDashboardInitial || showLoading) {
+      emit(SecretaryDashboardLoading());
+    }
 
     await _dashboardSubscription?.cancel();
 
@@ -46,27 +50,15 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
       clinicName: clinicName,
     );
 
-    final initialResult = await _getSecretaryDashboardDataUseCase(params);
+    try {
+      final initialResult = await _getSecretaryDashboardDataUseCase(params);
 
-    initialResult.fold(
-      (failure) => emit(SecretaryDashboardError(failure.message)),
-      (data) {
-        emit(SecretaryDashboardLoaded(
-          secretaryName: data.secretaryName,
-          clinicName: data.clinicName,
-          doctorName: data.doctorName,
-          liveQueue: data.liveQueue,
-          todayAppointmentsCount: data.todayAppointmentsCount,
-          completedCount: data.completedCount,
-          waitingCount: data.waitingCount,
-          avgWaitingTime: data.avgWaitingTime,
-        ));
-      },
-    );
-
-    _dashboardSubscription = _watchSecretaryDashboardDataUseCase(params).listen((result) {
-      result.fold(
-        (failure) {},
+      initialResult.fold(
+        (failure) {
+          if (state is! SecretaryDashboardLoaded) {
+            emit(SecretaryDashboardError(failure.message));
+          }
+        },
         (data) {
           emit(SecretaryDashboardLoaded(
             secretaryName: data.secretaryName,
@@ -80,7 +72,32 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
           ));
         },
       );
-    });
+    } catch (e) {
+      if (state is! SecretaryDashboardLoaded) {
+        emit(SecretaryDashboardError(e.toString()));
+      }
+    }
+
+    _dashboardSubscription = _watchSecretaryDashboardDataUseCase(params).listen(
+      (result) {
+        result.fold(
+          (failure) {},
+          (data) {
+            emit(SecretaryDashboardLoaded(
+              secretaryName: data.secretaryName,
+              clinicName: data.clinicName,
+              doctorName: data.doctorName,
+              liveQueue: data.liveQueue,
+              todayAppointmentsCount: data.todayAppointmentsCount,
+              completedCount: data.completedCount,
+              waitingCount: data.waitingCount,
+              avgWaitingTime: data.avgWaitingTime,
+            ));
+          },
+        );
+      },
+      onError: (_) {},
+    );
   }
 
   /// تأكيد وصول المريض

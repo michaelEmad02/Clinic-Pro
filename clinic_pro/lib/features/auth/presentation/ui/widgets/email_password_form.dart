@@ -59,7 +59,7 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
           Container(
             decoration: BoxDecoration(
               color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               border: Border.all(color: context.borderColor),
               boxShadow: [
                 BoxShadow(
@@ -82,27 +82,31 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'الرجاء إدخال البريد الإلكتروني';
+                  return AppStrings.isArabic
+                      ? 'الرجاء إدخال البريد الإلكتروني'
+                      : 'Please enter your email';
                 }
                 if (!value.contains('@')) {
-                  return 'الرجاء إدخال بريد إلكتروني صحيح';
+                  return AppStrings.isArabic
+                      ? 'الرجاء إدخال بريد إلكتروني صحيح'
+                      : 'Please enter a valid email';
                 }
                 return null;
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'dr@clinic.com',
                 hintStyle: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textHint,
+                  color: context.textHint,
                 ),
                 suffixIcon: Icon(
                   Icons.mail_outline,
-                  color: AppColors.textHint,
+                  color: context.textHint,
                 ),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
           ),
@@ -117,7 +121,7 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
           Container(
             decoration: BoxDecoration(
               color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
               border: Border.all(color: context.borderColor),
               boxShadow: [
                 BoxShadow(
@@ -143,25 +147,29 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'الرجاء إدخال كلمة المرور';
+                      return AppStrings.isArabic
+                          ? 'الرجاء إدخال كلمة المرور'
+                          : 'Please enter your password';
                     }
                     if (value.length < 6) {
-                      return 'يجب ألا تقل كلمة المرور عن 6 أحرف';
+                      return AppStrings.isArabic
+                          ? 'يجب ألا تقل كلمة المرور عن 6 أحرف'
+                          : 'Password must be at least 6 characters';
                     }
                     return null;
                   },
                   decoration: InputDecoration(
                     hintText: '••••••••',
-                    hintStyle: const TextStyle(
+                    hintStyle: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textHint,
+                      color: context.textHint,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         obscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: AppColors.textHint,
+                        color: context.textHint,
                       ),
                       onPressed: () {
                         _isObscured.value = !obscured;
@@ -190,12 +198,12 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
                 ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                foregroundColor: AppColors.primary,
+                foregroundColor: context.primary,
               ),
               child: Text(
                 AppStrings.forgotPassword,
                 style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.primary,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),
@@ -207,14 +215,14 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
           ElevatedButton(
             onPressed: _submit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryContainer,
-              foregroundColor: AppColors.onPrimaryContainer,
+              backgroundColor: context.primaryContainer,
+              foregroundColor: context.onPrimaryContainer,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderRadius: BorderRadius.all(Radius.circular(AppConstants.radiusButton)),
               ),
               elevation: 4,
-              shadowColor: AppColors.primaryContainer.withOpacity(0.4),
+              shadowColor: context.primaryContainer.withOpacity(0.4),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -226,7 +234,7 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
                   child: Text(
                     AppStrings.login,
                     style: AppTextStyles.headlineSmall(context).copyWith(
-                      color: AppColors.onPrimaryContainer,
+                      color: context.onPrimaryContainer,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

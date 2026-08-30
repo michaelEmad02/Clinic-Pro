@@ -21,8 +21,8 @@ class AuthBrandingPanel extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary,
-            AppColors.primaryContainer,
+            context.primary,
+            context.primaryContainer,
           ],
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
@@ -51,7 +51,7 @@ class AuthBrandingPanel extends StatelessWidget {
               height: 320,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.accent.withOpacity(0.08),
+                color: context.accent.withOpacity(0.08),
               ),
             ),
           ),
@@ -98,19 +98,25 @@ class AuthBrandingPanel extends StatelessWidget {
                 _buildFeatureItem(
                   context,
                   icon: Icons.shield_outlined,
-                  text: 'نظام إدارة طاقم العيادات الذكي والموثوق',
+                  text: AppStrings.isArabic
+                      ? 'نظام إدارة طاقم العيادات الذكي والموثوق'
+                      : 'Smart & reliable clinic staff management',
                 ),
                 const SizedBox(height: AppConstants.spaceMd),
                 _buildFeatureItem(
                   context,
                   icon: Icons.speed_outlined,
-                  text: 'إدارة الطوابير والمواعيد بسرعة فائقة',
+                  text: AppStrings.isArabic
+                      ? 'إدارة الطوابير والمواعيد بسرعة فائقة'
+                      : 'High-speed queue & appointments workflow',
                 ),
                 const SizedBox(height: AppConstants.spaceMd),
                 _buildFeatureItem(
                   context,
                   icon: Icons.cloud_done_outlined,
-                  text: 'مزامنة فورية على كود ورعاية المرضى',
+                  text: AppStrings.isArabic
+                      ? 'مزامنة فورية على سحابة آمنة'
+                      : 'Instant cloud synchronization & patient care',
                 ),
               ],
             ),
@@ -132,7 +138,7 @@ class AuthBrandingPanel extends StatelessWidget {
           child: Icon(
             icon,
             size: AppConstants.iconSizeLg,
-            color: AppColors.accent,
+            color: context.accent,
           ),
         ),
         const SizedBox(width: AppConstants.spaceMd),

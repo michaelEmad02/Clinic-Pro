@@ -89,7 +89,7 @@ class _EnterReferralCodeBodyState extends State<_EnterReferralCodeBody> {
     if (ownerId.isEmpty) {
       AppSnackbar.error(
         context,
-        message: 'تعذر تحديد بيانات المستخدم',
+        message: AppStrings.userIdentityError,
       );
       return;
     }
@@ -170,7 +170,7 @@ class _EnterReferralCodeBodyState extends State<_EnterReferralCodeBody> {
 
                   // عنوان الترحيب
                   Text(
-                    'أهلاً بك في Clinic Pro! 🎉',
+                    AppStrings.welcomeToClinicPro,
                     style: AppTextStyles.headlineLarge(context).copyWith(
                       fontWeight: FontWeight.bold,
                       color: context.textPrimary,
@@ -180,7 +180,7 @@ class _EnterReferralCodeBodyState extends State<_EnterReferralCodeBody> {
                   const SizedBox(height: 8),
 
                   Text(
-                    'هل تمت دعوتك بواسطة زميل؟ أدخل كود الدعوة للحصول على هديتك الترحيبية المخصصة.',
+                    AppStrings.referralWelcomeSubtitle,
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: context.textSecondary,
                       height: 1.5,
@@ -203,7 +203,7 @@ class _EnterReferralCodeBodyState extends State<_EnterReferralCodeBody> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'كود الدعوة',
+                          AppStrings.referralCodeLabel,
                           style: AppTextStyles.bodyMedium(context).copyWith(
                             fontWeight: FontWeight.bold,
                             color: context.textPrimary,
@@ -269,7 +269,7 @@ class _EnterReferralCodeBodyState extends State<_EnterReferralCodeBody> {
                                   color: context.onPrimary,
                                 )
                               : Text(
-                                  'تطبيق كود الدعوة والحصول على الهدية',
+                                  AppStrings.applyReferralAndGetGift,
                                   style: AppTextStyles.bodyMedium(context)
                                       .copyWith(
                                     fontWeight: FontWeight.bold,
@@ -291,7 +291,7 @@ class _EnterReferralCodeBodyState extends State<_EnterReferralCodeBody> {
                       color: context.textSecondary,
                     ),
                     label: Text(
-                      'ليس لدي كود دعوة (تخطي إلى الباقات)',
+                      AppStrings.skipToPlansNoReferral,
                       style: AppTextStyles.bodyMedium(context).copyWith(
                         color: context.textSecondary,
                         fontWeight: FontWeight.w600,

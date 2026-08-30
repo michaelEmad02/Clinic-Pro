@@ -78,7 +78,6 @@ class TemplatesCubit extends Cubit<TemplatesState> {
   Future<void> addTemplate(
       String name, List<Map<String, dynamic>> drugs) async {
     if (state is! TemplatesLoaded) return;
-    final loaded = state as TemplatesLoaded;
 
     final items = drugs.map((drug) {
       return PrescriptionTemplateItemEntity(
@@ -108,15 +107,8 @@ class TemplatesCubit extends Cubit<TemplatesState> {
 
     result.fold(
       (failure) => emit(TemplatesError(failure.message)),
-      (newTemplate) {
-        final newTemplateRaw = {
-          'id': newTemplate.id,
-          'doctor_id': newTemplate.doctorId,
-          'name': newTemplate.name,
-          'user_count': newTemplate.userCount,
-          'items': drugs,
-        };
-        emit(loaded.copyWith(templates: [...loaded.templates, newTemplateRaw]));
+      (_) async {
+        await loadTemplates();
       },
     );
   }
@@ -124,16 +116,13 @@ class TemplatesCubit extends Cubit<TemplatesState> {
   /// حذف قالب وجميع أدويته المرتبطة من الخدمة السحابية
   Future<void> deleteTemplate(String id) async {
     if (state is! TemplatesLoaded) return;
-    final loaded = state as TemplatesLoaded;
 
     final result = await _deleteTemplateUseCase(id);
 
     result.fold(
       (failure) => emit(TemplatesError(failure.message)),
-      (_) {
-        final updatedList =
-            loaded.templates.where((t) => t['id'] != id).toList();
-        emit(loaded.copyWith(templates: updatedList));
+      (_) async {
+        await loadTemplates();
       },
     );
   }

@@ -1355,6 +1355,108 @@ class AppStrings {
   static String get internetRestored => isArabic
       ? 'تمت استعادة الاتصال بالإنترنت بنجاح'
       : 'Internet connection restored.';
+
+  // ────────────────────────────────────────────────────────
+  // Roles & General Labels
+  // ────────────────────────────────────────────────────────
+  static String get doctor => isArabic ? 'طبيب' : 'Doctor';
+  static String get secretary => isArabic ? 'سكرتير' : 'Secretary';
+  static String get owner => isArabic ? 'مالك' : 'Owner';
+  static String get name => isArabic ? 'الاسم' : 'Name';
+  static String get role => isArabic ? 'الدور' : 'Role';
+
+  // Expenses Additional Strings
+  static String get enterExpenseTitle =>
+      isArabic ? 'يرجى إدخال عنوان المصروف' : 'Please enter expense title';
+  static String get amountMustBeGreaterThanZero =>
+      isArabic ? 'المبلغ يجب أن يكون أكبر من 0' : 'Amount must be greater than 0';
+  static String get addAdditionalDetailsHint =>
+      isArabic ? 'أضف تفاصيل إضافية هنا...' : 'Add additional details here...';
+  static String get noCategories =>
+      isArabic ? 'لا توجد تصنيفات' : 'No categories';
+  static String get chooseCategory =>
+      isArabic ? 'اختر التصنيف' : 'Choose category';
+
+  // Staff & Clinics Additional Strings
+  static String get noClinicsFound =>
+      isArabic ? 'لا توجد عيادات' : 'No clinics found';
+  static String get addClinicFirst =>
+      isArabic ? 'قم بإضافة عيادة أولاً' : 'Add a clinic first';
+  static String get employeeNameExample =>
+      isArabic ? 'مثال: أحمد محمد عبدالمجيد' : 'e.g. John Doe';
+  static String get emailPlaceholder =>
+      isArabic ? 'email@clinic.com' : 'email@clinic.com';
+
+  static String whatsAppActivationMsg({
+    required String companyName,
+    required String planName,
+    required String cycleTitle,
+    required String userName,
+    required String userEmail,
+  }) {
+    return isArabic
+        ? 'مرحباً $companyName، لقد قمت بطلب الاشتراك في خطة ($planName) بالباقة $cycleTitle.\n'
+            'تفاصيل الحساب:\n'
+            '- الاسم: $userName\n'
+            '- البريد الإلكتروني: $userEmail\n'
+            'يرجى تفعيل الاشتراك.'
+        : 'Hello $companyName, I have requested subscription to ($planName) on $cycleTitle cycle.\n'
+            'Account details:\n'
+            '- Name: $userName\n'
+            '- Email: $userEmail\n'
+            'Please activate my subscription.';
+  }
+
+  static String get printingSettingsAndTemplates =>
+      isArabic ? 'إعدادات وقوالب الطباعة' : 'Printing Settings & Templates';
+
+  // Payment Strings
+  static String get walletNumberTitle =>
+      isArabic ? 'رقم المحفظة الإلكترونية' : 'E-Wallet Number';
+  static String get walletProvidersDesc =>
+      isArabic ? 'فودافون كاش، أورنج كاش، اتصالات كاش، وي باي، أو المحافظ البنكية' : 'Vodafone Cash, Orange Cash, Etisalat Cash, WE Pay, or bank wallets';
+  static String get walletNumberLabel =>
+      isArabic ? 'رقم المحفظة' : 'Wallet Number';
+  static String get enterWalletNumberError =>
+      isArabic ? 'الرجاء إدخال رقم المحفظة الإلكترونية' : 'Please enter e-wallet number';
+  static String get confirmAndProceedPayment =>
+      isArabic ? 'تأكيد ومتابعة الدفع' : 'Confirm & Proceed to Payment';
+  static String get fawryPaymentCodeTitle =>
+      isArabic ? 'كود الدفع في فوري (Fawry Code)' : 'Fawry Payment Code';
+  static String get fawryPaymentDesc =>
+      isArabic ? 'احفظ هذا الكود وادفع به في أي من منافذ فوري لتفعيل الاشتراك' : 'Save this code and pay at any Fawry outlet to activate subscription';
+  static String get fawryServiceRefNumber =>
+      isArabic ? 'رقم الخدمة/المرجع:' : 'Service/Reference Number:';
+  static String get copyFawryCode =>
+      isArabic ? 'نسخ كود فوري' : 'Copy Fawry Code';
+  static String get fawryCodeCopiedSuccess =>
+      isArabic ? 'تم نسخ كود فوري بنجاح!' : 'Fawry code copied successfully!';
+  static String get understood =>
+      isArabic ? 'فهمت' : 'Understood';
+  static String get paymentPendingTitle =>
+      isArabic ? 'طلب الدفع قيد الانتظار' : 'Payment Request Pending';
+  static String get fawryIssuedPendingDesc =>
+      isArabic ? 'تم إصدار كود فوري بنجاح، يرجى السداد في أقرب ماكينة فوري لتفعيل الاشتراك تلقائياً' : 'Fawry code issued successfully, please pay at the nearest Fawry machine to activate subscription automatically';
+  static String get merchantOrderIdLabel =>
+      isArabic ? 'رقم الطلب المرجعي (Merchant Order ID)' : 'Merchant Order ID';
+  static String get paymobOrderIdLabel =>
+      isArabic ? 'رقم طلب Paymob' : 'Paymob Order ID';
+  static String get payWithAnotherMethod =>
+      isArabic ? 'دفع بطريقة أخرى' : 'Pay with another method';
+
+  // Referral Welcome Screen Strings
+  static String get welcomeToClinicPro =>
+      isArabic ? 'أهلاً بك في Clinic Pro! 🎉' : 'Welcome to Clinic Pro! 🎉';
+  static String get referralWelcomeSubtitle =>
+      isArabic
+          ? 'هل تمت دعوتك بواسطة زميل؟ أدخل كود الدعوة للحصول على هديتك الترحيبية المخصصة.'
+          : 'Were you invited by a colleague? Enter the referral code to claim your special welcome gift.';
+  static String get referralCodeLabel =>
+      isArabic ? 'كود الدعوة' : 'Referral Code';
+  static String get applyReferralAndGetGift =>
+      isArabic ? 'تطبيق كود الدعوة والحصول على الهدية' : 'Apply Referral Code & Claim Gift';
+  static String get skipToPlansNoReferral =>
+      isArabic ? 'ليس لدي كود دعوة (تخطي إلى الباقات)' : "I don't have a referral code (Skip to plans)";
 }
 
 

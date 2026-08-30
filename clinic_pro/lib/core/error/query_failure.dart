@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/strings/failure_strings.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class QueryFailure extends Failure {
-  const QueryFailure({required String message}) : super(message);
+  const QueryFailure([super.customMessage]);
 
   factory QueryFailure.fromException(Object e) {
     if (e is PostgrestException) {
@@ -26,7 +27,7 @@ abstract class QueryFailure extends Failure {
     if (message.contains('FEATURE_NOT_ALLOWED') || message.contains('40301')) {
       final parts = message.split('FEATURE_NOT_ALLOWED:');
       final key = parts.length > 1 ? parts[1].trim() : '';
-      return FeatureNotAllowedFailure(message: 'الميزة غير متاحة في باقة اشتراكك الحالية', featureKey: key);
+      return FeatureNotAllowedFailure(featureKey: key);
     }
     if (message.contains('socket') ||
         message.contains('Network') ||
@@ -61,14 +62,17 @@ abstract class QueryFailure extends Failure {
   }
 
   factory QueryFailure.fromPostgrestException(PostgrestException e) {
-    if (e.code == '40301' || e.message.contains('FEATURE_NOT_ALLOWED')) {
-      final parts = e.message.split('FEATURE_NOT_ALLOWED:');
+    final message = e.message;
+    if (message.contains('FEATURE_NOT_ALLOWED') || message.contains('40301')) {
+      final parts = message.split('FEATURE_NOT_ALLOWED:');
       final key = parts.length > 1 ? parts[1].trim() : '';
       return FeatureNotAllowedFailure(featureKey: key);
     }
+    if (message.contains('PLAN_LIMIT_REACHED') || message.contains('40302')) {
+      return const PlanLimitQueryFailure();
+    }
 
     switch (e.code) {
-      // Data/Constraint Violations
       case '23505':
         return const UniqueViolationFailure();
       case '23503':
@@ -77,56 +81,68 @@ abstract class QueryFailure extends Failure {
         return const NotNullViolationFailure();
       case '23514':
         return const CheckConstraintViolationFailure();
-      case '22P02':
-        return const InvalidUuidFailure();
+      case '42P01':
+        return const UndefinedTableFailure();
+      case '42703':
+        return const UndefinedColumnFailure();
+      case '42501':
+        return const InsufficientPrivilegesFailure();
+      case '42601':
+        return const SyntaxErrorQueryFailure();
       case '22001':
         return const StringDataRightTruncationFailure();
       case '22007':
       case '22008':
         return const InvalidDateTimeFormatFailure();
-
-      // Schema/Structure Errors
-      case '42P01':
-        return const UndefinedTableFailure();
-      case '42703':
-        return const UndefinedColumnFailure();
-
-      // Permission, Authorization & Security (RLS & Grants)
-      case '42501': // permission_denied (RLS policy constraint)
-      case '28000': // invalid_authorization_specification
-      case '28P01': // invalid_password
-      case '42000': // syntax_error_or_access_rule_violation
-        return const InsufficientPrivilegesFailure();
-
-      case '42601':
-        return const SyntaxErrorQueryFailure();
-
-      // Timeouts & Resources
-      case '57014':
-      case '57P01':
-        return const QueryTimeoutFailure();
       case '53300':
         return const TooManyConnectionsFailure();
-
-      // PostgREST RESTful API Errors
+      case 'PGRST100':
+      case 'PGRST101':
+      case 'PGRST102':
+        return const SyntaxErrorQueryFailure();
       case 'PGRST116':
         return const RecordNotFoundFailure();
       case 'PGRST200':
-      case 'PGRST204':
+      case 'PGRST201':
         return const AmbiguousEmbedFailure();
       case 'PGRST301':
-      case 'PGRST302':
         return const JWTExpiredFailure();
+      case '401':
       case 'PGRST300':
         return const UnauthorizedApiFailure();
+      case '403':
+        return const InsufficientPrivilegesFailure();
+      case '404':
+        return const RecordNotFoundFailure();
+      case '504':
+        return const QueryTimeoutFailure();
     }
 
-    // فحص إضافي في حالة وصول الرسالة تحتوي نص RLS
-    final msg = e.message.toLowerCase();
-    if (msg.contains('row-level security') ||
-        msg.contains('permission denied') ||
-        msg.contains('policy')) {
+    if (e.message.contains('duplicate key value') ||
+        e.message.contains('already exists')) {
+      return const UniqueViolationFailure();
+    }
+    if (e.message.contains('violates foreign key constraint')) {
+      return const ForeignKeyViolationFailure();
+    }
+    if (e.message.contains('violates not-null constraint')) {
+      return const NotNullViolationFailure();
+    }
+    if (e.message.contains('violates check constraint')) {
+      return const CheckConstraintViolationFailure();
+    }
+    if (e.message.contains('permission denied') ||
+        e.message.contains('row-level security')) {
       return const InsufficientPrivilegesFailure();
+    }
+    if (e.message.contains('JWT expired')) {
+      return const JWTExpiredFailure();
+    }
+    if (e.message.contains('SocketException') ||
+        e.message.contains('Network') ||
+        e.message.contains('network') ||
+        e.message.contains('Failed host lookup')) {
+      return const NetworkQueryFailure();
     }
 
     return UnknownQueryFailure(
@@ -141,93 +157,154 @@ abstract class QueryFailure extends Failure {
 // ─── PostgREST & Database Failures ──────────────────────────
 
 class UniqueViolationFailure extends QueryFailure {
-  const UniqueViolationFailure() : super(message: 'هذا السجل موجود مسبقاً.');
+  const UniqueViolationFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.uniqueViolation;
 }
 
 class ForeignKeyViolationFailure extends QueryFailure {
-  const ForeignKeyViolationFailure() : super(message: 'بيانات مرجعية غير موجودة.');
+  const ForeignKeyViolationFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.foreignKeyViolation;
 }
 
 class NotNullViolationFailure extends QueryFailure {
-  const NotNullViolationFailure() : super(message: 'حقل مطلوب لا يمكن أن يكون فارغاً.');
+  const NotNullViolationFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.notNullViolation;
 }
 
 class CheckConstraintViolationFailure extends QueryFailure {
-  const CheckConstraintViolationFailure() : super(message: 'البيانات المدخلة تخالف شروط الصحة المحددة.');
+  const CheckConstraintViolationFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.checkConstraintViolation;
 }
 
 class UndefinedTableFailure extends QueryFailure {
-  const UndefinedTableFailure() : super(message: 'خطأ في قاعدة البيانات: الجدول غير موجود.');
+  const UndefinedTableFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.undefinedTable;
 }
 
 class UndefinedColumnFailure extends QueryFailure {
-  const UndefinedColumnFailure() : super(message: 'خطأ في قاعدة البيانات: العمود غير موجود.');
+  const UndefinedColumnFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.undefinedColumn;
 }
 
 class InsufficientPrivilegesFailure extends QueryFailure {
-  const InsufficientPrivilegesFailure() : super(message: 'ليس لديك الصلاحية الكافية لإتمام هذا الإجراء.');
+  const InsufficientPrivilegesFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.insufficientPrivileges;
 }
 
 class SyntaxErrorQueryFailure extends QueryFailure {
-  const SyntaxErrorQueryFailure() : super(message: 'خطأ في صياغة استعلام قاعدة البيانات.');
+  const SyntaxErrorQueryFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.syntaxError;
 }
 
 class StringDataRightTruncationFailure extends QueryFailure {
-  const StringDataRightTruncationFailure() : super(message: 'النص المدخل أطول من الحد المسموح به للحقل.');
+  const StringDataRightTruncationFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.stringDataRightTruncation;
 }
 
 class InvalidDateTimeFormatFailure extends QueryFailure {
-  const InvalidDateTimeFormatFailure() : super(message: 'صيغة التاريخ أو الوقت غير صحيحة.');
+  const InvalidDateTimeFormatFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.invalidDateTimeFormat;
 }
 
 class TooManyConnectionsFailure extends QueryFailure {
-  const TooManyConnectionsFailure() : super(message: 'الخادم مشغول حالياً بسبب كثرة الاتصالات. أعد المحاولة لاحقاً.');
+  const TooManyConnectionsFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.tooManyConnections;
 }
 
 class AmbiguousEmbedFailure extends QueryFailure {
-  const AmbiguousEmbedFailure() : super(message: 'خطأ في ربط الجداول: توجد علاقات متعددة متضاربة.');
+  const AmbiguousEmbedFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.ambiguousEmbed;
 }
 
 class QueryTimeoutFailure extends QueryFailure {
-  const QueryTimeoutFailure() : super(message: 'انتهت مهلة الاتصال بالخادم. يرجى المحاولة لاحقاً.');
+  const QueryTimeoutFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.queryTimeout;
 }
 
 class NetworkQueryFailure extends QueryFailure {
-  const NetworkQueryFailure() : super(message: 'عفواً، لا يوجد اتصال بالإنترنت. تحقق من الشبكة وأعد المحاولة.');
+  const NetworkQueryFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.networkQuery;
 }
 
 class FormatQueryFailure extends QueryFailure {
-  const FormatQueryFailure() : super(message: 'حدث خطأ في معالجة أو تنسيق البيانات إرجاعاً.');
+  const FormatQueryFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.formatQuery;
 }
 
 class RecordNotFoundFailure extends QueryFailure {
-  const RecordNotFoundFailure() : super(message: 'لم يتم العثور على السجل المطلوب.');
+  const RecordNotFoundFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.recordNotFound;
 }
 
 class InvalidUuidFailure extends QueryFailure {
-  const InvalidUuidFailure() : super(message: 'المعرف الممرر غير صالح (UUID غير صحيح).');
+  const InvalidUuidFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.invalidUuid;
 }
 
 class JWTExpiredFailure extends QueryFailure {
-  const JWTExpiredFailure() : super(message: 'انتهت جلسة تسجيل الدخول. يرجى إعادة تسجيل الدخول.');
+  const JWTExpiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.jwtExpired;
 }
 
 class UnauthorizedApiFailure extends QueryFailure {
-  const UnauthorizedApiFailure() : super(message: 'غير مصرح لك بالوصول إلى هذا المورد.');
+  const UnauthorizedApiFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.unauthorizedApi;
 }
 
 class PlanLimitQueryFailure extends QueryFailure {
-  const PlanLimitQueryFailure({
-    super.message = 'لقد وصلت للحد الأقصى المسموح به في خطتك الحالية',
-  });
+  const PlanLimitQueryFailure({String? message}) : super(message ?? '');
+
+  @override
+  String get defaultMessage => FailureStrings.planLimitReached;
 }
 
 class FeatureNotAllowedFailure extends QueryFailure {
   final String featureKey;
   const FeatureNotAllowedFailure({
-    super.message = 'الميزة غير متاحة في باقة اشتراكك الحالية',
+    String? message,
     this.featureKey = '',
-  });
+  }) : super(message ?? '');
+
+  @override
+  String get defaultMessage => FailureStrings.featureNotAllowed;
 }
 
 // ─── Unknown / Fallback Failure ──────────────────────────────
@@ -238,9 +315,9 @@ class UnknownQueryFailure extends QueryFailure {
   final String? hint;
 
   const UnknownQueryFailure({
-    required super.message,
+    required String message,
     this.code,
     this.details,
     this.hint,
-  });
+  }) : super(message);
 }

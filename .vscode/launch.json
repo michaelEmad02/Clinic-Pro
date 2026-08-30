@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Clinic Pro (Auto Device)",
+      "cwd": "clinic_pro",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Clinic Pro (Android / Phone)",
+      "cwd": "clinic_pro",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "android",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Clinic Pro (Windows)",
+      "cwd": "clinic_pro",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "windows",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Clinic Pro (Chrome)",
+      "cwd": "clinic_pro",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "program": "lib/main.dart"
+    }
+  ]
+}

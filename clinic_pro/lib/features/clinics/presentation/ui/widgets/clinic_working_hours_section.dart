@@ -34,9 +34,9 @@ class ClinicWorkingHoursSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
@@ -44,8 +44,8 @@ class ClinicWorkingHoursSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.schedule,
-                  size: AppConstants.iconSizeLg, color: AppColors.primary),
+              Icon(Icons.schedule,
+                  size: AppConstants.iconSizeLg, color: context.primary),
               const SizedBox(width: AppConstants.spaceSm),
               Text(
                 AppStrings.workingHours,
@@ -56,7 +56,7 @@ class ClinicWorkingHoursSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppConstants.spaceXs),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: context.borderColor),
           const SizedBox(height: AppConstants.spaceSm),
           ...List.generate(7, (index) {
             final day = AppStrings.dayNames[index];
@@ -72,7 +72,7 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                     ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
                     : EdgeInsets.zero,
                 decoration: BoxDecoration(
-                  color: isToday ? AppColors.primaryLight : Colors.transparent,
+                  color: isToday ? context.primaryLightColor : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                 ),
                 child: Row(
@@ -86,10 +86,10 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                             style: AppTextStyles.bodyMedium(context).copyWith(
                               fontWeight: FontWeight.w600,
                               color: isToday
-                                  ? AppColors.primary
+                                  ? context.primary
                                   : isClosed
-                                      ? AppColors.textHint
-                                      : AppColors.textPrimary,
+                                      ? context.textHint
+                                      : context.textPrimary,
                             ),
                           ),
                           if (isToday)
@@ -99,8 +99,8 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                               child: Container(
                                 width: 6,
                                 height: 6,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.primary,
+                                decoration: BoxDecoration(
+                                  color: context.primary,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -113,10 +113,10 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                         time,
                         style: AppTextStyles.bodyMedium(context).copyWith(
                           color: isClosed
-                              ? AppColors.textHint
+                              ? context.textHint
                               : isToday
-                                  ? AppColors.primary
-                                  : AppColors.textPrimary,
+                                  ? context.primary
+                                  : context.textPrimary,
                           fontWeight:
                               isToday ? FontWeight.w600 : FontWeight.normal,
                         ),
@@ -128,14 +128,14 @@ class ClinicWorkingHoursSection extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceContainerHigh,
+                          color: context.surfaceContainerLow,
                           borderRadius:
                               BorderRadius.circular(AppConstants.radiusSm),
                         ),
                         child: Text(
                           AppStrings.closed,
                           style: AppTextStyles.labelChip(context).copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.textSecondary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

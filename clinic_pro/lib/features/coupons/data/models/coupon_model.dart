@@ -7,6 +7,14 @@ import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/features/coupons/domain/entities/coupon_entity.dart';
 
 class CouponModel extends CouponEntity {
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
+  }
+
   const CouponModel({
     required super.id,
     required super.code,
@@ -37,10 +45,10 @@ class CouponModel extends CouponEntity {
       maxUses: json['max_uses'] as int?,
       usedCount: json['used_count'] as int? ?? 0,
       validFrom: json['valid_from'] != null
-          ? DateTime.parse(json['valid_from'] as String)
-          : DateTime.now(),
+          ? _parseUtc(json['valid_from'] as String)
+          : DateTime.now().toUtc(),
       validUntil: json['valid_until'] != null
-          ? DateTime.parse(json['valid_until'] as String)
+          ? _parseUtc(json['valid_until'] as String)
           : null,
       planIds: (json['plan_id'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
       isActive: json['is_active'] as bool? ?? true,

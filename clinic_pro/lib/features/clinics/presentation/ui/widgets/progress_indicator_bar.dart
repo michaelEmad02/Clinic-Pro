@@ -27,7 +27,7 @@ class ProgressIndicatorBar extends StatelessWidget {
               text: TextSpan(
                 text: AppStrings.step,
                 style: AppTextStyles.headlineSmall(context).copyWith(
-                  color: AppColors.primary,
+                  color: context.primary,
                 ),
                 children: [
                   TextSpan(
@@ -51,7 +51,7 @@ class ProgressIndicatorBar extends StatelessWidget {
             Text(
               title,
               style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
+                color: context.textSecondary,
               ),
             ),
           ],
@@ -60,15 +60,15 @@ class ProgressIndicatorBar extends StatelessWidget {
         Container(
           height: 8,
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerHigh,
+            color: context.primary,
             borderRadius: BorderRadius.circular(4),
           ),
-          alignment: Alignment.centerRight, // RTL alignment
+          alignment: Alignment.centerRight,
           child: FractionallySizedBox(
-            widthFactor: step / totalSteps,
+            widthFactor: (totalSteps > 0) ? (step / totalSteps).clamp(0.0, 1.0) : 0.0,
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: context.primary,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),

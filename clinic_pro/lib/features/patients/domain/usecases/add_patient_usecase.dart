@@ -5,6 +5,7 @@ import 'package:clinic_pro/features/plans_and_subscriptions/domain/repositories/
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/strings/failure_strings.dart';
 import '../entities/patient_entity.dart';
 import '../repositories/i_patients_repository.dart';
 
@@ -45,16 +46,12 @@ class AddPatientUseCase {
 
           if (maxPatients > 0 && usage.patientsCount >= maxPatients) {
             return const Left(
-              PlanLimitQueryFailure(
-                message: 'لقد وصلت للحد الأقصى المسموح به من المرضى في خطتك الحالية',
-              ),
+              PlanLimitQueryFailure(),
             );
           }
         } catch (e) {
           return Left(
-            UnknownQueryFailure(
-              message: 'حدث خطأ: ${e.toString()}',
-            ),
+            QueryFailure.fromException(e),
           );
         }
       }
@@ -63,13 +60,13 @@ class AddPatientUseCase {
     // 2. التحقق من صحة المدخلات الأساسية
     if (patient.name.trim().length < 2) {
       return const Left(
-        AddPatientFailure('اسم المريض مطلوب ولا يقل عن حرفين'),
+        PatientNameRequiredFailure(),
       );
     }
 
     if (patient.gender.isEmpty) {
       return const Left(
-        AddPatientFailure('الجنس مطلوب لإضافة مريض'),
+        PatientGenderRequiredFailure(),
       );
     }
 
@@ -77,7 +74,7 @@ class AddPatientUseCase {
       final dob = DateTime.tryParse(patient.dateOfBirth!);
       if (dob != null && dob.isAfter(DateTime.now())) {
         return const Left(
-          AddPatientFailure('تاريخ الميلاد يجب أن يكون في الماضي'),
+          DobMustBeInPastFailure(),
         );
       }
     }
@@ -87,5 +84,26 @@ class AddPatientUseCase {
 }
 
 class AddPatientFailure extends Failure {
-  const AddPatientFailure(super.message);
+  const AddPatientFailure([super.customMessage]);
+}
+
+class PatientNameRequiredFailure extends Failure {
+  const PatientNameRequiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.patientNameRequired;
+}
+
+class PatientGenderRequiredFailure extends Failure {
+  const PatientGenderRequiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.patientGenderRequired;
+}
+
+class DobMustBeInPastFailure extends Failure {
+  const DobMustBeInPastFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.dobMustBeInPast;
 }

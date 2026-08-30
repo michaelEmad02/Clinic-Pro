@@ -4,7 +4,6 @@
 
 import 'package:clinic_pro/features/payment/domain/entities/payment_status_entity.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -220,13 +219,13 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'رقم المحفظة الإلكترونية',
+                          AppStrings.walletNumberTitle,
                           style: AppTextStyles.headlineSmall(parentContext).copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'فودافون كاش، أورنج كاش، اتصالات كاش، وي باي، أو المحافظ البنكية',
+                          AppStrings.walletProvidersDesc,
                           style: AppTextStyles.caption(parentContext).copyWith(
                             color: parentContext.textSecondary,
                           ),
@@ -244,7 +243,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                 maxLength: 11,
                 autofocus: true,
                 decoration: InputDecoration(
-                  labelText: 'رقم المحفظة',
+                  labelText: AppStrings.walletNumberLabel,
                   hintText: '010XXXXXXXX',
                   prefixIcon: const Icon(Icons.phone_android_rounded),
                   counterText: '',
@@ -261,7 +260,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                 onPressed: () {
                   final walletNum = _walletController.text.trim();
                   if (walletNum.isEmpty) {
-                    AppSnackbar.error(sheetContext, message: 'الرجاء إدخال رقم المحفظة الإلكترونية');
+                    AppSnackbar.error(sheetContext, message: AppStrings.enterWalletNumberError);
                     return;
                   }
                   Navigator.pop(sheetContext);
@@ -283,145 +282,7 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                   ),
                 ),
                 child: Text(
-                  'تأكيد ومتابعة الدفع',
-                  style: AppTextStyles.bodyLarge(parentContext).copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: parentContext.onPrimary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showFawryCodeBottomSheet(BuildContext parentContext, PaymentIntentReady state) {
-    final rawCode = state.intentResult.fawryCode;
-    final code = (rawCode != null && rawCode.trim().isNotEmpty)
-        ? rawCode.trim()
-        : (state.intentResult.referenceNumber.trim().isNotEmpty
-            ? state.intentResult.referenceNumber.trim()
-            : state.intentResult.orderId);
-
-    showModalBottomSheet(
-      context: parentContext,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        return Container(
-          padding: const EdgeInsets.all(AppConstants.spaceLg),
-          decoration: BoxDecoration(
-            color: parentContext.surfaceColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: parentContext.borderColor,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: AppConstants.spaceLg),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.storefront_rounded,
-                  color: Colors.amber,
-                  size: 36,
-                ),
-              ),
-              const SizedBox(height: AppConstants.spaceMd),
-              Text(
-                'كود الدفع في فوري (Fawry Code)',
-                style: AppTextStyles.headlineSmall(parentContext).copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: AppConstants.spaceXs),
-              Text(
-                'احفظ هذا الكود وادفع به في أي منافذ أو منافذ فوري لتفعيل الاشتراك',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium(parentContext).copyWith(
-                  color: parentContext.textSecondary,
-                ),
-              ),
-              const SizedBox(height: AppConstants.spaceLg),
-              
-              // بطاقة عرض كود فوري
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                decoration: BoxDecoration(
-                  color: parentContext.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.amber, width: 1.5),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'رقم الخدمة/المرجع:',
-                      style: AppTextStyles.caption(parentContext).copyWith(
-                        color: parentContext.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    SelectableText(
-                      code,
-                      style: AppTextStyles.headlineLarge(parentContext).copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: parentContext.primary,
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppConstants.spaceLg),
-
-              // زر نسخ الكود
-              OutlinedButton.icon(
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: code));
-                  AppSnackbar.success(sheetContext, message: 'تم نسخ كود فوري بنجاح!');
-                },
-                icon: const Icon(Icons.copy_rounded),
-                label: const Text('نسخ الكود'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppConstants.spaceMd),
-
-              // زر متابعة وتوجه لشاشة الاشتراكات
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(sheetContext);
-                  context.go(RouteConstants.onboardingPlan);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: parentContext.primary,
-                  foregroundColor: parentContext.onPrimary,
-                  minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-                  ),
-                ),
-                child: Text(
-                  'فهمت',
+                  AppStrings.confirmAndProceedPayment,
                   style: AppTextStyles.bodyLarge(parentContext).copyWith(
                     fontWeight: FontWeight.bold,
                     color: parentContext.onPrimary,

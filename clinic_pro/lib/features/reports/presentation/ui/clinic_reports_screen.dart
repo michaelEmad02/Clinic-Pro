@@ -18,26 +18,15 @@ class ClinicReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userId = context.read<AuthCubit>().state.user?.id ?? '';
-    return BlocProvider.value(
-      value: sl<ClinicReportsCubit>()..loadReport(userId),
+    return BlocProvider(
+      create: (_) => sl<ClinicReportsCubit>()..loadReport(userId),
       child: const _ClinicReportsBody(),
     );
   }
 }
 
-class _ClinicReportsBody extends StatefulWidget {
+class _ClinicReportsBody extends StatelessWidget {
   const _ClinicReportsBody();
-
-  @override
-  State<_ClinicReportsBody> createState() => _ClinicReportsBodyState();
-}
-
-class _ClinicReportsBodyState extends State<_ClinicReportsBody> {
-  @override
-  void dispose() {
-    sl<ClinicReportsCubit>().clear();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {

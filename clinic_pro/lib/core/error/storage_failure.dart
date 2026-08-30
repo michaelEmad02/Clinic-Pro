@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/strings/failure_strings.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class StorageFailure extends Failure {
@@ -38,23 +39,39 @@ abstract class StorageFailure extends Failure {
 }
 
 class FileNotFoundFailure extends StorageFailure {
-  const FileNotFoundFailure()
-      : super(message: 'الملف غير موجود.');
+  const FileNotFoundFailure([String? message])
+      : super(message: message ?? '');
+
+  @override
+  String get message =>
+      super.message.isEmpty ? FailureStrings.fileNotFound : super.message;
 }
 
 class FileAlreadyExistsFailure extends StorageFailure {
-  const FileAlreadyExistsFailure()
-      : super(message: 'الملف موجود مسبقاً.');
+  const FileAlreadyExistsFailure([String? message])
+      : super(message: message ?? '');
+
+  @override
+  String get message =>
+      super.message.isEmpty ? FailureStrings.fileAlreadyExists : super.message;
 }
 
 class FileTooLargeFailure extends StorageFailure {
-  const FileTooLargeFailure()
-      : super(message: 'حجم الملف كبير جداً.');
+  const FileTooLargeFailure([String? message])
+      : super(message: message ?? '');
+
+  @override
+  String get message =>
+      super.message.isEmpty ? FailureStrings.fileTooLarge : super.message;
 }
 
 class InvalidFileFailure extends StorageFailure {
-  const InvalidFileFailure()
-      : super(message: 'نوع الملف غير مدعوم.');
+  const InvalidFileFailure([String? message])
+      : super(message: message ?? '');
+
+  @override
+  String get message =>
+      super.message.isEmpty ? FailureStrings.invalidFile : super.message;
 }
 
 class UnknownStorageFailure extends StorageFailure {

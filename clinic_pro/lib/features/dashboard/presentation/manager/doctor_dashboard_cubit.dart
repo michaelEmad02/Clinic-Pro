@@ -41,11 +41,14 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
     required String clinicId,
     String? doctorName,
     String? clinicName,
-    bool autoCallNext = false,
+    bool showLoading = false,
   }) async {
     _doctorId = doctorId;
     _clinicId = clinicId;
-    emit(DoctorDashboardLoading());
+
+    if (state is DoctorDashboardInitial || showLoading) {
+      emit(DoctorDashboardLoading());
+    }
 
     // إلغاء أي اشتراك سابق إن وجد
     await _dashboardSubscription?.cancel();
@@ -58,39 +61,16 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
     );
 
     // 1. جلب البيانات الأوّلية فوراً
-    final initialResult = await _getDoctorDashboardDataUseCase(params);
+    try {
+      final initialResult = await _getDoctorDashboardDataUseCase(params);
 
-    initialResult.fold(
-      (failure) => emit(DoctorDashboardError(failure.message)),
-      (data) {
-        emit(DoctorDashboardLoaded(
-          doctorName: data.doctorName,
-          clinicName: data.clinicName,
-          currentPatient: data.currentPatient,
-          waitingQueue: data.waitingQueue,
-          todayAppointmentsCount: data.todayAppointmentsCount,
-          completedCount: data.completedCount,
-          waitingCount: data.waitingCount,
-          avgWaitingTime: data.avgWaitingTime,
-          todayRevenue: data.todayRevenue,
-          collectedAmount: data.collectedAmount,
-        ));
-      },
-    );
-
-    // 2. البدء بالاستماع المباشر الفوري للتغييرات اللحظية (Real-time Stream)
-    _dashboardSubscription = _watchDoctorDashboardDataUseCase(params).listen((result) async {
-      result.fold(
-        (failure) {},
-        (data) async {
-          if (autoCallNext &&
-              data.currentPatient == null &&
-              data.waitingQueue.isNotEmpty) {
-            final nextPatient = data.waitingQueue.first;
-            await _callPatientUseCase(nextPatient.id);
-            return;
+      initialResult.fold(
+        (failure) {
+          if (state is! DoctorDashboardLoaded) {
+            emit(DoctorDashboardError(failure.message));
           }
-
+        },
+        (data) {
           emit(DoctorDashboardLoaded(
             doctorName: data.doctorName,
             clinicName: data.clinicName,
@@ -105,7 +85,35 @@ class DoctorDashboardCubit extends Cubit<DoctorDashboardState> {
           ));
         },
       );
-    });
+    } catch (e) {
+      if (state is! DoctorDashboardLoaded) {
+        emit(DoctorDashboardError(e.toString()));
+      }
+    }
+
+    // 2. البدء بالاستماع المباشر الفوري للتغييرات اللحظية (Real-time Stream)
+    _dashboardSubscription = _watchDoctorDashboardDataUseCase(params).listen(
+      (result) {
+        result.fold(
+          (failure) {},
+          (data) {
+            emit(DoctorDashboardLoaded(
+              doctorName: data.doctorName,
+              clinicName: data.clinicName,
+              currentPatient: data.currentPatient,
+              waitingQueue: data.waitingQueue,
+              todayAppointmentsCount: data.todayAppointmentsCount,
+              completedCount: data.completedCount,
+              waitingCount: data.waitingCount,
+              avgWaitingTime: data.avgWaitingTime,
+              todayRevenue: data.todayRevenue,
+              collectedAmount: data.collectedAmount,
+            ));
+          },
+        );
+      },
+      onError: (_) {},
+    );
   }
 
   /// استدعاء المريض التالي في الطابور

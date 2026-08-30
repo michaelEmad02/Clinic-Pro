@@ -47,16 +47,12 @@ class InviteStaffUseCase {
 
           if (maxStaff > 0 && usage.staffCount >= maxStaff) {
             return const Left(
-              PlanLimitQueryFailure(
-                message: 'لقد وصلت للحد الأقصى المسموح به من الموظفين والدعوات في خطتك الحالية',
-              ),
+              PlanLimitQueryFailure(),
             );
           }
         } catch (e) {
           return Left(
-            UnknownQueryFailure(
-              message: 'حدث خطأ: ${e.toString()}',
-            ),
+            QueryFailure.fromException(e),
           );
         }
       }

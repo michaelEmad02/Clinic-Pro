@@ -44,11 +44,13 @@ class ForgotPasswordScreen extends StatelessWidget {
               ? _buildMobileContent(context)
               : Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       flex: 5,
                       child: AuthBrandingPanel(
                         title: 'Clinic Pro',
-                        subtitle: 'استعادة الوصول إلى حساب عيادتك وإدارتها بكل سهولة وموثوقية.',
+                        subtitle: AppStrings.isArabic
+                            ? 'استعادة الوصول إلى حساب عيادتك وإدارتها بكل سهولة وموثوقية.'
+                            : 'Regain access to your clinic account effortlessly and securely.',
                       ),
                     ),
                     Expanded(
@@ -108,7 +110,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.12),
+                                color: context.primary.withOpacity(0.12),
                                 blurRadius: 16,
                                 offset: const Offset(0, 4),
                               ),
@@ -171,7 +173,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                                 }
                               },
                         style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primary,
+                          foregroundColor: context.primary,
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppConstants.spaceMd,
                             vertical: AppConstants.spaceSm,
@@ -187,7 +189,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                                 AppStrings.backToLogin,
                                 style: AppTextStyles.headlineSmall(context)
                                     .copyWith(
-                                  color: AppColors.primary,
+                                  color: context.primary,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),

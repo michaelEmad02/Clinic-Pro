@@ -6,6 +6,14 @@
 import '../../domain/entities/subscription_entity.dart';
 
 class SubscriptionModel extends SubscriptionEntity {
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
+  }
+
   const SubscriptionModel({
     required super.id,
     required super.ownerId,
@@ -45,13 +53,13 @@ class SubscriptionModel extends SubscriptionEntity {
       status: json['status'] as String? ?? '',
       paymentMethod: json['payment_method'] as String?,
       startedAt: json['started_at'] != null
-          ? DateTime.parse(json['started_at'] as String)
+          ? _parseUtc(json['started_at'] as String)
           : null,
       endAt: json['end_at'] != null
-          ? DateTime.parse(json['end_at'] as String)
+          ? _parseUtc(json['end_at'] as String)
           : null,
       createdBy: json['created_by'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: _parseUtc(json['created_at'] as String),
     );
   }
 
@@ -63,8 +71,8 @@ class SubscriptionModel extends SubscriptionEntity {
       'subscription_type': subscriptionType,
       'status': status,
       'payment_method': paymentMethod,
-      'started_at': startedAt?.toIso8601String(),
-      'end_at': endAt?.toIso8601String(),
+      'started_at': startedAt?.toUtc().toIso8601String(),
+      'end_at': endAt?.toUtc().toIso8601String(),
       'created_by': createdBy ?? ownerId,
     };
   }

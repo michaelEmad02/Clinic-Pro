@@ -42,20 +42,20 @@ class DoctorSettingsScreen extends StatelessWidget {
       create: (_) => sl<QueuePatternCubit>()..init(doctorId, clinicId),
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: context.primary),
-            onPressed: () => Navigator.maybePop(context),
-          ),
+          // leading: IconButton(
+          //   icon: Icon(Icons.arrow_back, color: context.primary),
+          //   onPressed: () => Navigator.maybePop(context),
+          // ),
           title: Text(AppStrings.settings,
               style: AppTextStyles.headlineMedium(context)
                   .copyWith(color: context.primary)),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.notifications_outlined,
-                  color: context.textSecondary),
-              onPressed: () {},
-            ),
-          ],
+          // actions: [
+          //   IconButton(
+          //     icon: Icon(Icons.notifications_outlined,
+          //         color: context.textSecondary),
+          //     onPressed: () {},
+          //   ),
+          // ],
         ),
         body: BlocBuilder<SettingsCubit, SettingsState>(
           builder: (context, state) {

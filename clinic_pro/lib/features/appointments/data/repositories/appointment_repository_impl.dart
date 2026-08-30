@@ -94,7 +94,7 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
         appointmentId: appointmentId,
         fields: {
           'status': AppointmentStatus.confirmed,
-          'arrived_at': DateTime.now().toIso8601String(),
+          'arrived_at': DateTime.now().toUtc().toIso8601String(),
         },
       );
       _clearCache();
@@ -130,7 +130,7 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
         appointmentId: appointmentId,
         fields: {
           'status': AppointmentStatus.inProgress,
-          'called_at': DateTime.now().toIso8601String(),
+          'called_at': DateTime.now().toUtc().toIso8601String(),
         },
       );
 

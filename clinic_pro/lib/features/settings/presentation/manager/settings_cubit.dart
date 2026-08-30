@@ -280,15 +280,16 @@ class SettingsCubit extends Cubit<SettingsState> {
       (clinic) async {
         AppConstants.activeClinicId = clinicId; // تحديث العيادة النشطة عالمياً
         await _localDataSource.saveActiveClinicId(userId, clinicId);
-        emit(state.copyWith(
-          isLoading: false,
-          clinicEntity: clinic,
-        ));
 
         // إذا كانت سكرتيرة، أعد تحميل قائمة الأطباء التابعة للعيادة الجديدة
         if (role == StaffRoles.secretary) {
           await loadSecretaryDoctorsList(userId, clinicId);
         }
+
+        emit(state.copyWith(
+          isLoading: false,
+          clinicEntity: clinic,
+        ));
       },
     );
   }

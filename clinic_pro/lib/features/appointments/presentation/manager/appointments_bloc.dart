@@ -163,7 +163,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       if (item.id == event.appointmentId) {
         return item.copyWith(
           status: AppointmentStatus.confirmed,
-          arrivedAt: DateTime.now(),
+          arrivedAt: DateTime.now().toUtc(),
         );
       }
       return item;
@@ -267,7 +267,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       isUrgent: event.isUrgent,
       notes: event.notes,
       createdBy: event.currentUser,
-      createdAt: DateTime.now(),
+      createdAt: DateTime.now().toUtc(),
     );
 
     final result = await _addAppointmentUseCase(tempEntity);
@@ -310,7 +310,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       isUrgent: event.isUrgent,
       notes: event.notes,
       createdBy: existing?.createdBy ?? '',
-      createdAt: existing?.createdAt ?? DateTime.now(),
+      createdAt: existing?.createdAt ?? DateTime.now().toUtc(),
       arrivedAt: existing?.arrivedAt,
       calledAt: existing?.calledAt,
     );
@@ -385,7 +385,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
         if (a.id == event.appointmentId) {
           return a.copyWith(
             status: AppointmentStatus.done,
-            calledAt: a.calledAt ?? event.calledAt ?? DateTime.now(),
+            calledAt: a.calledAt ?? event.calledAt ?? DateTime.now().toUtc(),
           );
         }
         return a;
@@ -399,7 +399,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
       (appointment) async {
         final updatedEntity = appointment.copyWith(
           status: AppointmentStatus.done,
-          calledAt: appointment.calledAt ?? event.calledAt ?? DateTime.now(),
+          calledAt: appointment.calledAt ?? event.calledAt ?? DateTime.now().toUtc(),
         );
         await _updateAppointmentUseCase(updatedEntity);
       },

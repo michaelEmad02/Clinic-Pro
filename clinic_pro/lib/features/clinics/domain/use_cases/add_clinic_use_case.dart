@@ -46,17 +46,13 @@ class AddClinicUseCase {
         // إذا كانت القيمة > 0 وتم الوصول للحد الأقصى المسموح به
         if (maxClinics > 0 && usage.clinicsCount >= maxClinics) {
           return const Left(
-            PlanLimitQueryFailure(
-              message: 'لقد وصلت للحد الأقصى المسموح به من العيادات في خطتك الحالية',
-            ),
+            PlanLimitQueryFailure(),
           );
         }
       } catch (e) {
         // حماية التطبيق من أي استثناء غير متوقع وتوجيهه لـ Failure سليم دون تدمير العملية
         return Left(
-          UnknownQueryFailure(
-            message: 'حدث خطأ: ${e.toString()}',
-          ),
+          QueryFailure.fromException(e),
         );
       }
     }

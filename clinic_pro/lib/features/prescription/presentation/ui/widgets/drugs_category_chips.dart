@@ -40,13 +40,13 @@ class DrugsCategoryChips extends StatelessWidget {
                   (selectedCategory == cat['value']);
 
           return Padding(
-            padding: const EdgeInsets.only(left: 8.0),
+            padding: const EdgeInsetsDirectional.only(end: 8.0),
             child: ChoiceChip(
               label: Text(
                 cat['label']!,
                 style: AppTextStyles.labelChip(context).copyWith(
                   color: isSelected ? context.primary : context.textSecondary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 ),
               ),
               selected: isSelected,
@@ -57,15 +57,15 @@ class DrugsCategoryChips extends StatelessWidget {
                   onCategorySelected(cat['value']);
                 }
               },
-              selectedColor: context.primaryFixedDim,
-              backgroundColor: context.primary,
-              checkmarkColor: context.primary,
+              selectedColor: context.primaryLightColor,
+              backgroundColor: context.surface,
+              showCheckmark: false,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
                   color: isSelected
-                      ? context.primary.withOpacity(0.3)
-                      : Colors.transparent,
+                      ? context.primary
+                      : context.border,
                 ),
               ),
             ),

@@ -6,6 +6,14 @@ import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/features/owner_referrals/domain/entities/referral_dashboard_entity.dart';
 
 class MilestoneRewardModel extends MilestoneRewardEntity {
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
+  }
+
   const MilestoneRewardModel({
     required super.id,
     required super.targetCount,
@@ -34,7 +42,7 @@ class MilestoneRewardModel extends MilestoneRewardEntity {
       isAchieved: json['is_achieved'] as bool? ?? false,
       isClaimed: json['is_claimed'] as bool? ?? false,
       claimedAt: json['claimed_at'] != null
-          ? DateTime.parse(json['claimed_at'] as String)
+          ? _parseUtc(json['claimed_at'] as String)
           : null,
       couponCode: json['coupon_code'] as String?,
     );

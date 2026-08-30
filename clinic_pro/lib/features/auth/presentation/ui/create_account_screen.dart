@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/strings/app_strings.dart';
@@ -61,7 +62,7 @@ class CreateAccountScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
                   color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusCard),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.04),
@@ -75,87 +76,83 @@ class CreateAccountScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Header Section
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: context.primaryLightColor,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons
-                              .monitor_heart_outlined, // vital_signs approximate
-                          color: context.primaryContainer,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header Section
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: context.primaryLightColor,
+                        borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                      ),
+                      child: Icon(
+                        Icons.monitor_heart_outlined,
+                        color: context.primaryContainer,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppStrings.createAccount,
+                      style: AppTextStyles.headlineLarge(context),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: context.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: context.borderColor),
+                      ),
+                      child: Text(
+                        AppStrings.teamViaInvite,
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: context.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        AppStrings.createAccount,
-                        style: AppTextStyles.headlineLarge(context),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: context.isDarkMode
-                              ? AppColors.darkBackground
-                              : AppColors.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: context.borderColor),
-                        ),
-                        child: Text(
-                          AppStrings.teamViaInvite,
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: context.textSecondary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
+                    ),
+                    const SizedBox(height: 32),
 
-                      // Form Section
-                      const AccountForm(),
+                    // Form Section
+                    const AccountForm(),
 
-                      const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                      // Divider
-                      Row(
-                        children: [
-                          Expanded(child: Divider(color: context.borderColor)),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              AppStrings.orRegisterWith,
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: context.textHint,
-                              ),
+                    // Divider
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: context.borderColor)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            AppStrings.orRegisterWith,
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: context.textHint,
                             ),
                           ),
-                          Expanded(child: Divider(color: context.borderColor)),
-                        ],
-                      ),
+                        ),
+                        Expanded(child: Divider(color: context.borderColor)),
+                      ],
+                    ),
 
-                      const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                      // أزرار تسجيل الدخول الاجتماعي المشتركة
-                      SocialLoginRow(
-                        onGooglePressed: () {
-                          // منطق تسجيل الدخول بـ Google عند إنشاء الحساب
-                        },
-                       
-                      ),
-                    ],
-                  ),
+                    // أزرار تسجيل الدخول الاجتماعي المشتركة
+                    SocialLoginRow(
+                      onGooglePressed: () {
+                        // منطق تسجيل الدخول بـ Google عند إنشاء الحساب
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 
   Widget _buildBlurCircle(Color color, double size) {

@@ -7,6 +7,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/patient_entity.dart';
 import '../repositories/i_patients_repository.dart';
+import 'add_patient_usecase.dart';
 
 @injectable
 class UpdatePatientUseCase {
@@ -18,14 +19,14 @@ class UpdatePatientUseCase {
     // التحقق من الاسم — مطلوب ولا يقل عن حرفين
     if (patient.name.trim().length < 2) {
       return const Left(
-        UpdatePatientFailure('اسم المريض مطلوب ولا يقل عن حرفين'),
+        PatientNameRequiredFailure(),
       );
     }
 
     // التحقق من الجنس — مطلوب
     if (patient.gender.isEmpty) {
       return const Left(
-        UpdatePatientFailure('الجنس مطلوب'),
+        PatientGenderRequiredFailure(),
       );
     }
 
@@ -34,5 +35,5 @@ class UpdatePatientUseCase {
 }
 
 class UpdatePatientFailure extends Failure {
-  const UpdatePatientFailure(super.message);
+  const UpdatePatientFailure([super.customMessage]);
 }

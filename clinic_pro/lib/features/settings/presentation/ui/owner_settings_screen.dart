@@ -34,13 +34,13 @@ class OwnerSettingsScreen extends StatelessWidget {
         title: Text(AppStrings.settings,
             style: AppTextStyles.headlineMedium(context)
                 .copyWith(color: context.primary)),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_outlined,
-                color: context.textSecondary),
-            onPressed: () {},
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.notifications_outlined,
+        //         color: context.textSecondary),
+        //     onPressed: () {},
+        //   ),
+        // ],
       ),
       body: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, state) {
@@ -121,7 +121,7 @@ class OwnerSettingsScreen extends StatelessWidget {
           Divider(height: 1, thickness: 0.5, color: context.border),
           NavSettingsItem(
             icon: Icons.print_outlined,
-            label: 'إعدادات وقوالب الطباعة',
+            label: AppStrings.printingSettingsAndTemplates,
             onTap: () => PrintingSettingsSheet.show(context),
           ),
           Divider(height: 1, thickness: 0.5, color: context.border),

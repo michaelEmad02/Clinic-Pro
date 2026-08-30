@@ -4,6 +4,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/core/strings/failure_strings.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class RealtimeFailure extends Failure {
@@ -32,7 +33,7 @@ abstract class RealtimeFailure extends Failure {
         return const RealtimeConnectionClosed();
       case RealtimeSubscribeStatus.subscribed:
         return const UnknownRealtimeFailure(
-            message: 'خطأ غير متوقع في الاتصال المباشر.');
+            message: 'Realtime Unexpected Error');
     }
   }
 }
@@ -40,20 +41,37 @@ abstract class RealtimeFailure extends Failure {
 class RealtimeChannelError extends RealtimeFailure {
   final Object? details;
 
-  RealtimeChannelError({this.details})
-      : super(message: 'خطأ في قناة الاتصال المباشر.');
+  RealtimeChannelError({this.details, String? message})
+      : super(message: message ?? '');
+
+  @override
+  String get message =>
+      super.message.isEmpty ? FailureStrings.realtimeChannelError : super.message;
 }
 
 class RealtimeTimedOut extends RealtimeFailure {
-  const RealtimeTimedOut()
-      : super(message: 'انتهت مهلة الاتصال المباشر.');
+  const RealtimeTimedOut([String? message])
+      : super(message: message ?? '');
+
+  @override
+  String get message =>
+      super.message.isEmpty ? FailureStrings.realtimeTimedOut : super.message;
 }
 
 class RealtimeConnectionClosed extends RealtimeFailure {
-  const RealtimeConnectionClosed()
-      : super(message: 'تم إغلاق الاتصال المباشر.');
+  const RealtimeConnectionClosed([String? message])
+      : super(message: message ?? '');
+
+  @override
+  String get message =>
+      super.message.isEmpty ? FailureStrings.realtimeConnectionClosed : super.message;
 }
 
 class UnknownRealtimeFailure extends RealtimeFailure {
   const UnknownRealtimeFailure({required super.message});
+
+  @override
+  String get message => super.message == 'Realtime Unexpected Error'
+      ? FailureStrings.realtimeUnexpected
+      : super.message;
 }

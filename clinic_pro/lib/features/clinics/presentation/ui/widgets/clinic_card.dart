@@ -34,7 +34,10 @@ class ClinicCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppConstants.radiusCard),
           child: Container(
-            padding: const EdgeInsets.all(AppConstants.spaceMd),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.spaceMd,
+              vertical: AppConstants.spaceSm + 2,
+            ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppConstants.radiusCard),
               border: Border.all(
@@ -46,6 +49,7 @@ class ClinicCard extends StatelessWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               mainAxisSize: MainAxisSize.min,
               children: [
                 ClinicCardHeader(
@@ -54,9 +58,10 @@ class ClinicCard extends StatelessWidget {
                   onToggleActive: onToggleActive,
                   onDelete: onDelete,
                 ),
-                const SizedBox(height: 8),
-                Divider(height: 1, color: context.border),
-                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Divider(height: 1, thickness: 0.5, color: context.border),
+                ),
                 ClinicCardStats(clinic: clinic),
               ],
             ),

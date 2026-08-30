@@ -33,9 +33,9 @@ class ClinicVisitTypesSection extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.borderColor),
         boxShadow: AppConstants.cardShadow,
       ),
       child: Column(
@@ -45,14 +45,14 @@ class ClinicVisitTypesSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppConstants.spaceMd, vertical: 12),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
-                  bottom: BorderSide(color: AppColors.border)),
+                  bottom: BorderSide(color: context.borderColor)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.medical_services_outlined,
-                    size: AppConstants.iconSizeLg, color: AppColors.primary),
+                Icon(Icons.medical_services_outlined,
+                    size: AppConstants.iconSizeLg, color: context.primary),
                 const SizedBox(width: AppConstants.spaceSm),
                 Text(
                   AppStrings.visitTypesAndPrices,
@@ -64,7 +64,7 @@ class ClinicVisitTypesSection extends StatelessWidget {
                 Text(
                   AppStrings.addService,
                   style: AppTextStyles.labelChip(context).copyWith(
-                    color: AppColors.primary,
+                    color: context.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -77,7 +77,7 @@ class ClinicVisitTypesSection extends StatelessWidget {
               child: Text(
                 AppStrings.noServices,
                 style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.textHint,
+                  color: context.textHint,
                 ),
               ),
             )
@@ -112,7 +112,7 @@ class ClinicVisitTypesSection extends StatelessWidget {
                                   description,
                                   style:
                                       AppTextStyles.caption(context).copyWith(
-                                    color: AppColors.textSecondary,
+                                    color: context.textSecondary,
                                   ),
                                 ),
                               ),
@@ -127,7 +127,7 @@ class ClinicVisitTypesSection extends StatelessWidget {
                           Text(
                             _formatPrice(price),
                             style: AppTextStyles.dataNumeric(context).copyWith(
-                              color: AppColors.primary,
+                              color: context.primary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -137,14 +137,14 @@ class ClinicVisitTypesSection extends StatelessWidget {
                             AppStrings.sar,
                             style:
                                 AppTextStyles.labelChip(context).copyWith(
-                              color: AppColors.textPrimary,
+                              color: context.textPrimary,
                             ),
                           ),
                           const SizedBox(width: AppConstants.spaceSm),
-                          const Icon(
+                          Icon(
                             Icons.chevron_left,
                             size: AppConstants.iconSizeLg,
-                            color: AppColors.outline,
+                            color: context.outline,
                           ),
                         ],
                       ),

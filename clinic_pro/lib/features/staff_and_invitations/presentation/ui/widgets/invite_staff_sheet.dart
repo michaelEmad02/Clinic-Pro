@@ -68,7 +68,7 @@ class _InviteStaffFormState extends State<_InviteStaffForm> {
       role: _role,
     );
 
-    if (!context.mounted) return;
+    if (!mounted) return;
     Navigator.of(context).pop();
     AppSnackbar.success(
       context,

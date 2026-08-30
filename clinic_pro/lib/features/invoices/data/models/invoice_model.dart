@@ -6,6 +6,15 @@
 import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
 
 class InvoiceModel extends InvoiceEntity {
+  /// يُفسّر أي timestamp من Supabase كـ UTC
+  static DateTime _parseUtc(String s) {
+    final parsed = DateTime.parse(s);
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day,
+        parsed.hour, parsed.minute, parsed.second,
+        parsed.millisecond, parsed.microsecond);
+  }
+
   const InvoiceModel({
     required super.id,
     required super.clinicId,
@@ -34,8 +43,8 @@ class InvoiceModel extends InvoiceEntity {
       paymentMethod: json['payment_method'] as String?,
       createdBy: json['created_by'] as String?,
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : DateTime.now(),
+          ? _parseUtc(json['created_at'] as String)
+          : DateTime.now().toUtc(),
       appointmentTypeName: json['appointment_type'] as String?,
     );
   }

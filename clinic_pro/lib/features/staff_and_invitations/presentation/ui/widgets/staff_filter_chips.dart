@@ -39,7 +39,7 @@ class StaffFilterChips extends StatelessWidget {
               labelStyle: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 12,
-                color: isSelected ? context.textHint : context.textSecondary,
+                color: isSelected ? context.textPrimary : context.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               shape: RoundedRectangleBorder(

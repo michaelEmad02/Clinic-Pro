@@ -8,6 +8,7 @@ import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/constants/staff_roles.dart';
+import '../../../../../core/strings/app_strings.dart';
 import '../../../../staff_and_invitations/domain/entities/invitation_entity.dart';
 
 class InvitationDetailsCard extends StatelessWidget {
@@ -40,7 +41,7 @@ class InvitationDetailsCard extends StatelessWidget {
               color: context.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child:  Icon(
+            child: Icon(
               Icons.mark_email_read_rounded,
               size: 48,
               color: context.primary,
@@ -50,14 +51,16 @@ class InvitationDetailsCard extends StatelessWidget {
 
           // عنوان الدعوة
           Text(
-            'دعوة للانضمام',
+            AppStrings.isArabic ? 'دعوة للانضمام' : 'Join Invitation',
             style: AppTextStyles.headlineMedium(context),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppConstants.spaceXs),
 
           Text(
-            'تمت دعوتك للانضمام إلى فريق العمل',
+            AppStrings.isArabic
+                ? 'تمت دعوتك للانضمام إلى فريق العمل'
+                : 'You have been invited to join the staff',
             style: AppTextStyles.bodyMedium(context).copyWith(
               color: context.textSecondary,
             ),
@@ -69,16 +72,16 @@ class InvitationDetailsCard extends StatelessWidget {
           _buildDetailRow(
             context,
             icon: Icons.local_hospital_rounded,
-            label: 'العيادة',
-            value: invitation.clinicName ?? 'غير محدد',
+            label: AppStrings.isArabic ? 'العيادة' : 'Clinic',
+            value: invitation.clinicName ?? (AppStrings.isArabic ? 'غير محدد' : 'Unspecified'),
           ),
           const SizedBox(height: AppConstants.spaceSm),
 
           _buildDetailRow(
             context,
             icon: Icons.badge_rounded,
-            label: 'الدور',
-            value: _getRoleDisplayName(invitation.role),
+            label: AppStrings.role,
+            value: AppStrings.roleLabel(invitation.role.name),
           ),
           const SizedBox(height: AppConstants.spaceSm),
 
@@ -86,7 +89,7 @@ class InvitationDetailsCard extends StatelessWidget {
             _buildDetailRow(
               context,
               icon: Icons.person_rounded,
-              label: 'الاسم',
+              label: AppStrings.name,
               value: invitation.name!,
             ),
             const SizedBox(height: AppConstants.spaceSm),
@@ -98,7 +101,7 @@ class InvitationDetailsCard extends StatelessWidget {
             _buildDetailRow(
               context,
               icon: Icons.medical_services_rounded,
-              label: 'الطبيب',
+              label: AppStrings.doctor,
               value: invitation.doctorName!,
             ),
             const SizedBox(height: AppConstants.spaceSm),
@@ -107,7 +110,7 @@ class InvitationDetailsCard extends StatelessWidget {
           _buildDetailRow(
             context,
             icon: Icons.timer_rounded,
-            label: 'تنتهي في',
+            label: AppStrings.isArabic ? 'تنتهي في' : 'Expires in',
             value: _formatDate(invitation.expiredAt),
             valueColor: _isExpiringSoon(invitation.expiredAt)
                 ? context.warning
@@ -160,18 +163,6 @@ class InvitationDetailsCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  /// تحويل الدور لاسم معروض بالعربية
-  String _getRoleDisplayName(StaffRoles role) {
-    switch (role) {
-      case StaffRoles.doctor:
-        return 'طبيب';
-      case StaffRoles.secretary:
-        return 'سكرتير';
-      case StaffRoles.owner:
-        return 'مالك';
-    }
   }
 
   /// تنسيق التاريخ للعرض

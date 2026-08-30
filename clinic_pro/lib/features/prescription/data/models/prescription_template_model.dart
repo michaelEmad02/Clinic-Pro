@@ -18,17 +18,26 @@ class PrescriptionTemplateItemModel extends PrescriptionTemplateItemEntity {
   });
 
   factory PrescriptionTemplateItemModel.fromJson(Map<String, dynamic> json) {
+    int? parseNum(dynamic val) {
+      if (val is int) return val;
+      if (val is num) return val.toInt();
+      if (val is String) return int.tryParse(val);
+      return null;
+    }
+
     return PrescriptionTemplateItemModel(
-      id: json['id'] as String,
-      templateId: json['template_id'] as String? ?? '',
-      drugId: json['drug_id'] as String,
-      frequency: json['frequency'] as int?,
-      duration: json['duration'] as int?,
+      id: json['id']?.toString() ?? '',
+      templateId: json['template_id']?.toString() ?? '',
+      drugId: json['drug_id']?.toString() ?? '',
+      frequency: parseNum(json['frequency']),
+      duration: parseNum(json['duration']),
       isPrn: json['is_prn'] as bool? ?? false,
       timing: json['timing'] as String?,
-      drug: json['drug'] != null
-          ? DrugModel.fromJson(json['drug'] as Map<String, dynamic>)
-          : null,
+      drug: json['drugs'] != null
+          ? DrugModel.fromJson(json['drugs'] as Map<String, dynamic>)
+          : (json['drug'] != null
+              ? DrugModel.fromJson(json['drug'] as Map<String, dynamic>)
+              : null),
     );
   }
 
@@ -54,7 +63,8 @@ class PrescriptionTemplateModel extends PrescriptionTemplateEntity {
   });
 
   factory PrescriptionTemplateModel.fromJson(Map<String, dynamic> json) {
-    final rawItems = json['items'] as List?;
+    final rawItems = json['prescription_template_items'] as List? ??
+        json['items'] as List?;
     final itemsList = rawItems != null
         ? rawItems
             .map((e) =>
@@ -63,10 +73,10 @@ class PrescriptionTemplateModel extends PrescriptionTemplateEntity {
         : <PrescriptionTemplateItemModel>[];
 
     return PrescriptionTemplateModel(
-      id: json['id'] as String,
-      doctorId: json['doctor_id'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
+      doctorId: json['doctor_id']?.toString() ?? '',
       name: json['name'] as String? ?? '',
-      userCount: json['user_count'] as int? ?? 0,
+      userCount: (json['user_count'] as num?)?.toInt() ?? 0,
       items: itemsList,
     );
   }

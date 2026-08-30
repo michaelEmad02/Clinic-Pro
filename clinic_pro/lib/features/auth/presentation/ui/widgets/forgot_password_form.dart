@@ -79,27 +79,31 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'الرجاء إدخال البريد الإلكتروني';
+                  return AppStrings.isArabic
+                      ? 'الرجاء إدخال البريد الإلكتروني'
+                      : 'Please enter your email';
                 }
                 if (!value.contains('@')) {
-                  return 'الرجاء إدخال بريد إلكتروني صحيح';
+                  return AppStrings.isArabic
+                      ? 'الرجاء إدخال بريد إلكتروني صحيح'
+                      : 'Please enter a valid email';
                 }
                 return null;
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'dr@clinic.com',
                 hintStyle: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textHint,
+                  color: context.textHint,
                 ),
                 suffixIcon: Icon(
                   Icons.mail_outline,
-                  color: AppColors.textHint,
+                  color: context.textHint,
                 ),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppConstants.spaceMd,
                   vertical: 14,
                 ),
@@ -112,8 +116,8 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           ElevatedButton(
             onPressed: widget.isLoading ? null : _submit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryContainer,
-              foregroundColor: AppColors.onPrimaryContainer,
+              backgroundColor: context.primaryContainer,
+              foregroundColor: context.onPrimaryContainer,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(
@@ -121,7 +125,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
                 ),
               ),
               elevation: 4,
-              shadowColor: AppColors.primaryContainer.withOpacity(0.4),
+              shadowColor: context.primaryContainer.withOpacity(0.4),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -133,7 +137,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
                   child: Text(
                     AppStrings.sendResetLink,
                     style: AppTextStyles.headlineSmall(context).copyWith(
-                      color: AppColors.onPrimaryContainer,
+                      color: context.onPrimaryContainer,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

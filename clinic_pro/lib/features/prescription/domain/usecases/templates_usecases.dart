@@ -2,7 +2,7 @@
 // حالات استخدام قوالب الروشتات (Templates UseCases)
 // ────────────────────────────────────────────────────────
 
-import 'package:clinic_pro/core/error/query_failure.dart';
+import 'package:clinic_pro/core/strings/failure_strings.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
@@ -30,7 +30,7 @@ class AddTemplateUseCase {
     String doctorId,
   ) {
     if (template.name.trim().isEmpty) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'اسم القالب مطلوب')));
+      return Future.value(const Left(TemplateNameRequiredFailure()));
     }
     return _repository.addTemplate(template, doctorId);
   }
@@ -43,7 +43,7 @@ class EditTemplateUseCase {
 
   Future<Either<Failure, void>> call(PrescriptionTemplateEntity template) {
     if (template.name.trim().isEmpty) {
-      return Future.value(const Left(UnknownQueryFailure(message: 'اسم القالب مطلوب')));
+      return Future.value(const Left(TemplateNameRequiredFailure()));
     }
     return _repository.editTemplate(template);
   }
@@ -70,4 +70,11 @@ class GetTemplateDataUseCase {
   ) {
     return _repository.getTemplateData(templateId, doctorId);
   }
+}
+
+class TemplateNameRequiredFailure extends Failure {
+  const TemplateNameRequiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.templateNameRequired;
 }

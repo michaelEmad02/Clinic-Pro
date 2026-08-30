@@ -66,7 +66,7 @@ class InviteFormRow extends StatelessWidget {
         _buildTextField(
           context: context,
           label: AppStrings.employeeFullName,
-          hint: 'مثال: أحمد محمد عبدالمجيد',
+          hint: AppStrings.employeeNameExample,
           controller: nameController,
           keyboardType: TextInputType.name,
         ),
@@ -75,7 +75,7 @@ class InviteFormRow extends StatelessWidget {
         _buildTextField(
           context: context,
           label: AppStrings.email,
-          hint: 'email@clinic.com',
+          hint: AppStrings.emailPlaceholder,
           controller: emailController,
           keyboardType: TextInputType.emailAddress,
           isLtr: true,
