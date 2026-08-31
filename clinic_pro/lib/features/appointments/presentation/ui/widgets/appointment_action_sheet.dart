@@ -115,8 +115,7 @@ class AppointmentActionSheet {
                 },
               ),
             if (onRegisterInvoice != null &&
-                appointment.status != AppointmentStatus.cancelled &&
-                appointment.status != AppointmentStatus.done)
+                appointment.status != AppointmentStatus.cancelled && !appointment.hasInvoice)
               _ActionTile(
                 icon: Icons.receipt_long_outlined,
                 label: AppStrings.createInvoice,

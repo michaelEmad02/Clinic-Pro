@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
@@ -9,21 +10,23 @@ import '../../../../../core/themes/app_text_styles.dart';
 // ────────────────────────────────────────────────────────
 
 class PrescriptionBottomActionsBar extends StatelessWidget {
-  final VoidCallback onSave;
-  final VoidCallback onPrint;
-  final VoidCallback onWhatsApp;
-  final VoidCallback onFinishWithoutSaving;
+  final VoidCallback onSaveAndFinish;
+  final VoidCallback onSaveAndPrint;
+  final VoidCallback onSaveAndSend;
+  final VoidCallback onFinish;
 
   const PrescriptionBottomActionsBar({
     super.key,
-    required this.onSave,
-    required this.onPrint,
-    required this.onWhatsApp,
-    required this.onFinishWithoutSaving,
+    required this.onSaveAndFinish,
+    required this.onSaveAndPrint,
+    required this.onSaveAndSend,
+    required this.onFinish,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isArabic = AppStrings.isArabic;
+
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -47,72 +50,117 @@ class PrescriptionBottomActionsBar extends StatelessWidget {
                   children: [
                     Row(
                       children: [
+                        // 1. حفظ وإنهاء
                         Expanded(
-                          flex: 2,
+                          flex: 1,
                           child: ElevatedButton.icon(
-                            onPressed: onSave,
+                            onPressed: onSaveAndFinish,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: context.primary,
                               foregroundColor: context.onPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                               ),
                               elevation: 0,
                             ),
-                            icon: Icon(Icons.save, size: AppConstants.iconSizeXl, color: context.onPrimary),
-                            label: Text(
-                              AppStrings.saveAndFinish,
-                              style: AppTextStyles.headlineSmall(context).copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: context.onPrimary,
+                            icon: Icon(Icons.check_circle_outline_rounded, size: 17, color: context.onPrimary),
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                isArabic ? 'حفظ وإنهاء' : 'Save & Finish',
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.onPrimary,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: AppConstants.spaceSm),
+                        const SizedBox(width: 6),
+
+                        // 2. حفظ وطباعة
                         Expanded(
                           flex: 1,
                           child: OutlinedButton.icon(
-                            onPressed: onPrint,
+                            onPressed: onSaveAndPrint,
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: context.borderColor),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              side: BorderSide(color: context.primary.withOpacity(0.5)),
+                              backgroundColor: context.primaryLightColor,
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                               ),
                             ),
-                            icon: Icon(Icons.print, size: AppConstants.iconSizeXl, color: context.primary),
-                            label: Text(
-                              AppStrings.print,
-                              style: AppTextStyles.bodyMedium(context).copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: context.primary,
+                            icon: Icon(Icons.print_rounded, size: 17, color: context.primary),
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                isArabic ? 'حفظ وطباعة' : 'Save & Print',
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.primary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
+                        // 3. حفظ وإرسال (واتساب)
+                        Expanded(
+                          flex: 1,
+                          child: ElevatedButton.icon(
+                            onPressed: onSaveAndSend,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF25D366),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                              ),
+                              elevation: 0,
+                            ),
+                            icon: const Icon(TablerIcons.brand_whatsapp, size: 17, color: Colors.white),
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                isArabic ? 'حفظ وإرسال' : 'Save & Send',
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppConstants.spaceSm),
+                    const SizedBox(height: 6),
+
+                    // 4. إنهاء (بدون روشتة)
                     SizedBox(
                       width: double.infinity,
                       child: TextButton.icon(
-                        onPressed: onFinishWithoutSaving,
+                        onPressed: onFinish,
                         style: TextButton.styleFrom(
                           backgroundColor: context.dangerBg,
                           foregroundColor: context.danger,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(AppConstants.radiusButton),
                           ),
                         ),
-                        icon: Icon(Icons.close_rounded, size: AppConstants.iconSizeLg, color: context.danger),
+                        icon: Icon(Icons.close_rounded, size: 18, color: context.danger),
                         label: Text(
-                          AppStrings.finishWithoutPrescription,
+                          isArabic ? 'إنهاء الكشف' : 'Finish',
                           style: AppTextStyles.bodyMedium(context).copyWith(
                             fontWeight: FontWeight.bold,
                             color: context.danger,
+                            fontSize: 12,
                           ),
                         ),
                       ),

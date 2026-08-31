@@ -109,7 +109,9 @@ class PatientsRepositoryImpl implements IPatientsRepository {
           patientId: model.patientId,
           appointmentId: model.appointmentId,
           diagnosis: model.diagnosis,
+          diagnoses: model.diagnoses,
           notes: model.notes,
+          nextVisitDays: model.nextVisitDays,
           items: model.items,
         ));
       }

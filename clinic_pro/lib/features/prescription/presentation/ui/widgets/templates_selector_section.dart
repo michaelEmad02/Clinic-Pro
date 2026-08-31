@@ -134,8 +134,10 @@ class TemplatesSelectorSection extends StatelessWidget {
                         runSpacing: AppConstants.spaceSm,
                         children: filteredTemplates.map((t) {
                           final String id = t['id'] ?? '';
-                          final String name = t['name'] ?? '';
-                          final isApplied = appliedIds.contains(id);
+                          final String name = (t['name'] as String? ?? '').trim();
+
+                          final bool isApplied = appliedIds.contains(id) ||
+                              (name.isNotEmpty && presState.selectedDiagnosis.contains(name));
 
                           return FilterChip(
                             selected: isApplied,
@@ -171,6 +173,10 @@ class TemplatesSelectorSection extends StatelessWidget {
                                   context,
                                   message: '${AppStrings.template} $name ✓',
                                 );
+                              } else {
+                                context
+                                    .read<PrescriptionBloc>()
+                                    .add(ToggleDiagnosisEvent(name));
                               }
                             },
                           );

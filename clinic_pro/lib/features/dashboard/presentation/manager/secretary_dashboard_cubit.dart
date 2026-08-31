@@ -126,6 +126,16 @@ class SecretaryDashboardCubit extends Cubit<SecretaryDashboardState> {
     }
   }
 
+  /// استدعاء المريض التالي في الطابور
+  Future<void> callNextPatient() async {
+    if (state is! SecretaryDashboardLoaded) return;
+    final loaded = state as SecretaryDashboardLoaded;
+    final next = loaded.liveQueue.where((a) => a.status == 'confirmed').firstOrNull;
+    if (next != null) {
+      await callPatient(next.id);
+    }
+  }
+
   @override
   Future<void> close() {
     _dashboardSubscription?.cancel();

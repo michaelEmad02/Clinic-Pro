@@ -69,6 +69,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       List<PrescriptionItemEntity> selectedDrugs = [];
       String prescNotes = '';
       String finalDiag = appt.notes ?? '';
+      int? nextVisitDays;
       String? prescriptionId;
 
       final existingPrescriptionModel =
@@ -103,11 +104,13 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
           );
         }).toList();
 
-        if (existingPrescriptionModel.diagnosis != null &&
-            existingPrescriptionModel.diagnosis!.isNotEmpty) {
-          selectedDiag = existingPrescriptionModel.diagnosis!.split(', ');
+        if (existingPrescriptionModel.diagnoses.isNotEmpty) {
+          selectedDiag = List<String>.from(existingPrescriptionModel.diagnoses);
         }
+        // نص التشخيص الحر من الطبيب (من عمود diagnosis)
+        finalDiag = existingPrescriptionModel.diagnosis ?? '';
         prescNotes = existingPrescriptionModel.notes ?? '';
+        nextVisitDays = existingPrescriptionModel.nextVisitDays;
       }
 
       return Right(PrescriptionLoadDataEntity(
@@ -125,10 +128,11 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         selectedDrugs: selectedDrugs,
         finalDiagnosis: finalDiag,
         notes: prescNotes,
+        nextVisitDays: nextVisitDays,
         prescriptionId: prescriptionId,
       ));
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -177,15 +181,35 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
           doctorId: model.doctorId,
           patientId: model.patientId,
           appointmentId: model.appointmentId,
+          patientName: model.patientName,
+          patientPhone: model.patientPhone,
           diagnosis: model.diagnosis,
+          diagnoses: model.diagnoses,
           notes: model.notes,
+          nextVisitDays: model.nextVisitDays,
           items: items,
         ));
       }
 
       return Right(result);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<PrescriptionEntity>>> getAllPrescriptions({
+    String? clinicId,
+    String? doctorId,
+  }) async {
+    try {
+      final models = await _remoteDataSource.getAllPrescriptions(
+        clinicId: clinicId,
+        doctorId: doctorId,
+      );
+      return Right(models);
+    } catch (e) {
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -195,23 +219,49 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
     String doctorId,
   ) async {
     try {
+      String prescId = prescription.id;
+
+      // إذا لم يكن المعرف ممرراً، نتحقق مما إذا كان هناك روشتة مسبقة لنفس الموعد
+      if (prescId.isEmpty &&
+          prescription.appointmentId != null &&
+          prescription.appointmentId!.isNotEmpty) {
+        final existing = await _remoteDataSource
+            .getPrescriptionByAppointment(prescription.appointmentId!);
+        if (existing != null) {
+          prescId = existing.id;
+        }
+      }
+
+      final isUpdate = prescId.isNotEmpty;
+
       final model = PrescriptionModel(
-        id: prescription.id.isNotEmpty ? prescription.id : '',
+        id: prescId,
         createdAt: prescription.createdAt,
         appointmentId: prescription.appointmentId ?? '',
         patientId: prescription.patientId ?? '',
         doctorId: doctorId,
         clinicId: prescription.clinicId ?? '',
         diagnosis: prescription.diagnosis,
+        diagnoses: prescription.diagnoses,
         notes: prescription.notes,
+        nextVisitDays: prescription.nextVisitDays,
       );
 
-      final savedModel = await _remoteDataSource.insertPrescription(model);
+      final String finalPrescriptionId;
+      if (isUpdate) {
+        await _remoteDataSource.updatePrescription(model);
+        finalPrescriptionId = prescId;
+        // حذف بنود الأدوية السابقة لإعادة إدخال البنود المحدثة
+        await _remoteDataSource.deletePrescriptionItems(finalPrescriptionId);
+      } else {
+        final savedModel = await _remoteDataSource.insertPrescription(model);
+        finalPrescriptionId = savedModel.id;
+      }
 
       for (final item in prescription.items) {
         final itemModel = PrescriptionItemModel(
           id: item.id,
-          prescriptionId: savedModel.id,
+          prescriptionId: finalPrescriptionId,
           drugId: item.drugId ?? '',
           frequency: item.frequency,
           duration: item.duration,
@@ -223,7 +273,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
 
       return const Right(null);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -261,14 +311,14 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         );
       }).toList();
 
-      List<String> diags = [];
-      if (lastModel.diagnosis != null && lastModel.diagnosis!.isNotEmpty) {
-        diags = lastModel.diagnosis!.split(', ');
-      }
+      // أسماء القوالب المختارة من الروشتة السابقة
+      final List<String> diags = lastModel.diagnoses.isNotEmpty
+          ? List<String>.from(lastModel.diagnoses)
+          : [];
 
       return Right((items, diags));
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -307,7 +357,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
 
       return Right((items, templateName));
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -354,7 +404,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       }
       return Right(templates);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -392,7 +442,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         items: template.items,
       ));
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -425,7 +475,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
 
       return const Right(null);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -435,7 +485,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       await _remoteDataSource.deleteTemplate(id);
       return const Right(null);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -482,7 +532,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
               ))
           .toList());
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -503,7 +553,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         category: saved.category,
       ));
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -519,7 +569,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       await _remoteDataSource.updateDrug(model);
       return const Right(null);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -529,7 +579,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       await _remoteDataSource.deleteDrug(id);
       return const Right(null);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
 
@@ -540,11 +590,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
       await _remoteDataSource.incrementTemplateUsage(templateId);
       return const Right(null);
     } catch (e) {
-      return Left(DatabaseFailure(e.toString()));
+      return Left(QueryFailure.fromException(e));
     }
   }
-}
-
-class DatabaseFailure extends Failure {
-  const DatabaseFailure(super.message);
 }

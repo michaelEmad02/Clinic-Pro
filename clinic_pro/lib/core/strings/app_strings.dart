@@ -1457,6 +1457,108 @@ class AppStrings {
       isArabic ? 'تطبيق كود الدعوة والحصول على الهدية' : 'Apply Referral Code & Claim Gift';
   static String get skipToPlansNoReferral =>
       isArabic ? 'ليس لدي كود دعوة (تخطي إلى الباقات)' : "I don't have a referral code (Skip to plans)";
+  // Prescription Strings
+  static String get prescriptions => isArabic ? 'الروشتات' : 'Prescriptions';
+  static String prescriptionDated(String date) =>
+      isArabic ? 'روشتة بتاريخ $date' : 'Prescription dated $date';
+  static String drugsCount(int count) =>
+      isArabic ? '$count أدوية' : '$count drugs';
+  static String get noDiagnosisRecorded =>
+      isArabic ? 'بدون تشخيص مسجل' : 'No diagnosis recorded';
+  static String diagnosisPrefix(String diagnosis) =>
+      isArabic ? 'التشخيص: $diagnosis' : 'Diagnosis: $diagnosis';
+  static String get medicalDiagnoses =>
+      isArabic ? 'التشخيصات الطبية:' : 'Medical Diagnoses:';
+  static String get prescribedDrugs =>
+      isArabic ? 'الأدوية الموصوفة:' : 'Prescribed Drugs:';
+  static String get prescribedDrugDefault =>
+      isArabic ? 'دواء موصوف' : 'Prescribed Drug';
+  static String timesDaily(int count) =>
+      isArabic ? '$count مرات يومياً' : '$count times daily';
+  static String daysCount(int count) =>
+      isArabic ? '$count أيام' : '$count days';
+  static String notesPrefix(String notes) =>
+      isArabic ? 'ملاحظات: $notes' : 'Notes: $notes';
+  static String get editPrescription =>
+      isArabic ? 'تعديل الروشتة' : 'Edit Prescription';
+  static String get unableToFindAppointment => isArabic
+      ? 'تعذّر تحديد الموعد المرتبط بهذه الروشتة'
+      : 'Unable to identify the appointment linked to this prescription';
+  static String get failedToLoadAppointment =>
+      isArabic ? 'تعذّر جلب بيانات الموعد' : 'Failed to fetch appointment data';
+  static String get errorLoadingAppointment => isArabic
+      ? 'حدث خطأ أثناء تحميل بيانات الموعد'
+      : 'An error occurred while loading appointment data';
+
+  // PDF strings
+  static String get defaultClinicName =>
+      isArabic ? 'عيادة كلينيك برو الطبية' : 'Clinic Pro Medical Center';
+  static String get defaultDoctorSpecialty =>
+      isArabic ? 'استشاري الطب والتخصص' : 'Medical Consultant & Specialist';
+  static String get phoneLabel => isArabic ? 'الهاتف:' : 'Phone:';
+  static String get clinicPhoneLabel => isArabic ? 'هاتف العيادة:' : 'Clinic Phone:';
+  static String get doctorPhoneLabel => isArabic ? 'هاتف الطبيب:' : 'Doctor Phone:';
+  static String get treatingDoctorLabel => isArabic ? 'طبيب المعالجة' : 'Treating Doctor';
+  static String doctorTitle(String name) =>
+      isArabic ? 'د. $name' : 'Dr. $name';
+  static String get patientNameLabel =>
+      isArabic ? 'اسم المريض:' : 'Patient Name:';
+  static String get defaultPatientName =>
+      isArabic ? 'مريض العيادة' : 'Clinic Patient';
+  static String get genderLabel => isArabic ? 'الجنس:' : 'Gender:';
+  static String get birthDateLabel => isArabic ? 'الميلاد:' : 'Birth Date:';
+  static String get dateLabel => isArabic ? 'التاريخ:' : 'Date:';
+  static String get drugNumberHeader => '#';
+  static String get drugNameHeader => isArabic ? 'اسم الدواء' : 'Drug Name';
+  static String get frequencyHeader => isArabic ? 'التكرار' : 'Frequency';
+  static String get durationHeader => isArabic ? 'المدة' : 'Duration';
+  static String get timingHeader => isArabic ? 'الموعد' : 'Timing';
+  static String get additionalInstructionsLabel =>
+      isArabic ? 'تعليمات إضافية:' : 'Additional Instructions:';
+  static String get consultationFollowUpLabel =>
+      isArabic ? 'موعد الاستشارة / الإعادة: ' : 'Consultation / Follow-up: ';
+  static String consultationFollowUpText({required int days, String? dateFormatted}) {
+    if (dateFormatted != null && dateFormatted.isNotEmpty) {
+      return isArabic
+          ? 'بعد $days يوم (الموافق $dateFormatted)'
+          : 'After $days days (on $dateFormatted)';
+    }
+    return isArabic ? 'بعد $days أيام' : 'After $days days';
+  }
+  static String get defaultFooterWish => isArabic
+      ? 'نتمنى لكم دوام الصحة والعافية'
+      : 'Wishing you good health and wellness';
+  static String get doctorSignatureStamp =>
+      isArabic ? 'توقيع/ختم الطبيب' : "Doctor's Signature/Stamp";
+  static String get signatureLine =>
+      isArabic ? 'التوقيع: .....................' : 'Signature: .....................';
+
+  // All Prescriptions Screen Strings
+  static String get allPrescriptions =>
+      isArabic ? 'كل الروشتات' : 'All Prescriptions';
+  static String get allPrescriptionsSubtitle => isArabic
+      ? 'استعراض والبحث في جميع الروشتات الصادرة'
+      : 'Browse and search all issued prescriptions';
+  static String get filterAll => isArabic ? 'الكل' : 'All';
+  static String get filterToday => isArabic ? 'اليوم' : 'Today';
+  static String get filterThisWeek => isArabic ? 'هذا الأسبوع' : 'This Week';
+  static String get filterThisMonth => isArabic ? 'هذا الشهر' : 'This Month';
+  static String get searchPrescriptionsHint => isArabic
+      ? 'ابحث باسم المريض، التشخيص، أو الدواء...'
+      : 'Search by patient name, diagnosis, or drug...';
+  static String get noPrescriptionsFound => isArabic
+      ? 'لا توجد روشتات مطابقة لنتائج البحث'
+      : 'No prescriptions found matching search results';
+  static String get noPrescriptionsYet => isArabic
+      ? 'لم يتم إصدار أي روشتات بعد'
+      : 'No prescriptions issued yet';
+  static String get refresh => isArabic ? 'تحديث' : 'Refresh';
+  static String get sendViaWhatsApp =>
+      isArabic ? 'إرسال عبر الواتساب' : 'Send via WhatsApp';
+  static String get whatsApp => isArabic ? 'واتساب' : 'WhatsApp';
+  static String prescriptionsTotalCount(int count) => isArabic
+      ? 'إجمالي الروشتات ($count)'
+      : 'Total Prescriptions ($count)';
 }
 
 

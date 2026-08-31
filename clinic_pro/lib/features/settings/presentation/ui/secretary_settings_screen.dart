@@ -118,6 +118,13 @@ class SecretarySettingsScreen extends StatelessWidget {
       child: Column(
         children: [
           NavSettingsItem(
+            icon: Icons.medication_liquid_outlined,
+            label: AppStrings.allPrescriptions,
+            subLabel: AppStrings.allPrescriptionsSubtitle,
+            onTap: () => context.push(RouteConstants.allPrescriptions),
+          ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          NavSettingsItem(
             icon: Icons.medication_liquid_sharp,
             label: AppStrings.manageDrugs,
             onTap: () => context.push(RouteConstants.drugs),

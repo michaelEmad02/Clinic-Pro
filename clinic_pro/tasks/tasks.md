@@ -66,7 +66,7 @@
   - عمل مصاريف خاصه بالطبيب وليس العياده 
 
 ## error
-- [ ] datetime  timezone error
+- [x] datetime  timezone error
 - pause exception () 
 
 ## invoices 

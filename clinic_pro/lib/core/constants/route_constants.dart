@@ -33,6 +33,7 @@ class RouteConstants {
   static const String patientDetails = '/patients/:id';
 
   // الكشف الطبي والروشتات والأدوية
+  static const String allPrescriptions = '/prescriptions';
   static const String prescriptionNew = '/prescription/:appointment_id';
   static const String prescriptionEdit = '/prescription/edit/:appointment_id';
   static const String prescriptionTemplates = '/templates';

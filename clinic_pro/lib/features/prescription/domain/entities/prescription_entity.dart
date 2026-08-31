@@ -48,7 +48,11 @@ class PrescriptionEntity extends Equatable {
   final String? patientId;
   final String? appointmentId;
   final String? diagnosis;
+  final List<String> diagnoses;
   final String? notes;
+  final int? nextVisitDays;
+  final String? patientName;
+  final String? patientPhone;
   final List<PrescriptionItemEntity> items;
 
   const PrescriptionEntity({
@@ -58,8 +62,12 @@ class PrescriptionEntity extends Equatable {
     this.doctorId,
     this.patientId,
     this.appointmentId,
+    this.patientName,
+    this.patientPhone,
     this.diagnosis,
+    this.diagnoses = const [],
     this.notes,
+    this.nextVisitDays,
     this.items = const [],
   });
 
@@ -71,8 +79,12 @@ class PrescriptionEntity extends Equatable {
         doctorId,
         patientId,
         appointmentId,
+        patientName,
+        patientPhone,
         diagnosis,
+        diagnoses,
         notes,
+        nextVisitDays,
         items,
       ];
 }

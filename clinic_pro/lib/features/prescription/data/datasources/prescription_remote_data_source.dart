@@ -28,6 +28,11 @@ abstract class IPrescriptionRemoteDataSource {
   Future<void> deletePrescriptionItems(String prescriptionId);
   Future<PrescriptionModel?> getLastPrescriptionForPatient(String patientId);
   Future<List<PrescriptionModel>> getPrescriptionsForPatient(String patientId);
+  Future<List<PrescriptionModel>> getAllPrescriptions({
+    String? clinicId,
+    String? doctorId,
+    String? patientId,
+  });
   Future<List<PrescriptionItemModel>> getPrescriptionItems(
       String prescriptionId);
   Future<List<DrugModel>> getDrugList();
@@ -157,13 +162,126 @@ class PrescriptionRemoteDataSourceImpl
   @override
   Future<List<PrescriptionModel>> getPrescriptionsForPatient(
       String patientId) async {
+    return getAllPrescriptions(patientId: patientId);
+  }
+
+  @override
+  Future<List<PrescriptionModel>> getAllPrescriptions({
+    String? clinicId,
+    String? doctorId,
+    String? patientId,
+  }) async {
+    try {
+      // 1. استدعاء السيرفر فائق السرعة عبر دالة RPC
+      final response = await _cloud.rpc(
+        'get_all_prescriptions_rpc',
+        params: {
+          'p_clinic_id':
+              (clinicId != null && clinicId.isNotEmpty) ? clinicId : null,
+          'p_doctor_id':
+              (doctorId != null && doctorId.isNotEmpty) ? doctorId : null,
+          'p_patient_id':
+              (patientId != null && patientId.isNotEmpty) ? patientId : null,
+        },
+      );
+
+      if (response is List) {
+        return response
+            .map((e) => PrescriptionModel.fromJson(
+                Map<String, dynamic>.from(e as Map)))
+            .toList();
+      }
+    } catch (_) {
+      // 2. في حالة عدم توفر دالة الـ RPC نلجأ للـ Fallback الآمن
+    }
+
+    return _fallbackGetAllPrescriptions(
+      clinicId: clinicId,
+      doctorId: doctorId,
+      patientId: patientId,
+    );
+  }
+
+  Future<List<PrescriptionModel>> _fallbackGetAllPrescriptions({
+    String? clinicId,
+    String? doctorId,
+    String? patientId,
+  }) async {
+    final eqMap = <String, dynamic>{};
+    if (clinicId != null && clinicId.isNotEmpty) {
+      eqMap['clinic_id'] = clinicId;
+    }
+    if (doctorId != null && doctorId.isNotEmpty) {
+      eqMap['doctor_id'] = doctorId;
+    }
+    if (patientId != null && patientId.isNotEmpty) {
+      eqMap['patient_id'] = patientId;
+    }
+
     final results = await _cloud.select(
       table: SupabaseTables.prescriptions,
-      eq: {'patient_id': patientId},
+      eq: eqMap.isNotEmpty ? eqMap : null,
       order: 'created_at',
       ascending: false,
     );
-    return results.map((e) => PrescriptionModel.fromJson(e)).toList();
+
+    if (results.isEmpty) return [];
+
+    // جلب قائمة الأدوية
+    List<Map<String, dynamic>> drugsList = [];
+    try {
+      drugsList = await _cloud.select(table: SupabaseTables.drugs);
+    } catch (_) {}
+
+    // جلب قائمة المرضى
+    List<Map<String, dynamic>> patientsList = [];
+    try {
+      patientsList = await _cloud.select(table: SupabaseTables.patients);
+    } catch (_) {}
+
+    final enrichedPrescriptions =
+        await Future.wait(results.map((rawPresc) async {
+      final prescId = rawPresc['id']?.toString() ?? '';
+      final pId = rawPresc['patient_id']?.toString();
+
+      final matchedPatient = patientsList.firstWhere(
+        (p) => p['id']?.toString() == pId,
+        orElse: () => <String, dynamic>{},
+      );
+
+      List<Map<String, dynamic>> rawItems = [];
+      if (prescId.isNotEmpty) {
+        try {
+          rawItems = await _cloud.select(
+            table: SupabaseTables.prescriptionItems,
+            eq: {'prescription_id': prescId},
+          );
+        } catch (_) {}
+      }
+
+      final enrichedItems = rawItems.map((itemRaw) {
+        final drugId = itemRaw['drug_id']?.toString();
+        final matchedDrug = drugsList.firstWhere(
+          (d) => d['id']?.toString() == drugId,
+          orElse: () => <String, dynamic>{},
+        );
+        return {
+          ...itemRaw,
+          if (matchedDrug.isNotEmpty) 'drug': matchedDrug,
+          if (matchedDrug.isNotEmpty) 'drugs': matchedDrug,
+        };
+      }).toList();
+
+      return {
+        ...rawPresc,
+        if (matchedPatient.isNotEmpty) 'patients': matchedPatient,
+        'prescription_items': enrichedItems,
+      };
+    }));
+
+    return enrichedPrescriptions
+        .map((e) => PrescriptionModel.fromJson(e))
+        .toList();
   }
 
   @override

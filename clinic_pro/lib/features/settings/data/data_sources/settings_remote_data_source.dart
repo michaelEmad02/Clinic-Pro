@@ -418,7 +418,7 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
     required String secretaryId,
     required String clinicId,
   }) async {
-    // 1. جلب علاقات السكرتيرة بالأطباء في هذه العيادة من جدول doctor_secretary_schedule
+    // 1. جلب علاقات السكرتيرة بالأطباء الذين قام المالك بربطها بهم في هذه العيادة
     final schedules = await _cloudService.select(
       table: SupabaseTables.doctorSecretaries,
       eq: {'secretary_id': secretaryId, 'clinic_id': clinicId},
@@ -426,7 +426,7 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
 
     final List<Map<String, dynamic>> results = [];
 
-    // 2. جلب معلومات الأطباء المقترنين بالخطة
+    // 2. جلب معلومات الأطباء المقترنين بالسكرتيرة من قِبل المالك
     for (final schedule in schedules) {
       final doctorId = schedule['doctor_id'] as String;
       try {
@@ -450,38 +450,6 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       } catch (_) {}
     }
 
-    // 3. إذا لم تكن هناك علاقات مخصصة في جدول doctor_secretary_schedule، نجلب جميع أطباء العيادة من clinic_staff
-    if (results.isEmpty) {
-      try {
-        final staffDoctors = await _cloudService.select(
-          table: SupabaseTables.clinicStaff,
-          eq: {'clinic_id': clinicId, 'role': 'doctor'},
-        );
-        for (final staff in staffDoctors) {
-          final doctorId =
-              (staff['user_id'] ?? staff['id'])?.toString() ?? '';
-          if (doctorId.isEmpty) continue;
-          final docResults = await _cloudService.select(
-            table: SupabaseTables.users,
-            eq: {'id': doctorId},
-          );
-          if (docResults.isNotEmpty) {
-            results.add({
-              'schedule_id': staff['id']?.toString() ?? '',
-              'doctor_id': doctorId,
-              'is_active': staff['is_active'] as bool? ?? true,
-              'name': docResults.first['name'] as String? ?? '',
-              'email': docResults.first['email'] as String? ?? '',
-              'phone': docResults.first['phone'] as String? ?? '',
-              'specialty': docResults.first['specialty'] as String? ?? '',
-              'avatar_url':
-                  docResults.first['image_url'] ?? docResults.first['avatar_url'],
-            });
-          }
-        }
-      } catch (_) {}
-    }
-
     return results;
   }
 
@@ -491,7 +459,7 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
     required String clinicId,
     required String doctorId,
   }) async {
-    // 1. جلب كل العلاقات للسكرتيرة في هذه العيادة لتعديل الحقل النشط
+    // جلب علاقات السكرتيرة المحددة من قبل المالك فقط وتحديث الحقل النشط
     final schedules = await _cloudService.select(
       table: SupabaseTables.doctorSecretaries,
       eq: {'secretary_id': secretaryId, 'clinic_id': clinicId},

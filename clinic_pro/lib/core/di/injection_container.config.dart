@@ -285,6 +285,8 @@ import '../../features/prescription/domain/usecases/drugs_usecases.dart'
     as _i628;
 import '../../features/prescription/domain/usecases/generate_prescription_pdf_usecase.dart'
     as _i880;
+import '../../features/prescription/domain/usecases/get_all_prescriptions_usecase.dart'
+    as _i681;
 import '../../features/prescription/domain/usecases/increment_template_usage_usecase.dart'
     as _i372;
 import '../../features/prescription/domain/usecases/load_prescription_data_usecase.dart'
@@ -293,6 +295,8 @@ import '../../features/prescription/domain/usecases/save_prescription_usecase.da
     as _i712;
 import '../../features/prescription/domain/usecases/templates_usecases.dart'
     as _i535;
+import '../../features/prescription/presentation/manager/all_prescriptions_cubit.dart'
+    as _i395;
 import '../../features/prescription/presentation/manager/drugs_cubit.dart'
     as _i1042;
 import '../../features/prescription/presentation/manager/prescription_bloc.dart'
@@ -869,6 +873,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i535.DeleteTemplateUseCase(gh<_i845.IPrescriptionRepository>()));
     gh.factory<_i535.GetTemplateDataUseCase>(() =>
         _i535.GetTemplateDataUseCase(gh<_i845.IPrescriptionRepository>()));
+    gh.factory<_i681.GetAllPrescriptionsUseCase>(() =>
+        _i681.GetAllPrescriptionsUseCase(gh<_i845.IPrescriptionRepository>()));
     gh.factory<_i405.DrugReportsCubit>(
         () => _i405.DrugReportsCubit(gh<_i965.GetDrugStatsUseCase>()));
     gh.factory<_i774.DeletePatientUseCase>(
@@ -916,6 +922,8 @@ extension GetItInjectableX on _i174.GetIt {
           fetchAllStaffUseCase: gh<_i675.FetchAllStaffUseCase>(),
           inviteStaffUseCase: gh<_i255.InviteStaffUseCase>(),
         ));
+    gh.factory<_i395.AllPrescriptionsCubit>(() =>
+        _i395.AllPrescriptionsCubit(gh<_i681.GetAllPrescriptionsUseCase>()));
     gh.factory<_i2.DeleteClinicUseCase>(() => _i2.DeleteClinicUseCase(
         clinicsRepository: gh<_i359.ClinicsRepository>()));
     gh.factory<_i240.EditClinicUseCase>(() => _i240.EditClinicUseCase(

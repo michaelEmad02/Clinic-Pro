@@ -23,7 +23,7 @@ import '../../../appointments/presentation/ui/appointments_screen.dart';
 import '../../../settings/presentation/ui/settings_screen.dart';
 import '../manager/secretary_dashboard_cubit.dart';
 import '../manager/secretary_dashboard_state.dart';
-import 'widgets/live_queue_section.dart';
+import '../../../appointments/presentation/ui/widgets/waiting_queue_list.dart';
 import 'widgets/secretary_quick_actions.dart';
 import 'widgets/daily_summary_row.dart';
 import '../../../invoices/presentation/ui/invoices_screen.dart';
@@ -41,6 +41,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
   int _currentIndex = 0;
   String _clinicId = '';
   String _secretaryId = '';
+  String _doctorId = '';
   bool _hasLoaded = false;
   late final SecretaryDashboardCubit _cubit;
 
@@ -71,12 +72,14 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
     if (currentUser == null || newClinicId.isEmpty) return;
 
     final newSecretaryId = currentUser.id;
+    final newDoctorId = settingsState.currentDoctorId ?? AppConstants.activeDoctorId;
 
-    final hasChanges = newClinicId != _clinicId || newSecretaryId != _secretaryId;
+    final hasChanges = newClinicId != _clinicId || newSecretaryId != _secretaryId || newDoctorId != _doctorId;
     if (_hasLoaded && !hasChanges && !forceRefresh) return;
 
     _clinicId = newClinicId;
     _secretaryId = newSecretaryId;
+    _doctorId = newDoctorId;
     _hasLoaded = true;
 
     _cubit.loadDashboardData(
@@ -98,16 +101,16 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
       value: _cubit,
       child: BlocListener<SettingsCubit, SettingsState>(
         listenWhen: (previous, current) =>
-            previous.clinicEntity?.id != current.clinicEntity?.id,
+            previous.clinicEntity?.id != current.clinicEntity?.id ||
+            previous.currentDoctorId != current.currentDoctorId,
         listener: (context, settingsState) {
-          if (settingsState.clinicEntity != null) {
-            _clinicId = '';
-            _tryLoadDashboard(
-              customContext: context,
-              forceClinicId: settingsState.clinicEntity!.id,
-              forceRefresh: true,
-            );
-          }
+          _clinicId = '';
+          _doctorId = '';
+          _tryLoadDashboard(
+            customContext: context,
+            forceClinicId: settingsState.clinicEntity?.id,
+            forceRefresh: true,
+          );
         },
         child: AppResponsiveScaffold(
           selectedIndex: _currentIndex,
@@ -242,10 +245,11 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                LiveQueueSection(
+                WaitingQueueList(
                   queue: state.liveQueue,
-                  onCall: (appId) {
-                    context.read<SecretaryDashboardCubit>().callPatient(appId);
+                  maxItems: 5,
+                  onCallNext: () {
+                    context.read<SecretaryDashboardCubit>().callNextPatient();
                   },
                 ),
               ],

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/prescription_entity.dart';
 
 // ────────────────────────────────────────────────────────
 // نموذج الدواء المختار للروشتة
@@ -59,9 +60,12 @@ class SelectedDrugModel extends Equatable {
 // حالات إدارة شاشة الروشتة
 // ────────────────────────────────────────────────────────
 enum PrescriptionStatus { initial, loading, loaded, success, error }
+enum PostSaveAction { none, finish, print, whatsapp }
 
 class PrescriptionState extends Equatable {
   final PrescriptionStatus status;
+  final PostSaveAction postSaveAction;
+  final PrescriptionEntity? savedPrescription;
   final String appointmentId;
   final String patientId;
   final String clinicId;
@@ -76,12 +80,15 @@ class PrescriptionState extends Equatable {
   final List<SelectedDrugModel> selectedDrugs;
   final String finalDiagnosis;
   final String notes;
+  final int? nextVisitDays;
   final String prescriptionId;
   final String? errorMessage;
   final List<String> appliedTemplateIds;
 
   const PrescriptionState({
     this.status = PrescriptionStatus.initial,
+    this.postSaveAction = PostSaveAction.none,
+    this.savedPrescription,
     this.appointmentId = '',
     this.patientId = '',
     this.clinicId = '',
@@ -96,6 +103,7 @@ class PrescriptionState extends Equatable {
     this.selectedDrugs = const [],
     this.finalDiagnosis = '',
     this.notes = '',
+    this.nextVisitDays,
     this.prescriptionId = '',
     this.errorMessage,
     this.appliedTemplateIds = const [],
@@ -103,6 +111,8 @@ class PrescriptionState extends Equatable {
 
   PrescriptionState copyWith({
     PrescriptionStatus? status,
+    PostSaveAction? postSaveAction,
+    PrescriptionEntity? savedPrescription,
     String? appointmentId,
     String? patientId,
     String? clinicId,
@@ -117,12 +127,16 @@ class PrescriptionState extends Equatable {
     List<SelectedDrugModel>? selectedDrugs,
     String? finalDiagnosis,
     String? notes,
+    int? nextVisitDays,
+    bool clearNextVisitDays = false,
     String? prescriptionId,
     String? errorMessage,
     List<String>? appliedTemplateIds,
   }) {
     return PrescriptionState(
       status: status ?? this.status,
+      postSaveAction: postSaveAction ?? this.postSaveAction,
+      savedPrescription: savedPrescription ?? this.savedPrescription,
       appointmentId: appointmentId ?? this.appointmentId,
       patientId: patientId ?? this.patientId,
       clinicId: clinicId ?? this.clinicId,
@@ -137,6 +151,7 @@ class PrescriptionState extends Equatable {
       selectedDrugs: selectedDrugs ?? this.selectedDrugs,
       finalDiagnosis: finalDiagnosis ?? this.finalDiagnosis,
       notes: notes ?? this.notes,
+      nextVisitDays: clearNextVisitDays ? null : (nextVisitDays ?? this.nextVisitDays),
       prescriptionId: prescriptionId ?? this.prescriptionId,
       errorMessage: errorMessage ?? this.errorMessage,
       appliedTemplateIds: appliedTemplateIds ?? this.appliedTemplateIds,
@@ -146,6 +161,8 @@ class PrescriptionState extends Equatable {
   @override
   List<Object?> get props => [
         status,
+        postSaveAction,
+        savedPrescription,
         appointmentId,
         patientId,
         clinicId,
@@ -160,6 +177,7 @@ class PrescriptionState extends Equatable {
         selectedDrugs,
         finalDiagnosis,
         notes,
+        nextVisitDays,
         prescriptionId,
         errorMessage,
         appliedTemplateIds,

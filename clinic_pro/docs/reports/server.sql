@@ -1,5 +1,5 @@
 -- ==============================================================================
--- دوال التقارير المحمية والمفلترة بدقة حسب المالك وعياداته (Owner-Scoped Reports RPCs)
+-- دوال التقارير المحمية والمفلترة بدقة حسب المالك وعياداته أو حسب الطبيب
 -- ==============================================================================
 
 /* ------------------------------------------------------------------------------
@@ -108,31 +108,44 @@ DECLARE
   v_expenses_breakdown jsonb := '[]'::jsonb;
   v_chart jsonb := '[]'::jsonb;
 BEGIN
-  IF v_owner_id IS NOT NULL AND NOT check_subscription_feature_access(v_owner_id, 'clinics_reports') THEN
+  IF p_doctor_id IS NULL AND v_owner_id IS NOT NULL AND NOT check_subscription_feature_access(v_owner_id, 'clinics_reports') THEN
     RAISE EXCEPTION 'FEATURE_NOT_ALLOWED: financial_reports' USING ERRCODE = '40301';
   END IF;
 
-  -- الإيرادات المتوقعة من المواعيد الخاصة بعيادات المالك
+  -- الإيرادات المتوقعة من المواعيد
   SELECT COALESCE(SUM(a.price), 0.0) INTO v_total_revenue
   FROM appointments a
   JOIN clinics c ON c.id = a.clinic_id
-  WHERE c.owner_id = v_owner_id
+  WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
     AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
     AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
     AND (p_start_date IS NULL OR a.created_at >= p_start_date)
     AND (p_end_date IS NULL OR a.created_at <= p_end_date);
 
-  -- المحصل والمتبقي من فواتير عيادات المالك
-  SELECT 
-    COALESCE(SUM(inv.paid_amount), 0.0),
-    COALESCE(SUM(GREATEST(inv.total_amount - inv.paid_amount, 0.0)), 0.0)
-  INTO v_collected, v_pending
-  FROM invoices inv
-  JOIN clinics c ON c.id = inv.clinic_id
-  WHERE c.owner_id = v_owner_id
-    AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
-    AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
-    AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
+  -- المحصل والمتبقي من الفواتير
+  IF p_doctor_id IS NOT NULL THEN
+    SELECT 
+      COALESCE(SUM(inv.paid_amount), 0.0),
+      COALESCE(SUM(GREATEST(inv.total_amount - inv.paid_amount, 0.0)), 0.0)
+    INTO v_collected, v_pending
+    FROM invoices inv
+    JOIN appointments a ON a.id = inv.source_id
+    WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+      AND a.doctor_id = p_doctor_id
+      AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
+      AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
+  ELSE
+    SELECT 
+      COALESCE(SUM(inv.paid_amount), 0.0),
+      COALESCE(SUM(GREATEST(inv.total_amount - inv.paid_amount, 0.0)), 0.0)
+    INTO v_collected, v_pending
+    FROM invoices inv
+    JOIN clinics c ON c.id = inv.clinic_id
+    WHERE c.owner_id = v_owner_id
+      AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+      AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
+      AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
+  END IF;
 
   -- المصروفات وتوزيعها لعيادات المالك (تظهر للمالك فقط إذا لم يكن محدد طبيب)
   IF p_doctor_id IS NULL THEN
@@ -162,48 +175,64 @@ BEGIN
         AND (p_end_date IS NULL OR e.created_at <= p_end_date)
       GROUP BY COALESCE(ec.name, 'أخرى')
     ) eb;
+
+    -- حساب نسبة التغير في المصروفات
+    SELECT COALESCE(SUM(e.amount), 0.0) INTO v_curr_month_exp
+    FROM expenses e
+    JOIN clinics c ON c.id = e.clinic_id
+    WHERE c.owner_id = v_owner_id
+      AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
+      AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now());
+
+    SELECT COALESCE(SUM(e.amount), 0.0) INTO v_prev_month_exp
+    FROM expenses e
+    JOIN clinics c ON c.id = e.clinic_id
+    WHERE c.owner_id = v_owner_id
+      AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
+      AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month');
+
+    IF v_prev_month_exp > 0 THEN
+      v_expenses_change := ROUND(((v_curr_month_exp - v_prev_month_exp) / v_prev_month_exp * 100)::numeric, 0)::text || '%';
+    ELSIF v_curr_month_exp > 0 THEN
+      v_expenses_change := '+100%';
+    END IF;
   END IF;
 
-  -- 📈 حساب نسبة التغير في الإيرادات عن الشهر السابق لعيادات المالك
-  SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_curr_month_rev
-  FROM invoices inv
-  JOIN clinics c ON c.id = inv.clinic_id
-  WHERE c.owner_id = v_owner_id
-    AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
-    AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now());
+  -- 📈 حساب نسبة التغير في الإيرادات عن الشهر السابق
+  IF p_doctor_id IS NOT NULL THEN
+    SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_curr_month_rev
+    FROM invoices inv
+    JOIN appointments a ON a.id = inv.source_id
+    WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+      AND a.doctor_id = p_doctor_id
+      AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now());
 
-  SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_prev_month_rev
-  FROM invoices inv
-  JOIN clinics c ON c.id = inv.clinic_id
-  WHERE c.owner_id = v_owner_id
-    AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
-    AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month');
+    SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_prev_month_rev
+    FROM invoices inv
+    JOIN appointments a ON a.id = inv.source_id
+    WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+      AND a.doctor_id = p_doctor_id
+      AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month');
+  ELSE
+    SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_curr_month_rev
+    FROM invoices inv
+    JOIN clinics c ON c.id = inv.clinic_id
+    WHERE c.owner_id = v_owner_id
+      AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+      AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now());
+
+    SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_prev_month_rev
+    FROM invoices inv
+    JOIN clinics c ON c.id = inv.clinic_id
+    WHERE c.owner_id = v_owner_id
+      AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+      AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month');
+  END IF;
 
   IF v_prev_month_rev > 0 THEN
     v_revenue_change := ROUND(((v_curr_month_rev - v_prev_month_rev) / v_prev_month_rev * 100)::numeric, 0)::text || '%';
   ELSIF v_curr_month_rev > 0 THEN
     v_revenue_change := '+100%';
-  END IF;
-
-  -- 📉 حساب نسبة التغير في المصروفات عن الشهر السابق لعيادات المالك
-  SELECT COALESCE(SUM(e.amount), 0.0) INTO v_curr_month_exp
-  FROM expenses e
-  JOIN clinics c ON c.id = e.clinic_id
-  WHERE c.owner_id = v_owner_id
-    AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
-    AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now());
-
-  SELECT COALESCE(SUM(e.amount), 0.0) INTO v_prev_month_exp
-  FROM expenses e
-  JOIN clinics c ON c.id = e.clinic_id
-  WHERE c.owner_id = v_owner_id
-    AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
-    AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month');
-
-  IF v_prev_month_exp > 0 THEN
-    v_expenses_change := ROUND(((v_curr_month_exp - v_prev_month_exp) / v_prev_month_exp * 100)::numeric, 0)::text || '%';
-  ELSIF v_curr_month_exp > 0 THEN
-    v_expenses_change := '+100%';
   END IF;
 
   -- 📊 حساب الرسم البياني المالي لأسابيع الشهر الحالي الـ 4
@@ -228,7 +257,7 @@ BEGIN
       SUM(a.price)::double precision as rev
     FROM appointments a
     JOIN clinics c ON c.id = a.clinic_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND DATE_TRUNC('month', a.created_at) = DATE_TRUNC('month', now())
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
@@ -244,8 +273,9 @@ BEGIN
       END as week_num,
       SUM(inv.paid_amount)::double precision as col
     FROM invoices inv
-    JOIN clinics c ON c.id = inv.clinic_id
-    WHERE c.owner_id = v_owner_id
+    LEFT JOIN appointments a ON a.id = inv.source_id
+    LEFT JOIN clinics c ON c.id = inv.clinic_id
+    WHERE (p_doctor_id IS NOT NULL AND a.doctor_id = p_doctor_id OR (p_doctor_id IS NULL AND c.owner_id = v_owner_id))
       AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now())
       AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
     GROUP BY 1
@@ -261,7 +291,8 @@ BEGIN
       SUM(e.amount)::double precision as exp
     FROM expenses e
     JOIN clinics c ON c.id = e.clinic_id
-    WHERE c.owner_id = v_owner_id
+    WHERE p_doctor_id IS NULL 
+      AND c.owner_id = v_owner_id
       AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now())
       AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
     GROUP BY 1
@@ -285,7 +316,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 /* ------------------------------------------------------------------------------
-   3. تقرير المواعيد (Appointments Report RPC)
+   3. تقرير المواعيد الشامل (Appointments Report RPC)
+   Target Model: AppointmentStatsModel.fromMap
    Feature Key: 'appointments_reports'
    ------------------------------------------------------------------------------ */
 CREATE OR REPLACE FUNCTION get_appointments_report_rpc(
@@ -311,7 +343,7 @@ DECLARE
   v_peak_days jsonb := '[]'::jsonb;
   v_by_type jsonb := '[]'::jsonb;
 BEGIN
-  IF v_owner_id IS NOT NULL AND NOT check_subscription_feature_access(v_owner_id, 'appointments_reports') THEN
+  IF p_doctor_id IS NULL AND v_owner_id IS NOT NULL AND NOT check_subscription_feature_access(v_owner_id, 'appointments_reports') THEN
     RAISE EXCEPTION 'FEATURE_NOT_ALLOWED: appointments_reports' USING ERRCODE = '40301';
   END IF;
 
@@ -325,7 +357,7 @@ BEGIN
   INTO v_total, v_completed, v_cancelled, v_no_show, v_urgent, v_avg_wait_time
   FROM appointments a
   JOIN clinics c ON c.id = a.clinic_id
-  WHERE c.owner_id = v_owner_id
+  WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
     AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
     AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
     AND (p_start_date IS NULL OR a.created_at >= p_start_date)
@@ -342,7 +374,7 @@ BEGIN
     SELECT a.status, COUNT(*)::int as count
     FROM appointments a
     JOIN clinics c ON c.id = a.clinic_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR a.created_at >= p_start_date)
@@ -355,7 +387,7 @@ BEGIN
     SELECT EXTRACT(HOUR FROM a.created_at)::int as hour, COUNT(*)::int as count
     FROM appointments a
     JOIN clinics c ON c.id = a.clinic_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR a.created_at >= p_start_date)
@@ -368,7 +400,7 @@ BEGIN
     SELECT TO_CHAR(a.created_at, 'Day') as day, COUNT(*)::int as count
     FROM appointments a
     JOIN clinics c ON c.id = a.clinic_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR a.created_at >= p_start_date)
@@ -386,7 +418,7 @@ BEGIN
     JOIN clinics c ON c.id = a.clinic_id
     LEFT JOIN doctor_appointment_types dat ON dat.id = a.type_id
     LEFT JOIN appointment_types at ON at.id = dat.appointment_type_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR a.created_at >= p_start_date)
@@ -422,6 +454,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
    ------------------------------------------------------------------------------ */
 CREATE OR REPLACE FUNCTION get_patient_stats_report_rpc(
   p_clinic_id uuid DEFAULT NULL,
+  p_doctor_id uuid DEFAULT NULL,
   p_start_date timestamptz DEFAULT NULL,
   p_end_date timestamptz DEFAULT NULL,
   p_owner_id uuid DEFAULT auth.uid()
@@ -440,16 +473,23 @@ DECLARE
   v_by_age jsonb := '{}'::jsonb;
   v_inactive jsonb := '[]'::jsonb;
 BEGIN
-  IF v_owner_id IS NOT NULL AND NOT check_subscription_feature_access(v_owner_id, 'clinics_reports') THEN
+  IF p_doctor_id IS NULL AND v_owner_id IS NOT NULL AND NOT check_subscription_feature_access(v_owner_id, 'clinics_reports') THEN
     RAISE EXCEPTION 'FEATURE_NOT_ALLOWED: clinics_reports' USING ERRCODE = '40301';
   END IF;
 
-  -- 1. إجمالي مرضى عيادات المالك
-  SELECT COUNT(DISTINCT pat.id) INTO v_total
-  FROM patients pat
-  JOIN clinics c ON c.id = pat.clinic_id
-  WHERE c.owner_id = v_owner_id
-    AND (p_clinic_id IS NULL OR pat.clinic_id = p_clinic_id);
+  -- 1. إجمالي المرضى
+  IF p_doctor_id IS NOT NULL THEN
+    SELECT COUNT(DISTINCT a.patient_id) INTO v_total
+    FROM appointments a
+    WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+      AND a.doctor_id = p_doctor_id;
+  ELSE
+    SELECT COUNT(DISTINCT pat.id) INTO v_total
+    FROM patients pat
+    JOIN clinics c ON c.id = pat.clinic_id
+    WHERE c.owner_id = v_owner_id
+      AND (p_clinic_id IS NULL OR pat.clinic_id = p_clinic_id);
+  END IF;
 
   -- 2. حساب المرضى المستمرين ومتوسط الزيارات
   SELECT 
@@ -460,8 +500,9 @@ BEGIN
     SELECT a.patient_id, COUNT(a.id) as visit_count
     FROM appointments a
     JOIN clinics c ON c.id = a.clinic_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+      AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR a.created_at >= p_start_date)
       AND (p_end_date IS NULL OR a.created_at <= p_end_date)
     GROUP BY a.patient_id
@@ -474,47 +515,90 @@ BEGIN
     v_new_pct := ROUND(((v_new::double precision / v_total::double precision) * 100)::numeric, 2);
     v_returning_pct := ROUND(((v_returning::double precision / v_total::double precision) * 100)::numeric, 2);
 
-    SELECT COALESCE(ROUND((SUM(inv.paid_amount) / v_total::double precision)::numeric, 2), 0.0) INTO v_avg_revenue
-    FROM invoices inv
-    JOIN clinics c ON c.id = inv.clinic_id
-    WHERE c.owner_id = v_owner_id
-      AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
-      AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
-      AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
+    IF p_doctor_id IS NOT NULL THEN
+      SELECT COALESCE(ROUND((SUM(inv.paid_amount) / v_total::double precision)::numeric, 2), 0.0) INTO v_avg_revenue
+      FROM invoices inv
+      JOIN appointments a ON a.id = inv.source_id
+      WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+        AND a.doctor_id = p_doctor_id
+        AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
+        AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
+    ELSE
+      SELECT COALESCE(ROUND((SUM(inv.paid_amount) / v_total::double precision)::numeric, 2), 0.0) INTO v_avg_revenue
+      FROM invoices inv
+      JOIN clinics c ON c.id = inv.clinic_id
+      WHERE c.owner_id = v_owner_id
+        AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+        AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
+        AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
+    END IF;
   END IF;
 
-  -- 3. التوزيع حسب النوع (Gender) لمرضى عيادات المالك
-  SELECT COALESCE(jsonb_object_agg(gender, count), '{}'::jsonb) INTO v_by_gender
-  FROM (
-    SELECT COALESCE(pat.gender, 'male') as gender, COUNT(*)::int as count
-    FROM patients pat
-    JOIN clinics c ON c.id = pat.clinic_id
-    WHERE c.owner_id = v_owner_id
-      AND (p_clinic_id IS NULL OR pat.clinic_id = p_clinic_id)
-    GROUP BY pat.gender
-  ) g;
+  -- 3. التوزيع حسب النوع (Gender)
+  IF p_doctor_id IS NOT NULL THEN
+    SELECT COALESCE(jsonb_object_agg(gender, count), '{}'::jsonb) INTO v_by_gender
+    FROM (
+      SELECT COALESCE(pat.gender, 'male') as gender, COUNT(DISTINCT pat.id)::int as count
+      FROM patients pat
+      JOIN appointments a ON a.patient_id = pat.id
+      WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+        AND a.doctor_id = p_doctor_id
+      GROUP BY pat.gender
+    ) g;
+  ELSE
+    SELECT COALESCE(jsonb_object_agg(gender, count), '{}'::jsonb) INTO v_by_gender
+    FROM (
+      SELECT COALESCE(pat.gender, 'male') as gender, COUNT(*)::int as count
+      FROM patients pat
+      JOIN clinics c ON c.id = pat.clinic_id
+      WHERE c.owner_id = v_owner_id
+        AND (p_clinic_id IS NULL OR pat.clinic_id = p_clinic_id)
+      GROUP BY pat.gender
+    ) g;
+  END IF;
 
-  -- 4. التوزيع حسب الفئة العمرية لمرضى عيادات المالك
-  SELECT COALESCE(jsonb_object_agg(age_group, count), '{}'::jsonb) INTO v_by_age
-  FROM (
-    SELECT 
-      CASE 
-        WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) <= 18 THEN '0-18'
-        WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 19 AND 35 THEN '19-35'
-        WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 36 AND 50 THEN '36-50'
-        WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 51 AND 65 THEN '51-65'
-        ELSE '65+'
-      END as age_group,
-      COUNT(*)::int as count
-    FROM patients pat
-    JOIN clinics c ON c.id = pat.clinic_id
-    WHERE c.owner_id = v_owner_id
-      AND (p_clinic_id IS NULL OR pat.clinic_id = p_clinic_id)
-      AND pat.date_of_birth IS NOT NULL
-    GROUP BY 1
-  ) a;
+  -- 4. التوزيع حسب الفئة العمرية
+  IF p_doctor_id IS NOT NULL THEN
+    SELECT COALESCE(jsonb_object_agg(age_group, count), '{}'::jsonb) INTO v_by_age
+    FROM (
+      SELECT 
+        CASE 
+          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) <= 18 THEN '0-18'
+          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 19 AND 35 THEN '19-35'
+          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 36 AND 50 THEN '36-50'
+          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 51 AND 65 THEN '51-65'
+          ELSE '65+'
+        END as age_group,
+        COUNT(DISTINCT pat.id)::int as count
+      FROM patients pat
+      JOIN appointments a ON a.patient_id = pat.id
+      WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+        AND a.doctor_id = p_doctor_id
+        AND pat.date_of_birth IS NOT NULL
+      GROUP BY 1
+    ) a_grp;
+  ELSE
+    SELECT COALESCE(jsonb_object_agg(age_group, count), '{}'::jsonb) INTO v_by_age
+    FROM (
+      SELECT 
+        CASE 
+          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) <= 18 THEN '0-18'
+          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 19 AND 35 THEN '19-35'
+          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 36 AND 50 THEN '36-50'
+          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 51 AND 65 THEN '51-65'
+          ELSE '65+'
+        END as age_group,
+        COUNT(*)::int as count
+      FROM patients pat
+      JOIN clinics c ON c.id = pat.clinic_id
+      WHERE c.owner_id = v_owner_id
+        AND (p_clinic_id IS NULL OR pat.clinic_id = p_clinic_id)
+        AND pat.date_of_birth IS NOT NULL
+      GROUP BY 1
+    ) a_grp;
+  END IF;
 
-  -- 5. المرضى غير النشطين لعيادات المالك
+  -- 5. المرضى غير النشطين
   SELECT COALESCE(jsonb_agg(inp), '[]'::jsonb) INTO v_inactive
   FROM (
     SELECT 
@@ -524,8 +608,9 @@ BEGIN
     FROM patients p
     JOIN clinics c ON c.id = p.clinic_id
     JOIN appointments a ON a.patient_id = p.id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
+      AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
     GROUP BY p.id, p.name
     HAVING MAX(a.created_at) < (now() - INTERVAL '60 days')
     ORDER BY MAX(a.created_at) ASC LIMIT 20
@@ -551,7 +636,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 /* ------------------------------------------------------------------------------
-   5. تقرير أداء أطباء المالك (Doctors Performance Report RPC)
+   5. تقرير أداء الأطباء (Doctors Performance Report RPC)
+   Target Model: List<DoctorPerformanceModel>
    Feature Key: 'doctors_performance_reports'
    ------------------------------------------------------------------------------ */
 CREATE OR REPLACE FUNCTION get_doctors_performance_report_rpc(
@@ -620,8 +706,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 /* ------------------------------------------------------------------------------
-   6. تقرير الأدوية والروشتات لعيادات المالك (Prescriptions & Drugs Report RPC)
-   Target Model: DrugStatsEntity / fetchDrugStats
+   6. تقرير الروشتات والأدوية (Prescriptions & Drugs Report RPC)
+   Target Model: DrugStatsModel.fromMap / TemplateStatsModel.fromMap
    Feature Key: 'prescriptions_reports'
    ------------------------------------------------------------------------------ */
 CREATE OR REPLACE FUNCTION get_prescriptions_report_rpc(
@@ -650,15 +736,15 @@ DECLARE
   v_repeated_drugs jsonb := '[]'::jsonb;
   v_patient_reach jsonb := '[]'::jsonb;
 BEGIN
-  IF v_owner_id IS NOT NULL AND NOT check_subscription_feature_access(v_owner_id, 'prescriptions_reports') THEN
+  IF p_doctor_id IS NULL AND v_owner_id IS NOT NULL AND NOT check_subscription_feature_access(v_owner_id, 'prescriptions_reports') THEN
     RAISE EXCEPTION 'FEATURE_NOT_ALLOWED: prescriptions_reports' USING ERRCODE = '40301';
   END IF;
 
-  -- 1. حساب إجمالي الروشتات الخاصة بعيادات المالك
+  -- 1. حساب إجمالي الروشتات
   SELECT COUNT(DISTINCT p.id) INTO v_total_rx
   FROM prescriptions p
   JOIN clinics c ON c.id = p.clinic_id
-  WHERE c.owner_id = v_owner_id
+  WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
     AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
     AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
     AND (p_start_date IS NULL OR p.created_at >= p_start_date)
@@ -669,7 +755,7 @@ BEGIN
   FROM prescription_items pi
   JOIN prescriptions p ON p.id = pi.prescription_id
   JOIN clinics c ON c.id = p.clinic_id
-  WHERE c.owner_id = v_owner_id
+  WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
     AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
     AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
     AND (p_start_date IS NULL OR p.created_at >= p_start_date)
@@ -683,7 +769,7 @@ BEGIN
     v_prn_percentage := ROUND(((v_prn_count::double precision / v_total_items::double precision) * 100)::numeric, 2);
   END IF;
 
-  -- 2. التشخيصات لعيادات المالك
+  -- 2. التشخيصات
   SELECT COALESCE(jsonb_agg(td), '[]'::jsonb) INTO v_top_diagnoses
   FROM (
     SELECT 
@@ -695,7 +781,7 @@ BEGIN
       END as percentage
     FROM prescriptions p
     JOIN clinics c ON c.id = p.clinic_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR p.created_at >= p_start_date)
@@ -721,7 +807,7 @@ BEGIN
     JOIN prescriptions p ON p.id = pi.prescription_id
     JOIN clinics c ON c.id = p.clinic_id
     LEFT JOIN drugs d ON d.id = pi.drug_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR p.created_at >= p_start_date)
@@ -744,7 +830,7 @@ BEGIN
     JOIN prescriptions p ON p.id = pi.prescription_id
     JOIN clinics c ON c.id = p.clinic_id
     LEFT JOIN drugs d ON d.id = pi.drug_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR p.created_at >= p_start_date)
@@ -766,7 +852,7 @@ BEGIN
     JOIN prescriptions p ON p.id = pi.prescription_id
     JOIN clinics c ON c.id = p.clinic_id
     LEFT JOIN drugs d ON d.id = pi.drug_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND pi.duration = 0
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
@@ -776,7 +862,7 @@ BEGIN
     ORDER BY count DESC
   ) cd;
 
-  -- 4. إحصائيات القوالب الخاصة بأطباء عيادات المالك
+  -- 4. إحصائيات القوالب
   SELECT COALESCE(jsonb_agg(ts), '[]'::jsonb) INTO v_template_stats
   FROM (
     SELECT 
@@ -795,7 +881,7 @@ BEGIN
     ORDER BY pt.user_count DESC
   ) ts;
 
-  -- 5. الاتجاه الشهري لروشتات عيادات المالك
+  -- 5. الاتجاه الشهري للروشتات
   SELECT COALESCE(jsonb_agg(mt), '[]'::jsonb) INTO v_monthly_trend
   FROM (
     SELECT 
@@ -809,13 +895,13 @@ BEGIN
     LEFT JOIN prescriptions p ON DATE_TRUNC('month', p.created_at) = DATE_TRUNC('month', m.m_date)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
-      AND p.clinic_id IN (SELECT id FROM clinics WHERE owner_id = v_owner_id)
+      AND (p_doctor_id IS NOT NULL OR p.clinic_id IN (SELECT id FROM clinics WHERE owner_id = v_owner_id))
     LEFT JOIN prescription_items pi ON pi.prescription_id = p.id
     GROUP BY 1
     ORDER BY 1 ASC
   ) mt;
 
-  -- 6. أنماط الجرعات لعيادات المالك
+  -- 6. أنماط الجرعات
   SELECT COALESCE(jsonb_agg(cdos), '[]'::jsonb) INTO v_common_dosages
   FROM (
     SELECT 
@@ -831,7 +917,7 @@ BEGIN
     FROM prescription_items pi
     JOIN prescriptions p ON p.id = pi.prescription_id
     JOIN clinics c ON c.id = p.clinic_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR p.created_at >= p_start_date)
@@ -840,7 +926,7 @@ BEGIN
     ORDER BY count DESC
   ) cdos;
 
-  -- 7. روابط الدواء بالتشخيص لعيادات المالك
+  -- 7. روابط الدواء بالتشخيص
   SELECT COALESCE(jsonb_agg(ddl), '[]'::jsonb) INTO v_drug_diag_links
   FROM (
     SELECT 
@@ -851,7 +937,7 @@ BEGIN
     JOIN prescriptions p ON p.id = pi.prescription_id
     JOIN clinics c ON c.id = p.clinic_id
     LEFT JOIN drugs d ON d.id = pi.drug_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR p.created_at >= p_start_date)
@@ -860,7 +946,7 @@ BEGIN
     ORDER BY count DESC
   ) ddl;
 
-  -- 8. الأدوية المكررة لنفس المريض لعيادات المالك
+  -- 8. الأدوية المكررة لنفس المريض
   SELECT COALESCE(jsonb_agg(rd), '[]'::jsonb) INTO v_repeated_drugs
   FROM (
     SELECT 
@@ -871,7 +957,7 @@ BEGIN
     JOIN prescriptions p ON p.id = pi.prescription_id
     JOIN clinics c ON c.id = p.clinic_id
     LEFT JOIN drugs d ON d.id = pi.drug_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR p.created_at >= p_start_date)
@@ -881,7 +967,7 @@ BEGIN
     ORDER BY repeat_count DESC
   ) rd;
 
-  -- 9. مدى وصول الدواء للمرضى الفريدين لعيادات المالك
+  -- 9. مدى وصول الدواء للمرضى الفريدين
   SELECT COALESCE(jsonb_agg(pr), '[]'::jsonb) INTO v_patient_reach
   FROM (
     SELECT 
@@ -892,7 +978,7 @@ BEGIN
     JOIN prescriptions p ON p.id = pi.prescription_id
     JOIN clinics c ON c.id = p.clinic_id
     LEFT JOIN drugs d ON d.id = pi.drug_id
-    WHERE c.owner_id = v_owner_id
+    WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
       AND (p_start_date IS NULL OR p.created_at >= p_start_date)

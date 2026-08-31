@@ -4,6 +4,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
 
 class SupabaseTables {
   static const String owners = 'Owners';
@@ -134,19 +135,21 @@ class DoseTiming {
   static const String throughtMeal = 'throught_meal';
   static const String anyTime = 'any_time';
 
-  /// تحويل قيمة موعد الجرعة إلى اللغة العربية
-  static String toArabic(String? timing) {
+  /// تحويل قيمة موعد الجرعة حسب لغة التطبيق الحالية
+  static String toArabic(String? timing) => toLocalized(timing);
+
+  static String toLocalized(String? timing) {
     if (timing == null || timing.trim().isEmpty) return '-';
     final normalized = timing.trim().toLowerCase();
     switch (normalized) {
       case afterMeal:
-        return 'بعد الأكل';
+        return AppStrings.isArabic ? 'بعد الأكل' : 'After Meal';
       case beforeMeal:
-        return 'قبل الأكل';
+        return AppStrings.isArabic ? 'قبل الأكل' : 'Before Meal';
       case throughtMeal:
-        return 'أثناء الأكل';
+        return AppStrings.isArabic ? 'أثناء الأكل' : 'During Meal';
       case anyTime:
-        return 'في أي وقت';
+        return AppStrings.isArabic ? 'في أي وقت' : 'Any Time';
       default:
         return timing;
     }

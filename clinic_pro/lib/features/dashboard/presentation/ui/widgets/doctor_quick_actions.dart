@@ -32,6 +32,11 @@ class DoctorQuickActions extends StatelessWidget {
         'onTap': () => context.push(RouteConstants.invoices),
       },
       {
+        'label': AppStrings.allPrescriptions,
+        'icon': Icons.medication_liquid_outlined,
+        'onTap': () => context.push(RouteConstants.allPrescriptions),
+      },
+      {
         'label': AppStrings.drugs,
         'icon': Icons.medical_services_outlined,
         'onTap': () => context.push(RouteConstants.drugs),

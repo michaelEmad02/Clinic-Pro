@@ -21,6 +21,7 @@ class PrescriptionLoadDataEntity extends Equatable {
   final List<PrescriptionItemEntity> selectedDrugs;
   final String finalDiagnosis;
   final String notes;
+  final int? nextVisitDays;
   final String? prescriptionId; // معرف الروشتة الحالية (إن وجد للتعديل)
 
   const PrescriptionLoadDataEntity({
@@ -38,6 +39,7 @@ class PrescriptionLoadDataEntity extends Equatable {
     required this.selectedDrugs,
     required this.finalDiagnosis,
     required this.notes,
+    this.nextVisitDays,
     this.prescriptionId,
   });
 
@@ -57,6 +59,7 @@ class PrescriptionLoadDataEntity extends Equatable {
         selectedDrugs,
         finalDiagnosis,
         notes,
+        nextVisitDays,
         prescriptionId,
       ];
 }

@@ -22,6 +22,7 @@ import '../../features/appointments/presentation/ui/appointment_details_screen.d
 import '../../features/appointments/presentation/ui/waiting_queue_screen.dart';
 import '../../features/patients/presentation/ui/patients_screen.dart';
 import '../../features/patients/presentation/ui/patient_details_screen.dart';
+import '../../features/prescription/presentation/ui/all_prescriptions_screen.dart';
 import '../../features/prescription/presentation/ui/drugs_screen.dart';
 import '../../features/prescription/presentation/ui/prescription_screen.dart';
 import '../../features/prescription/presentation/ui/templates_screen.dart';
@@ -194,6 +195,10 @@ final GoRouter appRouter = GoRouter(
           isEditing: true,
         );
       },
+    ),
+    GoRoute(
+      path: RouteConstants.allPrescriptions,
+      builder: (context, state) => const AllPrescriptionsScreen(),
     ),
     GoRoute(
       path: RouteConstants.prescriptionTemplates,

@@ -74,7 +74,8 @@ class DrugsScreen extends StatelessWidget {
                   maxWidth: AppConstants.maxContentWidth,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceSm),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppConstants.spaceSm),
                     children: [
                       DrugsSearchBar(
                         onChanged: (q) => context.read<DrugsCubit>().search(q),

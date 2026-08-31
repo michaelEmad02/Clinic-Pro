@@ -274,13 +274,8 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
 
     result.fold(
       (failure) => emit(AppointmentsError(failure.message)),
-      (newAppointment) {
-        if (state is AppointmentsLoaded) {
-          final loaded = state as AppointmentsLoaded;
-          final currentList = List<AppointmentEntity>.from(loaded.allAppointments);
-          currentList.insert(0, newAppointment);
-          emit(loaded.copyWith(allAppointments: currentList));
-        }
+      (_) {
+        // نعتمد بالكامل على الـ Realtime Stream المشترك لتحديث القائمة تلقائياً
       },
     );
   }
@@ -320,18 +315,7 @@ class AppointmentsBloc extends Bloc<AppointmentsEvent, AppointmentsState> {
     result.fold(
       (failure) => emit(AppointmentsError(failure.message)),
       (_) {
-        if (state is AppointmentsLoaded) {
-          final loaded = state as AppointmentsLoaded;
-          final updatedList = loaded.allAppointments.map((a) {
-            if (a.id == event.appointmentId) {
-              return a.copyWith(
-                isUrgent: event.isUrgent,
-              );
-            }
-            return a;
-          }).toList();
-          emit(loaded.copyWith(allAppointments: updatedList));
-        }
+        // نعتمد بالكامل على الـ Realtime Stream المشترك لتحديث القائمة تلقائياً
       },
     );
   }

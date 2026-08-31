@@ -24,7 +24,6 @@ class DrugModel extends DrugEntity {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'trade_name': tradeName,
       'generic_name': genericName,
       'category': category,

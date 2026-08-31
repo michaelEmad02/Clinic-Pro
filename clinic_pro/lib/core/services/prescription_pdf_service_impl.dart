@@ -7,6 +7,7 @@
 import 'dart:typed_data';
 import 'package:clinic_pro/core/services/i_prescription_pdf_service.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
 import 'package:clinic_pro/features/prescription/domain/entities/prescription_entity.dart';
@@ -19,6 +20,17 @@ import 'package:printing/printing.dart';
 
 @LazySingleton(as: IPrescriptionPdfService)
 class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
+  static pw.Font? _cachedRegularFont;
+  static pw.Font? _cachedBoldFont;
+
+  /// تحميل الخطوط مسبقاً في الذاكرة لتكون عملية توليد الـ PDF فورية 0ms
+  static Future<void> preloadFonts() async {
+    try {
+      _cachedRegularFont ??= await PdfGoogleFonts.cairoRegular();
+      _cachedBoldFont ??= await PdfGoogleFonts.cairoBold();
+    } catch (_) {}
+  }
+
   @override
   Future<Uint8List> generatePrescriptionPdf({
     required PrescriptionEntity prescription,
@@ -40,9 +52,9 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
     final showPatientInfo = printingSettings?.hidePatientInfo != true;
     final showSignature = printingSettings?.hideSignature != true;
 
-    // تحميل الخط العربي المناسب لدعم الاتجاه RTL
-    final fontData = await PdfGoogleFonts.cairoRegular();
-    final fontBoldData = await PdfGoogleFonts.cairoBold();
+    // استخدام الخط المحفوظ في الذاكرة فورياً دون انتظار تحميل متكرر من الإنترنت
+    final fontData = _cachedRegularFont ??= await PdfGoogleFonts.cairoRegular();
+    final fontBoldData = _cachedBoldFont ??= await PdfGoogleFonts.cairoBold();
 
     final PdfPageFormat pageFormatObj;
     if (pageFormat == 'A4') {
@@ -66,7 +78,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
 
     final clinicName = clinic?.name.isNotEmpty == true
         ? clinic!.name
-        : 'عيادة كلينيك برو الطبية';
+        : AppStrings.defaultClinicName;
     final clinicPhone1 = clinic?.phone1 ?? '';
     final clinicPhone2 = clinic?.phone2 ?? '';
     final clinicPhone = [clinicPhone1, clinicPhone2]
@@ -78,8 +90,12 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
 
     final doctorSpecialty = doctor?.specialty?.isNotEmpty == true
         ? doctor!.specialty!
-        : 'استشاري الطب والتخصص';
+        : AppStrings.defaultDoctorSpecialty;
     final doctorPhone = doctor?.phone.isNotEmpty == true ? doctor!.phone : '';
+
+    final doctorDisplayName = doctorName.isNotEmpty
+        ? AppStrings.doctorTitle(doctorName)
+        : AppStrings.treatingDoctorLabel;
 
     // ─── جلب صورة شعار العيادة إن وُجد رابطها وكان الشعار مفعلاً ───
     pw.ImageProvider? logoImage;
@@ -90,8 +106,6 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
       } catch (_) {}
     }
 
-
-
     pdf.addPage(
       pw.Page(
         pageFormat: pageFormatObj,
@@ -99,7 +113,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
           base: fontData,
           bold: fontBoldData,
         ),
-        textDirection: pw.TextDirection.rtl,
+        textDirection: AppStrings.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
         build: (pw.Context context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -119,7 +133,10 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                             pw.Container(
                               width: 30,
                               height: 30,
-                              margin: const pw.EdgeInsets.only(left: 6),
+                              margin: pw.EdgeInsets.only(
+                                left: AppStrings.isArabic ? 6 : 0,
+                                right: AppStrings.isArabic ? 0 : 6,
+                              ),
                               child: pw.ClipOval(
                                 child: pw.Image(
                                   logoImage,
@@ -146,7 +163,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                                 ),
                               if (clinicPhone.isNotEmpty)
                                 pw.Text(
-                                  'الهاتف: $clinicPhone',
+                                  '${AppStrings.phoneLabel} $clinicPhone',
                                   style: const pw.TextStyle(
                                       fontSize: 7.5, color: PdfColors.grey700),
                                 ),
@@ -157,14 +174,16 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                       pw.SizedBox(height: 4),
                       if (showDoctorInfo)
                         pw.Align(
-                          alignment: pw.Alignment.centerLeft,
+                          alignment: AppStrings.isArabic
+                              ? pw.Alignment.centerLeft
+                              : pw.Alignment.centerRight,
                           child: pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
                               pw.Text(
                                 doctorName.isNotEmpty
-                                    ? 'د. $doctorName - $doctorSpecialty'
-                                    : 'طبيب المعالجة',
+                                    ? '$doctorDisplayName - $doctorSpecialty'
+                                    : AppStrings.doctorLabel,
                                 style: pw.TextStyle(
                                   fontSize: 8.5,
                                   fontWeight: pw.FontWeight.bold,
@@ -173,7 +192,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                               ),
                               if (doctorPhone.isNotEmpty)
                                 pw.Text(
-                                  'الهاتف: ${doctorPhone.isNotEmpty ? doctorPhone : clinicPhone}',
+                                  '${AppStrings.phoneLabel} ${doctorPhone.isNotEmpty ? doctorPhone : clinicPhone}',
                                   style: const pw.TextStyle(
                                       fontSize: 7.5, color: PdfColors.grey700),
                                 ),
@@ -195,7 +214,10 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                             pw.Container(
                               width: 50,
                               height: 50,
-                              margin: const pw.EdgeInsets.only(left: 10),
+                              margin: pw.EdgeInsets.only(
+                                left: AppStrings.isArabic ? 10 : 0,
+                                right: AppStrings.isArabic ? 0 : 10,
+                              ),
                               child: pw.ClipOval(
                                 child: pw.Image(
                                   logoImage,
@@ -222,7 +244,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                                 ),
                               if (clinicPhone.isNotEmpty)
                                 pw.Text(
-                                  'هاتف العيادة: $clinicPhone',
+                                  '${AppStrings.clinicPhoneLabel} $clinicPhone',
                                   style: const pw.TextStyle(
                                       fontSize: 9, color: PdfColors.grey700),
                                 ),
@@ -234,11 +256,8 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                         pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.center,
                           children: [
-                           
                             pw.Text(
-                              doctorName.isNotEmpty
-                                  ? 'د. $doctorName'
-                                  : 'د. طبيب المعالجة',
+                              doctorDisplayName,
                               style: pw.TextStyle(
                                 fontSize: 11,
                                 fontWeight: pw.FontWeight.bold,
@@ -252,7 +271,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                             ),
                             if (doctorPhone.isNotEmpty)
                               pw.Text(
-                                'هاتف الطبيب: $doctorPhone',
+                                '${AppStrings.doctorPhoneLabel} $doctorPhone',
                                 style: const pw.TextStyle(
                                     fontSize: 9, color: PdfColors.grey700),
                               ),
@@ -276,24 +295,24 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                   alignment: pw.WrapAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      'اسم المريض: ${patient?.name ?? 'مريض العيادة'}',
+                      '${AppStrings.patientNameLabel} ${patient?.name ?? AppStrings.defaultPatientName}',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
                           fontSize: isSmallFormat ? 8.5 : 10),
                     ),
                     if (patient?.gender != null)
                       pw.Text(
-                        'الجنس: ${patient!.gender == 'male' ? 'ذكر' : 'أنثى'}',
+                        '${AppStrings.genderLabel} ${patient!.gender == 'male' ? AppStrings.male : AppStrings.female}',
                         style: pw.TextStyle(fontSize: isSmallFormat ? 8 : 9),
                       ),
                     if (patient?.dateOfBirth != null &&
                         patient!.dateOfBirth!.isNotEmpty)
                       pw.Text(
-                        'الميلاد: ${patient.dateOfBirth}',
+                        '${AppStrings.birthDateLabel} ${patient.dateOfBirth}',
                         style: pw.TextStyle(fontSize: isSmallFormat ? 8 : 9),
                       ),
                     pw.Text(
-                      'التاريخ: $dateStr',
+                      '${AppStrings.dateLabel} $dateStr',
                       style: pw.TextStyle(fontSize: isSmallFormat ? 8 : 9),
                     ),
                   ],
@@ -316,16 +335,29 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                 cellPadding: pw.EdgeInsets.symmetric(
                     horizontal: isSmallFormat ? 4 : 6,
                     vertical: isSmallFormat ? 3 : 4),
-                headers: ['#', 'اسم الدواء', 'التكرار', 'المدة', 'الموعد'],
+                headers: [
+                  AppStrings.drugNumberHeader,
+                  AppStrings.drugNameHeader,
+                  AppStrings.frequencyHeader,
+                  AppStrings.durationHeader,
+                  AppStrings.timingHeader,
+                ],
                 data: List.generate(prescription.items.length, (index) {
                   final item = prescription.items[index];
-                  final name = item.drug?.tradeName ?? 'دواء موصوف';
+                  final drug = item.drug;
+                  final String name = (drug?.tradeName != null &&
+                          drug!.tradeName!.isNotEmpty)
+                      ? drug.tradeName!
+                      : (drug?.genericName != null &&
+                              drug!.genericName!.isNotEmpty)
+                          ? drug.genericName!
+                          : AppStrings.prescribedDrugDefault;
                   final freq = item.frequency != null
                       ? '${item.frequency}'
-                      : (item.timing ?? '-');
+                      : (item.timing != null ? DoseTiming.toLocalized(item.timing) : '-');
                   final duration =
-                      item.duration != null ? '${item.duration} أيام' : '-';
-                  final timing = DoseTiming.toArabic(item.timing);
+                      item.duration != null ? AppStrings.daysCount(item.duration!) : '-';
+                  final timing = DoseTiming.toLocalized(item.timing);
 
                   return [
                     '${index + 1}',
@@ -341,18 +373,73 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                   prescription.notes!.isNotEmpty) ...[
                 pw.SizedBox(height: isSmallFormat ? 6 : 10),
                 pw.Container(
+                  width: double.infinity,
                   padding: pw.EdgeInsets.all(isSmallFormat ? 4 : 6),
                   decoration: pw.BoxDecoration(
                     border: pw.Border.all(color: PdfColors.grey400),
                     borderRadius: pw.BorderRadius.circular(4),
                   ),
                   child: pw.Text(
-                    'تعليمات إضافية: ${prescription.notes}',
+                    '${AppStrings.additionalInstructionsLabel} ${prescription.notes}',
                     style: pw.TextStyle(
                         fontSize: isSmallFormat ? 8 : 9,
                         color: PdfColors.grey800),
                   ),
                 ),
+              ],
+
+              // ─── موعد الاستشارة / الزيارة القادمة ───
+              if (prescription.nextVisitDays != null &&
+                  prescription.nextVisitDays! > 0) ...[
+                pw.SizedBox(height: isSmallFormat ? 6 : 8),
+                () {
+                  String followUpText = AppStrings.consultationFollowUpText(
+                    days: prescription.nextVisitDays!,
+                  );
+                  try {
+                    final createdDt = DateTime.parse(prescription.createdAt);
+                    final targetDt = createdDt.add(Duration(days: prescription.nextVisitDays!));
+                    final formattedTarget =
+                        '${targetDt.year}-${targetDt.month.toString().padLeft(2, '0')}-${targetDt.day.toString().padLeft(2, '0')}';
+                    followUpText = AppStrings.consultationFollowUpText(
+                      days: prescription.nextVisitDays!,
+                      dateFormatted: formattedTarget,
+                    );
+                  } catch (_) {}
+
+                  return pw.Container(
+                    padding: pw.EdgeInsets.symmetric(
+                      horizontal: isSmallFormat ? 6 : 10,
+                      vertical: isSmallFormat ? 3 : 5,
+                    ),
+                    decoration: pw.BoxDecoration(
+                      color: PdfColors.blue50,
+                      borderRadius: pw.BorderRadius.circular(4),
+                      border: pw.Border.all(color: PdfColors.blue200, width: 0.5),
+                    ),
+                    child: pw.Row(
+                      mainAxisSize: pw.MainAxisSize.min,
+                      children: [
+                        pw.Text(
+                          AppStrings.consultationFollowUpLabel,
+                          style: pw.TextStyle(
+                            fontSize: isSmallFormat ? 8 : 9,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.blue800,
+                          ),
+                        ),
+                        pw.Text(
+                          followUpText,
+                          style: pw.TextStyle(
+                            fontSize: isSmallFormat ? 8 : 9,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.blue900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }(),
               ],
 
               pw.Spacer(),
@@ -372,7 +459,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                         pw.Text(
                           printingSettings?.footerLine1.isNotEmpty == true
                               ? printingSettings!.footerLine1
-                              : 'نتمنى لكم دوام الصحة والعافية',
+                              : AppStrings.defaultFooterWish,
                           style: pw.TextStyle(
                               fontSize: isSmallFormat ? 7.5 : 9,
                               color: PdfColors.grey700),
@@ -399,15 +486,15 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                         children: [
                           pw.Text(
                             doctorName.isNotEmpty
-                                ? 'د. $doctorName'
-                                : 'توقيع/ختم الطبيب',
+                                ? AppStrings.doctorTitle(doctorName)
+                                : AppStrings.doctorSignatureStamp,
                             style: pw.TextStyle(
                                 fontSize: isSmallFormat ? 8 : 10,
                                 fontWeight: pw.FontWeight.bold),
                           ),
                           pw.SizedBox(height: isSmallFormat ? 8 : 16),
                           pw.Text(
-                            'التوقيع: .....................',
+                            AppStrings.signatureLine,
                             style: pw.TextStyle(
                                 fontSize: isSmallFormat ? 7 : 8,
                                 color: PdfColors.grey500),

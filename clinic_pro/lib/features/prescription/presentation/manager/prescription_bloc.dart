@@ -45,7 +45,8 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     final doctorId = AppConstants.activeDoctorId.isNotEmpty
         ? AppConstants.activeDoctorId
         : 'u-doc-1';
-    final result = await _loadPrescriptionDataUseCase(event.appointment, doctorId);
+    final result =
+        await _loadPrescriptionDataUseCase(event.appointment, doctorId);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -77,7 +78,9 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           clinicId: data.clinicId,
           patientName: data.patientName,
           patientAge: '$age سنة',
-          patientGender: data.patientGender == 'male' ? AppStrings.male : AppStrings.female,
+          patientGender: data.patientGender == 'male'
+              ? AppStrings.male
+              : AppStrings.female,
           bloodType: data.bloodType,
           visitType: data.visitType,
           doctorName: data.doctorName,
@@ -86,6 +89,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           selectedDrugs: selectedDrugsList,
           finalDiagnosis: data.finalDiagnosis,
           notes: data.notes,
+          nextVisitDays: data.nextVisitDays,
           prescriptionId: data.prescriptionId,
         ));
       },
@@ -146,7 +150,8 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     RemoveDrugFromPrescriptionEvent event,
     Emitter<PrescriptionState> emit,
   ) {
-    final list = state.selectedDrugs.where((d) => d.id != event.drugId).toList();
+    final list =
+        state.selectedDrugs.where((d) => d.id != event.drugId).toList();
     emit(state.copyWith(selectedDrugs: list));
   }
 
@@ -176,6 +181,8 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     emit(state.copyWith(
       finalDiagnosis: event.finalDiagnosis ?? state.finalDiagnosis,
       notes: event.notes ?? state.notes,
+      nextVisitDays: event.nextVisitDays,
+      clearNextVisitDays: event.clearNextVisitDays,
     ));
   }
 
@@ -185,25 +192,20 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
   ) async {
     // إذا ضغط المستخدم حفظ بدون إدخال أي بيانات، يتم الخروج من الشاشة دون حفظ روشتة فارغة
     if (state.selectedDrugs.isEmpty) {
-      emit(state.copyWith(status: PrescriptionStatus.error, errorMessage: 'لا يمكن حفظ روشتة فارغة'));
+      emit(state.copyWith(
+          status: PrescriptionStatus.error,
+          errorMessage: 'لا يمكن حفظ روشتة فارغة'));
       return;
     }
 
-    final String diagnosisCombined;
-    final bool isEditing = state.prescriptionId.isNotEmpty;
+    // ─── أسماء القوالب المختارة (chips) ───
+    final List<String> diagnosesList =
+        List<String>.from(state.selectedDiagnosis);
 
-    if (!isEditing) {
-      // في وضع الإضافة: دمج التشخيصات المختارة مع التشخيص النهائي
-      diagnosisCombined = state.selectedDiagnosis.join(' ، ') +
-          (state.finalDiagnosis.trim().isNotEmpty ? ' - ${state.finalDiagnosis}' : '');
-    } else {
-      // في وضع التعديل: استخدام التشخيص النهائي إذا كان موجوداً، وإلا استخدام أسماء القوالب
-      if (state.finalDiagnosis.trim().isNotEmpty) {
-        diagnosisCombined = state.finalDiagnosis;
-      } else {
-        diagnosisCombined = state.selectedDiagnosis.join(' ، ');
-      }
-    }
+    // ─── نص التشخيص الحر من الطبيب. لو فاضي → يأخذ أسماء القوالب كـ default ───
+    final String diagnosisText = state.finalDiagnosis.trim().isNotEmpty
+        ? state.finalDiagnosis.trim()
+        : diagnosesList.join(' ، ');
 
     final items = state.selectedDrugs.map((d) {
       return PrescriptionItemEntity(
@@ -227,13 +229,18 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
       doctorId: doctorId,
       patientId: state.patientId,
       appointmentId: state.appointmentId,
-      diagnosis: diagnosisCombined,
+      diagnosis: diagnosisText,
+      diagnoses: diagnosesList,
       notes: state.notes,
+      nextVisitDays: state.nextVisitDays,
       createdAt: DateTime.now().toIso8601String(),
       items: items,
     );
 
-    emit(state.copyWith(status: PrescriptionStatus.loading));
+    emit(state.copyWith(
+      status: PrescriptionStatus.loading,
+      postSaveAction: event.action,
+    ));
 
     final result = await _savePrescriptionUseCase(prescription, doctorId);
 
@@ -248,7 +255,11 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
             await _incrementTemplateUsageUseCase(templateId);
           } catch (_) {}
         }
-        emit(state.copyWith(status: PrescriptionStatus.success));
+        emit(state.copyWith(
+          status: PrescriptionStatus.success,
+          postSaveAction: event.action,
+          savedPrescription: prescription,
+        ));
       },
     );
   }
@@ -333,28 +344,22 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           }
         }
 
-        final updatedAppliedTemplates = List<String>.from(state.appliedTemplateIds);
+        final updatedAppliedTemplates =
+            List<String>.from(state.appliedTemplateIds);
         if (!updatedAppliedTemplates.contains(event.templateId)) {
           updatedAppliedTemplates.add(event.templateId);
         }
 
-        // في وضع التعديل لا نضيف اسم القالب للتشخيص
-        if (state.prescriptionId.isEmpty) {
-          final updatedDiagnosis = List<String>.from(state.selectedDiagnosis);
-          if (templateName.isNotEmpty && !updatedDiagnosis.contains(templateName)) {
-            updatedDiagnosis.add(templateName);
-          }
-          emit(state.copyWith(
-            selectedDrugs: updatedDrugs,
-            selectedDiagnosis: updatedDiagnosis,
-            appliedTemplateIds: updatedAppliedTemplates,
-          ));
-        } else {
-          emit(state.copyWith(
-            selectedDrugs: updatedDrugs,
-            appliedTemplateIds: updatedAppliedTemplates,
-          ));
+        final updatedDiagnosis = List<String>.from(state.selectedDiagnosis);
+        if (templateName.isNotEmpty &&
+            !updatedDiagnosis.contains(templateName)) {
+          updatedDiagnosis.add(templateName);
         }
+        emit(state.copyWith(
+          selectedDrugs: updatedDrugs,
+          selectedDiagnosis: updatedDiagnosis,
+          appliedTemplateIds: updatedAppliedTemplates,
+        ));
       },
     );
   }

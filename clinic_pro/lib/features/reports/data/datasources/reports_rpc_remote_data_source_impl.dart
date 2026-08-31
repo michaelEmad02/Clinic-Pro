@@ -150,6 +150,7 @@ class ReportsRpcRemoteDataSourceImpl implements IReportsRemoteDataSource {
     final dateParams = _buildDateParams(range: range, customDateRange: customDateRange);
     final response = await _cloudService.rpc('get_patient_stats_report_rpc', params: {
       'p_clinic_id': (clinicId != null && clinicId.isNotEmpty) ? clinicId : null,
+      'p_doctor_id': (doctorId != null && doctorId.isNotEmpty) ? doctorId : null,
       ...dateParams,
     });
 

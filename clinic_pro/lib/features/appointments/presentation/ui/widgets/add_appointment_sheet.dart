@@ -148,7 +148,10 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
     if (appState is AppointmentsLoaded && appState.allAppointments.isNotEmpty) {
       final targetDateStr = _date.toIso8601String().substring(0, 10);
       final sameDayAppts = appState.allAppointments
-          .where((a) => a.date == targetDateStr)
+          .where((a) =>
+              a.date == targetDateStr &&
+              (_doctorId == null || a.doctorId == _doctorId) &&
+              a.status != 'cancelled')
           .toList();
 
       if (sameDayAppts.isNotEmpty) {
@@ -181,6 +184,36 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
     }
   }
 
+  /// جلب وقت آخر موعد في التاريخ المحدد وتنسيقه للمستخدم
+  String? _getLastAppointmentTimeForSelectedDate() {
+    final appState = context.read<AppointmentsBloc>().state;
+    if (appState is! AppointmentsLoaded || appState.allAppointments.isEmpty) {
+      return null;
+    }
+
+    final targetDateStr = _date.toIso8601String().substring(0, 10);
+    final sameDayAppts = appState.allAppointments.where((a) {
+      final matchesDate = a.date == targetDateStr;
+      final matchesDoc = _doctorId == null || a.doctorId == _doctorId;
+      final notCancelled = a.status != 'cancelled';
+      return matchesDate && matchesDoc && notCancelled && a.time != null && a.time!.isNotEmpty;
+    }).toList();
+
+    if (sameDayAppts.isEmpty) return null;
+
+    sameDayAppts.sort((a, b) => (a.time ?? '').compareTo(b.time ?? ''));
+    final lastAppt = sameDayAppts.last;
+    final timeStr = lastAppt.time!;
+
+    final parts = timeStr.split(':');
+    if (parts.length >= 2) {
+      final hour = int.tryParse(parts[0]) ?? 0;
+      final min = int.tryParse(parts[1]) ?? 0;
+      return TimeOfDay(hour: hour, minute: min).format(context);
+    }
+    return timeStr;
+  }
+
   @override
   void dispose() {
     _notesController.dispose();
@@ -195,7 +228,12 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null) setState(() => _date = picked);
+    if (picked != null) {
+      setState(() {
+        _date = picked;
+        _recalculateTimeForSelectedType(_typeId);
+      });
+    }
   }
 
   Future<void> _pickTime() async {
@@ -423,12 +461,37 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            AppStrings.timing,
-                            style: AppTextStyles.caption(context).copyWith(
-                              color: context.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                AppStrings.timing,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: context.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (_getLastAppointmentTimeForSelectedDate() != null) ...[
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: context.primaryLightColor,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    AppStrings.isArabic
+                                        ? 'آخر موعد: ${_getLastAppointmentTimeForSelectedDate()}'
+                                        : 'Last: ${_getLastAppointmentTimeForSelectedDate()}',
+                                    style: AppTextStyles.caption(context).copyWith(
+                                      color: context.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 8),
                           OutlinedButton.icon(

@@ -5,6 +5,8 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/di/injection_container.dart';
+import 'package:clinic_pro/core/services/i_prescription_pdf_service.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
@@ -12,6 +14,7 @@ import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
 import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
+import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_bloc.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_event.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_state.dart';
@@ -24,38 +27,171 @@ import 'package:clinic_pro/features/prescription/presentation/ui/widgets/templat
 import 'package:clinic_pro/features/prescription/domain/entities/drug_entity.dart';
 import 'package:clinic_pro/features/prescription/domain/entities/prescription_entity.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_print_dialog.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:printing/printing.dart';
 
 import '../../../../appointments/domain/entities/appointment_entity.dart';
 import '../../../../appointments/presentation/manager/appointments_bloc.dart';
 import '../../../../appointments/presentation/manager/appointments_event.dart';
 
+import 'package:clinic_pro/core/widgets/app_loading.dart';
+import 'package:clinic_pro/core/services/prescription_pdf_service_impl.dart';
+
 class PrescriptionView extends StatelessWidget {
-  const PrescriptionView(this.isEditing, {super.key, required this.appointment});
+  const PrescriptionView(this.isEditing,
+      {super.key, required this.appointment});
   final bool isEditing;
   final AppointmentEntity appointment;
 
+  PrescriptionEntity _buildPrescriptionEntity(PrescriptionState state) {
+    final itemsMapped = state.selectedDrugs.map((d) {
+      return PrescriptionItemEntity(
+        id: d.id,
+        prescriptionId: state.prescriptionId,
+        drugId: d.id,
+        frequency: d.doseFrequency,
+        duration: d.doseDuration,
+        timing: d.doseTiming,
+        isPrn: d.isPrn,
+        drug: DrugEntity(
+          id: d.id,
+          tradeName: d.tradeName,
+          genericName: d.genericName,
+          category: d.category,
+        ),
+      );
+    }).toList();
+
+    return PrescriptionEntity(
+      id: state.prescriptionId,
+      createdAt: DateTime.now().toIso8601String(),
+      clinicId: appointment.clinicId,
+      doctorId: appointment.doctorId,
+      patientId: appointment.patientId,
+      appointmentId: appointment.id,
+      diagnosis: state.finalDiagnosis.trim().isNotEmpty
+          ? state.finalDiagnosis.trim()
+          : state.selectedDiagnosis.join(' ، '),
+      diagnoses: state.selectedDiagnosis,
+      notes: state.notes,
+      nextVisitDays: state.nextVisitDays,
+      items: itemsMapped,
+    );
+  }
+
+  Future<void> _sharePrescriptionPdf(BuildContext context,
+      PrescriptionEntity prescEntity, String patientName) async {
+    AppLoadingOverlay.show(
+      context,
+      message: AppStrings.isArabic
+          ? 'جاري تجهيز الروشتة للمشاركة عبر الواتساب...'
+          : 'Preparing prescription for WhatsApp...',
+    );
+
+    try {
+      ClinicEntity? clinic;
+      StaffEntity? doctor;
+      try {
+        final settingsCubit = context.read<SettingsCubit>();
+        clinic = settingsCubit.state.clinicEntity;
+        doctor = settingsCubit.state.doctor;
+      } catch (_) {}
+
+      final pdfService = sl<IPrescriptionPdfService>();
+      final pdfBytes = await pdfService.generatePrescriptionPdf(
+        prescription: prescEntity,
+        clinic: clinic,
+        doctor: doctor,
+        pageFormat: 'A5',
+      );
+
+      if (context.mounted) {
+        AppLoadingOverlay.hide(context);
+      }
+
+      final safeName =
+          (patientName.isNotEmpty ? patientName : 'مريض').replaceAll(' ', '_');
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: 'روشتة_$safeName.pdf',
+      );
+    } catch (e) {
+      if (context.mounted) {
+        AppLoadingOverlay.hide(context);
+        AppSnackbar.error(
+          context,
+          message: AppStrings.isArabic
+              ? 'تعذر مشاركة الروشتة: $e'
+              : 'Failed to share prescription: $e',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<PrescriptionBloc, PrescriptionState>(
-      listener: (context, state) {
-        if (state.status == PrescriptionStatus.success) {
-          context.read<AppointmentsBloc>().add(
-            CompleteAppointmentEvent(
-              appointmentId: appointment.id,
-              calledAt: appointment.calledAt,
-            ),
-          );
+    // تحميل الخطوط مسبقاً في الذاكرة لتسريع توليد الـ PDF فورياً
+    PrescriptionPdfServiceImpl.preloadFonts();
 
-          AppSnackbar.success(
+    return BlocConsumer<PrescriptionBloc, PrescriptionState>(
+      listener: (context, state) async {
+        if (state.status == PrescriptionStatus.loading &&
+            state.postSaveAction != PostSaveAction.none) {
+          final isWhatsApp = state.postSaveAction == PostSaveAction.whatsapp;
+          AppLoadingOverlay.show(
             context,
-            message: '${AppStrings.addedSuccess} ✓',
+            message: isWhatsApp
+                ? (AppStrings.isArabic
+                    ? 'جاري حفظ الروشتة وتجهيز الإرسال عبر الواتساب...'
+                    : 'Saving prescription & preparing WhatsApp...')
+                : (AppStrings.isArabic
+                    ? 'جاري حفظ الروشتة...'
+                    : 'Saving prescription...'),
           );
-          context.pop();
-        }
-        if (state.status == PrescriptionStatus.error) {
+        } else if (state.status == PrescriptionStatus.success) {
+          context.read<AppointmentsBloc>().add(
+                CompleteAppointmentEvent(
+                  appointmentId: appointment.id,
+                  calledAt: appointment.calledAt,
+                ),
+              );
+
+          final prescEntity =
+              state.savedPrescription ?? _buildPrescriptionEntity(state);
+          final postAction = state.postSaveAction;
+          final patientName = state.patientName;
+
+          if (postAction == PostSaveAction.whatsapp) {
+            AppLoadingOverlay.hide(context);
+            await _sharePrescriptionPdf(context, prescEntity, patientName);
+            if (context.mounted) {
+              AppSnackbar.success(
+                context,
+                message: '${AppStrings.addedSuccess} ✓',
+              );
+              context.pop();
+            }
+          } else {
+            AppLoadingOverlay.hide(context);
+            AppSnackbar.success(
+              context,
+              message: '${AppStrings.addedSuccess} ✓',
+            );
+            context.pop();
+
+            if (postAction == PostSaveAction.print) {
+              PrescriptionPrintDialog.show(
+                context,
+                prescription: prescEntity,
+              );
+            }
+          }
+        } else if (state.status == PrescriptionStatus.error) {
+          AppLoadingOverlay.hide(context);
           AppSnackbar.error(
             context,
             message: state.errorMessage ?? AppStrings.error,
@@ -69,57 +205,35 @@ class PrescriptionView extends StatelessWidget {
           body: _buildBody(context, state),
           bottomNavigationBar: state.status == PrescriptionStatus.loaded
               ? PrescriptionBottomActionsBar(
-                  onSave: () {
+                  onSaveAndFinish: () {
                     context.read<PrescriptionBloc>().add(
-                          const SavePrescriptionEvent(),
+                          const SavePrescriptionEvent(
+                              action: PostSaveAction.finish),
                         );
                   },
-                  onPrint: () {
-                    final itemsMapped = state.selectedDrugs.map((d) {
-                      return PrescriptionItemEntity(
-                        id: d.id,
-                        prescriptionId: state.prescriptionId,
-                        drugId: d.id,
-                        frequency: d.doseFrequency,
-                        duration: d.doseDuration,
-                        timing: d.doseTiming,
-                        isPrn: d.isPrn,
-                        drug: DrugEntity(
-                          id: d.id,
-                          tradeName: d.tradeName,
-                          genericName: d.genericName,
-                          category: d.category,
-                        ),
-                      );
-                    }).toList();
-
-                    final prescEntity = PrescriptionEntity(
-                      id: state.prescriptionId,
-                      createdAt: DateTime.now().toIso8601String(),
-                      clinicId: appointment.clinicId,
-                      doctorId: appointment.doctorId,
-                      patientId: appointment.patientId,
-                      appointmentId: appointment.id,
-                      diagnosis: state.selectedDiagnosis.join(', '),
-                      notes: state.notes,
-                      items: itemsMapped,
-                    );
-
-                    PrescriptionPrintDialog.show(
-                      context,
-                      prescription: prescEntity,
-                    );
+                  onSaveAndPrint: () {
+                    context.read<PrescriptionBloc>().add(
+                          const SavePrescriptionEvent(
+                              action: PostSaveAction.print),
+                        );
                   },
-                  onWhatsApp: () {
-                    AppSnackbar.info(
-                      context,
-                      message: '${AppStrings.save} ${AppStrings.loading}...',
-                    );
+                  onSaveAndSend: () {
+                    context.read<PrescriptionBloc>().add(
+                          const SavePrescriptionEvent(
+                              action: PostSaveAction.whatsapp),
+                        );
                   },
-                  onFinishWithoutSaving: () {
+                  onFinish: () {
                     context.read<AppointmentsBloc>().add(
-                          CompleteAppointmentEvent(appointmentId: appointment.id),
+                          CompleteAppointmentEvent(
+                              appointmentId: appointment.id),
                         );
+                    AppSnackbar.success(
+                      context,
+                      message: AppStrings.isArabic
+                          ? 'تم إنهاء الكشف بنجاح ✓'
+                          : 'Appointment completed ✓',
+                    );
                     context.pop();
                   },
                 )
@@ -171,7 +285,8 @@ class PrescriptionView extends StatelessWidget {
                 message: '${AppStrings.prescription} ${AppStrings.success} ✓',
               );
             },
-            icon: Icon(Icons.content_copy, size: AppConstants.iconSizeLg, color: context.primary),
+            icon: Icon(Icons.content_copy,
+                size: AppConstants.iconSizeLg, color: context.primary),
             label: Text(
               AppStrings.copyLastPrescription,
               style: AppTextStyles.caption(context).copyWith(
@@ -267,6 +382,7 @@ class PrescriptionView extends StatelessWidget {
             PrescriptionNotesField(
               finalDiagnosis: state.finalDiagnosis,
               notes: state.notes,
+              nextVisitDays: state.nextVisitDays,
               onFinalDiagnosisChanged: (value) {
                 context.read<PrescriptionBloc>().add(
                       UpdatePrescriptionFieldsEvent(finalDiagnosis: value),
@@ -275,6 +391,14 @@ class PrescriptionView extends StatelessWidget {
               onNotesChanged: (value) {
                 context.read<PrescriptionBloc>().add(
                       UpdatePrescriptionFieldsEvent(notes: value),
+                    );
+              },
+              onNextVisitDaysChanged: (days) {
+                context.read<PrescriptionBloc>().add(
+                      UpdatePrescriptionFieldsEvent(
+                        nextVisitDays: days,
+                        clearNextVisitDays: days == null,
+                      ),
                     );
               },
             ),

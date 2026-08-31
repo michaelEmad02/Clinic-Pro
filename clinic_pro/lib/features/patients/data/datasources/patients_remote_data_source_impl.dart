@@ -198,13 +198,14 @@ class PatientsRemoteDataSourceImpl implements IPatientsRemoteDataSource {
 
         // إقران كل عنصر بالدواء الخاص به إن وجد
         final enrichedItems = rawItems.map((itemRaw) {
-          final drugId = itemRaw['drug_id'];
+          final drugId = itemRaw['drug_id']?.toString();
           final matchedDrug = drugsList.firstWhere(
-            (d) => d['id'] == drugId,
+            (d) => d['id']?.toString() == drugId,
             orElse: () => <String, dynamic>{},
           );
           return {
             ...itemRaw,
+            if (matchedDrug.isNotEmpty) 'drug': matchedDrug,
             if (matchedDrug.isNotEmpty) 'drugs': matchedDrug,
           };
         }).toList();

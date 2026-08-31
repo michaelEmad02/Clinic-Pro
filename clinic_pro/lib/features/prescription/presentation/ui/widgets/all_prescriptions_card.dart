@@ -17,10 +17,10 @@ import 'package:clinic_pro/features/prescription/presentation/ui/prescription_sc
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_print_dialog.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
 
-class PatientPrescriptionCard extends StatelessWidget {
+class AllPrescriptionsCard extends StatelessWidget {
   final PrescriptionEntity prescription;
 
-  const PatientPrescriptionCard({
+  const AllPrescriptionsCard({
     super.key,
     required this.prescription,
   });
@@ -81,7 +81,6 @@ class PatientPrescriptionCard extends StatelessWidget {
       return;
     }
 
-    // إظهار حوار تحميل مؤقت
     AppLoadingOverlay.show(context);
 
     try {
@@ -90,7 +89,7 @@ class PatientPrescriptionCard extends StatelessWidget {
           await appointmentsBloc.getAppointmentById(appointmentId);
 
       if (context.mounted) {
-        AppLoadingOverlay.hide(context); // إغلاق حوار التحميل
+        AppLoadingOverlay.hide(context);
 
         if (realAppointment == null) {
           AppSnackbar.error(
@@ -133,6 +132,10 @@ class PatientPrescriptionCard extends StatelessWidget {
         ? prescription.createdAt.substring(0, 10)
         : prescription.createdAt;
 
+    final patientName = prescription.patientName?.isNotEmpty == true
+        ? prescription.patientName!
+        : AppStrings.defaultPatientName;
+
     final diagnosesList =
         (prescription.diagnosis != null && prescription.diagnosis!.isNotEmpty)
             ? prescription.diagnosis!.split(', ')
@@ -153,7 +156,7 @@ class PatientPrescriptionCard extends StatelessWidget {
         ],
       ),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         leading: Container(
           padding: const EdgeInsets.all(10),
@@ -162,7 +165,7 @@ class PatientPrescriptionCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppConstants.radiusSm),
           ),
           child: Icon(
-            Icons.medication_liquid_rounded,
+            Icons.person_outline_rounded,
             color: context.primary,
             size: 24,
           ),
@@ -170,56 +173,87 @@ class PatientPrescriptionCard extends StatelessWidget {
         title: Row(
           children: [
             Expanded(
-              child: Text(
-                AppStrings.prescriptionDated(dateStr),
-                style: AppTextStyles.bodyMedium(context).copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    patientName,
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (prescription.patientPhone != null &&
+                      prescription.patientPhone!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        prescription.patientPhone!,
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: context.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
               ),
             ),
             const SizedBox(width: 8),
-            Flexible(
-              fit: FlexFit.loose,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: context.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  AppStrings.drugsCount(prescription.items.length),
-                  style: AppTextStyles.caption(context).copyWith(
-                    color: context.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: context.primary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                AppStrings.drugsCount(prescription.items.length),
+                style: AppTextStyles.caption(context).copyWith(
+                  color: context.primary,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ],
         ),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            diagnosesList.isNotEmpty
-                ? AppStrings.diagnosisPrefix(diagnosesList.join(', '))
-                : AppStrings.noDiagnosisRecorded,
-            style: AppTextStyles.caption(context).copyWith(
-              color: context.textSecondary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          padding: const EdgeInsets.only(top: 6),
+          child: Row(
+            children: [
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 14,
+                color: context.textSecondary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                dateStr,
+                style: AppTextStyles.caption(context).copyWith(
+                  color: context.textSecondary,
+                ),
+              ),
+              if (diagnosesList.isNotEmpty) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '•  ${diagnosesList.join(', ')}',
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: context.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         children: [
           const Divider(height: 1),
           const SizedBox(height: 12),
 
-          // ─── قسم التشخيصات والتعليمات ───
+          // ─── قسم التشخيصات ───
           if (diagnosesList.isNotEmpty) ...[
             Align(
               alignment: AlignmentDirectional.centerStart,
@@ -293,9 +327,12 @@ class PatientPrescriptionCard extends StatelessWidget {
                       : '';
               final frequencyStr = item.frequency != null
                   ? AppStrings.timesDaily(item.frequency!)
-                  : (item.timing != null ? DoseTiming.toLocalized(item.timing) : '');
-              final durationStr =
-                  item.duration != null ? AppStrings.daysCount(item.duration!) : '';
+                  : (item.timing != null
+                      ? DoseTiming.toLocalized(item.timing)
+                      : '');
+              final durationStr = item.duration != null
+                  ? AppStrings.daysCount(item.duration!)
+                  : '';
 
               return Container(
                 padding: const EdgeInsets.all(10),
@@ -407,7 +444,7 @@ class PatientPrescriptionCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // ─── أزرار التحكم والعرض والتعديل والتصدير التفاعلية ───
+          // ─── أزرار الإجراءات السريعة ───
           Wrap(
             alignment: WrapAlignment.end,
             crossAxisAlignment: WrapCrossAlignment.center,

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'prescription_state.dart';
 import '../../../appointments/domain/entities/appointment_entity.dart';
 
 
@@ -92,15 +93,27 @@ class ApplyTemplateEvent extends PrescriptionEvent {
 class UpdatePrescriptionFieldsEvent extends PrescriptionEvent {
   final String? finalDiagnosis;
   final String? notes;
+  final int? nextVisitDays;
+  final bool clearNextVisitDays;
 
-  const UpdatePrescriptionFieldsEvent({this.finalDiagnosis, this.notes});
+  const UpdatePrescriptionFieldsEvent({
+    this.finalDiagnosis,
+    this.notes,
+    this.nextVisitDays,
+    this.clearNextVisitDays = false,
+  });
 
   @override
-  List<Object?> get props => [finalDiagnosis, notes];
+  List<Object?> get props => [finalDiagnosis, notes, nextVisitDays, clearNextVisitDays];
 }
 
 class SavePrescriptionEvent extends PrescriptionEvent {
-  const SavePrescriptionEvent();
+  final PostSaveAction action;
+
+  const SavePrescriptionEvent({this.action = PostSaveAction.finish});
+
+  @override
+  List<Object?> get props => [action];
 }
 
 class CopyPreviousPrescriptionEvent extends PrescriptionEvent {

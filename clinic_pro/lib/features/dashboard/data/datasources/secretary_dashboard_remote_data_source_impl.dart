@@ -41,7 +41,7 @@ class SecretaryDashboardRemoteDataSourceImpl
           : 'العيادة';
     }
 
-    // 3. جلب الطبيب النشط المرتبط بالسكرتير إن وجد
+    // 3. جلب الطبيب النشط المرتبط بالسكرتير إن وجد من العلاقات المحددة بواسطة المالك
     String doctorName = 'دكتور العيادة';
     String? activeDoctorId;
     try {
@@ -51,14 +51,24 @@ class SecretaryDashboardRemoteDataSourceImpl
       );
       if (docSecResults.isNotEmpty) {
         activeDoctorId = docSecResults.first['doctor_id'] as String?;
-        if (activeDoctorId != null) {
-          final docUserResults = await _cloudService.select(
-            table: SupabaseTables.users,
-            eq: {'id': activeDoctorId},
-          );
-          if (docUserResults.isNotEmpty) {
-            doctorName = docUserResults.first['name'] as String? ?? doctorName;
-          }
+      } else {
+        // إذا لم يكن هناك طبيب نشط محدد، نأخذ أول طبيب مربوط بالسكرتيرة من قِبل المالك
+        final anySecDoc = await _cloudService.select(
+          table: SupabaseTables.doctorSecretaries,
+          eq: {'secretary_id': secretaryId, 'clinic_id': clinicId},
+        );
+        if (anySecDoc.isNotEmpty) {
+          activeDoctorId = anySecDoc.first['doctor_id'] as String?;
+        }
+      }
+
+      if (activeDoctorId != null && activeDoctorId.isNotEmpty) {
+        final docUserResults = await _cloudService.select(
+          table: SupabaseTables.users,
+          eq: {'id': activeDoctorId},
+        );
+        if (docUserResults.isNotEmpty) {
+          doctorName = docUserResults.first['name'] as String? ?? doctorName;
         }
       }
     } catch (_) {}
