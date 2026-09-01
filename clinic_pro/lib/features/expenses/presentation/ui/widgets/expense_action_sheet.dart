@@ -1,19 +1,19 @@
 // ────────────────────────────────────────────────────────
-// Bottom Sheet إجراءات المصروف — تعديل وحذف
+// ExpenseActionSheet — شيت إجراءات المصروف (تعديل وحذف)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/services/numbers_format.dart';
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/services/numbers_format.dart';
-import '../../../../../core/strings/app_strings.dart';
-import '../../../../../core/themes/app_colors.dart';
-import '../../../../../core/themes/app_text_styles.dart';
-import '../../../../../core/widgets/app_bottom_sheet.dart';
-import '../../manager/expenses_state.dart';
 
 class ExpenseActionSheet {
   static Future<void> show({
     required BuildContext context,
-    required ExpenseItem expense,
+    required ExpensesEntity expense,
     required VoidCallback onEdit,
     required VoidCallback onDelete,
   }) {
@@ -23,7 +23,7 @@ class ExpenseActionSheet {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 24),
         child: Column(
-          mainAxisSize: MainAxisSize.max,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -41,7 +41,9 @@ class ExpenseActionSheet {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                expense.categoryLabel,
+                expense.categoryName.isNotEmpty
+                    ? expense.categoryName
+                    : AppStrings.other,
                 style: AppTextStyles.labelChip(context).copyWith(
                   color: context.primary,
                 ),
@@ -50,15 +52,15 @@ class ExpenseActionSheet {
             const SizedBox(height: 16),
             _DetailRow(
               label: AppStrings.amount,
-              value: '${formatNumber(expense.amount) } ${AppStrings.egp}',
-              valueColor: context.dangerText,
+              value: '${formatNumber(expense.amount)} ${AppStrings.egp}',
+              valueColor: context.danger,
             ),
             _DetailRow(
               label: AppStrings.date,
               value: expense.formattedDate,
             ),
-            if (expense.notes.isNotEmpty)
-              _DetailRow(label: AppStrings.notes, value: expense.notes),
+            if (expense.notes != null && expense.notes!.isNotEmpty)
+              _DetailRow(label: AppStrings.notes, value: expense.notes!),
             const SizedBox(height: 16),
             _ActionTile(
               icon: Icons.edit_outlined,
@@ -103,18 +105,21 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("$label :  ",
-              style: AppTextStyles.bodyMedium(context)
-                  .copyWith(color: context.textSecondary)),
+          Text(
+            "$label :  ",
+            style: AppTextStyles.bodyMedium(context)
+                .copyWith(color: context.textSecondary),
+          ),
           Flexible(
-            child: Text(value,
-            maxLines: 4,
-                style: AppTextStyles.headlineSmall(context).copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: valueColor ?? context.textPrimary,
-                  overflow: TextOverflow.ellipsis
-                  
-                )),
+            child: Text(
+              value,
+              maxLines: 4,
+              style: AppTextStyles.headlineSmall(context).copyWith(
+                fontWeight: FontWeight.bold,
+                color: valueColor ?? context.textPrimary,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
         ],
       ),
@@ -139,9 +144,11 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(label,
-          style: AppTextStyles.bodyMedium(context)
-              .copyWith(fontWeight: FontWeight.w600)),
+      title: Text(
+        label,
+        style: AppTextStyles.bodyMedium(context)
+            .copyWith(fontWeight: FontWeight.w600),
+      ),
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
     );

@@ -1,78 +1,15 @@
 // ────────────────────────────────────────────────────────
-// حالات شاشة المصروفات — نماذج ExpenseItem و ExpenseCategory
+// ExpensesState — حالات شاشة المصروفات
+// تدير عرض المصروفات وفلترة التصنيفات وحساب الإجماليات
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/features/expenses/domain/entities/expense_category_entity.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
 import 'package:equatable/equatable.dart';
-
-class ExpenseCategory extends Equatable {
-  final String id;
-  final String name;
-
-  const ExpenseCategory({required this.id, required this.name});
-
-  @override
-  List<Object?> get props => [id, name];
-}
-
-class ExpenseItem extends Equatable {
-  final String id;
-  final String clinicId;
-  final String title;
-  final double amount;
-  final String categoryId;
-  final String categoryLabel;
-  final String date;
-  final String notes;
-  final String createdBy;
-
-  const ExpenseItem({
-    required this.id,
-    this.clinicId = 'c-1',
-    required this.title,
-    required this.amount,
-    required this.categoryId,
-    required this.categoryLabel,
-    required this.date,
-    required this.notes,
-    required this.createdBy,
-  });
-
-  String get formattedDate {
-    final dateTime = DateTime.tryParse(date);
-    if (dateTime == null) return date;
-    final months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-    ];
-    return '${dateTime.day} ${months[dateTime.month - 1]} ${dateTime.year}';
-  }
-
-  ExpenseItem copyWith({
-    String? title,
-    double? amount,
-    String? categoryId,
-    String? categoryLabel,
-    String? notes,
-  }) {
-    return ExpenseItem(
-      id: id,
-      clinicId: clinicId,
-      title: title ?? this.title,
-      amount: amount ?? this.amount,
-      categoryId: categoryId ?? this.categoryId,
-      categoryLabel: categoryLabel ?? this.categoryLabel,
-      date: date,
-      notes: notes ?? this.notes,
-      createdBy: createdBy,
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, clinicId, title, amount, categoryId];
-}
 
 abstract class ExpensesState extends Equatable {
   const ExpensesState();
+
   @override
   List<Object?> get props => [];
 }
@@ -82,26 +19,46 @@ class ExpensesInitial extends ExpensesState {}
 class ExpensesLoading extends ExpensesState {}
 
 class ExpensesLoaded extends ExpensesState {
-  final List<ExpenseItem> allExpenses;
-  final List<ExpenseCategory> categories;
+  final List<ExpensesEntity> allExpenses;
+  final List<ExpenseCategoryEntity> categories;
   final String? activeCategoryId;
+  final String activeTargetFilter; // 'clinic' | 'doctor'
+  final String? currentDoctorId;
 
   const ExpensesLoaded({
     required this.allExpenses,
     required this.categories,
     this.activeCategoryId,
+    this.activeTargetFilter = 'clinic',
+    this.currentDoctorId,
   });
 
-  List<ExpenseItem> get filteredExpenses {
-    if (activeCategoryId == null) return allExpenses;
-    return allExpenses
-        .where((e) => e.categoryId == activeCategoryId)
-        .toList();
+  /// المصروفات بعد تطبيق فلترة التصنيف والجهة المتحملة (العيادة أو الطبيب الحالي)
+  List<ExpensesEntity> get filteredExpenses {
+    return allExpenses.where((e) {
+      // 1. فلترة التصنيف
+      if (activeCategoryId != null && activeCategoryId!.isNotEmpty) {
+        if (e.categoryId != activeCategoryId) return false;
+      }
+
+      // 2. فلترة الجهة المتحملة
+      if (activeTargetFilter == 'doctor') {
+        if (currentDoctorId != null && currentDoctorId!.isNotEmpty) {
+          return e.doctorId == currentDoctorId;
+        }
+        return e.isDoctorExpense;
+      } else {
+        // 'clinic'
+        return e.isClinicExpense;
+      }
+    }).toList();
   }
 
+  /// إجمالي المبالغ للمصروفات المعروضة
   double get totalAmount =>
       filteredExpenses.fold(0.0, (sum, e) => sum + e.amount);
 
+  /// نص الإجمالي المنسق
   String get totalLabel {
     if (totalAmount >= 1000) {
       return '${(totalAmount / 1000).toStringAsFixed(1)} ألف';
@@ -110,24 +67,34 @@ class ExpensesLoaded extends ExpensesState {
   }
 
   ExpensesLoaded copyWith({
-    List<ExpenseItem>? allExpenses,
-    List<ExpenseCategory>? categories,
+    List<ExpensesEntity>? allExpenses,
+    List<ExpenseCategoryEntity>? categories,
     String? activeCategoryId,
+    String? activeTargetFilter,
+    String? currentDoctorId,
+    bool clearActiveCategory = false,
   }) {
     return ExpensesLoaded(
       allExpenses: allExpenses ?? this.allExpenses,
       categories: categories ?? this.categories,
-      activeCategoryId: activeCategoryId ?? this.activeCategoryId,
+      activeCategoryId: clearActiveCategory
+          ? null
+          : (activeCategoryId ?? this.activeCategoryId),
+      activeTargetFilter: activeTargetFilter ?? this.activeTargetFilter,
+      currentDoctorId: currentDoctorId ?? this.currentDoctorId,
     );
   }
 
   @override
-  List<Object?> get props => [allExpenses, categories, activeCategoryId];
+  List<Object?> get props =>
+      [allExpenses, categories, activeCategoryId, activeTargetFilter, currentDoctorId];
 }
 
 class ExpensesError extends ExpensesState {
   final String message;
+
   const ExpensesError(this.message);
+
   @override
   List<Object?> get props => [message];
 }

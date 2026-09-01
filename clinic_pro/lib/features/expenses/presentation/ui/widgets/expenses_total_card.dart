@@ -18,7 +18,7 @@ class ExpensesTotalCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: context.primary,
+          color: context.primaryContainer,
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [
             BoxShadow(
@@ -60,7 +60,7 @@ class ExpensesTotalCard extends StatelessWidget {
                 Text(
                   AppStrings.totalExpenses,
                   style: AppTextStyles.bodyMedium(context).copyWith(
-                    color: Colors.white,
+                    color: Colors.white.withOpacity(0.9),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -82,7 +82,7 @@ class ExpensesTotalCard extends StatelessWidget {
                     Text(
                       AppStrings.egp,
                       style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: Colors.white,
+                        color: Colors.white.withOpacity(0.9),
                       ),
                     ),
                   ],

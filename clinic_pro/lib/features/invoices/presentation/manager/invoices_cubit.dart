@@ -41,11 +41,11 @@ class InvoicesCubit extends Cubit<InvoicesState> {
     this._loadPatientsUseCase,
   ) : super(const InvoicesState());
 
-  /// تحميل جميع الفواتير الخاصة بالعيادة
-  Future<void> loadInvoices(String clinicId) async {
+  /// تحميل جميع الفواتير الخاصة بالعيادة والطبيب المحدد
+  Future<void> loadInvoices(String clinicId, {String? doctorId}) async {
     emit(state.copyWith(status: InvoicesStatus.loading));
 
-    final result = await _getInvoicesUseCase(clinicId);
+    final result = await _getInvoicesUseCase(clinicId, doctorId: doctorId);
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -154,6 +154,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
   Future<bool> createInvoice({
     required String clinicId,
     required String patientId,
+    String? doctorId,
     required String sourceId,
     required double totalAmount,
     required double paidAmount,
@@ -165,6 +166,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
     final result = await _createInvoiceUseCase(
       clinicId: clinicId,
       patientId: patientId,
+      doctorId: doctorId,
       sourceId: sourceId,
       totalAmount: totalAmount,
       paidAmount: paidAmount,
@@ -180,12 +182,14 @@ class InvoicesCubit extends Cubit<InvoicesState> {
         ));
         return false;
       },
-      (_) {
+      (createdInvoice) {
+        final updatedInvoices = <InvoiceEntity>[createdInvoice, ...state.invoices];
         emit(state.copyWith(
           status: InvoicesStatus.success,
+          invoices: updatedInvoices,
           successMessage: 'تم إنشاء الفاتورة بنجاح',
         ));
-        loadInvoices(clinicId);
+        _applyFilters();
         return true;
       },
     );
@@ -206,11 +210,16 @@ class InvoicesCubit extends Cubit<InvoicesState> {
         return false;
       },
       (_) {
+        final updatedInvoices = state.invoices.map((inv) {
+          return inv.id == invoice.id ? invoice : inv;
+        }).toList();
+
         emit(state.copyWith(
           status: InvoicesStatus.success,
+          invoices: updatedInvoices,
           successMessage: 'تم تعديل الفاتورة بنجاح',
         ));
-        loadInvoices(invoice.clinicId);
+        _applyFilters();
         return true;
       },
     );
@@ -231,11 +240,15 @@ class InvoicesCubit extends Cubit<InvoicesState> {
         return false;
       },
       (_) {
+        final updatedInvoices =
+            state.invoices.where((inv) => inv.id != invoiceId).toList();
+
         emit(state.copyWith(
           status: InvoicesStatus.success,
+          invoices: updatedInvoices,
           successMessage: 'تم حذف الفاتورة بنجاح',
         ));
-        loadInvoices(clinicId);
+        _applyFilters();
         return true;
       },
     );

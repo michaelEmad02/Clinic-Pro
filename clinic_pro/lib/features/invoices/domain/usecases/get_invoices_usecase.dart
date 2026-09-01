@@ -14,7 +14,7 @@ class GetInvoicesUseCase {
 
   GetInvoicesUseCase(this._repository);
 
-  Future<Either<Failure, List<InvoiceEntity>>> call(String clinicId) {
-    return _repository.getInvoices(clinicId);
+  Future<Either<Failure, List<InvoiceEntity>>> call(String clinicId, {String? doctorId}) {
+    return _repository.getInvoices(clinicId, doctorId: doctorId);
   }
 }

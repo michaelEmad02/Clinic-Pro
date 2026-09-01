@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
@@ -22,12 +23,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class AddInvoiceSheet {
   static Future<void> show(BuildContext context,
       {String? initialAppointmentId, InvoiceEntity? invoice}) {
-    final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
+    final settingsState = context.read<SettingsCubit>().state;
+    final clinicId = settingsState.clinicEntity?.id ?? '';
+    final authUser = context.read<AuthCubit>().state.user;
+    final isDoctor = authUser?.role == StaffRoles.doctor;
+    final activeDoctorId = isDoctor
+        ? authUser?.id
+        : (settingsState.currentDoctorId ??
+            (AppConstants.activeDoctorId.isNotEmpty
+                ? AppConstants.activeDoctorId
+                : null));
+
     InvoicesCubit cubit;
     try {
       cubit = context.read<InvoicesCubit>();
     } catch (_) {
-      cubit = sl<InvoicesCubit>()..loadInvoices(clinicId);
+      cubit = sl<InvoicesCubit>()..loadInvoices(clinicId, doctorId: activeDoctorId);
     }
 
     return AppBottomSheet.show(
@@ -62,6 +73,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
   String? _selectedPatientName;
   String? _selectedPatientPhone;
   String? _selectedAppointmentId;
+  String? _selectedDoctorId;
   String _paymentMethod = 'cash';
 
   List<PatientEntity> _searchResults = [];
@@ -128,6 +140,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
 
             _selectAppointment({
               'id': appt.id,
+              'doctor_id': appt.doctorId,
               'price': appt.price,
               'appointment_type_id': appt.typeId,
             }, paidSoFar: paidSoFar);
@@ -204,6 +217,8 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
 
     setState(() {
       _selectedAppointmentId = appointment['id'] as String;
+      _selectedDoctorId =
+          (appointment['doctor_id'] as String?) ?? _selectedDoctorId;
       _alreadyPaidForAppointment = paidSoFar;
       _totalAmountController.text = price.toStringAsFixed(0);
       _paidAmountController.text = remaining.toStringAsFixed(0);
@@ -293,6 +308,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
     final success = await cubit.createInvoice(
       clinicId: clinicId,
       patientId: _selectedPatientId!,
+      doctorId: _selectedDoctorId,
       sourceId: _selectedAppointmentId ?? widget.initialAppointmentId ?? '',
       totalAmount: totalAmount,
       paidAmount: paidAmount,
@@ -567,6 +583,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
                                           .firstWhere((a) => a.id == v);
                                       _selectAppointment({
                                         'id': appointment.id,
+                                        'doctor_id': appointment.doctorId,
                                         'price': appointment.expectedPrice,
                                       }, paidSoFar: appointment.paidSoFar);
                                     },

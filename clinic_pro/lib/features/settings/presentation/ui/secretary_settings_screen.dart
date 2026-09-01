@@ -118,6 +118,13 @@ class SecretarySettingsScreen extends StatelessWidget {
       child: Column(
         children: [
           NavSettingsItem(
+            icon: Icons.receipt_long_outlined,
+            label: AppStrings.expenses,
+            subLabel: AppStrings.isArabic ? 'إدارة وسجل مصروفات العيادة' : 'Manage clinic expenses',
+            onTap: () => context.push(RouteConstants.expenses),
+          ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          NavSettingsItem(
             icon: Icons.medication_liquid_outlined,
             label: AppStrings.allPrescriptions,
             subLabel: AppStrings.allPrescriptionsSubtitle,
@@ -129,12 +136,12 @@ class SecretarySettingsScreen extends StatelessWidget {
             label: AppStrings.manageDrugs,
             onTap: () => context.push(RouteConstants.drugs),
           ),
-          Divider(height: 1, thickness: 0.5, color: context.border),
-          NavSettingsItem(
-            icon: Icons.description_outlined,
-            label: AppStrings.prescriptionTemplates,
-            onTap: () => context.push(RouteConstants.prescriptionTemplates),
-          ),
+          // Divider(height: 1, thickness: 0.5, color: context.border),
+          // NavSettingsItem(
+          //   icon: Icons.description_outlined,
+          //   label: AppStrings.prescriptionTemplates,
+          //   onTap: () => context.push(RouteConstants.prescriptionTemplates),
+          // ),
         ],
       ),
     );

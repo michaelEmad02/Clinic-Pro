@@ -22,19 +22,24 @@ class DoctorQuickActions extends StatelessWidget {
 
     final actions = [
       {
+        'label': AppStrings.allPrescriptions,
+        'icon': Icons.medication_liquid_outlined,
+        'onTap': () => context.push(RouteConstants.allPrescriptions),
+      },
+      {
         'label': AppStrings.isArabic ? 'تقاريري' : 'My Reports',
         'icon': TablerIcons.chart_bar,
         'onTap': () => context.push(RouteConstants.doctorMyReports),
       },
       {
+        'label': AppStrings.expenses,
+        'icon': Icons.account_balance_wallet_outlined,
+        'onTap': () => context.push(RouteConstants.expenses),
+      },
+      {
         'label': AppStrings.isArabic ? 'الفواتير' : 'Invoices',
         'icon': Icons.receipt_long_outlined,
         'onTap': () => context.push(RouteConstants.invoices),
-      },
-      {
-        'label': AppStrings.allPrescriptions,
-        'icon': Icons.medication_liquid_outlined,
-        'onTap': () => context.push(RouteConstants.allPrescriptions),
       },
       {
         'label': AppStrings.drugs,

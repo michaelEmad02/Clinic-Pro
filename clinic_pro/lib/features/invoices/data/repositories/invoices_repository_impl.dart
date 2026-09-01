@@ -20,9 +20,9 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
 
   @override
   Future<Either<Failure, List<InvoiceEntity>>> getInvoices(
-      String clinicId) async {
+      String clinicId, {String? doctorId}) async {
     try {
-      final invoices = await _remoteDataSource.getInvoices(clinicId);
+      final invoices = await _remoteDataSource.getInvoices(clinicId, doctorId: doctorId);
       return Right(invoices);
     } catch (e) {
       return Left(QueryFailure.fromException(e));
@@ -30,9 +30,10 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> createInvoice({
+  Future<Either<Failure, InvoiceEntity>> createInvoice({
     required String clinicId,
     required String patientId,
+    String? doctorId,
     required String sourceId,
     required double totalAmount,
     required double paidAmount,
@@ -44,6 +45,7 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
         id: '',
         clinicId: clinicId,
         patientId: patientId,
+        doctorId: doctorId,
         sourceId: sourceId,
         sourceType: 'appointment',
         totalAmount: totalAmount,
@@ -53,8 +55,8 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
         createdAt: DateTime.now(),
       );
 
-      await _remoteDataSource.createInvoice(model);
-      return const Right(unit);
+      final created = await _remoteDataSource.createInvoice(model);
+      return Right(created);
     } catch (e) {
       return Left(QueryFailure.fromException(e));
     }

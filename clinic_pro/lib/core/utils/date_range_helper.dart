@@ -37,15 +37,16 @@ class DateRangeHelper {
       final daysSinceSaturday = (now.weekday % 7 + 1) % 7;
       final startOfWeek = now.subtract(Duration(days: daysSinceSaturday));
       start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day, 0, 0, 0);
-      end = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+      final endOfWeek = startOfWeek.add(const Duration(days: 6));
+      end = DateTime(endOfWeek.year, endOfWeek.month, endOfWeek.day, 23, 59, 59, 999);
     } else if (range == ReportsDateRange.threeMonths) {
       final dt = DateTime(now.year, now.month - 2, 1);
       start = DateTime(dt.year, dt.month, dt.day, 0, 0, 0);
-      end = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+      end = DateTime(now.year, now.month + 1, 0, 23, 59, 59, 999);
     } else {
       // thisMonth (default)
       start = DateTime(now.year, now.month, 1, 0, 0, 0);
-      end = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+      end = DateTime(now.year, now.month + 1, 0, 23, 59, 59, 999);
     }
 
     return DateRangeHelper._(rangeStart: start, rangeEnd: end);

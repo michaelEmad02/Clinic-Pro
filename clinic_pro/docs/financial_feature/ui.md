@@ -38,12 +38,24 @@ Key points:
 ## Expenses Screen
 
 ```
+Role-Based Scoping & Complete Separation:
+  - Owner (المالك):
+    • يرى فقط مصاريف العيادة العامة (doctor_id == null).
+    • لا تظهر له أي خيارات أو عناصر متعلقة بمصاريف الأطباء نهائياً.
+    • الإجمالي والشارت يعكسان فقط مصاريف العيادة العامة.
+  - Doctor (الطبيب):
+    • يرى فقط مصاريفه الشخصية الخاصة به (doctor_id == currentDoctorId).
+    • لا تظهر له مصاريف العيادة العامة ولا مصاريف الأطباء الآخرين.
+    • الإجمالي يعكس فقط مصاريفه الشخصية.
+  - Secretary (السكرتير):
+    • يتعامل مع مصاريف العيادة العامة افتراضياً (doctor_id == null).
+
 Category filter chips — MUST be fetched dynamically from expense_categories
 table (13 categories), not hardcoded:
   [الكل] [إيجار] [كهرباء] [مستلزمات] [رواتب] [صيانه] [اجهزة طبية]
   [انترنت] [تسويق و اعلانات] [خدمات] [ضرائب و رسوم] [طاقه اخري] [مياه] [أخري]
 
-Summary card: total expenses for selected period
+Summary card: total expenses for the selected role's scope
 List items: category icon + title/notes + amount (Inter Bold, danger color) + date + (···)
 (···) → تعديل | حذف (with confirm dialog)
 FAB → Add Expense Sheet
@@ -51,11 +63,17 @@ FAB → Add Expense Sheet
 
 ### Add Expense Sheet
 ```
-Title/notes field
-Category dropdown — populated from expense_categories table (13 options)
-Amount field (numeric)
-Date picker
-Notes field (optional)
+Fields:
+- Title field (required)
+- Category dropdown — populated from expense_categories table (13 options)
+- Amount field (numeric, > 0)
+- Date picker
+- Notes field (optional)
+
+Role Handling on Save:
+- If Owner / Secretary: saved as Clinic Expense automatically (doctor_id = null).
+- If Doctor: saved as Doctor Personal Expense automatically (doctor_id = auth.uid()).
+(No confusing dropdowns or scope selectors — seamless based on role).
 ```
 
 ---

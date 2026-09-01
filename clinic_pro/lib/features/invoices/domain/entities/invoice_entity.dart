@@ -16,6 +16,7 @@ class InvoiceEntity extends Equatable {
   final String clinicId;
   final String patientId;
   final String? patientName;
+  final String? doctorId;
   final String sourceId; // رقم الموعد (appointments.id)
   final String sourceType; // 'appointment'
   final double totalAmount;
@@ -30,6 +31,7 @@ class InvoiceEntity extends Equatable {
     required this.clinicId,
     required this.patientId,
     this.patientName,
+    this.doctorId,
     required this.sourceId,
     this.sourceType = 'appointment',
     required this.totalAmount,
@@ -68,6 +70,7 @@ class InvoiceEntity extends Equatable {
     String? clinicId,
     String? patientId,
     String? patientName,
+    String? doctorId,
     String? sourceId,
     String? sourceType,
     double? totalAmount,
@@ -82,6 +85,7 @@ class InvoiceEntity extends Equatable {
       clinicId: clinicId ?? this.clinicId,
       patientId: patientId ?? this.patientId,
       patientName: patientName ?? this.patientName,
+      doctorId: doctorId ?? this.doctorId,
       sourceId: sourceId ?? this.sourceId,
       sourceType: sourceType ?? this.sourceType,
       totalAmount: totalAmount ?? this.totalAmount,
@@ -99,6 +103,7 @@ class InvoiceEntity extends Equatable {
         clinicId,
         patientId,
         patientName,
+        doctorId,
         sourceId,
         sourceType,
         totalAmount,

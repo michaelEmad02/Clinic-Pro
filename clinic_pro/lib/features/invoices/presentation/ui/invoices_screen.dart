@@ -21,14 +21,28 @@ import 'widgets/invoices_date_range_chips.dart';
 import 'widgets/invoices_list.dart';
 import 'widgets/invoices_summary_bar.dart';
 
+import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/constants/staff_roles.dart';
+import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+
 class InvoicesScreen extends StatelessWidget {
   const InvoicesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
+    final settingsState = context.read<SettingsCubit>().state;
+    final clinicId = settingsState.clinicEntity?.id ?? '';
+    final authUser = context.read<AuthCubit>().state.user;
+    final isDoctor = authUser?.role == StaffRoles.doctor;
+    final activeDoctorId = isDoctor
+        ? authUser?.id
+        : (settingsState.currentDoctorId ??
+            (AppConstants.activeDoctorId.isNotEmpty
+                ? AppConstants.activeDoctorId
+                : null));
+
     return BlocProvider(
-      create: (_) => sl<InvoicesCubit>()..loadInvoices(clinicId),
+      create: (_) => sl<InvoicesCubit>()..loadInvoices(clinicId, doctorId: activeDoctorId),
       child: const _InvoicesBody(),
     );
   }
@@ -39,7 +53,16 @@ class _InvoicesBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
+    final settingsState = context.watch<SettingsCubit>().state;
+    final clinicId = settingsState.clinicEntity?.id ?? '';
+    final authUser = context.watch<AuthCubit>().state.user;
+    final isDoctor = authUser?.role == StaffRoles.doctor;
+    final activeDoctorId = isDoctor
+        ? authUser?.id
+        : (settingsState.currentDoctorId ??
+            (AppConstants.activeDoctorId.isNotEmpty
+                ? AppConstants.activeDoctorId
+                : null));
 
     return Scaffold(
       backgroundColor: context.backgroundColor,
@@ -73,13 +96,13 @@ class _InvoicesBody extends StatelessWidget {
               context: context,
               error: state.errorMessage,
               onRetry: () =>
-                  context.read<InvoicesCubit>().loadInvoices(clinicId),
+                  context.read<InvoicesCubit>().loadInvoices(clinicId, doctorId: activeDoctorId),
             );
           }
 
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<InvoicesCubit>().loadInvoices(clinicId);
+              context.read<InvoicesCubit>().loadInvoices(clinicId, doctorId: activeDoctorId);
             },
             child: ResponsiveHelper.responsiveCenter(
               maxWidth: 1100,

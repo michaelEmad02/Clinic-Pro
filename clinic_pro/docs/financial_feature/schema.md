@@ -9,6 +9,7 @@
 | `id` | uuid | NO | `gen_random_uuid()` | |
 | `clinic_id` | uuid | YES | `gen_random_uuid()` ⚠️ | pass explicitly |
 | `patient_id` | uuid | YES | `gen_random_uuid()` ⚠️ | pass explicitly |
+| `doctor_id` | uuid | YES | — | FK to users.id — simplifies doctor reports & collected queries |
 | `source_id` | uuid | NO | `gen_random_uuid()` ⚠️ | pass explicitly — references appointments.id |
 | `source_type` | invoices_source_type (enum) ✅ | NO | `gen_random_uuid()`?? | see note below |
 | `total_amount` | real (float4) | NO | — | |
@@ -66,12 +67,18 @@
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | `id` | uuid | NO | `gen_random_uuid()` | |
-| `clinic_id` | uuid | YES | — | pass explicitly |
-| `category_id` | uuid | YES | — | FK → expense_categories.id, pass explicitly |
-| `amount` | real (float4) | NO | `0` | |
-| `notes` | text | YES | — | |
-| `created_by` | uuid | YES | — | pass explicitly |
+| `clinic_id` | uuid | NO | — | pass explicitly |
+| `category_id` | uuid | NO | — | FK → expense_categories.id, pass explicitly |
+| `title` | text | NO | — | اسم / عنوان المصروف |
+| `amount` | real (float4) | NO | `0` | المبلغ |
+| `notes` | text | YES | — | ملاحظات إضافية |
+| `doctor_id` | uuid | YES | `NULL` | ⭐️ FK → users.id / clinic_staff. Null = مصروف عام للعيادة/المركز، Not Null = مصروف خاص بالطبيب |
+| `created_by` | uuid | YES | — | pass explicitly (auth.uid()) |
 | `created_at` | timestamptz | NO | `now()` | |
+
+> ⭐️ **قاعدة فصل المصروفات (Doctor vs Clinic Expenses):**
+> - إذا كان `doctor_id == NULL`: يُعتبر المصروف **مصروفاً عاماً للعيادة / المركز** (مثل الإيجار، فواتير الكهرباء، الرواتب العامة) ويدخل في تقرير المركز المالي الإجمالي لصاحب البزنس (Owner).
+> - إذا كان `doctor_id != NULL`: يُعتبر المصروف **خاصاً بالطبيب المحدد** (مثل مستلزمات أو أدوات خاصة بالطبيب) ويدخل في التقرير المالي وحساب صافي أرباح الطبيب نفسه.
 
 ---
 

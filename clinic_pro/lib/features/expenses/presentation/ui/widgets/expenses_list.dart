@@ -1,17 +1,18 @@
 // ────────────────────────────────────────────────────────
-// قائمة المصروفات — ListView.builder مع EmptyState
+// ExpensesList — قائمة المصروفات
+// تعرض العناصر عبر ListView.builder مع حالة الفراغ EmptyState
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/widgets/empty_state.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/strings/app_strings.dart';
-import '../../../../../core/widgets/empty_state.dart';
-import '../../manager/expenses_state.dart';
 import 'expense_list_item.dart';
 
 class ExpensesList extends StatelessWidget {
-  final List<ExpenseItem> expenses;
-  final ValueChanged<ExpenseItem> onEdit;
-  final ValueChanged<ExpenseItem> onDelete;
+  final List<ExpensesEntity> expenses;
+  final ValueChanged<ExpensesEntity> onEdit;
+  final ValueChanged<ExpensesEntity> onDelete;
 
   const ExpensesList({
     super.key,
@@ -25,7 +26,9 @@ class ExpensesList extends StatelessWidget {
     if (expenses.isEmpty) {
       return EmptyState(
         title: AppStrings.noExpenses,
-        subtitle: AppStrings.noExpenses,
+        subtitle: AppStrings.isArabic
+            ? 'لم يتم تسجيل أي مصروفات بعد'
+            : 'No expenses recorded yet',
         icon: Icons.account_balance_wallet_outlined,
       );
     }

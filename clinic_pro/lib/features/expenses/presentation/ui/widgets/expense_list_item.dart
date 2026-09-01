@@ -1,12 +1,17 @@
+// ────────────────────────────────────────────────────────
+// ExpenseListItem — عنصر المصروف في قائمة المصروفات
+// يعرض العنوان، التاريخ، التصنيف، والمبلغ مع التنسيق المناسب
+// ────────────────────────────────────────────────────────
+
+import 'package:clinic_pro/core/services/numbers_format.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/services/numbers_format.dart';
-import '../../../../../core/themes/app_colors.dart';
-import '../../../../../core/themes/app_text_styles.dart';
-import '../../manager/expenses_state.dart';
 import 'expense_action_sheet.dart';
 
 class ExpenseListItem extends StatelessWidget {
-  final ExpenseItem expense;
+  final ExpensesEntity expense;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -24,9 +29,9 @@ class ExpenseListItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: context.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: context.border),
+          border: Border.all(color: context.borderColor),
           boxShadow: const [
             BoxShadow(
               color: Color(0x08000000),
@@ -39,19 +44,20 @@ class ExpenseListItem extends StatelessWidget {
           children: [
             InkWell(
               onTap: () => ExpenseActionSheet.show(
-                  context: context,
-                  expense: expense,
-                  onEdit: onEdit,
-                  onDelete: onDelete),
+                context: context,
+                expense: expense,
+                onEdit: onEdit,
+                onDelete: onDelete,
+              ),
               child: Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: context.background,
+                  color: context.backgroundColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  _categoryIcon(expense.categoryId),
+                  _categoryIcon(expense.categoryName),
                   color: context.primary,
                   size: 24,
                 ),
@@ -71,15 +77,60 @@ class ExpenseListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    expense.formattedDate,
-                    style: AppTextStyles.caption(context).copyWith(
-                      color: context.textHint,
-                    ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        expense.formattedDate,
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: context.textHint,
+                        ),
+                      ),
+                      if (expense.categoryName.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: context.primaryLightColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            expense.categoryName,
+                            style: AppTextStyles.labelChip(context).copyWith(
+                              fontSize: 10,
+                              color: context.primary,
+                            ),
+                          ),
+                        ),
+                      if (expense.createdByName != null &&
+                          expense.createdByName!.trim().isNotEmpty)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.person_outline,
+                                size: 12, color: context.textHint),
+                            const SizedBox(width: 2),
+                            Flexible(
+                              child: Text(
+                                expense.createdByName!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: context.textHint,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Text(
               '- ${formatNumber(expense.amount)}',
               style: AppTextStyles.dataNumeric(context).copyWith(
@@ -94,22 +145,19 @@ class ExpenseListItem extends StatelessWidget {
     );
   }
 
-  IconData _categoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'ec-1':
-        return Icons.home_work;
-      case 'ec-2':
-        return Icons.bolt;
-      case 'ec-3':
-        return Icons.medical_services;
-      case 'ec-4':
-        return Icons.groups;
-      case 'ec-5':
-        return Icons.build;
-      case 'ec-6':
-        return Icons.more_horiz;
-      default:
-        return Icons.more_horiz;
+  IconData _categoryIcon(String categoryName) {
+    if (categoryName.contains('إيجار')) return Icons.home_work_outlined;
+    if (categoryName.contains('كهرباء') || categoryName.contains('طاقه')) {
+      return Icons.bolt_outlined;
     }
+    if (categoryName.contains('مستلزمات') || categoryName.contains('طبية')) {
+      return Icons.medical_services_outlined;
+    }
+    if (categoryName.contains('رواتب')) return Icons.groups_outlined;
+    if (categoryName.contains('صيانه')) return Icons.build_outlined;
+    if (categoryName.contains('انترنت')) return Icons.wifi_outlined;
+    if (categoryName.contains('تسويق')) return Icons.campaign_outlined;
+    if (categoryName.contains('مياه')) return Icons.water_drop_outlined;
+    return Icons.receipt_long_outlined;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
+import 'package:clinic_pro/core/utils/date_range_helper.dart';
 import 'package:clinic_pro/features/reports/presentation/manager/reports_state.dart';
 import '../models/revenue_summary_model.dart';
 import '../models/appointment_stats_model.dart';
@@ -20,47 +21,18 @@ class ReportsRpcRemoteDataSourceImpl implements IReportsRemoteDataSource {
 
   ReportsRpcRemoteDataSourceImpl(this._cloudService, this._cacheManager);
 
-  /// تحويل كائن النطاق الزمني والتواريخ المخصصة إلى تواريخ ISO للإرسال إلى RPC
+  /// تحويل كائن النطاق الزمني والتواريخ المخصصة إلى تواريخ ISO UTC للإرسال إلى RPC
   Map<String, dynamic> _buildDateParams({
     ReportsDateRange range = ReportsDateRange.thisMonth,
     DateTimeRange? customDateRange,
   }) {
-    final now = DateTime.now();
-    DateTime? startDate;
-    DateTime? endDate;
-
-    switch (range) {
-      case ReportsDateRange.thisWeek:
-        final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
-        startDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
-        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-      case ReportsDateRange.thisMonth:
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-        break;
-      case ReportsDateRange.threeMonths:
-        startDate = DateTime(now.year, now.month - 3, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-        break;
-      case ReportsDateRange.custom:
-        if (customDateRange != null) {
-          startDate = customDateRange.start;
-          endDate = DateTime(
-            customDateRange.end.year,
-            customDateRange.end.month,
-            customDateRange.end.day,
-            23,
-            59,
-            59,
-          );
-        }
-        break;
-    }
-
+    final helper = DateRangeHelper.fromRange(
+      range: range,
+      customDateRange: customDateRange,
+    );
     return {
-      'p_start_date': startDate?.toIso8601String(),
-      'p_end_date': endDate?.toIso8601String(),
+      'p_start_date': helper.rangeStartUtcIso,
+      'p_end_date': helper.rangeEndUtcIso,
     };
   }
 

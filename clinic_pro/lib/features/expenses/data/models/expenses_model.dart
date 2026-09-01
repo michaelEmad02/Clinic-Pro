@@ -1,48 +1,83 @@
-import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
+// ────────────────────────────────────────────────────────
+// ExpenseModel — نموذج بيانات المصروف بـ Data Layer
+// يحول البيانات الخام من جدول expenses إلى ExpensesEntity
+// ────────────────────────────────────────────────────────
 
-class ClinicModel extends ClinicEntity {
-  ClinicModel(
-      {required super.id,
-      required super.ownerId,
-      required super.name,
-      required super.address,
-      required super.phone1,
-      required super.phone2,
-      required super.logoUrl,
-      required super.isActive,
-      required super.createdAt});
+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
 
-  factory ClinicModel.fromJson(Map<String, dynamic> data) {
-    return ClinicModel(
-        id: data['id'],
-        ownerId: data['owner_id'] as String? ?? '',
-        name: data['name'] as String? ?? '',
-        address: data['address'] as String? ?? '',
-        phone1: data['phone1'] as String? ?? '',
-        phone2: data['phone2'] as String? ?? '',
-        logoUrl: data['logo_url'] as String? ?? '',
-        isActive: data['is_active'] as bool? ?? false,
-        createdAt: _parseUtc(data['created_at'] as String));
-  }
+class ExpenseModel extends ExpensesEntity {
+  const ExpenseModel({
+    required super.id,
+    required super.clinicId,
+    required super.categoryId,
+    required super.categoryName,
+    required super.title,
+    required super.amount,
+    super.notes,
+    super.doctorId,
+    required super.createdBy,
+    super.createdByName,
+    required super.createdAt,
+  });
 
-  static DateTime _parseUtc(String s) {
-    final parsed = DateTime.parse(s);
-    if (parsed.isUtc) return parsed;
-    return DateTime.utc(parsed.year, parsed.month, parsed.day,
-        parsed.hour, parsed.minute, parsed.second,
-        parsed.millisecond, parsed.microsecond);
+  factory ExpenseModel.fromJson(
+    Map<String, dynamic> json, {
+    String? categoryName,
+    String? createdByName,
+  }) {
+    final createdAtRaw = json['created_at'];
+    DateTime parsedCreatedAt;
+    if (createdAtRaw is String) {
+      parsedCreatedAt = DateTime.tryParse(createdAtRaw) ?? DateTime.now();
+    } else if (createdAtRaw is DateTime) {
+      parsedCreatedAt = createdAtRaw;
+    } else {
+      parsedCreatedAt = DateTime.now();
+    }
+
+    // استخراج اسم التصنيف إن وجد في الـ join أو تم تمريره
+    String resolvedCategoryName = categoryName ?? '';
+    if (resolvedCategoryName.isEmpty && json['expense_categories'] != null) {
+      final catObj = json['expense_categories'];
+      if (catObj is Map) {
+        resolvedCategoryName = (catObj['name'] ?? catObj['label'] ?? '') as String;
+      }
+    }
+
+    // استخراج اسم منشئ المصروف إن وجد في العلاقة مع users
+    String? resolvedCreatedByName = createdByName;
+    if (resolvedCreatedByName == null || resolvedCreatedByName.isEmpty) {
+      final userObj = json['users'] ?? json['created_by_user'];
+      if (userObj is Map) {
+        resolvedCreatedByName = (userObj['name'] ?? userObj['full_name'] ?? '') as String?;
+      }
+    }
+
+    return ExpenseModel(
+      id: json['id'] as String? ?? '',
+      clinicId: json['clinic_id'] as String? ?? '',
+      categoryId: json['category_id'] as String? ?? '',
+      categoryName: resolvedCategoryName,
+      title: (json['title'] ?? json['notes'] ?? 'مصروف بدون عنوان') as String,
+      amount: ((json['amount'] ?? 0) as num).toDouble(),
+      notes: json['notes'] as String?,
+      doctorId: json['doctor_id'] as String?,
+      createdBy: json['created_by'] as String? ?? '',
+      createdByName: resolvedCreatedByName,
+      createdAt: parsedCreatedAt,
+    );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'owner_id': ownerId,
-      'name': name,
-      'address': address,
-      'phone1': phone1,
-      'phone2': phone2,
-      'logo_url': logoUrl,
-      'is_active': isActive,
-      'created_at': createdAt.toUtc().toIso8601String(),
+      'clinic_id': clinicId,
+      'category_id': categoryId,
+      'title': title,
+      'amount': amount,
+      'notes': notes,
+      'doctor_id': doctorId,
+      'created_by': createdBy,
+      'created_at': createdAt.toIso8601String(),
     };
   }
 }

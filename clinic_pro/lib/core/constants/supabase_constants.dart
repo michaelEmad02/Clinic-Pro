@@ -23,6 +23,7 @@ class SupabaseTables {
   static const String prescriptionDocs = 'prescription_docs';
   static const String invoices = 'invoices';
   static const String expenses = 'expenses';
+  static const String expenseCategories = 'expense_categories';
   static const String subscriptions = 'subscriptions';
   static const String invitations = 'invitations';
   static const String doctorSecretaries = 'doctor_secretary_schedule';

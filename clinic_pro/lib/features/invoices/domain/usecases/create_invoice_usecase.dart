@@ -4,6 +4,7 @@
 
 import 'package:clinic_pro/core/error/failures.dart';
 import 'package:clinic_pro/core/strings/failure_strings.dart';
+import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
 import 'package:clinic_pro/features/invoices/domain/repositories/i_invoices_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -14,9 +15,10 @@ class CreateInvoiceUseCase {
 
   CreateInvoiceUseCase(this._repository);
 
-  Future<Either<Failure, Unit>> call({
+  Future<Either<Failure, InvoiceEntity>> call({
     required String clinicId,
     required String patientId,
+    String? doctorId,
     required String sourceId,
     required double totalAmount,
     required double paidAmount,
@@ -42,6 +44,7 @@ class CreateInvoiceUseCase {
     return _repository.createInvoice(
       clinicId: clinicId,
       patientId: patientId,
+      doctorId: doctorId,
       sourceId: sourceId,
       totalAmount: totalAmount,
       paidAmount: paidAmount,

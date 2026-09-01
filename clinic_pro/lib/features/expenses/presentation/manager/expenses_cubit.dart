@@ -1,9 +1,15 @@
 // ────────────────────────────────────────────────────────
-// Cubit شاشة المصروفات — تحميل وإضافة وتعديل وحذف (Repository)
+// ExpensesCubit — إدارة حالة شاشة المصروفات
+// يتفاعل حصراً مع Domain UseCases لعزل منطق الأعمال عن الواجهة
 // ────────────────────────────────────────────────────────
 
-import 'package:clinic_pro/core/strings/app_strings.dart';
-import 'package:clinic_pro/features/expenses/presentation/manager/expenses_repository.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expense_category_entity.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
+import 'package:clinic_pro/features/expenses/domain/use_cases/add_expenses_use_case.dart';
+import 'package:clinic_pro/features/expenses/domain/use_cases/delete_expenses_use_case.dart';
+import 'package:clinic_pro/features/expenses/domain/use_cases/edit_expenses_use_case.dart';
+import 'package:clinic_pro/features/expenses/domain/use_cases/fetch_categories_use_case.dart';
+import 'package:clinic_pro/features/expenses/domain/use_cases/fetch_expenses_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -11,99 +17,159 @@ import 'expenses_state.dart';
 
 @injectable
 class ExpensesCubit extends Cubit<ExpensesState> {
-  final ExpensesRepository _repository;
+  final FetchExpensesUseCase _fetchExpensesUseCase;
+  final FetchCategoriesUseCase _fetchCategoriesUseCase;
+  final AddExpensesUseCase _addExpensesUseCase;
+  final EditExpensesUseCase _editExpensesUseCase;
+  final DeleteExpensesUseCase _deleteExpensesUseCase;
 
-  ExpensesCubit(this._repository) : super(ExpensesInitial());
+  ExpensesCubit(
+    this._fetchExpensesUseCase,
+    this._fetchCategoriesUseCase,
+    this._addExpensesUseCase,
+    this._editExpensesUseCase,
+    this._deleteExpensesUseCase,
+  ) : super(ExpensesInitial());
 
-  Future<void> loadExpenses() async {
+  /// تحميل المصروفات والتصنيفات
+  /// - للمالك: يتم تمرير [onlyClinicExpenses] = true لعرض مصاريف العيادة العامة فقط.
+  /// - للطبيب: يتم تمرير [doctorId] = معرف الطبيب لعرض مصاريفه الشخصية فقط.
+  Future<void> loadExpenses({
+    required String clinicId,
+    String? doctorId,
+    bool onlyClinicExpenses = false,
+  }) async {
     emit(ExpensesLoading());
 
-    try {
-      final categories = await _repository.loadCategories();
-      final items = await _repository.loadExpenses();
-      emit(ExpensesLoaded(
-        allExpenses: items,
+    // 1. جلب التصنيفات
+    final categoriesResult = await _fetchCategoriesUseCase();
+    List<ExpenseCategoryEntity> categories = [];
+    categoriesResult.fold(
+      (failure) => null,
+      (cats) => categories = cats,
+    );
+
+    // 2. جلب المصروفات
+    final expensesResult = await _fetchExpensesUseCase(
+      clinicId: clinicId,
+      doctorId: doctorId,
+      onlyClinicExpenses: onlyClinicExpenses,
+    );
+
+    expensesResult.fold(
+      (failure) => emit(ExpensesError(failure.message)),
+      (expenses) => emit(ExpensesLoaded(
+        allExpenses: expenses,
         categories: categories,
-      ));
-    } catch (_) {
-      emit(ExpensesError(AppStrings.loadFailedMsg));
-    }
+        currentDoctorId: doctorId,
+      )),
+    );
   }
 
+  /// تغيير التصنيف النشط في شريط الفلترة
   void changeCategory(String? categoryId) {
-    if (state is ExpensesLoaded) {
-      final loaded = state as ExpensesLoaded;
-      emit(ExpensesLoaded(
-        allExpenses: loaded.allExpenses,
-        categories: loaded.categories,
-        activeCategoryId: categoryId,
-      ));
+    if (state is! ExpensesLoaded) return;
+    final loaded = state as ExpensesLoaded;
+
+    if (categoryId == null || categoryId.isEmpty) {
+      emit(loaded.copyWith(clearActiveCategory: true));
+    } else {
+      emit(loaded.copyWith(activeCategoryId: categoryId));
     }
   }
 
-  Future<void> addExpense({
+  /// تغيير فلتر الجهة المتحملة للمصروف (الكل / العيادة / الأطباء / طبيب معين)
+  void changeTargetFilter(String targetFilter) {
+    if (state is! ExpensesLoaded) return;
+    final loaded = state as ExpensesLoaded;
+
+    emit(loaded.copyWith(activeTargetFilter: targetFilter));
+  }
+
+  /// إضافة مصروف جديد
+  Future<bool> addExpense({
+    required String clinicId,
     required String title,
     required double amount,
     required String categoryId,
-    required String categoryLabel,
-    String notes = '',
+    required String categoryName,
+    String? notes,
+    String? doctorId,
+    required String createdBy,
   }) async {
-    if (state is! ExpensesLoaded) return;
+    if (state is! ExpensesLoaded) return false;
     final loaded = state as ExpensesLoaded;
 
-    try {
-      final newExpense = await _repository.addExpense(
-        title: title,
-        amount: amount,
-        categoryId: categoryId,
-        categoryLabel: categoryLabel,
-        notes: notes,
-      );
-      emit(loaded.copyWith(allExpenses: [newExpense, ...loaded.allExpenses]));
-    } catch (_) {
-      emit(ExpensesError(AppStrings.loadFailedMsg));
-    }
+    final newExpense = ExpensesEntity(
+      id: '',
+      clinicId: clinicId,
+      categoryId: categoryId,
+      categoryName: categoryName,
+      title: title,
+      amount: amount,
+      notes: notes,
+      doctorId: doctorId,
+      createdBy: createdBy,
+      createdAt: DateTime.now(),
+    );
+
+    final result = await _addExpensesUseCase(newExpense);
+
+    return result.fold(
+      (failure) {
+        emit(ExpensesError(failure.message));
+        return false;
+      },
+      (createdExpense) {
+        emit(loaded.copyWith(
+          allExpenses: [createdExpense, ...loaded.allExpenses],
+        ));
+        return true;
+      },
+    );
   }
 
-  Future<void> updateExpense({
-    required String expenseId,
-    required String title,
-    required double amount,
-    required String categoryId,
-    required String categoryLabel,
-    String notes = '',
-  }) async {
-    if (state is! ExpensesLoaded) return;
+  /// تعديل مصروف موجود
+  Future<bool> updateExpense(ExpensesEntity updatedExpense) async {
+    if (state is! ExpensesLoaded) return false;
     final loaded = state as ExpensesLoaded;
 
-    try {
-      final updated = await _repository.updateExpense(
-        expenseId: expenseId,
-        title: title,
-        amount: amount,
-        categoryId: categoryId,
-        categoryLabel: categoryLabel,
-        notes: notes,
-      );
-      final list = loaded.allExpenses.map((e) {
-        return e.id == expenseId ? updated : e;
-      }).toList();
-      emit(loaded.copyWith(allExpenses: list));
-    } catch (_) {
-      emit(ExpensesError(AppStrings.loadFailedMsg));
-    }
+    final result = await _editExpensesUseCase(updatedExpense);
+
+    return result.fold(
+      (failure) {
+        emit(ExpensesError(failure.message));
+        return false;
+      },
+      (savedExpense) {
+        final updatedList = loaded.allExpenses.map((exp) {
+          return exp.id == savedExpense.id ? savedExpense : exp;
+        }).toList();
+
+        emit(loaded.copyWith(allExpenses: updatedList));
+        return true;
+      },
+    );
   }
 
-  Future<void> deleteExpense(String expenseId) async {
-    if (state is! ExpensesLoaded) return;
+  /// حذف مصروف
+  Future<bool> deleteExpense(String expenseId) async {
+    if (state is! ExpensesLoaded) return false;
     final loaded = state as ExpensesLoaded;
 
-    try {
-      await _repository.deleteExpense(expenseId);
-      final list = loaded.allExpenses.where((e) => e.id != expenseId).toList();
-      emit(loaded.copyWith(allExpenses: list));
-    } catch (_) {
-      emit(ExpensesError(AppStrings.loadFailedMsg));
-    }
+    final result = await _deleteExpensesUseCase(expenseId);
+
+    return result.fold(
+      (failure) {
+        emit(ExpensesError(failure.message));
+        return false;
+      },
+      (_) {
+        final updatedList =
+            loaded.allExpenses.where((exp) => exp.id != expenseId).toList();
+        emit(loaded.copyWith(allExpenses: updatedList));
+        return true;
+      },
+    );
   }
 }

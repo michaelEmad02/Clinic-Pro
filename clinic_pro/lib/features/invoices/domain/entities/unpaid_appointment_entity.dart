@@ -9,6 +9,7 @@ class UnpaidAppointmentEntity extends Equatable {
   final String id;
   final String patientId;
   final String clinicId;
+  final String? doctorId;
   final String? appointmentTypeName;
   final double expectedPrice;
   final double paidSoFar;
@@ -19,6 +20,7 @@ class UnpaidAppointmentEntity extends Equatable {
     required this.id,
     required this.patientId,
     required this.clinicId,
+    this.doctorId,
     this.appointmentTypeName,
     required this.expectedPrice,
     this.paidSoFar = 0.0,
@@ -31,6 +33,7 @@ class UnpaidAppointmentEntity extends Equatable {
         id,
         patientId,
         clinicId,
+        doctorId,
         appointmentTypeName,
         expectedPrice,
         paidSoFar,

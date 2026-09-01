@@ -59,6 +59,13 @@ class SecretaryQuickActions extends StatelessWidget {
                 icon: Icons.receipt_long_outlined,
                 onTap: () => onTabChanged(2),
               ),
+              const SizedBox(width: 12),
+              _buildActionButton(
+                context: context,
+                label: AppStrings.expenses,
+                icon: Icons.account_balance_wallet_outlined,
+                onTap: () => context.push(RouteConstants.expenses),
+              ),
             ],
           ),
         ),

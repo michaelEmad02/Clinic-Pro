@@ -46,9 +46,9 @@ BEGIN
     SELECT 
       COALESCE(SUM(a.price), 0.0) as expected_rev,
       COALESCE((SELECT SUM(inv.paid_amount) FROM invoices inv WHERE inv.clinic_id = c.id), 0.0) as collected_amt,
-      COALESCE((SELECT SUM(e.amount) FROM expenses e WHERE e.clinic_id = c.id), 0.0) as exp_amt,
-      COUNT(a.id) FILTER (WHERE a.date::date = CURRENT_DATE) as appts_today,
-      COUNT(a.id) FILTER (WHERE a.status IN ('done', 'confirmed')) as appts_finished,
+      COALESCE((SELECT SUM(e.amount) FROM expenses e WHERE e.clinic_id = c.id AND e.doctor_id IS NULL), 0.0) as exp_amt,
+      COUNT(a.id) FILTER (WHERE COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) = TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')) as appts_today,
+      COUNT(a.id) FILTER (WHERE a.status = 'done') as appts_finished,
       (SELECT COUNT(*) FROM clinic_staff cs WHERE cs.clinic_id = c.id AND cs.role = 'doctor') as doc_count
     FROM appointments a
     WHERE a.clinic_id = c.id
@@ -119,8 +119,8 @@ BEGIN
   WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
     AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
     AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
-    AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-    AND (p_end_date IS NULL OR a.created_at <= p_end_date);
+    AND (p_start_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) >= TO_CHAR(p_start_date, 'YYYY-MM-DD'))
+    AND (p_end_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) <= TO_CHAR(p_end_date, 'YYYY-MM-DD'));
 
   -- المحصل والمتبقي من الفواتير
   IF p_doctor_id IS NOT NULL THEN
@@ -129,9 +129,8 @@ BEGIN
       COALESCE(SUM(GREATEST(inv.total_amount - inv.paid_amount, 0.0)), 0.0)
     INTO v_collected, v_pending
     FROM invoices inv
-    JOIN appointments a ON a.id = inv.source_id
-    WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
-      AND a.doctor_id = p_doctor_id
+    WHERE (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+      AND inv.doctor_id = p_doctor_id
       AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
       AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
   ELSE
@@ -147,12 +146,58 @@ BEGIN
       AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
   END IF;
 
-  -- المصروفات وتوزيعها لعيادات المالك (تظهر للمالك فقط إذا لم يكن محدد طبيب)
-  IF p_doctor_id IS NULL THEN
+  -- المصروفات وتوزيعها (إذا كان التقرير لطبيب تخصم مصاريف الطبيب، وإذا كان للمالك تخصم مصاريف العيادة العامة)
+  IF p_doctor_id IS NOT NULL THEN
+    -- 1. مصروفات الطبيب الشخصية
+    SELECT COALESCE(SUM(e.amount), 0.0) INTO v_total_expenses
+    FROM expenses e
+    WHERE e.doctor_id = p_doctor_id
+      AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
+      AND (p_start_date IS NULL OR e.created_at >= p_start_date)
+      AND (p_end_date IS NULL OR e.created_at <= p_end_date);
+
+    SELECT COALESCE(jsonb_agg(eb), '[]'::jsonb) INTO v_expenses_breakdown
+    FROM (
+      SELECT 
+        COALESCE(ec.name, 'أخرى') as category,
+        SUM(e.amount)::double precision as amount,
+        CASE WHEN v_total_expenses > 0 
+             THEN ROUND(((SUM(e.amount)::double precision / v_total_expenses) * 100)::numeric, 2)
+             ELSE 0 
+        END as percentage
+      FROM expenses e
+      LEFT JOIN expense_categories ec ON ec.id = e.category_id
+      WHERE e.doctor_id = p_doctor_id
+        AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
+        AND (p_start_date IS NULL OR e.created_at >= p_start_date)
+        AND (p_end_date IS NULL OR e.created_at <= p_end_date)
+      GROUP BY COALESCE(ec.name, 'أخرى')
+    ) eb;
+
+    SELECT COALESCE(SUM(e.amount), 0.0) INTO v_curr_month_exp
+    FROM expenses e
+    WHERE e.doctor_id = p_doctor_id
+      AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
+      AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now());
+
+    SELECT COALESCE(SUM(e.amount), 0.0) INTO v_prev_month_exp
+    FROM expenses e
+    WHERE e.doctor_id = p_doctor_id
+      AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
+      AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month');
+
+    IF v_prev_month_exp > 0 THEN
+      v_expenses_change := ROUND(((v_curr_month_exp - v_prev_month_exp) / v_prev_month_exp * 100)::numeric, 0)::text || '%';
+    ELSIF v_curr_month_exp > 0 THEN
+      v_expenses_change := '+100%';
+    END IF;
+  ELSE
+    -- 2. مصروفات العيادة العامة للمالك
     SELECT COALESCE(SUM(e.amount), 0.0) INTO v_total_expenses
     FROM expenses e
     JOIN clinics c ON c.id = e.clinic_id
     WHERE c.owner_id = v_owner_id
+      AND e.doctor_id IS NULL
       AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
       AND (p_start_date IS NULL OR e.created_at >= p_start_date)
       AND (p_end_date IS NULL OR e.created_at <= p_end_date);
@@ -170,17 +215,18 @@ BEGIN
       JOIN clinics c ON c.id = e.clinic_id
       LEFT JOIN expense_categories ec ON ec.id = e.category_id
       WHERE c.owner_id = v_owner_id
+        AND e.doctor_id IS NULL
         AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
         AND (p_start_date IS NULL OR e.created_at >= p_start_date)
         AND (p_end_date IS NULL OR e.created_at <= p_end_date)
       GROUP BY COALESCE(ec.name, 'أخرى')
     ) eb;
 
-    -- حساب نسبة التغير في المصروفات
     SELECT COALESCE(SUM(e.amount), 0.0) INTO v_curr_month_exp
     FROM expenses e
     JOIN clinics c ON c.id = e.clinic_id
     WHERE c.owner_id = v_owner_id
+      AND e.doctor_id IS NULL
       AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
       AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now());
 
@@ -188,6 +234,7 @@ BEGIN
     FROM expenses e
     JOIN clinics c ON c.id = e.clinic_id
     WHERE c.owner_id = v_owner_id
+      AND e.doctor_id IS NULL
       AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
       AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month');
 
@@ -202,16 +249,14 @@ BEGIN
   IF p_doctor_id IS NOT NULL THEN
     SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_curr_month_rev
     FROM invoices inv
-    JOIN appointments a ON a.id = inv.source_id
-    WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
-      AND a.doctor_id = p_doctor_id
+    WHERE (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+      AND inv.doctor_id = p_doctor_id
       AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now());
 
     SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_prev_month_rev
     FROM invoices inv
-    JOIN appointments a ON a.id = inv.source_id
-    WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
-      AND a.doctor_id = p_doctor_id
+    WHERE (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+      AND inv.doctor_id = p_doctor_id
       AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month');
   ELSE
     SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_curr_month_rev
@@ -258,7 +303,7 @@ BEGIN
     FROM appointments a
     JOIN clinics c ON c.id = a.clinic_id
     WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
-      AND DATE_TRUNC('month', a.created_at) = DATE_TRUNC('month', now())
+      AND SUBSTRING(COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) FROM 1 FOR 7) = TO_CHAR(now(), 'YYYY-MM')
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
     GROUP BY 1
@@ -273,9 +318,11 @@ BEGIN
       END as week_num,
       SUM(inv.paid_amount)::double precision as col
     FROM invoices inv
-    LEFT JOIN appointments a ON a.id = inv.source_id
     LEFT JOIN clinics c ON c.id = inv.clinic_id
-    WHERE (p_doctor_id IS NOT NULL AND a.doctor_id = p_doctor_id OR (p_doctor_id IS NULL AND c.owner_id = v_owner_id))
+    WHERE (
+      (p_doctor_id IS NOT NULL AND inv.doctor_id = p_doctor_id)
+      OR (p_doctor_id IS NULL AND c.owner_id = v_owner_id)
+    )
       AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now())
       AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
     GROUP BY 1
@@ -290,9 +337,11 @@ BEGIN
       END as week_num,
       SUM(e.amount)::double precision as exp
     FROM expenses e
-    JOIN clinics c ON c.id = e.clinic_id
-    WHERE p_doctor_id IS NULL 
-      AND c.owner_id = v_owner_id
+    LEFT JOIN clinics c ON c.id = e.clinic_id
+    WHERE (
+      (p_doctor_id IS NOT NULL AND e.doctor_id = p_doctor_id)
+      OR (p_doctor_id IS NULL AND e.doctor_id IS NULL AND c.owner_id = v_owner_id)
+    )
       AND DATE_TRUNC('month', e.created_at) = DATE_TRUNC('month', now())
       AND (p_clinic_id IS NULL OR e.clinic_id = p_clinic_id)
     GROUP BY 1
@@ -302,7 +351,7 @@ BEGIN
     'total_revenue', v_total_revenue,
     'collected_amount', v_collected,
     'total_expenses', v_total_expenses,
-    'net_profit', v_total_revenue - v_total_expenses,
+    'net_profit', v_collected - v_total_expenses,
     'pending_amount', v_pending,
     'revenue_change', v_revenue_change,
     'expenses_change', v_expenses_change,
@@ -351,17 +400,17 @@ BEGIN
     COUNT(*),
     COUNT(*) FILTER (WHERE a.status IN ('confirmed', 'done', 'in_progress')),
     COUNT(*) FILTER (WHERE a.status = 'cancelled'),
-    COUNT(*) FILTER (WHERE a.status = 'scheduled' AND a.date::date < CURRENT_DATE),
+    COUNT(*) FILTER (WHERE a.status IN ('scheduled', 'confirmed') AND COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) < TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')),
     COUNT(*) FILTER (WHERE a.is_urgent = true),
-    COALESCE(AVG(EXTRACT(EPOCH FROM (a.called_at - a.arrived_at)) / 60) FILTER (WHERE a.arrived_at IS NOT NULL AND a.called_at IS NOT NULL), 0)::int
+    COALESCE(ROUND(AVG(EXTRACT(EPOCH FROM (a.called_at::timestamptz - a.arrived_at::timestamptz)) / 60) FILTER (WHERE a.arrived_at IS NOT NULL AND a.called_at IS NOT NULL AND a.called_at::timestamptz >= a.arrived_at::timestamptz)), 0)::int
   INTO v_total, v_completed, v_cancelled, v_no_show, v_urgent, v_avg_wait_time
   FROM appointments a
   JOIN clinics c ON c.id = a.clinic_id
   WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
     AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
     AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
-    AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-    AND (p_end_date IS NULL OR a.created_at <= p_end_date);
+    AND (p_start_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) >= TO_CHAR(p_start_date, 'YYYY-MM-DD'))
+    AND (p_end_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) <= TO_CHAR(p_end_date, 'YYYY-MM-DD'));
 
   IF v_total > 0 THEN
     v_attendance_rate := ROUND(((v_completed::double precision / v_total::double precision) * 100)::numeric, 2);
@@ -377,34 +426,38 @@ BEGIN
     WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
-      AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-      AND (p_end_date IS NULL OR a.created_at <= p_end_date)
+      AND (p_start_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) >= TO_CHAR(p_start_date, 'YYYY-MM-DD'))
+      AND (p_end_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) <= TO_CHAR(p_end_date, 'YYYY-MM-DD'))
     GROUP BY a.status
   ) sb;
 
   SELECT COALESCE(jsonb_agg(ph), '[]'::jsonb) INTO v_peak_hours
   FROM (
-    SELECT EXTRACT(HOUR FROM a.created_at)::int as hour, COUNT(*)::int as count
+    SELECT 
+      EXTRACT(HOUR FROM a.created_at)::int as hour, 
+      COUNT(*)::int as count
     FROM appointments a
     JOIN clinics c ON c.id = a.clinic_id
     WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
-      AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-      AND (p_end_date IS NULL OR a.created_at <= p_end_date)
+      AND (p_start_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) >= TO_CHAR(p_start_date, 'YYYY-MM-DD'))
+      AND (p_end_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) <= TO_CHAR(p_end_date, 'YYYY-MM-DD'))
     GROUP BY 1 ORDER BY count DESC LIMIT 5
   ) ph;
 
   SELECT COALESCE(jsonb_agg(pd), '[]'::jsonb) INTO v_peak_days
   FROM (
-    SELECT TO_CHAR(a.created_at, 'Day') as day, COUNT(*)::int as count
+    SELECT 
+      TO_CHAR(a.created_at, 'Day') as day, 
+      COUNT(*)::int as count
     FROM appointments a
     JOIN clinics c ON c.id = a.clinic_id
     WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
-      AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-      AND (p_end_date IS NULL OR a.created_at <= p_end_date)
+      AND (p_start_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) >= TO_CHAR(p_start_date, 'YYYY-MM-DD'))
+      AND (p_end_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) <= TO_CHAR(p_end_date, 'YYYY-MM-DD'))
     GROUP BY 1 ORDER BY count DESC
   ) pd;
 
@@ -421,8 +474,8 @@ BEGIN
     WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
-      AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-      AND (p_end_date IS NULL OR a.created_at <= p_end_date)
+      AND (p_start_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) >= TO_CHAR(p_start_date, 'YYYY-MM-DD'))
+      AND (p_end_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) <= TO_CHAR(p_end_date, 'YYYY-MM-DD'))
     GROUP BY COALESCE(at.name, 'كشف عادي')
   ) bt;
 
@@ -503,8 +556,8 @@ BEGIN
     WHERE (p_doctor_id IS NOT NULL OR c.owner_id = v_owner_id)
       AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
       AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
-      AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-      AND (p_end_date IS NULL OR a.created_at <= p_end_date)
+      AND (p_start_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) >= TO_CHAR(p_start_date, 'YYYY-MM-DD'))
+      AND (p_end_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) <= TO_CHAR(p_end_date, 'YYYY-MM-DD'))
     GROUP BY a.patient_id
   ) appt_stats;
 
@@ -518,9 +571,8 @@ BEGIN
     IF p_doctor_id IS NOT NULL THEN
       SELECT COALESCE(ROUND((SUM(inv.paid_amount) / v_total::double precision)::numeric, 2), 0.0) INTO v_avg_revenue
       FROM invoices inv
-      JOIN appointments a ON a.id = inv.source_id
-      WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
-        AND a.doctor_id = p_doctor_id
+      WHERE (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+        AND inv.doctor_id = p_doctor_id
         AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
         AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
     ELSE
@@ -563,10 +615,10 @@ BEGIN
     FROM (
       SELECT 
         CASE 
-          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) <= 18 THEN '0-18'
-          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 19 AND 35 THEN '19-35'
-          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 36 AND 50 THEN '36-50'
-          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 51 AND 65 THEN '51-65'
+          WHEN (EXTRACT(YEAR FROM now()) - COALESCE(NULLIF(SUBSTRING(pat.date_of_birth::text FROM 1 FOR 4), '')::int, EXTRACT(YEAR FROM now())::int)) <= 18 THEN '0-18'
+          WHEN (EXTRACT(YEAR FROM now()) - COALESCE(NULLIF(SUBSTRING(pat.date_of_birth::text FROM 1 FOR 4), '')::int, EXTRACT(YEAR FROM now())::int)) BETWEEN 19 AND 35 THEN '19-35'
+          WHEN (EXTRACT(YEAR FROM now()) - COALESCE(NULLIF(SUBSTRING(pat.date_of_birth::text FROM 1 FOR 4), '')::int, EXTRACT(YEAR FROM now())::int)) BETWEEN 36 AND 50 THEN '36-50'
+          WHEN (EXTRACT(YEAR FROM now()) - COALESCE(NULLIF(SUBSTRING(pat.date_of_birth::text FROM 1 FOR 4), '')::int, EXTRACT(YEAR FROM now())::int)) BETWEEN 51 AND 65 THEN '51-65'
           ELSE '65+'
         END as age_group,
         COUNT(DISTINCT pat.id)::int as count
@@ -574,7 +626,7 @@ BEGIN
       JOIN appointments a ON a.patient_id = pat.id
       WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
         AND a.doctor_id = p_doctor_id
-        AND pat.date_of_birth IS NOT NULL
+        AND pat.date_of_birth IS NOT NULL AND TRIM(pat.date_of_birth::text) != ''
       GROUP BY 1
     ) a_grp;
   ELSE
@@ -582,10 +634,10 @@ BEGIN
     FROM (
       SELECT 
         CASE 
-          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) <= 18 THEN '0-18'
-          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 19 AND 35 THEN '19-35'
-          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 36 AND 50 THEN '36-50'
-          WHEN (EXTRACT(YEAR FROM now()) - EXTRACT(YEAR FROM pat.date_of_birth::date)) BETWEEN 51 AND 65 THEN '51-65'
+          WHEN (EXTRACT(YEAR FROM now()) - COALESCE(NULLIF(SUBSTRING(pat.date_of_birth::text FROM 1 FOR 4), '')::int, EXTRACT(YEAR FROM now())::int)) <= 18 THEN '0-18'
+          WHEN (EXTRACT(YEAR FROM now()) - COALESCE(NULLIF(SUBSTRING(pat.date_of_birth::text FROM 1 FOR 4), '')::int, EXTRACT(YEAR FROM now())::int)) BETWEEN 19 AND 35 THEN '19-35'
+          WHEN (EXTRACT(YEAR FROM now()) - COALESCE(NULLIF(SUBSTRING(pat.date_of_birth::text FROM 1 FOR 4), '')::int, EXTRACT(YEAR FROM now())::int)) BETWEEN 36 AND 50 THEN '36-50'
+          WHEN (EXTRACT(YEAR FROM now()) - COALESCE(NULLIF(SUBSTRING(pat.date_of_birth::text FROM 1 FOR 4), '')::int, EXTRACT(YEAR FROM now())::int)) BETWEEN 51 AND 65 THEN '51-65'
           ELSE '65+'
         END as age_group,
         COUNT(*)::int as count
@@ -593,7 +645,7 @@ BEGIN
       JOIN clinics c ON c.id = pat.clinic_id
       WHERE c.owner_id = v_owner_id
         AND (p_clinic_id IS NULL OR pat.clinic_id = p_clinic_id)
-        AND pat.date_of_birth IS NOT NULL
+        AND pat.date_of_birth IS NOT NULL AND TRIM(pat.date_of_birth::text) != ''
       GROUP BY 1
     ) a_grp;
   END IF;
@@ -655,29 +707,30 @@ BEGIN
     RAISE EXCEPTION 'FEATURE_NOT_ALLOWED: doctors_performance_reports' USING ERRCODE = '40301';
   END IF;
 
-  SELECT COALESCE(SUM(COALESCE(inv.paid_amount, a.price, 0.0)), 0.0) INTO v_total_revenue
-  FROM appointments a
-  JOIN clinics c ON c.id = a.clinic_id
-  LEFT JOIN invoices inv ON inv.source_id = a.id
+  SELECT COALESCE(SUM(inv.paid_amount), 0.0) INTO v_total_revenue
+  FROM invoices inv
+  JOIN clinics c ON c.id = inv.clinic_id
   WHERE c.owner_id = v_owner_id
-    AND a.status != 'cancelled'
-    AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
-    AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-    AND (p_end_date IS NULL OR a.created_at <= p_end_date);
+    AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+    AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
+    AND (p_end_date IS NULL OR inv.created_at <= p_end_date);
 
   SELECT COALESCE(jsonb_agg(doc_item), '[]'::jsonb) INTO v_result
   FROM (
     SELECT 
       u.id as doctor_id,
       COALESCE(u.name, 'طبيب غير معروف') as doctor_name,
-      COUNT(DISTINCT a.id)::int as visit_count,
-      COALESCE(SUM(COALESCE(inv.paid_amount, a.price, 0.0)), 0.0)::double precision as revenue,
+      COALESCE(doc_appts.visit_count, 0)::int as visit_count,
+      COALESCE(doc_inv.revenue, 0.0)::double precision as revenue,
       CASE 
         WHEN v_total_revenue > 0 
-        THEN ROUND(((COALESCE(SUM(COALESCE(inv.paid_amount, a.price, 0.0)), 0.0) / v_total_revenue) * 100)::numeric, 0)::int 
+        THEN ROUND(((COALESCE(doc_inv.revenue, 0.0) / v_total_revenue) * 100)::numeric, 0)::int 
         ELSE 0 
       END as rating,
-      CASE WHEN COALESCE(SUM(COALESCE(inv.paid_amount, a.price, 0.0)), 0.0) > 0 THEN 'up' ELSE 'stable' END as trend,
+      CASE 
+        WHEN COALESCE(doc_curr.curr_rev, 0.0) >= COALESCE(doc_prev.prev_rev, 0.0) THEN 'up' 
+        ELSE 'down' 
+      END as trend,
       u.image_url as avatar_url
     FROM (
       SELECT DISTINCT cs.user_id 
@@ -688,13 +741,53 @@ BEGIN
         AND (p_clinic_id IS NULL OR cs.clinic_id = p_clinic_id)
     ) docs
     JOIN users u ON u.id = docs.user_id
-    LEFT JOIN appointments a ON a.doctor_id = u.id 
-      AND a.status != 'cancelled'
-      AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
-      AND (p_start_date IS NULL OR a.created_at >= p_start_date)
-      AND (p_end_date IS NULL OR a.created_at <= p_end_date)
-    LEFT JOIN invoices inv ON inv.source_id = a.id
-    GROUP BY u.id, u.name, u.image_url
+    LEFT JOIN (
+      SELECT 
+        a.doctor_id,
+        COUNT(a.id) as visit_count
+      FROM appointments a
+      JOIN clinics c ON c.id = a.clinic_id
+      WHERE c.owner_id = v_owner_id
+        AND a.status != 'cancelled'
+        AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+        AND (p_start_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) >= TO_CHAR(p_start_date, 'YYYY-MM-DD'))
+        AND (p_end_date IS NULL OR COALESCE(NULLIF(a.date::text, ''), TO_CHAR(a.created_at, 'YYYY-MM-DD')) <= TO_CHAR(p_end_date, 'YYYY-MM-DD'))
+      GROUP BY a.doctor_id
+    ) doc_appts ON doc_appts.doctor_id = u.id
+    LEFT JOIN (
+      SELECT 
+        inv.doctor_id,
+        SUM(inv.paid_amount) as revenue
+      FROM invoices inv
+      JOIN clinics c ON c.id = inv.clinic_id
+      WHERE c.owner_id = v_owner_id
+        AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+        AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
+        AND (p_end_date IS NULL OR inv.created_at <= p_end_date)
+      GROUP BY inv.doctor_id
+    ) doc_inv ON doc_inv.doctor_id = u.id
+    LEFT JOIN (
+      SELECT 
+        inv.doctor_id,
+        SUM(inv.paid_amount) as curr_rev
+      FROM invoices inv
+      JOIN clinics c ON c.id = inv.clinic_id
+      WHERE c.owner_id = v_owner_id
+        AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+        AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now())
+      GROUP BY inv.doctor_id
+    ) doc_curr ON doc_curr.doctor_id = u.id
+    LEFT JOIN (
+      SELECT 
+        inv.doctor_id,
+        SUM(inv.paid_amount) as prev_rev
+      FROM invoices inv
+      JOIN clinics c ON c.id = inv.clinic_id
+      WHERE c.owner_id = v_owner_id
+        AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+        AND DATE_TRUNC('month', inv.created_at) = DATE_TRUNC('month', now() - INTERVAL '1 month')
+      GROUP BY inv.doctor_id
+    ) doc_prev ON doc_prev.doctor_id = u.id
     ORDER BY revenue DESC
   ) doc_item;
 

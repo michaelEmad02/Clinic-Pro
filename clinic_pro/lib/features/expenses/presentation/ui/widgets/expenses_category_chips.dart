@@ -1,14 +1,15 @@
 // ────────────────────────────────────────────────────────
-// فلاتر فئات المصروفات — الكل، إيجار، كهرباء، لوازم، إلخ
+// ExpensesCategoryChips — فلاتر فئات المصروفات
+// تدعم التمرير الأفقي وعرض فئات المصروفات ديناميكياً
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expense_category_entity.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/strings/app_strings.dart';
-import '../../../../../core/themes/app_colors.dart';
-import '../../manager/expenses_state.dart';
 
 class ExpensesCategoryChips extends StatelessWidget {
-  final List<ExpenseCategory> categories;
+  final List<ExpenseCategoryEntity> categories;
   final String? activeCategoryId;
   final ValueChanged<String?> onChanged;
 
@@ -27,13 +28,13 @@ class ExpensesCategoryChips extends StatelessWidget {
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsetsDirectional.only(start: 8),
+            padding: const EdgeInsetsDirectional.only(end: 8),
             child: ChoiceChip(
               label: Text(
                 AppStrings.all,
                 style: TextStyle(
                   fontFamily: 'Cairo',
-                  fontSize: 12,
+                  fontSize: 13,
                   color: activeCategoryId == null
                       ? context.primary
                       : context.textSecondary,
@@ -45,13 +46,13 @@ class ExpensesCategoryChips extends StatelessWidget {
               selected: activeCategoryId == null,
               onSelected: (_) => onChanged(null),
               selectedColor: context.primaryLightColor,
-              backgroundColor: context.surface,
+              backgroundColor: context.surfaceColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
                   color: activeCategoryId == null
                       ? context.primary
-                      : context.border,
+                      : context.borderColor,
                 ),
               ),
               showCheckmark: false,
@@ -61,23 +62,23 @@ class ExpensesCategoryChips extends StatelessWidget {
             final isSelected = activeCategoryId == cat.id;
 
             return Padding(
-              padding: const EdgeInsetsDirectional.only(start: 8),
+              padding: const EdgeInsetsDirectional.only(end: 8),
               child: ChoiceChip(
                 label: Text(cat.name),
                 selected: isSelected,
                 onSelected: (_) => onChanged(isSelected ? null : cat.id),
                 selectedColor: context.primaryLightColor,
-                backgroundColor: context.surface,
+                backgroundColor: context.surfaceColor,
                 labelStyle: TextStyle(
                   fontFamily: 'Cairo',
-                  fontSize: 12,
+                  fontSize: 13,
                   color: isSelected ? context.primary : context.textSecondary,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: isSelected ? context.primary : context.border,
+                    color: isSelected ? context.primary : context.borderColor,
                   ),
                 ),
                 showCheckmark: false,

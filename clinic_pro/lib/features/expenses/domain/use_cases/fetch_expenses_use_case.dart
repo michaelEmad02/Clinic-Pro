@@ -1,15 +1,29 @@
+// ────────────────────────────────────────────────────────
+// FetchExpensesUseCase — حالة استخدام جلب المصروفات
+// تدعم جلب مصاريف العيادة العامة أو مصاريف طبيب محدد
+// ────────────────────────────────────────────────────────
+
 import 'package:clinic_pro/core/error/failures.dart';
+import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
 import 'package:clinic_pro/features/expenses/domain/repositories/expenses_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 
-@injectable
+@lazySingleton
 class FetchExpensesUseCase {
-  final ExpensesRepository expensesRepository;
+  final IExpensesRepository _repository;
 
-  FetchExpensesUseCase({required this.expensesRepository});
+  FetchExpensesUseCase(this._repository);
 
-  Future<Either<Failure, void>> call(String clinicId) {
-    return expensesRepository.loadExpenses(clinicId);
+  Future<Either<Failure, List<ExpensesEntity>>> call({
+    required String clinicId,
+    String? doctorId,
+    bool onlyClinicExpenses = false,
+  }) {
+    return _repository.getExpenses(
+      clinicId: clinicId,
+      doctorId: doctorId,
+      onlyClinicExpenses: onlyClinicExpenses,
+    );
   }
 }

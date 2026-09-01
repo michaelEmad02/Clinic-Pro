@@ -139,6 +139,12 @@ class DoctorSettingsScreen extends StatelessWidget {
       child: Column(
         children: [
           NavSettingsItem(
+            icon: Icons.receipt_long_outlined,
+            label: AppStrings.expenses,
+            onTap: () => context.push(RouteConstants.expenses),
+          ),
+          Divider(height: 1, thickness: 0.5, color: context.border),
+          NavSettingsItem(
             icon: Icons.medication_liquid_outlined,
             label: AppStrings.allPrescriptions,
             subLabel: AppStrings.allPrescriptionsSubtitle,

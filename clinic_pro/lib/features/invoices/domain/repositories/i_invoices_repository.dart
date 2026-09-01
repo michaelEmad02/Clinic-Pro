@@ -8,13 +8,14 @@ import 'package:clinic_pro/features/invoices/domain/entities/unpaid_appointment_
 import 'package:dartz/dartz.dart';
 
 abstract class IInvoicesRepository {
-  /// جلب جميع الفواتير لعيادة معينة
-  Future<Either<Failure, List<InvoiceEntity>>> getInvoices(String clinicId);
+  /// جلب جميع الفواتير لعيادة معينة (مع فلترة الطبيب إن وُجد)
+  Future<Either<Failure, List<InvoiceEntity>>> getInvoices(String clinicId, {String? doctorId});
 
   /// إنشاء فاتورة جديدة
-  Future<Either<Failure, Unit>> createInvoice({
+  Future<Either<Failure, InvoiceEntity>> createInvoice({
     required String clinicId,
     required String patientId,
+    String? doctorId,
     required String sourceId,
     required double totalAmount,
     required double paidAmount,

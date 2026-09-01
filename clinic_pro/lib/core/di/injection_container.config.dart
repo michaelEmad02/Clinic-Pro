@@ -194,8 +194,6 @@ import '../../features/expenses/domain/use_cases/fetch_expenses_use_case.dart'
     as _i536;
 import '../../features/expenses/presentation/manager/expenses_cubit.dart'
     as _i560;
-import '../../features/expenses/presentation/manager/expenses_repository.dart'
-    as _i490;
 import '../../features/invoices/data/data_sources/invoices_remote_data_source.dart'
     as _i446;
 import '../../features/invoices/data/repositories/invoices_repository_impl.dart'
@@ -479,8 +477,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i809.INetworkInfo>(() => _i836.NetworkInfoImpl());
     gh.lazySingleton<_i581.IPrescriptionPdfService>(
         () => _i926.PrescriptionPdfServiceImpl());
-    gh.lazySingleton<_i321.ExpensesRepository>(
-        () => _i936.ExpensesRepoImplementation());
     gh.lazySingleton<_i819.ILocalDataService>(
         () => _i29.SharedPreferencesService(gh<_i460.SharedPreferences>()));
     gh.lazySingleton<_i662.IAuthServices>(
@@ -489,6 +485,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1019.SupabaseServices(supabase: gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i543.IOwnerReferralRemoteDataSource>(() =>
         _i543.OwnerReferralRemoteDataSourceImpl(gh<_i239.ICloudService>()));
+    gh.lazySingleton<_i219.IExpensesRemoteDataSource>(
+        () => _i219.ExpensesRemoteDataSourceImpl(gh<_i239.ICloudService>()));
+    gh.lazySingleton<_i321.IExpensesRepository>(() =>
+        _i936.ExpensesRepoImplementation(
+            gh<_i219.IExpensesRemoteDataSource>()));
     gh.lazySingleton<_i816.IPatientsRemoteDataSource>(
         () => _i472.PatientsRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i951.StaffRemoteDataSource>(
@@ -509,8 +510,6 @@ extension GetItInjectableX on _i174.GetIt {
         _i920.DoctorDashboardRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i246.IOwnerDashboardRemoteDataSource>(() =>
         _i386.OwnerDashboardRemoteDataSourceImpl(gh<_i239.ICloudService>()));
-    gh.factory<_i490.ExpensesRepository>(
-        () => _i490.ExpensesRepository(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i557.IStorageService>(
         () => _i815.SupabaseStorageService(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i446.IInvoicesRemoteDataSource>(
@@ -518,6 +517,16 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i170.ISecretaryDashboardRemoteDataSource>(() =>
         _i238.SecretaryDashboardRemoteDataSourceImpl(
             gh<_i239.ICloudService>()));
+    gh.lazySingleton<_i824.AddExpensesUseCase>(
+        () => _i824.AddExpensesUseCase(gh<_i321.IExpensesRepository>()));
+    gh.lazySingleton<_i1067.DeleteExpensesUseCase>(
+        () => _i1067.DeleteExpensesUseCase(gh<_i321.IExpensesRepository>()));
+    gh.lazySingleton<_i789.EditExpensesUseCase>(
+        () => _i789.EditExpensesUseCase(gh<_i321.IExpensesRepository>()));
+    gh.lazySingleton<_i770.FetchCategoriesUseCase>(
+        () => _i770.FetchCategoriesUseCase(gh<_i321.IExpensesRepository>()));
+    gh.lazySingleton<_i536.FetchExpensesUseCase>(
+        () => _i536.FetchExpensesUseCase(gh<_i321.IExpensesRepository>()));
     gh.lazySingleton<_i769.ICouponsRepository>(() =>
         _i471.CouponsRepositoryImpl(gh<_i124.ICouponsRemoteDataSource>()));
     gh.lazySingleton<_i25.IAuthRemoteDataSource>(
@@ -525,18 +534,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i239.ICloudService>(),
               gh<_i662.IAuthServices>(),
             ));
-    gh.factory<_i560.ExpensesCubit>(
-        () => _i560.ExpensesCubit(gh<_i490.ExpensesRepository>()));
-    gh.factory<_i824.AddExpensesUseCase>(() => _i824.AddExpensesUseCase(
-        expensesRepository: gh<_i321.ExpensesRepository>()));
-    gh.factory<_i1067.DeleteExpensesUseCase>(() => _i1067.DeleteExpensesUseCase(
-        expensesRepository: gh<_i321.ExpensesRepository>()));
-    gh.factory<_i789.EditExpensesUseCase>(() => _i789.EditExpensesUseCase(
-        expensesRepository: gh<_i321.ExpensesRepository>()));
-    gh.factory<_i770.FetchCategoriesUseCase>(() => _i770.FetchCategoriesUseCase(
-        expensesRepository: gh<_i321.ExpensesRepository>()));
-    gh.factory<_i536.FetchExpensesUseCase>(() => _i536.FetchExpensesUseCase(
-        expensesRepository: gh<_i321.ExpensesRepository>()));
     gh.lazySingleton<_i769.ISettingsLocalDataSource>(
         () => _i917.SettingsLocalDataSourceImpl(gh<_i819.ILocalDataService>()));
     gh.lazySingleton<_i937.IOwnerReferralRepository>(() =>
@@ -568,9 +565,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i12.GetAvailableCouponsUseCase(gh<_i769.ICouponsRepository>()));
     gh.lazySingleton<_i12.RedeemCouponUseCase>(
         () => _i12.RedeemCouponUseCase(gh<_i769.ICouponsRepository>()));
-    gh.lazySingleton<_i219.IClinicsRemoteDataSource>(() =>
-        _i219.ClinicsRemoteDataSource(
-            iCloudService: gh<_i239.ICloudService>()));
     gh.lazySingleton<_i107.IReportsRemoteDataSource>(
         () => _i478.ReportsRpcRemoteDataSourceImpl(
               gh<_i239.ICloudService>(),
@@ -626,6 +620,13 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i255.ISubscriptionsRepository>()));
     gh.lazySingleton<_i944.GetBillingHistoryUseCase>(() =>
         _i944.GetBillingHistoryUseCase(gh<_i255.ISubscriptionsRepository>()));
+    gh.factory<_i560.ExpensesCubit>(() => _i560.ExpensesCubit(
+          gh<_i536.FetchExpensesUseCase>(),
+          gh<_i770.FetchCategoriesUseCase>(),
+          gh<_i824.AddExpensesUseCase>(),
+          gh<_i789.EditExpensesUseCase>(),
+          gh<_i1067.DeleteExpensesUseCase>(),
+        ));
     gh.factory<_i1073.CancelInvitationUseCase>(() =>
         _i1073.CancelInvitationUseCase(
             staffRepository: gh<_i431.StaffRepository>()));

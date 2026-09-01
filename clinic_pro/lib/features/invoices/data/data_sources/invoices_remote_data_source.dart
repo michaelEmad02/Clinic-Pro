@@ -10,8 +10,8 @@ import 'package:clinic_pro/features/invoices/domain/entities/unpaid_appointment_
 import 'package:injectable/injectable.dart';
 
 abstract class IInvoicesRemoteDataSource {
-  Future<List<InvoiceModel>> getInvoices(String clinicId);
-  Future<void> createInvoice(InvoiceModel invoice);
+  Future<List<InvoiceModel>> getInvoices(String clinicId, {String? doctorId});
+  Future<InvoiceModel> createInvoice(InvoiceModel invoice);
   Future<void> updateInvoice(InvoiceModel invoice);
   Future<void> deleteInvoice(String id);
   Future<List<UnpaidAppointmentEntity>> getPatientUnpaidAppointments(
@@ -25,11 +25,18 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
   InvoicesRemoteDataSourceImpl(this._cloudService);
 
   @override
-  Future<List<InvoiceModel>> getInvoices(String clinicId) async {
-    final queryEq = clinicId.isNotEmpty ? {'clinic_id': clinicId} : null;
+  Future<List<InvoiceModel>> getInvoices(String clinicId, {String? doctorId}) async {
+    final Map<String, dynamic> queryEq = {};
+    if (clinicId.isNotEmpty) {
+      queryEq['clinic_id'] = clinicId;
+    }
+    if (doctorId != null && doctorId.isNotEmpty) {
+      queryEq['doctor_id'] = doctorId;
+    }
+
     final invoices = await _cloudService.select(
       table: SupabaseTables.invoices,
-      eq: queryEq,
+      eq: queryEq.isNotEmpty ? queryEq : null,
     );
 
     if (invoices.isEmpty) return [];
@@ -118,17 +125,51 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
   }
 
   @override
-  Future<void> createInvoice(InvoiceModel invoice) async {
+  Future<InvoiceModel> createInvoice(InvoiceModel invoice) async {
     final data = invoice.toJson();
     data.remove('id');
     data.remove('created_at');
     data.remove('patient_name');
     data.remove('appointment_type');
 
-    await _cloudService.insert(
+    // حل doctor_id تلقائياً من الموعد إذا لم يتم تمريره صراحة
+    if ((data['doctor_id'] == null || (data['doctor_id'] as String).isEmpty) &&
+        invoice.sourceId.isNotEmpty) {
+      try {
+        final apptRes = await _cloudService.select(
+          table: SupabaseTables.appointments,
+          eq: {'id': invoice.sourceId},
+        );
+        if (apptRes.isNotEmpty && apptRes.first['doctor_id'] != null) {
+          data['doctor_id'] = apptRes.first['doctor_id'];
+        }
+      } catch (_) {}
+    }
+
+    final inserted = await _cloudService.insert(
       table: SupabaseTables.invoices,
       data: data,
     );
+
+    // استخراج اسم المريض إن لم يكن موجوداً
+    String? patientName = invoice.patientName;
+    if (patientName == null || patientName.isEmpty) {
+      try {
+        final pRes = await _cloudService.select(
+          table: SupabaseTables.patients,
+          eq: {'id': invoice.patientId},
+        );
+        if (pRes.isNotEmpty) {
+          patientName = pRes.first['name'] as String?;
+        }
+      } catch (_) {}
+    }
+
+    return InvoiceModel.fromJson({
+      ...inserted,
+      'patient_name': patientName,
+      'appointment_type': invoice.appointmentTypeName,
+    });
   }
 
   @override
@@ -205,6 +246,7 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
           id: apptId,
           patientId: patientId,
           clinicId: appt['clinic_id'] as String? ?? '',
+          doctorId: appt['doctor_id'] as String?,
           appointmentTypeName: typeName,
           expectedPrice: expectedPrice,
           paidSoFar: paidSoFar,
