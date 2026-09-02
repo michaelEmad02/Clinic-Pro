@@ -153,11 +153,12 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
         AppConstants.activeClinicId;
     final currentUserId = authUser?.id ?? '';
     final isDoctor = authUser?.role == StaffRoles.doctor;
+    final isSecretary = authUser?.role == StaffRoles.secretary;
 
     String? assignedDoctorId;
     if (isDoctor) {
       assignedDoctorId = currentUserId;
-    } else {
+    } else if (isSecretary) {
       if (_targetType == 'doctor') {
         if (_selectedDoctorId == null || _selectedDoctorId!.isEmpty) {
           AppSnackbar.info(context, message: AppStrings.isArabic ? 'يرجى اختيار الطبيب' : 'Please select a doctor');
@@ -167,6 +168,8 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
       } else {
         assignedDoctorId = null;
       }
+    } else {
+      assignedDoctorId = null;
     }
 
     bool success = false;
@@ -203,7 +206,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
   @override
   Widget build(BuildContext context) {
     final authUser = context.watch<AuthCubit>().state.user;
-    final isDoctor = authUser?.role == StaffRoles.doctor;
+    final isSecretary = authUser?.role == StaffRoles.secretary;
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 24),
@@ -286,7 +289,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                       ),
                     ),
                   ),
-                  if (!isDoctor) ...[
+                  if (isSecretary) ...[
                     const SizedBox(height: 16),
                     _buildLabel(AppStrings.isArabic ? 'الجهة المتحملة للمصروف' : 'Responsible Party'),
                     const SizedBox(height: 6),
@@ -326,7 +329,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    AppStrings.isArabic ? 'العيادة (عام)' : 'Clinic (General)',
+                                    AppStrings.isArabic ? 'العيادة' : 'Clinic',
                                     style: AppTextStyles.bodyMedium(context).copyWith(
                                       fontWeight: _targetType == 'clinic'
                                           ? FontWeight.bold
@@ -379,7 +382,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    AppStrings.isArabic ? 'طبيب معين' : 'Specific Doctor',
+                                    AppStrings.isArabic ? 'الطبيب' : 'The Doctor',
                                     style: AppTextStyles.bodyMedium(context).copyWith(
                                       fontWeight: _targetType == 'doctor'
                                           ? FontWeight.bold

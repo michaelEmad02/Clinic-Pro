@@ -59,7 +59,7 @@ class ClinicCard extends StatelessWidget {
                   onDelete: onDelete,
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                   child: Divider(height: 1, thickness: 0.5, color: context.border),
                 ),
                 ClinicCardStats(clinic: clinic),

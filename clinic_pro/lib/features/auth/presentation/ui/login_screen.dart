@@ -7,6 +7,7 @@ import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/constants/staff_roles.dart';
+import '../../../settings/presentation/manager/settings_cubit.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
 import '../../../../core/utils/responsive_helper.dart';
@@ -24,10 +25,15 @@ class LoginScreen extends StatelessWidget {
     final isMobile = ResponsiveHelper.isMobile(context);
 
     return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        // عند نجاح تسجيل الدخول — التوجيه حسب الدور
+      listener: (context, state) async {
+        // عند نجاح تسجيل الدخول — تحميل إعدادات المستخدم الجديد (العيادات والطبيب النشط) أولاً ثم التوجيه
         if (state is AuthAuthenticated) {
           final role = state.user.role;
+          final userId = state.user.id;
+
+          await context.read<SettingsCubit>().loadSettings(role, userId);
+
+          if (!context.mounted) return;
 
           if (role == StaffRoles.owner) {
             if (state.user.isNewUser) {

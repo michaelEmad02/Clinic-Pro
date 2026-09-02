@@ -17,11 +17,13 @@ class FetchExpensesUseCase {
 
   Future<Either<Failure, List<ExpensesEntity>>> call({
     required String clinicId,
+    String? ownerId,
     String? doctorId,
     bool onlyClinicExpenses = false,
   }) {
     return _repository.getExpenses(
       clinicId: clinicId,
+      ownerId: ownerId,
       doctorId: doctorId,
       onlyClinicExpenses: onlyClinicExpenses,
     );

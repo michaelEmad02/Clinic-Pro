@@ -95,7 +95,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       value: _cubit,
       child: BlocListener<SettingsCubit, SettingsState>(
         listenWhen: (previous, current) =>
-            previous.clinicEntity?.id != current.clinicEntity?.id,
+            previous.clinicEntity?.id != current.clinicEntity?.id &&
+            current.clinicEntity?.id != null,
         listener: (context, settingsState) {
           if (settingsState.clinicEntity != null) {
             _clinicId = '';

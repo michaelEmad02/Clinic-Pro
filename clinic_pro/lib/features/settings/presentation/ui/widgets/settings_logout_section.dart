@@ -1,5 +1,6 @@
 
 import 'package:clinic_pro/core/constants/route_constants.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +19,10 @@ class SettingsLogoutSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (inline) {
       return InkWell(
-        onTap: () {context.read<AuthCubit>().logout();
-        context.go(RouteConstants.login);
+        onTap: () {
+          context.read<SettingsCubit>().reset();
+          context.read<AuthCubit>().logout();
+          context.go(RouteConstants.login);
         },
         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
         child: Padding(
@@ -47,8 +50,10 @@ class SettingsLogoutSection extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {context.read<AuthCubit>().logout();
-        context.go(RouteConstants.login);
+        onPressed: () {
+          context.read<SettingsCubit>().reset();
+          context.read<AuthCubit>().logout();
+          context.go(RouteConstants.login);
         },
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: context.dangerBg, width: 2),

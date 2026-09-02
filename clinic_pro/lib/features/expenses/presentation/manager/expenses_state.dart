@@ -35,7 +35,7 @@ class ExpensesLoaded extends ExpensesState {
 
   /// المصروفات بعد تطبيق فلترة التصنيف والجهة المتحملة (العيادة أو الطبيب الحالي)
   List<ExpensesEntity> get filteredExpenses {
-    return allExpenses.where((e) {
+    final expenses = allExpenses.where((e) {
       // 1. فلترة التصنيف
       if (activeCategoryId != null && activeCategoryId!.isNotEmpty) {
         if (e.categoryId != activeCategoryId) return false;
@@ -47,11 +47,14 @@ class ExpensesLoaded extends ExpensesState {
           return e.doctorId == currentDoctorId;
         }
         return e.isDoctorExpense;
-      } else {
-        // 'clinic'
+      } else if (activeTargetFilter == 'clinic') {
         return e.isClinicExpense;
       }
+
+      return true;
     }).toList();
+
+    return expenses;
   }
 
   /// إجمالي المبالغ للمصروفات المعروضة

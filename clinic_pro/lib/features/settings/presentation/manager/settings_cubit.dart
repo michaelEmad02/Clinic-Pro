@@ -65,10 +65,11 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   /// تحميل الإعدادات (العيادة، العيادات المتاحة، والاشتراك)
   Future<void> loadSettings(StaffRoles role, String userId) async {
+    // نحافظ على الحالة الحالية أثناء التحديث لمنع التفريغ المفاجئ للبيانات
     emit(state.copyWith(isLoading: true, error: null));
 
     try {
-      // 1. القراءة المبدئية من التخزين المحلي المشروطة بـ userId
+      // 2. القراءة المبدئية من التخزين المحلي المشروطة بـ userId المستخدم الحالي
       final localClinicId = await _localDataSource.getActiveClinicId(userId);
       final localDoctorId = await _localDataSource.getActiveDoctorId(userId);
 
@@ -294,8 +295,15 @@ class SettingsCubit extends Cubit<SettingsState> {
     );
   }
 
+  /// تصفير وإعادة ضبط جميع بيانات الإعدادات والـ active IDs عند تسجيل الخروج أو تبديل الحساب
+  void reset() {
+    AppConstants.activeClinicId = '';
+    AppConstants.activeDoctorId = '';
+    emit(const SettingsState());
+  }
+
   /// تسجيل الخروج
   void logout() {
-    emit(state.copyWith(isLoading: false));
+    reset();
   }
 }

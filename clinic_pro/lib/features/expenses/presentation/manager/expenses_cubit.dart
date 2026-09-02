@@ -36,6 +36,7 @@ class ExpensesCubit extends Cubit<ExpensesState> {
   /// - للطبيب: يتم تمرير [doctorId] = معرف الطبيب لعرض مصاريفه الشخصية فقط.
   Future<void> loadExpenses({
     required String clinicId,
+    String? ownerId,
     String? doctorId,
     bool onlyClinicExpenses = false,
   }) async {
@@ -52,6 +53,7 @@ class ExpensesCubit extends Cubit<ExpensesState> {
     // 2. جلب المصروفات
     final expensesResult = await _fetchExpensesUseCase(
       clinicId: clinicId,
+      ownerId: ownerId,
       doctorId: doctorId,
       onlyClinicExpenses: onlyClinicExpenses,
     );
@@ -62,6 +64,8 @@ class ExpensesCubit extends Cubit<ExpensesState> {
         allExpenses: expenses,
         categories: categories,
         currentDoctorId: doctorId,
+        activeTargetFilter:
+            (doctorId != null && doctorId.isNotEmpty) ? 'doctor' : 'clinic',
       )),
     );
   }

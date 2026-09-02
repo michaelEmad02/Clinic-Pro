@@ -32,12 +32,14 @@ class ExpensesRepoImplementation implements IExpensesRepository {
   @override
   Future<Either<Failure, List<ExpensesEntity>>> getExpenses({
     required String clinicId,
+    String? ownerId,
     String? doctorId,
     bool onlyClinicExpenses = false,
   }) async {
     try {
       final expenses = await _remoteDataSource.fetchExpenses(
         clinicId: clinicId,
+        ownerId: ownerId,
         doctorId: doctorId,
         onlyClinicExpenses: onlyClinicExpenses,
       );

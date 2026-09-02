@@ -110,7 +110,7 @@ class ExpenseListItem extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.person_outline,
-                                size: 12, color: context.textHint),
+                                size: 12, color: context.primary),
                             const SizedBox(width: 2),
                             Flexible(
                               child: Text(
@@ -118,8 +118,8 @@ class ExpenseListItem extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTextStyles.caption(context).copyWith(
-                                  color: context.textHint,
-                                  fontSize: 10.5,
+                                  color: context.primary,
+                                  fontSize: 11.5,
                                 ),
                               ),
                             ),

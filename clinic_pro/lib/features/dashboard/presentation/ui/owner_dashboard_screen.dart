@@ -58,7 +58,8 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
       ],
       child: BlocListener<SettingsCubit, SettingsState>(
         listenWhen: (previous, current) =>
-            previous.clinicEntity?.id != current.clinicEntity?.id,
+            previous.clinicEntity?.id != current.clinicEntity?.id &&
+            current.clinicEntity?.id != null,
         listener: (context, settingsState) {
           if (settingsState.clinicEntity != null && ownerId.isNotEmpty) {
             _refreshAll(context, ownerId, forceRefresh: true);

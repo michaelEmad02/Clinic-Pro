@@ -14,6 +14,7 @@ abstract class IExpensesRepository {
   /// - إذا كانت [onlyClinicExpenses] = true: يجلب مصروفات العيادة العامة فقط (doctor_id == null).
   Future<Either<Failure, List<ExpensesEntity>>> getExpenses({
     required String clinicId,
+    String? ownerId,
     String? doctorId,
     bool onlyClinicExpenses = false,
   });

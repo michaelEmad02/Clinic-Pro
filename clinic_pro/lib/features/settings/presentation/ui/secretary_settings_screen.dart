@@ -46,7 +46,7 @@ class SecretarySettingsScreen extends StatelessWidget {
       ),
       body: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, state) {
-          if (state.isLoading) {
+          if (state.isLoading && state.clinicEntity == null) {
             return const Center(child: AppLoadingWidget());
           }
           if (state.error != null) {

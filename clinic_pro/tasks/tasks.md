@@ -37,15 +37,13 @@
 
 ## improvements 
  - improve search (easy_debounce)
- - errors handling and the messages 
+ - [x] errors handling and the messages 
  - [x] snackbar showing
  - [x] network error page
  - [x] loading widget
- - language
- - themes
+ - [x] language
+ - [x] themes
  - local notifications
- - حاله ضغط الطبيب و السكرتير في نفس الوقت علي استدعاء التالي لنفس المريض , او واحد قبل التاني قبل ما يسمع عنده
- 
 
 ## reports
  - [x] عمل refresh indecator in reports
@@ -63,14 +61,12 @@
 - [x] about us 
 
 ## expenses
-  - عمل مصاريف خاصه بالطبيب وليس العياده 
+  - [x] عمل مصاريف خاصه بالطبيب وليس العياده 
 
 ## error
 - [x] datetime  timezone error
 - pause exception () 
 
-## invoices 
-- [] add filters
 
 ## features
 - [x] auth

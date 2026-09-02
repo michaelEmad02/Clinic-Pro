@@ -34,20 +34,26 @@ class ExpensesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsState = context.read<SettingsCubit>().state;
-    final clinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
     final authUser = context.read<AuthCubit>().state.user;
     final isDoctor = authUser?.role == StaffRoles.doctor;
+    final isOwner = authUser?.role == StaffRoles.owner;
+    final clinicId = isOwner
+        ? ''
+        : (settingsState.clinicEntity?.id ?? AppConstants.activeClinicId);
     final activeDoctorId = isDoctor
         ? authUser?.id
-        : (settingsState.currentDoctorId ??
-            (AppConstants.activeDoctorId.isNotEmpty
-                ? AppConstants.activeDoctorId
-                : null));
+        : (isOwner
+            ? null
+            : (settingsState.currentDoctorId ??
+                (AppConstants.activeDoctorId.isNotEmpty
+                    ? AppConstants.activeDoctorId
+                    : null)));
 
     return BlocProvider(
       create: (_) => sl<ExpensesCubit>()
         ..loadExpenses(
           clinicId: clinicId,
+          ownerId: (isOwner) ? authUser?.id : null,
           doctorId: activeDoctorId,
           onlyClinicExpenses: false,
         ),
@@ -62,15 +68,21 @@ class _ExpensesBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsState = context.watch<SettingsCubit>().state;
-    final clinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
     final authUser = context.watch<AuthCubit>().state.user;
     final isDoctor = authUser?.role == StaffRoles.doctor;
+    final isOwner = authUser?.role == StaffRoles.owner;
+    final isSecretary = authUser?.role == StaffRoles.secretary;
+    final clinicId = isOwner
+        ? ''
+        : (settingsState.clinicEntity?.id ?? AppConstants.activeClinicId);
     final activeDoctorId = isDoctor
         ? authUser?.id
-        : (settingsState.currentDoctorId ??
-            (AppConstants.activeDoctorId.isNotEmpty
-                ? AppConstants.activeDoctorId
-                : null));
+        : (isOwner
+            ? null
+            : (settingsState.currentDoctorId ??
+                (AppConstants.activeDoctorId.isNotEmpty
+                    ? AppConstants.activeDoctorId
+                    : null)));
 
     return Scaffold(
       backgroundColor: context.backgroundColor,
@@ -106,6 +118,7 @@ class _ExpensesBody extends StatelessWidget {
               error: state.message,
               onRetry: () => context.read<ExpensesCubit>().loadExpenses(
                     clinicId: clinicId,
+                    ownerId: authUser?.id,
                     doctorId: activeDoctorId,
                     onlyClinicExpenses: false,
                   ),
@@ -117,6 +130,7 @@ class _ExpensesBody extends StatelessWidget {
               onRefresh: () async {
                 await context.read<ExpensesCubit>().loadExpenses(
                       clinicId: clinicId,
+                      ownerId: authUser?.id,
                       doctorId: activeDoctorId,
                       onlyClinicExpenses: false,
                     );
@@ -129,7 +143,7 @@ class _ExpensesBody extends StatelessWidget {
                   child: Column(
                     children: [
                       ExpensesTotalCard(state: state),
-                      if (!isDoctor) ...[
+                      if (isSecretary) ...[
                         const SizedBox(height: 12),
                         ExpensesTargetChips(
                           activeTargetFilter: state.activeTargetFilter,
@@ -154,8 +168,7 @@ class _ExpensesBody extends StatelessWidget {
                           children: [
                             Text(
                               AppStrings.expenses,
-                              style:
-                                  AppTextStyles.bodyMedium(context).copyWith(
+                              style: AppTextStyles.bodyMedium(context).copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: context.textPrimary,
                               ),
@@ -248,7 +261,8 @@ class _ExpensesBody extends StatelessWidget {
               final success =
                   await context.read<ExpensesCubit>().deleteExpense(expense.id);
               if (success && context.mounted) {
-                AppSnackbar.success(context, message: AppStrings.expenseDeleted);
+                AppSnackbar.success(context,
+                    message: AppStrings.expenseDeleted);
               }
             },
             child: Text(

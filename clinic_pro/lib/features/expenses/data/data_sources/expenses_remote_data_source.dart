@@ -14,6 +14,7 @@ abstract class IExpensesRemoteDataSource {
   Future<List<ExpenseCategoryModel>> fetchCategories();
   Future<List<ExpenseModel>> fetchExpenses({
     required String clinicId,
+    String? ownerId,
     String? doctorId,
     bool onlyClinicExpenses = false,
   });
@@ -35,32 +36,64 @@ class ExpensesRemoteDataSourceImpl implements IExpensesRemoteDataSource {
       table: SupabaseTables.expenseCategories,
     );
 
-    return data
-        .map((json) => ExpenseCategoryModel.fromJson(json))
-        .toList();
+    return data.map((json) => ExpenseCategoryModel.fromJson(json)).toList();
   }
 
   @override
   Future<List<ExpenseModel>> fetchExpenses({
     required String clinicId,
+    String? ownerId,
     String? doctorId,
     bool onlyClinicExpenses = false,
   }) async {
-    // 1. بناء شروط الاستعلام بحسب الدور (عيادة أم طبيب)
-    final Map<String, dynamic> queryFilters = {};
-    if (clinicId.isNotEmpty) {
-      queryFilters['clinic_id'] = clinicId;
-    }
-    if (doctorId != null && doctorId.isNotEmpty) {
-      queryFilters['doctor_id'] = doctorId;
-    }
+    List<Map<String, dynamic>> rawExpenses = [];
 
-    // 2. جلب المصروفات مع الـ JOIN المباشر لجدولي expense_categories و users في استعلام واحد
-    final rawExpenses = await _cloudService.select(
-      table: SupabaseTables.expenses,
-      columns: '*, expense_categories(id, name), users!created_by(id, name)',
-      eq: queryFilters.isNotEmpty ? queryFilters : null,
-    );
+    if (clinicId.trim().isNotEmpty &&
+        (ownerId == null || ownerId.trim().isEmpty)) {
+      // 1. إذا تم تحديد عيادة، نجلّب مصاريف هذه العيادة المحددة فقط
+      final Map<String, dynamic> queryFilters = {
+        'clinic_id': clinicId,
+      };
+      if (doctorId != null && doctorId.isNotEmpty) {
+        queryFilters['doctor_id'] = doctorId;
+      }
+
+      rawExpenses = await _cloudService.select(
+        table: SupabaseTables.expenses,
+        columns: '*, expense_categories(id, name), users!created_by(id, name)',
+        eq: queryFilters,
+      );
+    } else if (ownerId != null && ownerId.trim().isNotEmpty) {
+      // 2. إذا لم يتم تحديد عيادة ولكن متوفر ownerId، نجلّب العيادات المملوكة للمالك فقط
+      final ownedClinics = await _cloudService.select(
+        table: SupabaseTables.clinics,
+        eq: {'owner_id': ownerId},
+      );
+
+      final List<String> ownerClinicIds = ownedClinics
+          .map((c) => c['id'] as String? ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+
+      if (ownerClinicIds.isEmpty) {
+        return [];
+      }
+
+      final Map<String, dynamic> eqFilters = {};
+      if (doctorId != null && doctorId.isNotEmpty) {
+        eqFilters['doctor_id'] = doctorId;
+      }
+
+      rawExpenses = await _cloudService.select(
+        table: SupabaseTables.expenses,
+        columns: '*, expense_categories(id, name), users!created_by(id, name)',
+        eq: eqFilters.isNotEmpty ? eqFilters : null,
+        filterIn: {'clinic_id': ownerClinicIds},
+      );
+    } else {
+      // 3. إذا لم تكن هناك عيادة ولا ownerId، نرجع قائمة فارغة فوراً لعزل البيانات بالكامل
+      return [];
+    }
 
     // 3. فلترة مصاريف العيادة العامة (حيث doctor_id == null) إن طُلب ذلك للمالك
     var filteredList = rawExpenses;
@@ -72,9 +105,8 @@ class ExpensesRemoteDataSourceImpl implements IExpensesRemoteDataSource {
     }
 
     // 4. تحويل النتائج وترتيبها تنازلياً حسب تاريخ الإنشاء
-    final expenses = filteredList
-        .map((item) => ExpenseModel.fromJson(item))
-        .toList();
+    final expenses =
+        filteredList.map((item) => ExpenseModel.fromJson(item)).toList();
 
     expenses.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return expenses;

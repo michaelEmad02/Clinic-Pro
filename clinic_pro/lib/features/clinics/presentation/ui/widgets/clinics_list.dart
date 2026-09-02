@@ -45,10 +45,26 @@ class ClinicsList extends StatelessWidget {
               ? 3
               : (width >= 600 ? 2 : 1);
 
-          // ضبط الـ Aspect Ratio ليكون الكارت ملموماً وارتفاعه أنيقاً
-          final double childAspectRatio = crossAxisCount == 1
-              ? (width < 380 ? 2.3 : 2.7)
-              : (width >= 1100 ? 2.0 : 1.85);
+          if (crossAxisCount == 1) {
+            return ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: clinics.length,
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: AppConstants.spaceSm + 4),
+              itemBuilder: (context, index) {
+                final clinic = clinics[index];
+                return ClinicCard(
+                  clinic: clinic,
+                  onTap: () => onItemTap(clinic),
+                  onEdit: () => onItemEdit(clinic),
+                  onToggleActive: () => onItemToggleActive(clinic),
+                  onDelete: () => onItemDelete(clinic),
+                );
+              },
+            );
+          }
+
+          final double childAspectRatio = width >= 1100 ? 1.90 : 1.85;
 
           return GridView.builder(
             physics: const AlwaysScrollableScrollPhysics(),

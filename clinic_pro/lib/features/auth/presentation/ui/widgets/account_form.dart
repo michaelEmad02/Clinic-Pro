@@ -322,69 +322,6 @@ class _AccountFormState extends State<AccountForm> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Referral Code Field (Optional)
-            Text(
-              '${AppStrings.yourReferralCode} ${AppStrings.optional}',
-              style: AppTextStyles.bodyMedium(context).copyWith(
-                fontWeight: FontWeight.w500,
-                color: context.textPrimary,
-              ),
-            ),
-            // const SizedBox(height: 8),
-            // Container(
-            //   height: 46,
-            //   decoration: BoxDecoration(
-            //     color: context.surfaceColor,
-            //     borderRadius: BorderRadius.circular(8),
-            //     border: Border.all(color: context.borderColor),
-            //   ),
-            //   child: TextFormField(
-            //     controller: _referralCodeController,
-            //     textCapitalization: TextCapitalization.characters,
-            //     style: AppTextStyles.bodyMedium(context).copyWith(
-            //       color: context.textPrimary,
-            //       fontWeight: FontWeight.w600,
-            //     ),
-            //     decoration: InputDecoration(
-            //       hintText: 'DOC-XXXXX',
-            //       hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-            //         color: context.textHint,
-            //       ),
-            //       prefixIcon: Icon(Icons.card_giftcard_outlined, color: context.primary, size: 20),
-            //       border: InputBorder.none,
-            //       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            //     ),
-            //   ),
-            // ),
-            const SizedBox(height: 16),
-
-            // Terms Checkbox
-            Row(
-              children: [
-                Checkbox(
-                  value: _agreedToTerms,
-                  onChanged: (val) {
-                    setState(() {
-                      _agreedToTerms = val ?? false;
-                    });
-                  },
-                  activeColor: context.primaryContainer,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4)),
-                ),
-                Expanded(
-                  child: Text(
-                    AppStrings.agreeToTerms,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: context.textSecondary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
             // Submit Button
             ElevatedButton(
               onPressed: _submit,

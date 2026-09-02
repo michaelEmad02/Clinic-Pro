@@ -101,9 +101,10 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
       value: _cubit,
       child: BlocListener<SettingsCubit, SettingsState>(
         listenWhen: (previous, current) =>
-            previous.clinicEntity?.id != current.clinicEntity?.id ||
-            previous.currentDoctorId != current.currentDoctorId,
+            (previous.clinicEntity?.id != current.clinicEntity?.id && current.clinicEntity?.id != null) ||
+            (previous.currentDoctorId != current.currentDoctorId && current.currentDoctorId != null),
         listener: (context, settingsState) {
+          if (settingsState.clinicEntity?.id == null) return;
           _clinicId = '';
           _doctorId = '';
           _tryLoadDashboard(

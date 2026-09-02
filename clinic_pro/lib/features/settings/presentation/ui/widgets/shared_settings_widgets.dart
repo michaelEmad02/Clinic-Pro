@@ -205,7 +205,6 @@ class SettingsFooter extends StatelessWidget {
             style: AppTextStyles.caption(context)
                 .copyWith(color: context.textHint),
           ),
-          
         ],
       ),
     );
@@ -258,18 +257,24 @@ class AppNavigationRail extends StatelessWidget {
                 backgroundColor: context.surfaceColor,
                 labelType: NavigationRailLabelType.all,
                 indicatorColor: context.primaryLightColor,
-                selectedIconTheme: IconThemeData(color: context.primary, size: 24),
-                unselectedIconTheme: IconThemeData(color: context.textSecondary, size: 22),
-                selectedLabelTextStyle: AppTextStyles.labelChip(context).copyWith(
+                selectedIconTheme:
+                    IconThemeData(color: context.primary, size: 24),
+                unselectedIconTheme:
+                    IconThemeData(color: context.textSecondary, size: 22),
+                selectedLabelTextStyle:
+                    AppTextStyles.labelChip(context).copyWith(
                   color: context.primary,
                   fontWeight: FontWeight.bold,
                 ),
-                unselectedLabelTextStyle: AppTextStyles.labelChip(context).copyWith(
+                unselectedLabelTextStyle:
+                    AppTextStyles.labelChip(context).copyWith(
                   color: context.textSecondary,
                 ),
                 leading: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
-                  child: Icon(Icons.local_hospital, color: context.primary, size: 32),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppConstants.spaceMd),
+                  child: Icon(Icons.local_hospital,
+                      color: context.primary, size: 32),
                 ),
                 destinations: destinations ?? defaultDestinations,
               ),
@@ -371,14 +376,18 @@ class LanguageSwitch extends StatelessWidget {
             style: AppTextStyles.bodyMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
-            items:  [
+            items: [
               DropdownMenuItem(
                 value: 'ar',
-                child: Text(AppStrings.arabic),
+                child: Text(
+                  AppStrings.arabic,
+                  style: TextStyle(color: context.primary),
+                ),
               ),
               DropdownMenuItem(
                 value: 'en',
-                child: Text(AppStrings.english),
+                child: Text(AppStrings.english,
+                    style: TextStyle(color: context.primary)),
               ),
             ],
             onChanged: (val) {
