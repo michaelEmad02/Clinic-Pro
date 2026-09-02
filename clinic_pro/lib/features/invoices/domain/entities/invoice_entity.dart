@@ -23,6 +23,7 @@ class InvoiceEntity extends Equatable {
   final double paidAmount;
   final String? paymentMethod;
   final String? createdBy;
+  final String? createdByName;
   final DateTime createdAt;
   final String? appointmentTypeName;
 
@@ -38,6 +39,7 @@ class InvoiceEntity extends Equatable {
     required this.paidAmount,
     this.paymentMethod,
     this.createdBy,
+    this.createdByName,
     required this.createdAt,
     this.appointmentTypeName,
   });
@@ -77,6 +79,7 @@ class InvoiceEntity extends Equatable {
     double? paidAmount,
     String? paymentMethod,
     String? createdBy,
+    String? createdByName,
     DateTime? createdAt,
     String? appointmentTypeName,
   }) {
@@ -92,6 +95,7 @@ class InvoiceEntity extends Equatable {
       paidAmount: paidAmount ?? this.paidAmount,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       createdBy: createdBy ?? this.createdBy,
+      createdByName: createdByName ?? this.createdByName,
       createdAt: createdAt ?? this.createdAt,
       appointmentTypeName: appointmentTypeName ?? this.appointmentTypeName,
     );
@@ -110,6 +114,7 @@ class InvoiceEntity extends Equatable {
         paidAmount,
         paymentMethod,
         createdBy,
+        createdByName,
         createdAt,
         appointmentTypeName,
       ];

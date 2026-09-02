@@ -102,6 +102,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
                   amount: appointment.invoiceAmount,
                   status: appointment.invoiceStatus,
                   invoiceNumber: appointment.invoiceNumber,
+                  invoices: appointment.invoices,
                   appointmentId: appointment.id,
                 ),
                 if (canCancel) ...[

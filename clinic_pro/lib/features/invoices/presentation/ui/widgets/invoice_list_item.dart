@@ -70,6 +70,29 @@ class InvoiceListItem extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (invoice.createdByName != null &&
+                      invoice.createdByName!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(Icons.person_outline,
+                            size: 12, color: context.primary),
+                        const SizedBox(width: 2),
+                        Flexible(
+                          child: Text(
+                            '${AppStrings.isArabic ? "بواسطة" : "By"}: ${invoice.createdByName}',
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: context.primary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

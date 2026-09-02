@@ -33,6 +33,7 @@ BEGIN
                 'arrived_at', a.arrived_at,
                 'called_at', a.called_at,
                 'created_by', a.created_by,
+                'created_by_name', u_creator.name,
                 'created_at', a.created_at,
                 
                 -- بيانات المريض
@@ -76,10 +77,14 @@ BEGIN
                             jsonb_build_object(
                                 'id', inv.id,
                                 'total_amount', inv.total_amount,
-                                'paid_amount', inv.paid_amount
+                                'paid_amount', inv.paid_amount,
+                                'created_at', inv.created_at,
+                                'created_by', inv.created_by,
+                                'creator_name', u_inv.name
                             )
                         )
                         FROM invoices inv
+                        LEFT JOIN users u_inv ON u_inv.id = inv.created_by
                         WHERE inv.source_id = a.id
                     ),
                     '[]'::jsonb
@@ -124,6 +129,7 @@ BEGIN
     FROM appointments a
     LEFT JOIN patients p ON p.id = a.patient_id
     LEFT JOIN users u ON u.id = a.doctor_id
+    LEFT JOIN users u_creator ON u_creator.id = a.created_by
     LEFT JOIN doctor_appointment_types dat ON dat.id = a.type_id
     LEFT JOIN appointment_types at ON at.id = dat.appointment_type_id
     WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)

@@ -27,6 +27,7 @@ class InvoiceModel extends InvoiceEntity {
     required super.paidAmount,
     super.paymentMethod,
     super.createdBy,
+    super.createdByName,
     required super.createdAt,
     super.appointmentTypeName,
   });
@@ -44,6 +45,7 @@ class InvoiceModel extends InvoiceEntity {
       paidAmount: (json['paid_amount'] as num?)?.toDouble() ?? 0.0,
       paymentMethod: json['payment_method'] as String?,
       createdBy: json['created_by'] as String?,
+      createdByName: (json['created_by_name'] ?? json['creator_name']) as String?,
       createdAt: json['created_at'] != null
           ? _parseUtc(json['created_at'] as String)
           : DateTime.now().toUtc(),
@@ -78,6 +80,7 @@ class InvoiceModel extends InvoiceEntity {
       paidAmount: entity.paidAmount,
       paymentMethod: entity.paymentMethod,
       createdBy: entity.createdBy,
+      createdByName: entity.createdByName,
       createdAt: entity.createdAt,
       appointmentTypeName: entity.appointmentTypeName,
     );

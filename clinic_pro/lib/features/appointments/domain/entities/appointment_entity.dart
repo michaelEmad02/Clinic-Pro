@@ -5,6 +5,7 @@
 
 import 'package:equatable/equatable.dart';
 import '../../../prescription/domain/entities/prescription_entity.dart';
+import '../../../invoices/domain/entities/invoice_entity.dart';
 
 class AppointmentEntity extends Equatable {
   final String id;
@@ -21,6 +22,7 @@ class AppointmentEntity extends Equatable {
   final DateTime? arrivedAt; // وقت تأكيد الوصول
   final DateTime? calledAt; // وقت استدعاء الطبيب للمريض
   final String createdBy; // المستخدم الذي أنشأ الموعد
+  final String? createdByName; // اسم المستخدم الذي أنشأ الموعد
   final DateTime createdAt; // وقت إنشاء السجل
 
   // بيانات إضافية للعرض في الواجهات (Denormalized UI data)
@@ -35,12 +37,28 @@ class AppointmentEntity extends Equatable {
 
   // حقول الروشتات والفواتير المرتبطة
   final bool hasPrescription;
-  final bool hasInvoice;
   final String? prescriptionDiagnosis;
-  final String? invoiceAmount;
-  final String? invoiceStatus;
+  final List<InvoiceEntity>? invoices; // قائمة الفواتير المرتبطة بالزيارة
   final String? invoiceNumber;
   final List<PrescriptionItemEntity>? prescriptionDrugs; // قائمة أدوية الروشتة المرتبطة بالزيارة
+
+  bool get hasInvoice => invoices != null && invoices!.isNotEmpty;
+
+  String? get invoiceAmount {
+    if (invoices == null || invoices!.isEmpty) return null;
+    final totalPaid = invoices!.fold<double>(0.0, (sum, inv) => sum + inv.paidAmount);
+    final totalTotal = invoices!.first.totalAmount;
+    return '${totalPaid.toStringAsFixed(0)} / ${totalTotal.toStringAsFixed(0)}';
+  }
+
+  String? get invoiceStatus {
+    if (invoices == null || invoices!.isEmpty) return null;
+    final totalTotal = invoices!.first.totalAmount;
+    final totalPaid = invoices!.fold<double>(0.0, (sum, inv) => sum + inv.paidAmount);
+    if (totalPaid <= 0) return 'pending';
+    if (totalPaid < totalTotal) return 'partial';
+    return 'paid';
+  }
 
   const AppointmentEntity({
     required this.id,
@@ -57,6 +75,7 @@ class AppointmentEntity extends Equatable {
     this.arrivedAt,
     this.calledAt,
     required this.createdBy,
+    this.createdByName,
     required this.createdAt,
     this.patientName,
     this.patientPhone,
@@ -65,10 +84,8 @@ class AppointmentEntity extends Equatable {
     this.displayTime,
     this.expectedCallTime,
     this.hasPrescription = false,
-    this.hasInvoice = false,
     this.prescriptionDiagnosis,
-    this.invoiceAmount,
-    this.invoiceStatus,
+    this.invoices,
     this.invoiceNumber,
     this.prescriptionDrugs,
   });
@@ -85,10 +102,8 @@ class AppointmentEntity extends Equatable {
     String? typeName,
     String? displayTime,
     bool? hasPrescription,
-    bool? hasInvoice,
     String? prescriptionDiagnosis,
-    String? invoiceAmount,
-    String? invoiceStatus,
+    List<InvoiceEntity>? invoices,
     String? invoiceNumber,
     List<PrescriptionItemEntity>? prescriptionDrugs,
   }) {
@@ -107,6 +122,7 @@ class AppointmentEntity extends Equatable {
       arrivedAt: arrivedAt ?? this.arrivedAt,
       calledAt: calledAt ?? this.calledAt,
       createdBy: createdBy,
+      createdByName: createdByName,
       createdAt: createdAt,
       patientName: patientName ?? this.patientName,
       patientPhone: patientPhone ?? this.patientPhone,
@@ -115,10 +131,8 @@ class AppointmentEntity extends Equatable {
       displayTime: displayTime ?? this.displayTime,
       expectedCallTime: expectedCallTime ?? this.expectedCallTime,
       hasPrescription: hasPrescription ?? this.hasPrescription,
-      hasInvoice: hasInvoice ?? this.hasInvoice,
       prescriptionDiagnosis: prescriptionDiagnosis ?? this.prescriptionDiagnosis,
-      invoiceAmount: invoiceAmount ?? this.invoiceAmount,
-      invoiceStatus: invoiceStatus ?? this.invoiceStatus,
+      invoices: invoices ?? this.invoices,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       prescriptionDrugs: prescriptionDrugs ?? this.prescriptionDrugs,
     );
@@ -140,6 +154,7 @@ class AppointmentEntity extends Equatable {
         arrivedAt,
         calledAt,
         createdBy,
+        createdByName,
         createdAt,
         patientName,
         patientPhone,
@@ -148,10 +163,8 @@ class AppointmentEntity extends Equatable {
         displayTime,
         expectedCallTime,
         hasPrescription,
-        hasInvoice,
         prescriptionDiagnosis,
-        invoiceAmount,
-        invoiceStatus,
+        invoices,
         invoiceNumber,
         prescriptionDrugs,
       ];

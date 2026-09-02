@@ -10,6 +10,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/status_badge.dart';
+import '../../../../invoices/domain/entities/invoice_entity.dart';
 import '../../../../invoices/presentation/ui/widgets/add_invoice_sheet.dart';
 import '../../manager/appointments_bloc.dart';
 import '../../manager/appointments_event.dart';
@@ -21,6 +22,7 @@ class LinkedInvoiceCard extends StatelessWidget {
   final String? status;
   final String? invoiceNumber;
   final String? appointmentId;
+  final List<InvoiceEntity>? invoices;
 
   const LinkedInvoiceCard({
     super.key,
@@ -29,14 +31,15 @@ class LinkedInvoiceCard extends StatelessWidget {
     this.status,
     this.invoiceNumber,
     this.appointmentId,
+    this.invoices,
   });
 
   @override
   Widget build(BuildContext context) {
     final isPaid = status == 'paid';
 
-    List<dynamic> invoicesList = [];
-    if (invoiceNumber != null && invoiceNumber!.isNotEmpty) {
+    List<dynamic> invoicesList = invoices ?? [];
+    if (invoicesList.isEmpty && invoiceNumber != null && invoiceNumber!.isNotEmpty) {
       try {
         invoicesList = jsonDecode(invoiceNumber!);
       } catch (_) {}
@@ -84,10 +87,15 @@ class LinkedInvoiceCard extends StatelessWidget {
           if (hasInvoice) ...[
             if (invoicesList.isNotEmpty) ...[
               ...invoicesList.map((inv) {
-                final total = (inv['total_amount'] as num?)?.toDouble() ?? 0.0;
-                final paid = (inv['paid_amount'] as num?)?.toDouble() ?? 0.0;
-                final createdAtStr = inv['created_at'] as String? ?? '';
-                final rawDate = DateTime.tryParse(createdAtStr);
+                final double total = inv is InvoiceEntity
+                    ? inv.totalAmount
+                    : ((inv['total_amount'] as num?)?.toDouble() ?? 0.0);
+                final double paid = inv is InvoiceEntity
+                    ? inv.paidAmount
+                    : ((inv['paid_amount'] as num?)?.toDouble() ?? 0.0);
+                final DateTime? rawDate = inv is InvoiceEntity
+                    ? inv.createdAt
+                    : DateTime.tryParse((inv['created_at'] as String?) ?? '');
                 // Supabase يحفظ بـ UTC — نضمن تفسيرها كـ UTC
                 final parsedDate = rawDate != null && !rawDate.isUtc
                     ? DateTime.utc(rawDate.year, rawDate.month, rawDate.day,
@@ -96,7 +104,10 @@ class LinkedInvoiceCard extends StatelessWidget {
                 final dateFormatted = parsedDate != null
                     ? '${parsedDate.toLocal().day}/${parsedDate.toLocal().month}/${parsedDate.toLocal().year}'
                     : '';
-                final creatorName = inv['creator_name'] as String? ?? (AppStrings.isArabic ? 'غير معروف' : 'Unknown');
+                final creatorName = (inv is InvoiceEntity
+                        ? inv.createdByName
+                        : (inv['creator_name'] as String?)) ??
+                    (AppStrings.isArabic ? 'غير معروف' : 'Unknown');
                 
                 final statusStr = paid >= total
                     ? (AppStrings.isArabic ? 'مدفوعة' : 'Paid')

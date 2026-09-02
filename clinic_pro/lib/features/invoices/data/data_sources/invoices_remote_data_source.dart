@@ -41,9 +41,14 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
 
     if (invoices.isEmpty) return [];
 
-    // 1. تجميع الـ IDs المميزة للمرضى والمواعيد
+    // 1. تجميع الـ IDs المميزة للمرضى والمواعيد ومنشئي الفاتورة
     final patientIds = invoices
         .map((inv) => inv['patient_id'] as String?)
+        .whereType<String>()
+        .toSet();
+
+    final createdByIds = invoices
+        .map((inv) => inv['created_by'] as String?)
         .whereType<String>()
         .toSet();
 
@@ -52,8 +57,10 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
         .whereType<String>()
         .toSet();
 
-    // 2. جلب جميع المرضى المعنيين في استعلام واحد أو تجميعي
+    // 2. جلب أسماء المرضى والمستخدمين (منشئي الفواتير)
     final Map<String, String> patientNamesMap = {};
+    final Map<String, String> userNamesMap = {};
+
     if (patientIds.isNotEmpty) {
       final allPatients = await _cloudService.select(table: SupabaseTables.patients);
       for (final p in allPatients) {
@@ -61,6 +68,17 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
         final name = p['name'] as String?;
         if (id != null && name != null) {
           patientNamesMap[id] = name;
+        }
+      }
+    }
+
+    if (createdByIds.isNotEmpty) {
+      final allUsers = await _cloudService.select(table: SupabaseTables.users);
+      for (final u in allUsers) {
+        final id = u['id'] as String?;
+        final name = u['name'] as String?;
+        if (id != null && name != null) {
+          userNamesMap[id] = name;
         }
       }
     }
@@ -107,10 +125,14 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
     for (final inv in invoices) {
       final patientId = inv['patient_id'] as String?;
       final appointmentId = inv['source_id'] as String?;
+      final createdById = inv['created_by'] as String?;
 
       final mutableInv = Map<String, dynamic>.from(inv);
       if (patientId != null && patientNamesMap.containsKey(patientId)) {
         mutableInv['patient_name'] = patientNamesMap[patientId];
+      }
+      if (createdById != null && userNamesMap.containsKey(createdById)) {
+        mutableInv['created_by_name'] = userNamesMap[createdById];
       }
       if (appointmentId != null && appointmentTypesMap.containsKey(appointmentId)) {
         mutableInv['appointment_type'] = appointmentTypesMap[appointmentId];

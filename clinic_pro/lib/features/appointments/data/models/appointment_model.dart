@@ -7,6 +7,7 @@ import 'dart:convert';
 
 import '../../domain/entities/appointment_entity.dart';
 import '../../../prescription/data/models/prescription_model.dart';
+import '../../../invoices/data/models/invoice_model.dart';
 
 class AppointmentModel extends AppointmentEntity {
   /// يُفسّر أي timestamp من Supabase كـ UTC
@@ -36,6 +37,7 @@ class AppointmentModel extends AppointmentEntity {
     super.arrivedAt,
     super.calledAt,
     required super.createdBy,
+    super.createdByName,
     required super.createdAt,
     super.patientName,
     super.patientPhone,
@@ -44,10 +46,8 @@ class AppointmentModel extends AppointmentEntity {
     super.displayTime,
     super.expectedCallTime,
     super.hasPrescription = false,
-    super.hasInvoice = false,
     super.prescriptionDiagnosis,
-    super.invoiceAmount,
-    super.invoiceStatus,
+    super.invoices,
     super.invoiceNumber,
     super.prescriptionDrugs,
   });
@@ -69,7 +69,10 @@ class AppointmentModel extends AppointmentEntity {
     }
 
     final prescription = json['prescriptions'] as List? ?? [];
-    final invoice = json['invoices'] as List? ?? [];
+    final invoiceRawList = json['invoices'] as List? ?? [];
+    final invoicesList = invoiceRawList
+        .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
+        .toList();
     final prescriptionDrugsList = (json['prescription_drugs'] as List?)
             ?.map((e) =>
                 PrescriptionItemModel.fromJson(e as Map<String, dynamic>))
@@ -95,6 +98,7 @@ class AppointmentModel extends AppointmentEntity {
           ? _parseUtc(json['called_at'] as String)
           : null,
       createdBy: json['created_by'] as String? ?? '',
+      createdByName: json['created_by_name'] as String?,
       createdAt: json['created_at'] != null
           ? _parseUtc(json['created_at'] as String)
           : DateTime.now().toUtc(),
@@ -104,35 +108,11 @@ class AppointmentModel extends AppointmentEntity {
       typeName: type['name'] as String?,
       displayTime: displayTime,
       hasPrescription: prescription.isNotEmpty,
-      hasInvoice: invoice.isNotEmpty,
       prescriptionDiagnosis: prescription.isNotEmpty
           ? prescription.first['diagnosis'] as String?
           : null,
-      invoiceAmount: invoice.isNotEmpty
-          ? (() {
-              final totalPaid = invoice.fold<double>(
-                  0.0,
-                  (sum, item) =>
-                      sum + ((item['paid_amount'] as num?)?.toDouble() ?? 0.0));
-              final totalTotal =
-                  (invoice.first['total_amount'] as num?)?.toDouble() ?? 0.0;
-              return '${totalPaid.toStringAsFixed(0)} / ${totalTotal.toStringAsFixed(0)}';
-            })()
-          : null,
-      invoiceStatus: invoice.isNotEmpty
-          ? () {
-              final totalAmount =
-                  (invoice.first['total_amount'] as num?)?.toDouble() ?? 0.0;
-              final paidAmount = invoice.fold<double>(
-                  0.0,
-                  (sum, item) =>
-                      sum + ((item['paid_amount'] as num?)?.toDouble() ?? 0.0));
-              if (paidAmount <= 0) return 'pending';
-              if (paidAmount < totalAmount) return 'partial';
-              return 'paid';
-            }()
-          : null,
-      invoiceNumber: invoice.isNotEmpty ? jsonEncode(invoice) : null,
+      invoices: invoicesList,
+      invoiceNumber: invoiceRawList.isNotEmpty ? jsonEncode(invoiceRawList) : null,
       prescriptionDrugs: prescriptionDrugsList,
     );
   }
