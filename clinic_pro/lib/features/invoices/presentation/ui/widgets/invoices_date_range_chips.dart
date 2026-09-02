@@ -1,3 +1,7 @@
+// ────────────────────────────────────────────────────────
+// InvoicesDateRangeChips — شريط فلاتر النطاق الزمني وحالة الدفع
+// ────────────────────────────────────────────────────────
+
 import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
@@ -6,6 +10,7 @@ import '../../manager/invoices_state.dart';
 class InvoicesDateRangeChips extends StatelessWidget {
   final InvoicesDateRange activeDateRange;
   final String activeStatusFilter;
+  final bool showStatusFilter;
   final ValueChanged<InvoicesDateRange> onDateRangeChanged;
   final ValueChanged<String> onStatusFilterChanged;
 
@@ -13,6 +18,7 @@ class InvoicesDateRangeChips extends StatelessWidget {
     super.key,
     required this.activeDateRange,
     required this.activeStatusFilter,
+    this.showStatusFilter = true,
     required this.onDateRangeChanged,
     required this.onStatusFilterChanged,
   });
@@ -74,39 +80,41 @@ class InvoicesDateRangeChips extends StatelessWidget {
             }).toList(),
           ),
         ),
-        const SizedBox(height: 8),
-        // فلتر حالة الفاتورة
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: _statusFilters.map((f) {
-              final isSelected = activeStatusFilter == f;
-              return Padding(
-                padding: const EdgeInsetsDirectional.only(end: 8),
-                child: ChoiceChip(
-                  label: Text(_getLocalStatusText(f)),
-                  selected: isSelected,
-                  onSelected: (_) => onStatusFilterChanged(f),
-                  selectedColor: context.primaryLightColor,
-                  backgroundColor: context.surface,
-                  labelStyle: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 12,
-                    color: isSelected ? context.primary : context.textSecondary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: isSelected ? context.primary : context.border,
+        if (showStatusFilter) ...[
+          const SizedBox(height: 8),
+          // فلتر حالة الفاتورة
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: _statusFilters.map((f) {
+                final isSelected = activeStatusFilter == f;
+                return Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: ChoiceChip(
+                    label: Text(_getLocalStatusText(f)),
+                    selected: isSelected,
+                    onSelected: (_) => onStatusFilterChanged(f),
+                    selectedColor: context.primaryLightColor,
+                    backgroundColor: context.surface,
+                    labelStyle: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 12,
+                      color: isSelected ? context.primary : context.textSecondary,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: isSelected ? context.primary : context.border,
+                      ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

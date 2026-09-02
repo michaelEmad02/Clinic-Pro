@@ -32,4 +32,8 @@ abstract class IInvoicesRepository {
   /// جلب المواعيد غير المدفوعة بالكامل لمريض محدد
   Future<Either<Failure, List<UnpaidAppointmentEntity>>>
       getPatientUnpaidAppointments(String patientId);
+
+  /// جلب جميع المواعيد غير المفوترة للعيادة/الطبيب
+  Future<Either<Failure, List<UnpaidAppointmentEntity>>>
+      getClinicUnbilledAppointments(String clinicId, {String? doctorId});
 }

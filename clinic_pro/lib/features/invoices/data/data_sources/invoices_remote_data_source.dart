@@ -3,10 +3,11 @@
 // (يقع بداخل data_sources المعتمد للمشروع)
 // ────────────────────────────────────────────────────────
 
+import 'dart:convert';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
 import 'package:clinic_pro/features/invoices/data/models/invoice_model.dart';
-import 'package:clinic_pro/features/invoices/domain/entities/unpaid_appointment_entity.dart';
+import 'package:clinic_pro/features/invoices/data/models/unpaid_appointment_model.dart';
 import 'package:injectable/injectable.dart';
 
 abstract class IInvoicesRemoteDataSource {
@@ -14,8 +15,10 @@ abstract class IInvoicesRemoteDataSource {
   Future<InvoiceModel> createInvoice(InvoiceModel invoice);
   Future<void> updateInvoice(InvoiceModel invoice);
   Future<void> deleteInvoice(String id);
-  Future<List<UnpaidAppointmentEntity>> getPatientUnpaidAppointments(
+  Future<List<UnpaidAppointmentModel>> getPatientUnpaidAppointments(
       String patientId);
+  Future<List<UnpaidAppointmentModel>> getClinicUnbilledAppointments(
+      String clinicId, {String? doctorId});
 }
 
 @LazySingleton(as: IInvoicesRemoteDataSource)
@@ -219,14 +222,14 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
   }
 
   @override
-  Future<List<UnpaidAppointmentEntity>> getPatientUnpaidAppointments(
+  Future<List<UnpaidAppointmentModel>> getPatientUnpaidAppointments(
       String patientId) async {
     final appointments = await _cloudService.select(
       table: SupabaseTables.appointments,
       eq: {'patient_id': patientId},
     );
 
-    final List<UnpaidAppointmentEntity> result = [];
+    final List<UnpaidAppointmentModel> result = [];
 
     for (final appt in appointments) {
       final apptId = appt['id'] as String;
@@ -264,7 +267,7 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
           
         
 
-        result.add(UnpaidAppointmentEntity(
+        result.add(UnpaidAppointmentModel(
           id: apptId,
           patientId: patientId,
           clinicId: appt['clinic_id'] as String? ?? '',
@@ -281,5 +284,34 @@ class InvoicesRemoteDataSourceImpl implements IInvoicesRemoteDataSource {
     result.sort((a, b) => b.date.compareTo(a.date));
 
     return result;
+  }
+
+  @override
+  Future<List<UnpaidAppointmentModel>> getClinicUnbilledAppointments(
+      String clinicId, {String? doctorId}) async {
+    final Map<String, dynamic> params = {};
+    if (clinicId.isNotEmpty) {
+      params['p_clinic_id'] = clinicId;
+    }
+    if (doctorId != null && doctorId.isNotEmpty) {
+      params['p_doctor_id'] = doctorId;
+    }
+
+    try {
+      final response = await _cloudService.rpc(
+        'get_unbilled_appointments_rpc',
+        params: params.isNotEmpty ? params : null,
+      );
+
+      final List rawList = response is List
+          ? response
+          : (jsonDecode(response.toString()) as List? ?? []);
+
+      return rawList
+          .map((e) => UnpaidAppointmentModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 }

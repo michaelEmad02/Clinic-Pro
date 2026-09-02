@@ -14,9 +14,13 @@ class InvoicesState extends Equatable {
   final InvoicesStatus status;
   final List<InvoiceEntity> invoices;
   final List<InvoiceEntity> filteredInvoices;
+  final List<UnpaidAppointmentEntity> unbilledAppointments;
+  final List<UnpaidAppointmentEntity> filteredUnbilledAppointments;
   final List<UnpaidAppointmentEntity> patientUnpaidAppointments;
+  final String activeTab; // 'invoices' | 'unbilled'
   final String activeStatusFilter; // 'الكل', 'معلق', 'جزئي', 'مدفوع'
   final InvoicesDateRange activeDateRange;
+  final String? selectedUnbilledPatientId;
   final DateTime? customStartDate;
   final DateTime? customEndDate;
   final String searchQuery;
@@ -27,15 +31,32 @@ class InvoicesState extends Equatable {
     this.status = InvoicesStatus.initial,
     this.invoices = const [],
     this.filteredInvoices = const [],
+    this.unbilledAppointments = const [],
+    this.filteredUnbilledAppointments = const [],
     this.patientUnpaidAppointments = const [],
+    this.activeTab = 'invoices',
     this.activeStatusFilter = 'الكل',
     this.activeDateRange = InvoicesDateRange.all,
+    this.selectedUnbilledPatientId,
     this.customStartDate,
     this.customEndDate,
     this.searchQuery = '',
     this.errorMessage,
     this.successMessage,
   });
+
+  /// استخراج المرضى الجدد غير المكررين من قائمة الزيارات غير المفوترة بدون تكرار
+  List<({String id, String name})> get availableUnbilledPatients {
+    final Map<String, String> map = {};
+    for (final appt in unbilledAppointments) {
+      if (appt.patientId.isNotEmpty &&
+          appt.patientName != null &&
+          appt.patientName!.trim().isNotEmpty) {
+        map[appt.patientId] = appt.patientName!.trim();
+      }
+    }
+    return map.entries.map((e) => (id: e.key, name: e.value)).toList();
+  }
 
   /// حساب إجمالي الإيرادات المسجلة (المبالغ المحصلة فعلياً) للفواتير المفلترة
   double get totalRevenue =>
@@ -72,13 +93,25 @@ class InvoicesState extends Equatable {
     return pending;
   }
 
+  /// حساب إجمالي المستحقات غير المفوترة (المواعيد التي تمت ولم تُسجل لها فواتير بالكامل)
+  double get unbilledTotalAmount {
+    return filteredUnbilledAppointments.fold(
+      0.0,
+      (sum, appt) => sum + (appt.expectedPrice - appt.paidSoFar),
+    );
+  }
+
   InvoicesState copyWith({
     InvoicesStatus? status,
     List<InvoiceEntity>? invoices,
     List<InvoiceEntity>? filteredInvoices,
+    List<UnpaidAppointmentEntity>? unbilledAppointments,
+    List<UnpaidAppointmentEntity>? filteredUnbilledAppointments,
     List<UnpaidAppointmentEntity>? patientUnpaidAppointments,
+    String? activeTab,
     String? activeStatusFilter,
     InvoicesDateRange? activeDateRange,
+    Object? selectedUnbilledPatientId = _undefined,
     DateTime? customStartDate,
     DateTime? customEndDate,
     String? searchQuery,
@@ -89,10 +122,17 @@ class InvoicesState extends Equatable {
       status: status ?? this.status,
       invoices: invoices ?? this.invoices,
       filteredInvoices: filteredInvoices ?? this.filteredInvoices,
+      unbilledAppointments: unbilledAppointments ?? this.unbilledAppointments,
+      filteredUnbilledAppointments:
+          filteredUnbilledAppointments ?? this.filteredUnbilledAppointments,
       patientUnpaidAppointments:
           patientUnpaidAppointments ?? this.patientUnpaidAppointments,
+      activeTab: activeTab ?? this.activeTab,
       activeStatusFilter: activeStatusFilter ?? this.activeStatusFilter,
       activeDateRange: activeDateRange ?? this.activeDateRange,
+      selectedUnbilledPatientId: selectedUnbilledPatientId == _undefined
+          ? this.selectedUnbilledPatientId
+          : selectedUnbilledPatientId as String?,
       customStartDate: customStartDate ?? this.customStartDate,
       customEndDate: customEndDate ?? this.customEndDate,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -106,9 +146,13 @@ class InvoicesState extends Equatable {
         status,
         invoices,
         filteredInvoices,
+        unbilledAppointments,
+        filteredUnbilledAppointments,
         patientUnpaidAppointments,
+        activeTab,
         activeStatusFilter,
         activeDateRange,
+        selectedUnbilledPatientId,
         customStartDate,
         customEndDate,
         searchQuery,
@@ -116,3 +160,5 @@ class InvoicesState extends Equatable {
         successMessage,
       ];
 }
+
+const Object _undefined = Object();

@@ -384,6 +384,12 @@ class AppStrings {
       isArabic ? 'طريقة الدفع' : 'Payment Method';
   static String get date => isArabic ? 'التاريخ' : 'Date';
   static String get addInvoice => isArabic ? 'إضافة فاتورة' : 'Add Invoice';
+  static String get invoiceCreatedSuccess =>
+      isArabic ? 'تم إنشاء الفاتورة بنجاح' : 'Invoice created successfully';
+  static String get invoiceUpdatedSuccess =>
+      isArabic ? 'تم تعديل الفاتورة بنجاح' : 'Invoice updated successfully';
+  static String get invoiceDeletedSuccess =>
+      isArabic ? 'تم حذف الفاتورة بنجاح' : 'Invoice deleted successfully';
   static String get invoiceDeleted =>
       isArabic ? 'تم حذف الفاتورة' : 'Invoice deleted';
 

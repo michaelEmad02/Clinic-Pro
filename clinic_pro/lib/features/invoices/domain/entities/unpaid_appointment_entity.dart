@@ -8,8 +8,10 @@ import 'package:equatable/equatable.dart';
 class UnpaidAppointmentEntity extends Equatable {
   final String id;
   final String patientId;
+  final String? patientName;
   final String clinicId;
   final String? doctorId;
+  final String? doctorName;
   final String? appointmentTypeName;
   final double expectedPrice;
   final double paidSoFar;
@@ -19,8 +21,10 @@ class UnpaidAppointmentEntity extends Equatable {
   const UnpaidAppointmentEntity({
     required this.id,
     required this.patientId,
+    this.patientName,
     required this.clinicId,
     this.doctorId,
+    this.doctorName,
     this.appointmentTypeName,
     required this.expectedPrice,
     this.paidSoFar = 0.0,
@@ -32,8 +36,10 @@ class UnpaidAppointmentEntity extends Equatable {
   List<Object?> get props => [
         id,
         patientId,
+        patientName,
         clinicId,
         doctorId,
+        doctorName,
         appointmentTypeName,
         expectedPrice,
         paidSoFar,

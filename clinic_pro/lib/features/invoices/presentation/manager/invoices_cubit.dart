@@ -2,14 +2,17 @@
 // InvoicesCubit — Cubit إدارة واجهات الفواتير وفق المعمارية النظيفة
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:clinic_pro/features/appointments/domain/usecases/appointments/get_appointment_by_id_usecase.dart';
 import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
 import 'package:clinic_pro/features/invoices/domain/usecases/create_invoice_usecase.dart';
 import 'package:clinic_pro/features/invoices/domain/usecases/delete_invoice_usecase.dart';
 import 'package:clinic_pro/features/invoices/domain/usecases/get_invoices_usecase.dart';
-import 'package:clinic_pro/features/invoices/domain/usecases/get_patient_unpaid_appointments_usecase.dart';
 import 'package:clinic_pro/features/invoices/domain/usecases/update_invoice_usecase.dart';
+import 'package:clinic_pro/features/invoices/domain/usecases/get_patient_unpaid_appointments_usecase.dart';
+import 'package:clinic_pro/features/invoices/domain/usecases/get_clinic_unbilled_appointments_usecase.dart';
+import 'package:clinic_pro/features/invoices/domain/entities/unpaid_appointment_entity.dart';
 import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
 import 'package:clinic_pro/features/patients/domain/usecases/find_patient_by_id_usecase.dart';
 import 'package:clinic_pro/features/patients/domain/usecases/load_patients_usecase.dart';
@@ -26,6 +29,8 @@ class InvoicesCubit extends Cubit<InvoicesState> {
   final DeleteInvoiceUseCase _deleteInvoiceUseCase;
   final GetPatientUnpaidAppointmentsUseCase
       _getPatientUnpaidAppointmentsUseCase;
+  final GetClinicUnbilledAppointmentsUseCase
+      _getClinicUnbilledAppointmentsUseCase;
   final FindPatientByIdUseCase _findPatientByIdUseCase;
   final GetAppointmentByIdUseCase _getAppointmentByIdUseCase;
   final LoadPatientsUseCase _loadPatientsUseCase;
@@ -36,30 +41,57 @@ class InvoicesCubit extends Cubit<InvoicesState> {
     this._updateInvoiceUseCase,
     this._deleteInvoiceUseCase,
     this._getPatientUnpaidAppointmentsUseCase,
+    this._getClinicUnbilledAppointmentsUseCase,
     this._findPatientByIdUseCase,
     this._getAppointmentByIdUseCase,
     this._loadPatientsUseCase,
   ) : super(const InvoicesState());
 
-  /// تحميل جميع الفواتير الخاصة بالعيادة والطبيب المحدد
+  /// تحميل جميع الفواتير والمواعيد غير المفوترة الخاصة بالعيادة والطبيب المحدد
   Future<void> loadInvoices(String clinicId, {String? doctorId}) async {
     emit(state.copyWith(status: InvoicesStatus.loading));
 
-    final result = await _getInvoicesUseCase(clinicId, doctorId: doctorId);
+    final results = await Future.wait<dynamic>([
+      _getInvoicesUseCase(clinicId, doctorId: doctorId),
+      _getClinicUnbilledAppointmentsUseCase(clinicId, doctorId: doctorId),
+    ]);
 
-    result.fold(
-      (failure) => emit(state.copyWith(
-        status: InvoicesStatus.failure,
-        errorMessage: failure.message,
-      )),
-      (invoices) {
-        emit(state.copyWith(
-          status: InvoicesStatus.success,
-          invoices: invoices,
-        ));
-        _applyFilters();
-      },
+    final invoicesResult = results[0];
+    final unbilledResult = results[1];
+
+    List<InvoiceEntity> fetchedInvoices = state.invoices;
+    List<UnpaidAppointmentEntity> fetchedUnbilled = state.unbilledAppointments;
+    String? errorMsg;
+
+    invoicesResult.fold(
+      (failure) => errorMsg = failure.message,
+      (invoices) => fetchedInvoices = invoices as List<InvoiceEntity>,
     );
+
+    unbilledResult.fold(
+      (failure) => errorMsg ??= failure.message,
+      (unbilled) =>
+          fetchedUnbilled = unbilled as List<UnpaidAppointmentEntity>,
+    );
+
+    if (errorMsg != null && fetchedInvoices.isEmpty && fetchedUnbilled.isEmpty) {
+      emit(state.copyWith(
+        status: InvoicesStatus.failure,
+        errorMessage: errorMsg,
+      ));
+    } else {
+      emit(state.copyWith(
+        status: InvoicesStatus.success,
+        invoices: fetchedInvoices,
+        unbilledAppointments: fetchedUnbilled,
+      ));
+      _applyFilters();
+    }
+  }
+
+  /// التبديل بين تبويب الفواتير الصادرة والمواعيد غير المفوترة
+  void changeTab(String tab) {
+    emit(state.copyWith(activeTab: tab));
   }
 
   /// فلترة الفواتير بحسب الحالة أو نطاق التواريخ أو نص البحث
@@ -82,6 +114,8 @@ class InvoicesCubit extends Cubit<InvoicesState> {
 
   void _applyFilters() {
     List<InvoiceEntity> result = List.from(state.invoices);
+    List<UnpaidAppointmentEntity> unbilledResult =
+        List.from(state.unbilledAppointments);
 
     // 1. تطبيق فلتر نطاق التاريخ
     final now = DateTime.now();
@@ -89,29 +123,56 @@ class InvoicesCubit extends Cubit<InvoicesState> {
 
     switch (state.activeDateRange) {
       case InvoicesDateRange.today:
-        result = result.where((inv) => inv.createdAt.isAfter(todayStart) || inv.createdAt.isAtSameMomentAs(todayStart)).toList();
+        result = result
+            .where((inv) =>
+                inv.createdAt.isAfter(todayStart) ||
+                inv.createdAt.isAtSameMomentAs(todayStart))
+            .toList();
+        unbilledResult = unbilledResult.where((app) {
+          final dt = DateTime.tryParse(app.date);
+          return dt != null && (dt.isAfter(todayStart) || dt.isAtSameMomentAs(todayStart));
+        }).toList();
         break;
       case InvoicesDateRange.thisWeek:
-        // بداية الأسبوع يوم السبت (Saturday = 6, Sunday = 7, Monday = 1, ... Friday = 5)
         final int daysFromSaturday = (now.weekday == DateTime.saturday)
             ? 0
             : (now.weekday == DateTime.sunday ? 1 : now.weekday + 1);
         final weekStart = todayStart.subtract(Duration(days: daysFromSaturday));
-        result = result.where((inv) => inv.createdAt.isAfter(weekStart) || inv.createdAt.isAtSameMomentAs(weekStart)).toList();
+        result = result
+            .where((inv) =>
+                inv.createdAt.isAfter(weekStart) ||
+                inv.createdAt.isAtSameMomentAs(weekStart))
+            .toList();
+        unbilledResult = unbilledResult.where((app) {
+          final dt = DateTime.tryParse(app.date);
+          return dt != null && (dt.isAfter(weekStart) || dt.isAtSameMomentAs(weekStart));
+        }).toList();
         break;
       case InvoicesDateRange.thisMonth:
         final monthStart = DateTime(now.year, now.month, 1);
         result = result.where((inv) => inv.createdAt.isAfter(monthStart)).toList();
+        unbilledResult = unbilledResult.where((app) {
+          final dt = DateTime.tryParse(app.date);
+          return dt != null && dt.isAfter(monthStart);
+        }).toList();
         break;
       case InvoicesDateRange.threeMonths:
         final threeMonthsAgo = DateTime(now.year, now.month - 3, now.day);
         result = result.where((inv) => inv.createdAt.isAfter(threeMonthsAgo)).toList();
+        unbilledResult = unbilledResult.where((app) {
+          final dt = DateTime.tryParse(app.date);
+          return dt != null && dt.isAfter(threeMonthsAgo);
+        }).toList();
         break;
       case InvoicesDateRange.custom:
         if (state.customStartDate != null && state.customEndDate != null) {
           final start = DateTime(state.customStartDate!.year, state.customStartDate!.month, state.customStartDate!.day);
           final end = DateTime(state.customEndDate!.year, state.customEndDate!.month, state.customEndDate!.day, 23, 59, 59);
           result = result.where((inv) => inv.createdAt.isAfter(start) && inv.createdAt.isBefore(end)).toList();
+          unbilledResult = unbilledResult.where((app) {
+            final dt = DateTime.tryParse(app.date);
+            return dt != null && dt.isAfter(start) && dt.isBefore(end);
+          }).toList();
         }
         break;
       case InvoicesDateRange.all:
@@ -135,9 +196,32 @@ class InvoicesCubit extends Cubit<InvoicesState> {
         final idMatch = inv.id.toLowerCase().contains(q);
         return nameMatch || idMatch;
       }).toList();
+
+      unbilledResult = unbilledResult.where((app) {
+        final nameMatch = app.patientName?.toLowerCase().contains(q) ?? false;
+        final idMatch = app.id.toLowerCase().contains(q);
+        return nameMatch || idMatch;
+      }).toList();
     }
 
-    emit(state.copyWith(filteredInvoices: result));
+    // 4. تطبيق فلتر المريض المفضل لتبويب المواعيد غير المفوترة
+    if (state.selectedUnbilledPatientId != null &&
+        state.selectedUnbilledPatientId!.isNotEmpty) {
+      unbilledResult = unbilledResult
+          .where((app) => app.patientId == state.selectedUnbilledPatientId)
+          .toList();
+    }
+
+    emit(state.copyWith(
+      filteredInvoices: result,
+      filteredUnbilledAppointments: unbilledResult,
+    ));
+  }
+
+  /// فلترة المواعيد غير المفوترة بحسب المريض
+  void filterUnbilledByPatient(String? patientId) {
+    emit(state.copyWith(selectedUnbilledPatientId: patientId));
+    _applyFilters();
   }
 
   /// جلب المواعيد غير المدفوعة بالكامل لمريض محدد
@@ -187,7 +271,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
         emit(state.copyWith(
           status: InvoicesStatus.success,
           invoices: updatedInvoices,
-          successMessage: 'تم إنشاء الفاتورة بنجاح',
+          successMessage: AppStrings.invoiceCreatedSuccess,
         ));
         _applyFilters();
         return true;
@@ -217,7 +301,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
         emit(state.copyWith(
           status: InvoicesStatus.success,
           invoices: updatedInvoices,
-          successMessage: 'تم تعديل الفاتورة بنجاح',
+          successMessage: AppStrings.invoiceUpdatedSuccess,
         ));
         _applyFilters();
         return true;
@@ -246,7 +330,7 @@ class InvoicesCubit extends Cubit<InvoicesState> {
         emit(state.copyWith(
           status: InvoicesStatus.success,
           invoices: updatedInvoices,
-          successMessage: 'تم حذف الفاتورة بنجاح',
+          successMessage: AppStrings.invoiceDeletedSuccess,
         ));
         _applyFilters();
         return true;

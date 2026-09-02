@@ -1,3 +1,8 @@
+// ────────────────────────────────────────────────────────
+// InvoiceListItem — مكون كارت الفاتورة الفردي في القائمة
+// يعرض تفاصيل الفاتورة، الحالة، اسم المريض، ومنشئ الفاتورة
+// ────────────────────────────────────────────────────────
+
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
 import 'package:flutter/material.dart';

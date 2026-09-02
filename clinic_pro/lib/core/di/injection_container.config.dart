@@ -204,6 +204,8 @@ import '../../features/invoices/domain/usecases/create_invoice_usecase.dart'
     as _i920;
 import '../../features/invoices/domain/usecases/delete_invoice_usecase.dart'
     as _i109;
+import '../../features/invoices/domain/usecases/get_clinic_unbilled_appointments_usecase.dart'
+    as _i385;
 import '../../features/invoices/domain/usecases/get_invoices_usecase.dart'
     as _i366;
 import '../../features/invoices/domain/usecases/get_patient_unpaid_appointments_usecase.dart'
@@ -656,6 +658,9 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i247.IInvoicesRepository>()));
     gh.factory<_i1072.UpdateInvoiceUseCase>(
         () => _i1072.UpdateInvoiceUseCase(gh<_i247.IInvoicesRepository>()));
+    gh.lazySingleton<_i385.GetClinicUnbilledAppointmentsUseCase>(() =>
+        _i385.GetClinicUnbilledAppointmentsUseCase(
+            gh<_i247.IInvoicesRepository>()));
     gh.lazySingleton<_i486.SubscribeAppointmentsUseCase>(() =>
         _i486.SubscribeAppointmentsUseCase(gh<_i330.IAppointmentRepository>()));
     gh.factory<_i994.AddAppointmentUseCase>(
@@ -941,6 +946,17 @@ extension GetItInjectableX on _i174.GetIt {
             clinicsRepository: gh<_i359.ClinicsRepository>()));
     gh.factory<_i444.ToggleIsActiveUseCase>(() => _i444.ToggleIsActiveUseCase(
         clinicsRepository: gh<_i359.ClinicsRepository>()));
+    gh.factory<_i795.InvoicesCubit>(() => _i795.InvoicesCubit(
+          gh<_i366.GetInvoicesUseCase>(),
+          gh<_i920.CreateInvoiceUseCase>(),
+          gh<_i1072.UpdateInvoiceUseCase>(),
+          gh<_i109.DeleteInvoiceUseCase>(),
+          gh<_i289.GetPatientUnpaidAppointmentsUseCase>(),
+          gh<_i385.GetClinicUnbilledAppointmentsUseCase>(),
+          gh<_i338.FindPatientByIdUseCase>(),
+          gh<_i209.GetAppointmentByIdUseCase>(),
+          gh<_i986.LoadPatientsUseCase>(),
+        ));
     gh.lazySingleton<_i910.GetSecretaryDashboardDataUseCase>(() =>
         _i910.GetSecretaryDashboardDataUseCase(
             gh<_i1020.ISecretaryDashboardRepository>()));
@@ -1045,16 +1061,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i95.CallPatientUseCase>(),
           gh<_i996.UpdateAppointmentStatusUseCase>(),
           gh<_i449.CancelAppointmentUseCase>(),
-        ));
-    gh.factory<_i795.InvoicesCubit>(() => _i795.InvoicesCubit(
-          gh<_i366.GetInvoicesUseCase>(),
-          gh<_i920.CreateInvoiceUseCase>(),
-          gh<_i1072.UpdateInvoiceUseCase>(),
-          gh<_i109.DeleteInvoiceUseCase>(),
-          gh<_i289.GetPatientUnpaidAppointmentsUseCase>(),
-          gh<_i338.FindPatientByIdUseCase>(),
-          gh<_i209.GetAppointmentByIdUseCase>(),
-          gh<_i986.LoadPatientsUseCase>(),
         ));
     gh.factory<_i709.SettingsCubit>(() => _i709.SettingsCubit(
           gh<_i640.DeleteAccountUseCase>(),

@@ -1,3 +1,8 @@
+// ────────────────────────────────────────────────────────
+// InvoicesList — مكون عرض قائمة أو شبكة الفواتير الصادرة
+// يتكيف مع الهواتف بـ ListView والشاشات الكبيرة بـ GridView
+// ────────────────────────────────────────────────────────
+
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/invoices/domain/entities/invoice_entity.dart';
 import 'package:flutter/material.dart';

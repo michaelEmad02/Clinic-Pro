@@ -142,3 +142,68 @@ BEGIN
 END;
 $$;
 
+
+-- ────────────────────────────────────────────────────────
+-- دالة RPC لجلب المواعيد غير المفوترة (المستحقات المعلقة) دفعة واحدة من السيرفر
+-- ────────────────────────────────────────────────────────
+
+CREATE OR REPLACE FUNCTION get_unbilled_appointments_rpc(
+    p_clinic_id UUID DEFAULT NULL,
+    p_doctor_id UUID DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_results JSONB;
+BEGIN
+    SELECT COALESCE(
+        jsonb_agg(
+            jsonb_build_object(
+                'id', appt_data.id,
+                'clinic_id', appt_data.clinic_id,
+                'doctor_id', appt_data.doctor_id,
+                'patient_id', appt_data.patient_id,
+                'patient_name', appt_data.patient_name,
+                'appointment_type_name', appt_data.type_name,
+                'expected_price', appt_data.expected_price,
+                'paid_so_far', appt_data.paid_so_far,
+                'date', appt_data.date,
+                'time', appt_data.time
+            )
+            ORDER BY appt_data.date DESC, appt_data.time DESC
+        ),
+        '[]'::jsonb
+    )
+    INTO v_results
+    FROM (
+        SELECT 
+            a.id,
+            a.clinic_id,
+            a.doctor_id,
+            a.patient_id,
+            p.name AS patient_name,
+            at.name AS type_name,
+            COALESCE(a.price, 0.0) AS expected_price,
+            COALESCE(SUM(inv.paid_amount), 0.0) AS paid_so_far,
+            a.date,
+            a.time
+        FROM appointments a
+        LEFT JOIN patients p ON p.id = a.patient_id
+        LEFT JOIN doctor_appointment_types dat ON dat.id = a.type_id
+        LEFT JOIN appointment_types at ON at.id = dat.appointment_type_id
+        LEFT JOIN invoices inv ON inv.source_id = a.id
+        WHERE (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+          AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
+          AND a.status != 'cancelled'
+        GROUP BY 
+            a.id, a.clinic_id, a.doctor_id, a.patient_id, p.name, at.name, a.price, a.date, a.time
+        HAVING COALESCE(SUM(inv.paid_amount), 0.0) < COALESCE(a.price, 0.0)
+    ) appt_data;
+
+    RETURN v_results;
+END;
+$$;
+
+

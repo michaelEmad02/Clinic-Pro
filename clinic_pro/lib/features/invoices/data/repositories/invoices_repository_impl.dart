@@ -94,4 +94,16 @@ class InvoicesRepositoryImpl implements IInvoicesRepository {
       return Left(QueryFailure.fromException(e));
     }
   }
+
+  @override
+  Future<Either<Failure, List<UnpaidAppointmentEntity>>>
+      getClinicUnbilledAppointments(String clinicId, {String? doctorId}) async {
+    try {
+      final appointments =
+          await _remoteDataSource.getClinicUnbilledAppointments(clinicId, doctorId: doctorId);
+      return Right(appointments);
+    } catch (e) {
+      return Left(QueryFailure.fromException(e));
+    }
+  }
 }

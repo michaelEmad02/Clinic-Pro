@@ -24,8 +24,6 @@ class _AccountFormState extends State<AccountForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _mobileController = TextEditingController();
-  final _referralCodeController = TextEditingController();
-  bool _agreedToTerms = false;
   bool _obscurePassword = true;
 
   final _formKey = GlobalKey<FormState>();
@@ -36,16 +34,11 @@ class _AccountFormState extends State<AccountForm> {
     _emailController.dispose();
     _passwordController.dispose();
     _mobileController.dispose();
-    _referralCodeController.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      if (!_agreedToTerms) {
-        AppSnackbar.info(context, message: AppStrings.agreeToTerms);
-        return;
-      }
       context.read<AuthCubit>().register(
           email: _emailController.text,
           password: _passwordController.text,
