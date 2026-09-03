@@ -5,6 +5,8 @@ import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+import 'package:clinic_pro/core/constants/route_constants.dart';
+import 'package:go_router/go_router.dart';
 import 'financial_reports_screen.dart';
 import 'appointment_reports_screen.dart';
 import 'patient_reports_screen.dart';
@@ -22,6 +24,16 @@ class DoctorMyReportsScreen extends StatelessWidget {
 
     final categories = [
       _ReportCategoryItem(
+        title:
+            AppStrings.isArabic ? 'مستحقاتي المالية' : 'My Receivables Report',
+        subtitle: AppStrings.isArabic
+            ? 'ديون مرضي وحالات الفواتير والزيارات المعلقة'
+            : 'Debtor patients & pending outstandings',
+        icon: Icons.account_balance_wallet_outlined,
+        color: context.dangerText,
+        onTap: () => context.push(RouteConstants.reportsReceivables),
+      ),
+      _ReportCategoryItem(
         title: AppStrings.isArabic ? 'تقاريري المالية' : 'My Financial Reports',
         subtitle: AppStrings.isArabic
             ? 'ملخص الإيرادات والمجموع الشخصي'
@@ -36,7 +48,8 @@ class DoctorMyReportsScreen extends StatelessWidget {
         ),
       ),
       _ReportCategoryItem(
-        title: AppStrings.isArabic ? 'تقارير مواعيدي' : 'My Appointment Reports',
+        title:
+            AppStrings.isArabic ? 'تقارير مواعيدي' : 'My Appointment Reports',
         subtitle: AppStrings.isArabic
             ? 'نسب الحضور والإلغاء وتوزيع المواعيد'
             : 'Attendance, cancellation rates & appointment breakdown',
@@ -64,7 +77,9 @@ class DoctorMyReportsScreen extends StatelessWidget {
         ),
       ),
       _ReportCategoryItem(
-        title: AppStrings.isArabic ? 'تقارير الأدوية والروشتات' : 'My Prescription & Drug Reports',
+        title: AppStrings.isArabic
+            ? 'تقارير الأدوية والروشتات'
+            : 'My Prescription & Drug Reports',
         subtitle: AppStrings.isArabic
             ? 'توزيع الأدوية الموصوفة من قبلي'
             : 'Breakdown of drugs prescribed by me',
@@ -164,7 +179,8 @@ class _CategoryCard extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   color: item.color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radiusButton),
                 ),
                 child: Icon(item.icon, color: item.color, size: 28),
               ),

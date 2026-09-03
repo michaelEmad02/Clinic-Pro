@@ -323,6 +323,8 @@ import '../../features/reports/domain/usecases/get_doctor_performance_usecase.da
     as _i397;
 import '../../features/reports/domain/usecases/get_drug_stats_usecase.dart'
     as _i965;
+import '../../features/reports/domain/usecases/get_financial_receivables_report_usecase.dart'
+    as _i489;
 import '../../features/reports/domain/usecases/get_patient_stats_usecase.dart'
     as _i206;
 import '../../features/reports/domain/usecases/get_revenue_summary_usecase.dart'
@@ -339,6 +341,8 @@ import '../../features/reports/presentation/manager/doctor_performance_cubit.dar
     as _i174;
 import '../../features/reports/presentation/manager/drug_reports_cubit.dart'
     as _i405;
+import '../../features/reports/presentation/manager/financial_receivables_cubit.dart'
+    as _i386;
 import '../../features/reports/presentation/manager/financial_reports_cubit.dart'
     as _i977;
 import '../../features/reports/presentation/manager/patient_reports_cubit.dart'
@@ -783,6 +787,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i845.IPrescriptionRepository>(() =>
         _i678.PrescriptionRepositoryImpl(
             gh<_i482.IPrescriptionRemoteDataSource>()));
+    gh.lazySingleton<_i489.GetFinancialReceivablesReportUseCase>(() =>
+        _i489.GetFinancialReceivablesReportUseCase(
+            gh<_i187.IReportsRepository>()));
     gh.lazySingleton<_i657.ISettingsRepository>(() =>
         _i955.SettingsRepositoryImpl(gh<_i524.ISettingsRemoteDataSource>()));
     gh.lazySingleton<_i976.IDoctorDashboardRepository>(
@@ -996,6 +1003,9 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i476.AppointmentReportsCubit>(() =>
         _i476.AppointmentReportsCubit(gh<_i660.GetAppointmentStatsUseCase>()));
+    gh.factory<_i386.FinancialReceivablesCubit>(() =>
+        _i386.FinancialReceivablesCubit(
+            gh<_i489.GetFinancialReceivablesReportUseCase>()));
     gh.lazySingleton<_i27.GetDoctorDashboardDataUseCase>(() =>
         _i27.GetDoctorDashboardDataUseCase(
             gh<_i976.IDoctorDashboardRepository>()));

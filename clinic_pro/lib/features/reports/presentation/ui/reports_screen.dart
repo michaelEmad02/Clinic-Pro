@@ -15,6 +15,9 @@ import 'doctor_reports_screen.dart';
 import 'drug_reports_screen.dart';
 import 'clinic_reports_screen.dart';
 
+import 'package:go_router/go_router.dart';
+import '../../../../core/constants/route_constants.dart';
+
 class ReportsScreen extends StatelessWidget {
   final bool isOwner;
 
@@ -47,6 +50,15 @@ class _ReportsCategoryBody extends StatelessWidget {
             builder: (_) => const FinancialReportsScreen(),
           ),
         ),
+      ),
+      _ReportCategoryItem(
+        title: AppStrings.isArabic ? 'المستحقات المالية' : 'Financial Receivables',
+        subtitle: AppStrings.isArabic
+            ? 'ديون المرضى وحالات التفوتر والتحصيل'
+            : 'Debtor patients & pending outstandings',
+        icon: Icons.account_balance_wallet_outlined,
+        color: context.danger,
+        onTap: () => context.push(RouteConstants.reportsReceivables),
       ),
       _ReportCategoryItem(
         title: AppStrings.isArabic ? 'تقارير المواعيد' : 'Appointment Reports',

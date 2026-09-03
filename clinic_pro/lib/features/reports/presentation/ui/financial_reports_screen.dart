@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+import 'package:clinic_pro/core/constants/route_constants.dart';
 import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -63,6 +65,14 @@ class _FinancialReportsBody extends StatelessWidget {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.account_balance_wallet_outlined,
+              color: context.primary,
+            ),
+            tooltip: AppStrings.isArabic ? 'تقرير المستحقات المالية' : 'Receivables Report',
+            onPressed: () => context.push(RouteConstants.reportsReceivables),
+          ),
           IconButton(
             icon: Icon(
               Icons.refresh_rounded,

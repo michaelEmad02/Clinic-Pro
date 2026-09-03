@@ -21,8 +21,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddInvoiceSheet {
-  static Future<void> show(BuildContext context,
-      {String? initialAppointmentId, InvoiceEntity? invoice}) {
+  static Future<void> show(
+    BuildContext context, {
+    String? initialAppointmentId,
+    InvoiceEntity? invoice,
+    String? initialPatientId,
+    String? initialPatientName,
+    String? initialPatientPhone,
+  }) {
     final settingsState = context.read<SettingsCubit>().state;
     final clinicId = settingsState.clinicEntity?.id ?? '';
     final authUser = context.read<AuthCubit>().state.user;
@@ -48,6 +54,9 @@ class AddInvoiceSheet {
         child: _AddInvoiceForm(
           initialAppointmentId: initialAppointmentId,
           invoice: invoice,
+          initialPatientId: initialPatientId,
+          initialPatientName: initialPatientName,
+          initialPatientPhone: initialPatientPhone,
         ),
       ),
     );
@@ -57,7 +66,17 @@ class AddInvoiceSheet {
 class _AddInvoiceForm extends StatefulWidget {
   final String? initialAppointmentId;
   final InvoiceEntity? invoice;
-  const _AddInvoiceForm({this.initialAppointmentId, this.invoice});
+  final String? initialPatientId;
+  final String? initialPatientName;
+  final String? initialPatientPhone;
+
+  const _AddInvoiceForm({
+    this.initialAppointmentId,
+    this.invoice,
+    this.initialPatientId,
+    this.initialPatientName,
+    this.initialPatientPhone,
+  });
 
   @override
   State<_AddInvoiceForm> createState() => _AddInvoiceFormState();
@@ -119,6 +138,23 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
         }
         setState(() => _isLoading = false);
         return;
+      }
+
+      if (widget.initialPatientId != null) {
+        setState(() => _isLoading = true);
+        final patient = await cubit.getPatientById(widget.initialPatientId!);
+        if (patient != null) {
+          await _selectPatient(patient);
+        } else {
+          setState(() {
+            _selectedPatientId = widget.initialPatientId;
+            _selectedPatientName = widget.initialPatientName;
+            _selectedPatientPhone = widget.initialPatientPhone;
+            _patientSearchController.text = widget.initialPatientName ?? '';
+            _showPatientSearch = false;
+          });
+        }
+        setState(() => _isLoading = false);
       }
 
       if (widget.initialAppointmentId != null) {

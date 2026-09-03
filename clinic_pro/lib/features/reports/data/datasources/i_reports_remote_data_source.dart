@@ -5,6 +5,7 @@ import '../models/appointment_stats_model.dart';
 import '../models/patient_stats_model.dart';
 import '../models/doctor_performance_model.dart';
 import '../models/template_stats_model.dart';
+import '../models/financial_receivables_model.dart';
 import '../../domain/entities/clinic_report_entity.dart';
 import '../../domain/entities/reports_entities.dart';
 
@@ -47,6 +48,14 @@ abstract class IReportsRemoteDataSource {
   });
   Future<ClinicReportEntity> fetchClinicReport(
     String ownerId, {
+    bool forceRefresh = false,
+  });
+  Future<FinancialReceivablesModel> fetchFinancialReceivablesReport({
+    String? ownerId,
+    String? doctorId,
+    String? clinicId,
+    ReportsDateRange range = ReportsDateRange.thisMonth,
+    DateTimeRange? customDateRange,
     bool forceRefresh = false,
   });
 }

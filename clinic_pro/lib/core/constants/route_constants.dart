@@ -43,6 +43,7 @@ class RouteConstants {
   static const String invoices = '/invoices';
   static const String expenses = '/expenses';
   static const String reports = '/reports';
+  static const String reportsReceivables = '/reports/receivables';
   static const String doctorMyReports = '/doctor-my-reports';
 
   // الطاقم والعيادات

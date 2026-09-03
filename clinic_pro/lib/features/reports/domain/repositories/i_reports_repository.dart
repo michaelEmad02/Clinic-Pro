@@ -4,6 +4,7 @@ import 'package:clinic_pro/features/reports/presentation/manager/reports_state.d
 import 'package:dartz/dartz.dart';
 import '../entities/reports_entities.dart';
 import '../entities/clinic_report_entity.dart';
+import '../entities/financial_receivables_entity.dart';
 
 abstract class IReportsRepository {
   Future<Either<Failure, RevenueSummaryEntity>> getRevenueSummary({
@@ -44,6 +45,14 @@ abstract class IReportsRepository {
   });
   Future<Either<Failure, ClinicReportEntity>> getClinicReport(
     String ownerId, {
+    bool forceRefresh = false,
+  });
+  Future<Either<Failure, FinancialReceivablesEntity>> getFinancialReceivablesReport({
+    String? ownerId,
+    String? doctorId,
+    String? clinicId,
+    ReportsDateRange range = ReportsDateRange.thisMonth,
+    DateTimeRange? customDateRange,
     bool forceRefresh = false,
   });
 }

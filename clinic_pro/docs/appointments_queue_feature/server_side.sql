@@ -204,6 +204,5 @@ BEGIN
 
     RETURN v_results;
 END;
-$$;
-
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 

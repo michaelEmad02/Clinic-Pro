@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import '../../domain/entities/reports_entities.dart';
 import '../../domain/entities/clinic_report_entity.dart';
+import '../../domain/entities/financial_receivables_entity.dart';
 import '../../domain/repositories/i_reports_repository.dart';
 import '../datasources/i_reports_remote_data_source.dart';
 
@@ -147,6 +148,30 @@ class ReportsRepositoryImpl implements IReportsRepository {
         forceRefresh: forceRefresh,
       );
       return Right(data);
+    } catch (e) {
+      return Left(QueryFailure.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, FinancialReceivablesEntity>> getFinancialReceivablesReport({
+    String? ownerId,
+    String? doctorId,
+    String? clinicId,
+    ReportsDateRange range = ReportsDateRange.thisMonth,
+    DateTimeRange? customDateRange,
+    bool forceRefresh = false,
+  }) async {
+    try {
+      final model = await _remoteDataSource.fetchFinancialReceivablesReport(
+        ownerId: ownerId,
+        doctorId: doctorId,
+        clinicId: clinicId,
+        range: range,
+        customDateRange: customDateRange,
+        forceRefresh: forceRefresh,
+      );
+      return Right(model);
     } catch (e) {
       return Left(QueryFailure.fromException(e));
     }

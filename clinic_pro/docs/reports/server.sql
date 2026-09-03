@@ -1100,3 +1100,228 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+
+
+
+-- ────────────────────────────────────────────────────────
+-- RPC Function: get_financial_receivables_report_rpc
+-- حساب تقرير المستحقات المالية وتحليل أعمار الديون وقائمة المرضى المديونين
+-- ────────────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION get_financial_receivables_report_rpc(
+    p_owner_id UUID DEFAULT NULL,
+    p_clinic_id UUID DEFAULT NULL,
+    p_doctor_id UUID DEFAULT NULL,
+    p_start_date TIMESTAMPTZ DEFAULT NULL,
+    p_end_date TIMESTAMPTZ DEFAULT NULL
+)
+RETURNS JSONB AS $$
+DECLARE
+    v_total_receivables NUMERIC := 0.0;
+    v_issued_invoices_pending NUMERIC := 0.0;
+    v_unbilled_visits_amount NUMERIC := 0.0;
+    v_debtor_patients_count INT := 0;
+
+    v_under_7 NUMERIC := 0.0;
+    v_days_7_30 NUMERIC := 0.0;
+    v_over_30 NUMERIC := 0.0;
+
+    v_debtors JSONB := '[]'::jsonb;
+    v_result JSONB;
+BEGIN
+    -- 1. المبالغ المعلقة من الفواتير الصادرة المرتبطة بمواعيد أو الفواتير المستقلة
+    -- المتبقي الفعلي على أي موعد = سعر الموعد - مجموع كافة المدفوعات المسجلة في فواتير هذا الموعد
+    WITH appt_invoices AS (
+        SELECT 
+            source_id,
+            COALESCE(SUM(paid_amount), 0.0) AS total_paid,
+            COUNT(id) AS inv_count
+        FROM invoices
+        WHERE source_id IS NOT NULL
+        GROUP BY source_id
+    ),
+    appointment_debts AS (
+        SELECT 
+            a.patient_id,
+            CASE WHEN COALESCE(ai.inv_count, 0) > 0 THEN (COALESCE(a.price, 0.0) - COALESCE(ai.total_paid, 0.0)) ELSE 0.0 END AS issued_debt,
+            CASE WHEN COALESCE(ai.inv_count, 0) = 0 THEN (COALESCE(a.price, 0.0) - COALESCE(ai.total_paid, 0.0)) ELSE 0.0 END AS unbilled_debt,
+            CASE WHEN COALESCE(ai.inv_count, 0) = 0 THEN 1 ELSE 0 END AS unbilled_count,
+            a.created_at AS max_date
+        FROM appointments a
+        LEFT JOIN clinics c ON c.id = a.clinic_id
+        LEFT JOIN appt_invoices ai ON ai.source_id = a.id
+        WHERE (p_owner_id IS NULL OR c.owner_id = p_owner_id)
+          AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+          AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
+          AND (p_start_date IS NULL OR a.created_at >= p_start_date)
+          AND (p_end_date IS NULL OR a.created_at <= p_end_date)
+          AND a.status != 'cancelled'
+          AND (COALESCE(a.price, 0.0) - COALESCE(ai.total_paid, 0.0)) > 0.01
+    ),
+    standalone_invoices AS (
+        SELECT 
+            inv.patient_id,
+            (inv.total_amount - inv.paid_amount) AS issued_debt,
+            0.0 AS unbilled_debt,
+            0 AS unbilled_count,
+            inv.created_at AS max_date
+        FROM invoices inv
+        LEFT JOIN clinics c ON c.id = inv.clinic_id
+        WHERE (inv.source_id IS NULL OR inv.source_type != 'appointment')
+          AND (p_owner_id IS NULL OR c.owner_id = p_owner_id)
+          AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+          AND (p_doctor_id IS NULL OR inv.doctor_id = p_doctor_id)
+          AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
+          AND (p_end_date IS NULL OR inv.created_at <= p_end_date)
+          AND (inv.total_amount - inv.paid_amount) > 0.01
+    ),
+    all_debts AS (
+        SELECT * FROM appointment_debts
+        UNION ALL
+        SELECT * FROM standalone_invoices
+    )
+    SELECT 
+        COALESCE(SUM(issued_debt), 0.0),
+        COALESCE(SUM(unbilled_debt), 0.0),
+        COALESCE(SUM(issued_debt + unbilled_debt), 0.0)
+    INTO v_issued_invoices_pending, v_unbilled_visits_amount, v_total_receivables
+    FROM all_debts;
+
+    -- 2. تجميع قائمة المرضى المديونين
+    WITH appt_invoices AS (
+        SELECT 
+            source_id,
+            COALESCE(SUM(paid_amount), 0.0) AS total_paid,
+            COUNT(id) AS inv_count
+        FROM invoices
+        WHERE source_id IS NOT NULL
+        GROUP BY source_id
+    ),
+    appointment_debts AS (
+        SELECT 
+            a.patient_id,
+            CASE WHEN COALESCE(ai.inv_count, 0) > 0 THEN (COALESCE(a.price, 0.0) - COALESCE(ai.total_paid, 0.0)) ELSE 0.0 END AS issued_debt,
+            CASE WHEN COALESCE(ai.inv_count, 0) = 0 THEN (COALESCE(a.price, 0.0) - COALESCE(ai.total_paid, 0.0)) ELSE 0.0 END AS unbilled_debt,
+            CASE WHEN COALESCE(ai.inv_count, 0) = 0 THEN 1 ELSE 0 END AS unbilled_count,
+            a.created_at AS max_date
+        FROM appointments a
+        LEFT JOIN clinics c ON c.id = a.clinic_id
+        LEFT JOIN appt_invoices ai ON ai.source_id = a.id
+        WHERE (p_owner_id IS NULL OR c.owner_id = p_owner_id)
+          AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+          AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id)
+          AND (p_start_date IS NULL OR a.created_at >= p_start_date)
+          AND (p_end_date IS NULL OR a.created_at <= p_end_date)
+          AND a.status != 'cancelled'
+          AND (COALESCE(a.price, 0.0) - COALESCE(ai.total_paid, 0.0)) > 0.01
+    ),
+    standalone_invoices AS (
+        SELECT 
+            inv.patient_id,
+            (inv.total_amount - inv.paid_amount) AS issued_debt,
+            0.0 AS unbilled_debt,
+            0 AS unbilled_count,
+            inv.created_at AS max_date
+        FROM invoices inv
+        LEFT JOIN clinics c ON c.id = inv.clinic_id
+        WHERE (inv.source_id IS NULL OR inv.source_type != 'appointment')
+          AND (p_owner_id IS NULL OR c.owner_id = p_owner_id)
+          AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id)
+          AND (p_doctor_id IS NULL OR inv.doctor_id = p_doctor_id)
+          AND (p_start_date IS NULL OR inv.created_at >= p_start_date)
+          AND (p_end_date IS NULL OR inv.created_at <= p_end_date)
+          AND (inv.total_amount - inv.paid_amount) > 0.01
+    ),
+    all_debts AS (
+        SELECT * FROM appointment_debts
+        UNION ALL
+        SELECT * FROM standalone_invoices
+    ),
+    aggregated_patients AS (
+        SELECT 
+            ad.patient_id,
+            p.name AS patient_name,
+            p.phone AS patient_phone,
+            SUM(ad.issued_debt) AS total_issued_debt,
+            SUM(ad.unbilled_debt) AS total_unbilled_debt,
+            SUM(ad.unbilled_count) AS total_unbilled_count,
+            (SUM(ad.issued_debt) + SUM(ad.unbilled_debt)) AS total_due,
+            MAX(ad.max_date) AS last_activity_date
+        FROM all_debts ad
+        LEFT JOIN patients p ON p.id = ad.patient_id
+        WHERE ad.patient_id IS NOT NULL
+        GROUP BY ad.patient_id, p.name, p.phone
+        HAVING (SUM(ad.issued_debt) + SUM(ad.unbilled_debt)) > 0.01
+    )
+    SELECT 
+        COUNT(*),
+        COALESCE(
+            jsonb_agg(
+                jsonb_build_object(
+                    'patient_id', ap.patient_id,
+                    'patient_name', ap.patient_name,
+                    'patient_phone', ap.patient_phone,
+                    'issued_pending_amount', ap.total_issued_debt,
+                    'unbilled_amount', ap.total_unbilled_debt,
+                    'unbilled_visits_count', ap.total_unbilled_count,
+                    'total_due', ap.total_due,
+                    'last_visit_date', ap.last_activity_date
+                )
+                ORDER BY ap.total_due DESC
+            ),
+            '[]'::jsonb
+        )
+    INTO v_debtor_patients_count, v_debtors
+    FROM aggregated_patients ap;
+
+    -- 3. تحليل أعمار الديون (Aging Analysis)
+    WITH appt_invoices AS (
+        SELECT source_id, COALESCE(SUM(paid_amount), 0.0) AS total_paid, COUNT(id) AS inv_count
+        FROM invoices WHERE source_id IS NOT NULL GROUP BY source_id
+    ),
+    all_debts AS (
+        SELECT a.patient_id, (COALESCE(a.price, 0.0) - COALESCE(ai.total_paid, 0.0)) AS total_due, a.created_at AS max_date
+        FROM appointments a LEFT JOIN clinics c ON c.id = a.clinic_id LEFT JOIN appt_invoices ai ON ai.source_id = a.id
+        WHERE (p_owner_id IS NULL OR c.owner_id = p_owner_id) AND (p_clinic_id IS NULL OR a.clinic_id = p_clinic_id)
+          AND (p_doctor_id IS NULL OR a.doctor_id = p_doctor_id) AND (p_start_date IS NULL OR a.created_at >= p_start_date)
+          AND (p_end_date IS NULL OR a.created_at <= p_end_date) AND a.status != 'cancelled'
+          AND (COALESCE(a.price, 0.0) - COALESCE(ai.total_paid, 0.0)) > 0.01
+        UNION ALL
+        SELECT inv.patient_id, (inv.total_amount - inv.paid_amount) AS total_due, inv.created_at AS max_date
+        FROM invoices inv LEFT JOIN clinics c ON c.id = inv.clinic_id
+        WHERE (inv.source_id IS NULL OR inv.source_type != 'appointment') AND (p_owner_id IS NULL OR c.owner_id = p_owner_id)
+          AND (p_clinic_id IS NULL OR inv.clinic_id = p_clinic_id) AND (p_doctor_id IS NULL OR inv.doctor_id = p_doctor_id)
+          AND (p_start_date IS NULL OR inv.created_at >= p_start_date) AND (p_end_date IS NULL OR inv.created_at <= p_end_date)
+          AND (inv.total_amount - inv.paid_amount) > 0.01
+    )
+    SELECT 
+        COALESCE(SUM(CASE WHEN (NOW() - last_activity_date) <= INTERVAL '7 days' THEN total_due ELSE 0 END), 0.0),
+        COALESCE(SUM(CASE WHEN (NOW() - last_activity_date) > INTERVAL '7 days' AND (NOW() - last_activity_date) <= INTERVAL '30 days' THEN total_due ELSE 0 END), 0.0),
+        COALESCE(SUM(CASE WHEN (NOW() - last_activity_date) > INTERVAL '30 days' THEN total_due ELSE 0 END), 0.0)
+    INTO v_under_7, v_days_7_30, v_over_30
+    FROM (
+        SELECT ad.patient_id, SUM(ad.total_due) AS total_due, MAX(ad.max_date) AS last_activity_date
+        FROM all_debts ad
+        GROUP BY ad.patient_id
+    ) ag;
+
+    v_result := jsonb_build_object(
+        'total_receivables', v_total_receivables,
+        'issued_invoices_pending', v_issued_invoices_pending,
+        'unbilled_visits_amount', v_unbilled_visits_amount,
+        'debtor_patients_count', v_debtor_patients_count,
+        'aging', jsonb_build_object(
+            'under_7_days', v_under_7,
+            'days_7_to_30', v_days_7_30,
+            'over_30_days', v_over_30
+        ),
+        'debtors', v_debtors
+    );
+
+    RETURN v_result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
+
+

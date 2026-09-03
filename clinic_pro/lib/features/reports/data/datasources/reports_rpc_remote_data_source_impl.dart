@@ -9,6 +9,7 @@ import '../models/patient_stats_model.dart';
 import '../models/doctor_performance_model.dart';
 import '../models/template_stats_model.dart';
 import '../models/drug_stats_model.dart';
+import '../models/financial_receivables_model.dart';
 import '../../domain/entities/clinic_report_entity.dart';
 import '../../domain/entities/reports_entities.dart';
 import 'i_reports_remote_data_source.dart';
@@ -282,6 +283,38 @@ class ReportsRpcRemoteDataSourceImpl implements IReportsRemoteDataSource {
       totalDoctors: (data['total_doctors'] as num? ?? 0).toInt(),
       clinics: clinicsList,
     );
+    _cacheManager.set(cacheKey, result);
+    return result;
+  }
+
+  @override
+  Future<FinancialReceivablesModel> fetchFinancialReceivablesReport({
+    String? ownerId,
+    String? doctorId,
+    String? clinicId,
+    ReportsDateRange range = ReportsDateRange.thisMonth,
+    DateTimeRange? customDateRange,
+    bool forceRefresh = false,
+  }) async {
+    final cacheKey =
+        'receivables_${ownerId ?? ''}_${doctorId ?? ''}_${clinicId ?? ''}_${range.name}_${customDateRange?.start.millisecondsSinceEpoch}_${customDateRange?.end.millisecondsSinceEpoch}';
+    if (forceRefresh) {
+      _cacheManager.clear(cacheKey);
+    } else {
+      final cached = _cacheManager.get<FinancialReceivablesModel>(cacheKey);
+      if (cached != null) return cached;
+    }
+
+    final dateParams = _buildDateParams(range: range, customDateRange: customDateRange);
+    final response = await _cloudService.rpc('get_financial_receivables_report_rpc', params: {
+      'p_owner_id': (ownerId != null && ownerId.isNotEmpty) ? ownerId : null,
+      'p_clinic_id': (clinicId != null && clinicId.isNotEmpty) ? clinicId : null,
+      'p_doctor_id': (doctorId != null && doctorId.isNotEmpty) ? doctorId : null,
+      ...dateParams,
+    });
+
+    final data = response as Map<String, dynamic>;
+    final result = FinancialReceivablesModel.fromJson(data);
     _cacheManager.set(cacheKey, result);
     return result;
   }

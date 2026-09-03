@@ -113,7 +113,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
           base: fontData,
           bold: fontBoldData,
         ),
-        textDirection: AppStrings.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+        textDirection: pw.TextDirection.rtl,
         build: (pw.Context context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -133,10 +133,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                             pw.Container(
                               width: 30,
                               height: 30,
-                              margin: pw.EdgeInsets.only(
-                                left: AppStrings.isArabic ? 6 : 0,
-                                right: AppStrings.isArabic ? 0 : 6,
-                              ),
+                              margin: const pw.EdgeInsets.only(left: 6),
                               child: pw.ClipOval(
                                 child: pw.Image(
                                   logoImage,
@@ -174,9 +171,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                       pw.SizedBox(height: 4),
                       if (showDoctorInfo)
                         pw.Align(
-                          alignment: AppStrings.isArabic
-                              ? pw.Alignment.centerLeft
-                              : pw.Alignment.centerRight,
+                          alignment: pw.Alignment.centerLeft,
                           child: pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
@@ -214,10 +209,7 @@ class PrescriptionPdfServiceImpl implements IPrescriptionPdfService {
                             pw.Container(
                               width: 50,
                               height: 50,
-                              margin: pw.EdgeInsets.only(
-                                left: AppStrings.isArabic ? 10 : 0,
-                                right: AppStrings.isArabic ? 0 : 10,
-                              ),
+                              margin: const pw.EdgeInsets.only(left: 10),
                               child: pw.ClipOval(
                                 child: pw.Image(
                                   logoImage,
