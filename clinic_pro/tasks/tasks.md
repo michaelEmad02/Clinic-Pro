@@ -44,6 +44,7 @@
  - [x] language
  - [x] themes
  - local notifications
+ - [] pagination
 
 ## reports
  - [x] عمل refresh indecator in reports

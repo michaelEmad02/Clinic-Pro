@@ -148,6 +148,14 @@ class FailureStrings {
       ? 'الميزة غير متاحة في باقة اشتراكك الحالية'
       : 'Feature not included in your current subscription plan.';
 
+  static String get subscriptionExpired => _isAr
+      ? 'انتهت صلاحية الاشتراك، يرجى التجديد للمتابعة'
+      : 'Subscription has expired. Please renew to continue.';
+
+  static String get noSubscription => _isAr
+      ? 'لا يوجد اشتراك نشط مسجل لهذا الحساب، يرجى الاشتراك للمتابعة'
+      : 'No active subscription found for this account. Please subscribe to continue.';
+
   // Storage Failures
   static String get fileNotFound => _isAr
       ? 'الملف غير موجود.'

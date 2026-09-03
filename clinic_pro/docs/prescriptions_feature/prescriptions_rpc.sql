@@ -1,10 +1,9 @@
 -- ==============================================================================
 -- دالة جلب الروشتات السريعة والمجمعة عبر السيرفر (get_all_prescriptions_rpc)
--- تقوم بجلب تفاصيل الروشتات مرتبة تنازلياً حسب تاريخ الإنشاء (created_at DESC)
--- مع بيانات المرضى وعناصر الأدوية في استعلام JSON واحد عالي الأداء
+-- [نسخة محدثة ومحمية أمنياً: تمنع الأطباء من رؤية روشتات زملائهم وتلزمهم بروشتاتهم فقط]
 -- ==============================================================================
 
-CREATE OR REPLACE FUNCTION get_all_prescriptions_rpc(
+CREATE OR REPLACE FUNCTION public.get_all_prescriptions_rpc(
   p_clinic_id uuid DEFAULT NULL,
   p_doctor_id uuid DEFAULT NULL,
   p_patient_id uuid DEFAULT NULL,
@@ -12,8 +11,26 @@ CREATE OR REPLACE FUNCTION get_all_prescriptions_rpc(
   p_offset int DEFAULT 0
 ) RETURNS jsonb AS $$
 DECLARE
+  v_effective_doctor_id uuid := p_doctor_id;
+  v_is_doctor boolean := false;
   v_result jsonb := '[]'::jsonb;
 BEGIN
+  -- 1. التحقق الصريح من تسجيل الدخول
+  IF auth.uid() IS NULL THEN
+    RETURN '[]'::jsonb;
+  END IF;
+
+  -- 2. التحقق مما إذا كان المستخدم الحالي طبيباً
+  SELECT EXISTS (
+    SELECT 1 FROM public.clinic_staff 
+    WHERE user_id = auth.uid() AND role = 'doctor'
+  ) INTO v_is_doctor;
+
+  -- 3. إذا كان المستدعي طبيباً، يتم إجباره فقط على رؤية روشتاته الشخصية لمنع أي اختراق
+  IF v_is_doctor THEN
+    v_effective_doctor_id := auth.uid();
+  END IF;
+
   SELECT COALESCE(jsonb_agg(
     jsonb_build_object(
       'id', sub.id,
@@ -68,12 +85,13 @@ BEGIN
     SELECT p.*
     FROM prescriptions p
     WHERE (p_clinic_id IS NULL OR p.clinic_id = p_clinic_id)
-      AND (p_doctor_id IS NULL OR p.doctor_id = p_doctor_id)
+      AND (v_effective_doctor_id IS NULL OR p.doctor_id = v_effective_doctor_id)
       AND (p_patient_id IS NULL OR p.patient_id = p_patient_id)
+      AND public.is_clinic_member(p.clinic_id)
     ORDER BY p.created_at DESC
     LIMIT p_limit OFFSET p_offset
   ) sub;
 
   RETURN v_result;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;

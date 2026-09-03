@@ -24,10 +24,19 @@ abstract class QueryFailure extends Failure {
 
     // معالجة نصية عامة لأخطاء الشبكة والقيود والصلاحيات
     final message = e.toString();
-    if (message.contains('FEATURE_NOT_ALLOWED') || message.contains('40301')) {
+    if (message.contains('SUBSCRIPTION_EXPIRED')) {
+      return const SubscriptionExpiredFailure();
+    }
+    if (message.contains('NO_SUBSCRIPTION')) {
+      return const NoSubscriptionFailure();
+    }
+    if (message.contains('FEATURE_NOT_ALLOWED')) {
       final parts = message.split('FEATURE_NOT_ALLOWED:');
       final key = parts.length > 1 ? parts[1].trim() : '';
       return FeatureNotAllowedFailure(featureKey: key);
+    }
+    if (message.contains('PLAN_LIMIT_REACHED')) {
+      return const PlanLimitQueryFailure();
     }
     if (message.contains('socket') ||
         message.contains('Network') ||
@@ -63,12 +72,18 @@ abstract class QueryFailure extends Failure {
 
   factory QueryFailure.fromPostgrestException(PostgrestException e) {
     final message = e.message;
-    if (message.contains('FEATURE_NOT_ALLOWED') || message.contains('40301')) {
+    if (message.contains('SUBSCRIPTION_EXPIRED')) {
+      return const SubscriptionExpiredFailure();
+    }
+    if (message.contains('NO_SUBSCRIPTION')) {
+      return const NoSubscriptionFailure();
+    }
+    if (message.contains('FEATURE_NOT_ALLOWED')) {
       final parts = message.split('FEATURE_NOT_ALLOWED:');
       final key = parts.length > 1 ? parts[1].trim() : '';
       return FeatureNotAllowedFailure(featureKey: key);
     }
-    if (message.contains('PLAN_LIMIT_REACHED') || message.contains('40302')) {
+    if (message.contains('PLAN_LIMIT_REACHED')) {
       return const PlanLimitQueryFailure();
     }
 
@@ -305,6 +320,20 @@ class FeatureNotAllowedFailure extends QueryFailure {
 
   @override
   String get defaultMessage => FailureStrings.featureNotAllowed;
+}
+
+class SubscriptionExpiredFailure extends QueryFailure {
+  const SubscriptionExpiredFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.subscriptionExpired;
+}
+
+class NoSubscriptionFailure extends QueryFailure {
+  const NoSubscriptionFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.noSubscription;
 }
 
 // ─── Unknown / Fallback Failure ──────────────────────────────

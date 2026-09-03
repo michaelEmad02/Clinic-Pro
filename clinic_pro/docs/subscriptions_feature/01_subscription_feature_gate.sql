@@ -963,3 +963,185 @@ BEGIN
   RETURN true;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+
+/* ==============================================================================
+   🔒 2️⃣ (ب) Trigger حد الدعوات والموظفين (Invitations & Staff Limit Check)
+   ============================================================================== */
+
+CREATE OR REPLACE FUNCTION check_invitation_staff_limit()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_owner_id UUID;
+  v_max_staff INT;
+  v_current_staff_count INT := 0;
+  v_pending_invitations_count INT := 0;
+  v_total_count INT := 0;
+BEGIN
+  -- 1️⃣ تحديد مالك العيادة من جدول العيادات (Clinics)
+  SELECT owner_id INTO v_owner_id 
+  FROM clinics 
+  WHERE id = NEW.clinic_id;
+
+  -- 2️⃣ معرفة الحد الأقصى للموظفين المسجل في الباقة النشطة للمالك
+  SELECT pf.max_staff INTO v_max_staff
+  FROM subscriptions s
+  JOIN plans_features pf ON s.plan_id = pf.plan_id
+  WHERE s.owner_id = v_owner_id 
+    AND s.status = 'active'
+    AND (s.end_at IS NULL OR s.end_at > now())
+  ORDER BY s.created_at DESC 
+  LIMIT 1;
+
+  -- 3️⃣ تطبيق الحد فقط إذا كانت القيمة أكبر من 0 (أما -1 أو NULL فتعني غير محدود)
+  IF v_max_staff IS NOT NULL AND v_max_staff > 0 THEN
+    
+    -- حساب عدد الموظفين الحاليين الفعليين في جميع عيادات هذا المالك
+    SELECT COUNT(*) INTO v_current_staff_count 
+    FROM clinic_staff 
+    WHERE clinic_id IN (SELECT id FROM clinics WHERE owner_id = v_owner_id);
+
+    -- حساب عدد الدعوات المعلقة (Pending Invitations) في عيادات هذا المالك
+    SELECT COUNT(*) INTO v_pending_invitations_count
+    FROM invitations 
+    WHERE clinic_id IN (SELECT id FROM clinics WHERE owner_id = v_owner_id)
+      AND status = 'pending';
+
+    -- المجموع الكلي (الموظفين الفعليين + الدعوات المعلقة)
+    v_total_count := v_current_staff_count + v_pending_invitations_count;
+
+    -- إذا كان المجموع وصل أو تجاوز الحد المسموح به في الباقة
+    IF v_total_count >= v_max_staff THEN
+      RAISE EXCEPTION 'FEATURE_NOT_ALLOWED: max_staff_limit - لقد وصلت للحد الأقصى المسموح به من الموظفين والدعوات في خطتك الحالية.' 
+      USING ERRCODE = '40301';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- إنشاء وتطبيق الـ Trigger على جدول invitations قبل إضافة أي دعوة جديدة
+DROP TRIGGER IF EXISTS trigger_check_invitation_staff_limit ON invitations;
+
+CREATE TRIGGER trigger_check_invitation_staff_limit
+BEFORE INSERT ON invitations
+FOR EACH ROW EXECUTE FUNCTION check_invitation_staff_limit();
+
+
+
+
+
+
+
+
+-- 3️⃣ Trigger حد المرضى (Patients Limit)
+CREATE OR REPLACE FUNCTION check_patient_limit()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_owner_id UUID;
+  v_max_patients INT;
+  v_current_count INT;
+BEGIN
+  -- معرفة المالك التابع له العيادة
+  SELECT owner_id INTO v_owner_id FROM clinics WHERE id = NEW.clinic_id;
+
+  SELECT pf.max_patients INTO v_max_patients
+  FROM subscriptions s
+  JOIN plans_features pf ON s.plan_id = pf.plan_id
+  WHERE s.owner_id = v_owner_id AND s.status = 'active'
+  ORDER BY s.created_at DESC LIMIT 1;
+
+  -- إذا كانت القيمة > 0 يتم تطبيق الحد (أما <= 0 أو -1 غير محدود)
+  IF v_max_patients IS NOT NULL AND v_max_patients > 0 THEN
+    SELECT COUNT(*) INTO v_current_count 
+    FROM patients 
+    WHERE clinic_id IN (SELECT id FROM clinics WHERE owner_id = v_owner_id);
+
+    IF v_current_count >= v_max_patients THEN
+      RAISE EXCEPTION 'لقد وصلت للحد الأقصى المسموح به من المرضى في خطتك الحالية.';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_check_patient_limit ON patients;
+CREATE TRIGGER trigger_check_patient_limit
+BEFORE INSERT ON patients
+FOR EACH ROW EXECUTE FUNCTION check_patient_limit();
+
+
+
+-- 1️⃣ Trigger حد العيادات (Clinics Limit)
+CREATE OR REPLACE FUNCTION check_clinic_limit()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_max_clinics INT;
+  v_current_count INT;
+BEGIN
+  SELECT pf.max_clinics INTO v_max_clinics
+  FROM subscriptions s
+  JOIN plans_features pf ON s.plan_id = pf.plan_id
+  WHERE s.owner_id = NEW.owner_id AND s.status = 'active'
+  ORDER BY s.created_at DESC LIMIT 1;
+
+  -- إذا كانت القيمة > 0 يتم تطبيق الحد، أما إذا كانت -1 أو <= 0 فيتجاوز الشرط (غير محدود)
+  IF v_max_clinics IS NOT NULL AND v_max_clinics > 0 THEN
+    SELECT COUNT(*) INTO v_current_count FROM clinics WHERE owner_id = NEW.owner_id;
+    IF v_current_count >= v_max_clinics THEN
+      RAISE EXCEPTION 'لقد وصلت للحد الأقصى المسموح به من العيادات في خطتك الحالية.';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_check_clinic_limit ON clinics;
+CREATE TRIGGER trigger_check_clinic_limit
+BEFORE INSERT ON clinics
+FOR EACH ROW EXECUTE FUNCTION check_clinic_limit();
+
+
+
+
+-- 2️⃣ Trigger حد الموظفين (Staff Limit)
+CREATE OR REPLACE FUNCTION check_staff_limit()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_owner_id UUID;
+  v_max_staff INT;
+  v_current_count INT;
+BEGIN
+  -- معرفة المالك التابع له هذه العيادة
+  SELECT owner_id INTO v_owner_id FROM clinics WHERE id = NEW.clinic_id;
+
+  SELECT pf.max_staff INTO v_max_staff
+  FROM subscriptions s
+  JOIN plans_features pf ON s.plan_id = pf.plan_id
+  WHERE s.owner_id = v_owner_id AND s.status = 'active'
+  ORDER BY s.created_at DESC LIMIT 1;
+
+  -- إذا كانت القيمة > 0 يتم تطبيق الحد (أما <= 0 أو -1 غير محدود)
+  IF v_max_staff IS NOT NULL AND v_max_staff > 0 THEN
+    SELECT COUNT(*) INTO v_current_count 
+    FROM clinic_staff 
+    WHERE clinic_id IN (SELECT id FROM clinics WHERE owner_id = v_owner_id);
+
+    IF v_current_count >= v_max_staff THEN
+      RAISE EXCEPTION 'لقد وصلت للحد الأقصى المسموح به من الموظفين في خطتك الحالية.';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_check_staff_limit ON clinic_staff;
+CREATE TRIGGER trigger_check_staff_limit
+BEFORE INSERT ON clinic_staff
+FOR EACH ROW EXECUTE FUNCTION check_staff_limit();
+
+
+
+
