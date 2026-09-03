@@ -57,12 +57,49 @@ class SubscriptionsRemoteDataSource implements ISubscriptionsRemoteDataSource {
   @override
   Future<SubscriptionModel?> getActiveSubscription(String ownerId) async {
     try {
-      final result = await _cloudService.select(
+      var result = await _cloudService.select(
         table: SupabaseTables.subscriptions,
         eq: {'owner_id': ownerId},
       );
+
+      // إذا لم يتم العثور على اشتراك بالمعرف مباشرة (مثل طبيب أو سكرتير)، نبحث عن مالك العيادة التابع له
+      if (result.isEmpty) {
+        final userRow = await _cloudService.select(
+          table: SupabaseTables.users,
+          eq: {'id': ownerId},
+        );
+        String? resolvedOwnerId =
+            userRow.isNotEmpty ? userRow.first['owner_id'] as String? : null;
+
+        if (resolvedOwnerId == null || resolvedOwnerId.isEmpty) {
+          final staffRows = await _cloudService.select(
+            table: SupabaseTables.clinicStaff,
+            eq: {'user_id': ownerId, 'is_active': true},
+          );
+          if (staffRows.isNotEmpty) {
+            final clinicId = staffRows.first['clinic_id'] as String?;
+            if (clinicId != null) {
+              final clinicRows = await _cloudService.select(
+                table: SupabaseTables.clinics,
+                eq: {'id': clinicId},
+              );
+              if (clinicRows.isNotEmpty) {
+                resolvedOwnerId = clinicRows.first['owner_id'] as String?;
+              }
+            }
+          }
+        }
+
+        if (resolvedOwnerId != null && resolvedOwnerId.isNotEmpty) {
+          result = await _cloudService.select(
+            table: SupabaseTables.subscriptions,
+            eq: {'owner_id': resolvedOwnerId},
+          );
+        }
+      }
+
       if (result.isEmpty) return null;
-      // ترطيب الأخير حسب تاريخ الإنشاء
+      // ترتيب الأخير حسب تاريخ الإنشاء
       result.sort((a, b) =>
           (b['created_at'] as String).compareTo(a['created_at'] as String));
       return SubscriptionModel.fromJson(result.first);

@@ -21,6 +21,7 @@ import '../../domain/entities/clinic_entity.dart';
 import '../manager/cubit/clinics_cubit.dart';
 import '../manager/cubit/clinics_state.dart';
 import 'widgets/clinics_list.dart';
+import '../../../../core/widgets/read_only_guard.dart';
 
 class ClinicsScreen extends StatelessWidget {
   const ClinicsScreen({super.key});
@@ -105,9 +106,18 @@ class _ClinicsBody extends StatelessWidget {
                   clinics: state.clinics,
                   onItemTap: (c) =>
                       context.push('${RouteConstants.clinics}/${c.id}'),
-                  onItemEdit: (c) => _openClinicForm(context, clinic: c),
-                  onItemToggleActive: (c) => _toggleClinicActive(context, c),
-                  onItemDelete: (c) => _deleteClinic(context, c),
+                  onItemEdit: (c) => ReadOnlyGuard.protect(
+                    context,
+                    onAllowed: () => _openClinicForm(context, clinic: c),
+                  ),
+                  onItemToggleActive: (c) => ReadOnlyGuard.protect(
+                    context,
+                    onAllowed: () => _toggleClinicActive(context, c),
+                  ),
+                  onItemDelete: (c) => ReadOnlyGuard.protect(
+                    context,
+                    onAllowed: () => _deleteClinic(context, c),
+                  ),
                 ),
               ),
             );
@@ -116,7 +126,10 @@ class _ClinicsBody extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openClinicForm(context),
+        onPressed: () => ReadOnlyGuard.protect(
+          context,
+          onAllowed: () => _openClinicForm(context),
+        ),
         backgroundColor: context.primary,
         foregroundColor: context.surface,
         shape: RoundedRectangleBorder(

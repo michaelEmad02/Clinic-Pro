@@ -27,6 +27,7 @@ import 'widgets/unbilled_patient_filter_chips.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
+import '../../../../core/widgets/read_only_guard.dart';
 
 class InvoicesScreen extends StatelessWidget {
   const InvoicesScreen({super.key});
@@ -191,7 +192,10 @@ class _InvoicesBody extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => AddInvoiceSheet.show(context),
+        onPressed: () => ReadOnlyGuard.protect(
+          context,
+          onAllowed: () => AddInvoiceSheet.show(context),
+        ),
         backgroundColor: context.primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(

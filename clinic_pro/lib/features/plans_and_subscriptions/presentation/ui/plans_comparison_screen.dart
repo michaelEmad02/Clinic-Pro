@@ -583,6 +583,45 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                           ),
                           const SizedBox(height: 16),
                         ],
+
+                        // زر المتابعة في وضع القراءة فقط إذا كان الاشتراك منتهياً
+                        if (isTrialUsed && (activeSub == null || !activeSub.isActive)) ...[
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                context.read<AuthCubit>().enterReadOnlyMode();
+                                context.go(RouteConstants.ownerDashboard);
+                              },
+                              icon: Icon(Icons.visibility_outlined,
+                                  color: context.primary),
+                              label: Flexible(
+                                child: Text(
+                                  AppStrings.isArabic
+                                      ? 'المتابعة في وضع القراءة فقط'
+                                      : 'Continue in Read-Only Mode',
+                                  style: AppTextStyles.bodyMedium(context).copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: context.primary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: context.primary,
+                                minimumSize: const Size(double.infinity, 48),
+                                side: BorderSide(
+                                    color: context.primary, width: 1.5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      AppConstants.radiusButton),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ],
                     ),
                   ),

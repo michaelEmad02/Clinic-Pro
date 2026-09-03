@@ -24,6 +24,7 @@ import '../../../settings/presentation/manager/settings_state.dart';
 import '../manager/waiting_queue_cubit.dart';
 import '../manager/waiting_queue_state.dart';
 import 'widgets/call_next_button.dart';
+import '../../../../core/widgets/read_only_guard.dart';
 
 class WaitingQueueScreen extends StatefulWidget {
   const WaitingQueueScreen({super.key});
@@ -184,24 +185,34 @@ class _WaitingQueueBody extends StatelessWidget {
                     CallNextButton(
                       enabled: hasNext,
                       onPressed: () {
-                        context.read<WaitingQueueCubit>().callNext();
-                        AppSnackbar.info(context, message: AppStrings.patientCalled);
+                        ReadOnlyGuard.protect(
+                          context,
+                          onAllowed: () {
+                            context.read<WaitingQueueCubit>().callNext();
+                            AppSnackbar.info(context, message: AppStrings.patientCalled);
+                          },
+                        );
                       },
                     ),
                     if (isDoctor) ...[
-                      const SizedBox(height: AppConstants.spaceMd),
+                       const SizedBox(height: AppConstants.spaceMd),
                       CurrentPatientCard(
                         patient: currentPatient,
                         onStartExamination: () async {
-                          if (currentPatient != null) {
-                            await context.push(
-                              '/prescription/${currentPatient.id}',
-                              extra: currentPatient,
-                            );
-                            if (context.mounted) {
-                              onRefresh();
-                            }
-                          }
+                          ReadOnlyGuard.protect(
+                            context,
+                            onAllowed: () async {
+                              if (currentPatient != null) {
+                                await context.push(
+                                  '/prescription/${currentPatient.id}',
+                                  extra: currentPatient,
+                                );
+                                if (context.mounted) {
+                                  onRefresh();
+                                }
+                              }
+                            },
+                          );
                         },
                       ),
                     ],
@@ -209,8 +220,13 @@ class _WaitingQueueBody extends StatelessWidget {
                     WaitingQueueList(
                       queue: state.rawQueue,
                       onCallNext: () {
-                        context.read<WaitingQueueCubit>().callNext();
-                        AppSnackbar.info(context, message: AppStrings.patientCalled);
+                        ReadOnlyGuard.protect(
+                          context,
+                          onAllowed: () {
+                            context.read<WaitingQueueCubit>().callNext();
+                            AppSnackbar.info(context, message: AppStrings.patientCalled);
+                          },
+                        );
                       },
                     ),
                   ],

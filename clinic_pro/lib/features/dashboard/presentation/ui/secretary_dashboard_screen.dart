@@ -28,6 +28,7 @@ import 'widgets/secretary_quick_actions.dart';
 import 'widgets/daily_summary_row.dart';
 import '../../../invoices/presentation/ui/invoices_screen.dart';
 import '../../../../core/widgets/app_error_widget.dart';
+import 'package:clinic_pro/core/widgets/read_only_mode_banner.dart';
 
 
 class SecretaryDashboardScreen extends StatefulWidget {
@@ -231,6 +232,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 20),
               children: [
+                const ReadOnlyModeBanner(),
                 DailySummaryRow(
                   todayAppointmentsCount: state.todayAppointmentsCount,
                   completedCount: state.completedCount,

@@ -25,6 +25,7 @@ import 'widgets/add_edit_patient_sheet.dart';
 import 'widgets/patient_action_sheet.dart';
 import 'widgets/patients_list.dart';
 import 'widgets/patients_search_bar.dart';
+import '../../../../core/widgets/read_only_guard.dart';
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
@@ -187,7 +188,10 @@ class _PatientsBody extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => AddEditPatientSheet.show(context),
+        onPressed: () => ReadOnlyGuard.protect(
+          context,
+          onAllowed: () => AddEditPatientSheet.show(context),
+        ),
         backgroundColor: context.primary,
         foregroundColor: context.onPrimary,
         icon: const Icon(Icons.add),
@@ -202,14 +206,21 @@ class _PatientsBody extends StatelessWidget {
       patient: patient,
       onViewDetails: () =>
           context.push('${RouteConstants.patients}/${patient.id}'),
-      onEdit: () => AddEditPatientSheet.show(context, patient: patient),
-      onBookAppointment: () {
-        AddAppointmentSheet.show(
+      onEdit: () => ReadOnlyGuard.protect(
+        context,
+        onAllowed: () => AddEditPatientSheet.show(context, patient: patient),
+      ),
+      onBookAppointment: () => ReadOnlyGuard.protect(
+        context,
+        onAllowed: () => AddAppointmentSheet.show(
           context,
           initialPatientId: patient.id,
-        );
-      },
-      onDeletePatient: () => _confirmDelete(context, patient),
+        ),
+      ),
+      onDeletePatient: () => ReadOnlyGuard.protect(
+        context,
+        onAllowed: () => _confirmDelete(context, patient),
+      ),
     );
   }
 

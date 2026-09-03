@@ -45,6 +45,7 @@
  - [x] themes
  - local notifications
  - [] pagination
+ - [] search_path for RPCs
 
 ## reports
  - [x] عمل refresh indecator in reports

@@ -40,6 +40,8 @@ import '../../../../appointments/presentation/manager/appointments_event.dart';
 
 import 'package:clinic_pro/core/widgets/app_loading.dart';
 import 'package:clinic_pro/core/services/prescription_pdf_service_impl.dart';
+import 'package:clinic_pro/core/widgets/read_only_guard.dart';
+import 'package:clinic_pro/core/widgets/read_only_mode_banner.dart';
 
 class PrescriptionView extends StatelessWidget {
   const PrescriptionView(this.isEditing,
@@ -206,35 +208,55 @@ class PrescriptionView extends StatelessWidget {
           bottomNavigationBar: state.status == PrescriptionStatus.loaded
               ? PrescriptionBottomActionsBar(
                   onSaveAndFinish: () {
-                    context.read<PrescriptionBloc>().add(
-                          const SavePrescriptionEvent(
-                              action: PostSaveAction.finish),
-                        );
+                    ReadOnlyGuard.protect(
+                      context,
+                      onAllowed: () {
+                        context.read<PrescriptionBloc>().add(
+                              const SavePrescriptionEvent(
+                                  action: PostSaveAction.finish),
+                            );
+                      },
+                    );
                   },
                   onSaveAndPrint: () {
-                    context.read<PrescriptionBloc>().add(
-                          const SavePrescriptionEvent(
-                              action: PostSaveAction.print),
-                        );
+                    ReadOnlyGuard.protect(
+                      context,
+                      onAllowed: () {
+                        context.read<PrescriptionBloc>().add(
+                              const SavePrescriptionEvent(
+                                  action: PostSaveAction.print),
+                            );
+                      },
+                    );
                   },
                   onSaveAndSend: () {
-                    context.read<PrescriptionBloc>().add(
-                          const SavePrescriptionEvent(
-                              action: PostSaveAction.whatsapp),
-                        );
+                    ReadOnlyGuard.protect(
+                      context,
+                      onAllowed: () {
+                        context.read<PrescriptionBloc>().add(
+                              const SavePrescriptionEvent(
+                                  action: PostSaveAction.whatsapp),
+                            );
+                      },
+                    );
                   },
                   onFinish: () {
-                    context.read<AppointmentsBloc>().add(
-                          CompleteAppointmentEvent(
-                              appointmentId: appointment.id),
-                        );
-                    AppSnackbar.success(
+                    ReadOnlyGuard.protect(
                       context,
-                      message: AppStrings.isArabic
-                          ? 'تم إنهاء الكشف بنجاح ✓'
-                          : 'Appointment completed ✓',
+                      onAllowed: () {
+                        context.read<AppointmentsBloc>().add(
+                              CompleteAppointmentEvent(
+                                  appointmentId: appointment.id),
+                            );
+                        AppSnackbar.success(
+                          context,
+                          message: AppStrings.isArabic
+                              ? 'تم إنهاء الكشف بنجاح ✓'
+                              : 'Appointment completed ✓',
+                        );
+                        context.pop();
+                      },
                     );
-                    context.pop();
                   },
                 )
               : null,

@@ -120,12 +120,9 @@ class _SplashScreenState extends State<SplashScreen>
                 context.go(RouteConstants.onboardingPlan);
               }
             } else if (sub.isExpired) {
-              if (sub.isManualPending) {
                 context.go(RouteConstants.pendingSubscription,
                     extra: {'isExpired': true});
-              } else {
-                context.go(RouteConstants.onboardingPlan);
-              }
+
             } else {
               context.go(RouteConstants.onboardingPlan);
             }

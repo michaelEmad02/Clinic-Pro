@@ -25,6 +25,7 @@ import 'widgets/doctor_quick_actions.dart';
 import 'widgets/doctor_dashboard_shimmer.dart';
 import '../../../appointments/presentation/ui/waiting_queue_screen.dart';
 import '../../../../core/widgets/app_error_widget.dart';
+import 'package:clinic_pro/core/widgets/read_only_mode_banner.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
   const DoctorDashboardScreen({super.key});
@@ -232,6 +233,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 children: [
+                  const ReadOnlyModeBanner(),
                   DoctorStatsRow(
                     todayAppointmentsCount: state.todayAppointmentsCount,
                     completedCount: state.completedCount,

@@ -22,6 +22,7 @@ import '../manager/appointments_event.dart';
 import '../manager/appointments_state.dart';
 import 'widgets/add_appointment_sheet.dart';
 import 'widgets/appointment_dialogs.dart';
+import '../../../../core/widgets/read_only_guard.dart';
 import 'widgets/appointments_list.dart';
 import 'widgets/appointments_tab_bar.dart';
 import '../../../settings/presentation/manager/settings_state.dart';
@@ -234,7 +235,10 @@ class _AppointmentsBody extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => AddAppointmentSheet.show(context),
+        onPressed: () => ReadOnlyGuard.protect(
+          context,
+          onAllowed: () => AddAppointmentSheet.show(context),
+        ),
         backgroundColor: context.primary,
         foregroundColor: context.onPrimary,
         icon: const Icon(Icons.add),

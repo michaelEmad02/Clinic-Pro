@@ -27,6 +27,7 @@ import 'widgets/revenue_bar_chart.dart';
 import 'widgets/quick_actions_row.dart';
 import '../../../reports/presentation/ui/reports_screen.dart';
 import '../../../expenses/presentation/ui/expenses_screen.dart';
+import 'package:clinic_pro/core/widgets/read_only_mode_banner.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({super.key});
@@ -167,6 +168,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 20),
               children: [
+                const ReadOnlyModeBanner(),
                 _buildAlertsSection(),
                 _buildSummaryStatsSection(),
                 const SizedBox(height: 24),

@@ -21,6 +21,7 @@ import 'package:clinic_pro/features/expenses/presentation/manager/expenses_state
 import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/widgets/read_only_guard.dart';
 
 import 'widgets/add_edit_expense_sheet.dart';
 import 'widgets/expenses_category_chips.dart';
@@ -199,14 +200,22 @@ class _ExpensesBody extends StatelessWidget {
                       ExpensesList(
                         expenses: state.filteredExpenses,
                         onEdit: (exp) {
-                          AddEditExpenseSheet.show(
+                          ReadOnlyGuard.protect(
                             context,
-                            expense: exp,
-                            categories: state.categories,
+                            onAllowed: () {
+                              AddEditExpenseSheet.show(
+                                context,
+                                expense: exp,
+                                categories: state.categories,
+                              );
+                            },
                           );
                         },
                         onDelete: (exp) {
-                          _confirmDelete(context, exp);
+                          ReadOnlyGuard.protect(
+                            context,
+                            onAllowed: () => _confirmDelete(context, exp),
+                          );
                         },
                       ),
                     ],
@@ -221,13 +230,18 @@ class _ExpensesBody extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          final state = context.read<ExpensesCubit>().state;
-          if (state is ExpensesLoaded) {
-            AddEditExpenseSheet.show(
-              context,
-              categories: state.categories,
-            );
-          }
+          ReadOnlyGuard.protect(
+            context,
+            onAllowed: () {
+              final state = context.read<ExpensesCubit>().state;
+              if (state is ExpensesLoaded) {
+                AddEditExpenseSheet.show(
+                  context,
+                  categories: state.categories,
+                );
+              }
+            },
+          );
         },
         backgroundColor: context.primary,
         foregroundColor: Colors.white,

@@ -15,6 +15,7 @@ import '../../domain/use_cases/register_owner_use_case.dart';
 import '../../domain/use_cases/logout_use_case.dart';
 import '../../domain/use_cases/send_password_reset_email_use_case.dart';
 import '../../domain/use_cases/update_password_use_case.dart';
+import '../../domain/entities/auth_user_entity.dart';
 import 'auth_state.dart';
 
 @injectable
@@ -40,6 +41,22 @@ class AuthCubit extends Cubit<AuthState> {
   /// الدور الأصلي للمستخدم
   StaffRoles? get originalRole => _originalRole;
 
+  /// هل التطبيق في وضع القراءة فقط لانتهاء الاشتراك؟
+  bool get isReadOnlyMode {
+    if (state is AuthAuthenticated) {
+      return (state as AuthAuthenticated).isReadOnlyMode;
+    }
+    return false;
+  }
+
+  /// تفعيل وضع القراءة فقط عند انتهاء الاشتراك لمتابعة التصفح
+  void enterReadOnlyMode() {
+    if (state is AuthAuthenticated) {
+      final curr = state as AuthAuthenticated;
+      emit(curr.copyWith(isReadOnlyMode: true));
+    }
+  }
+
   AuthCubit(
     this._getCurrentUserUseCase,
     this._loginWithGoogleUseCase,
@@ -52,20 +69,37 @@ class AuthCubit extends Cubit<AuthState> {
     this._updatePasswordUseCase,
   ) : super(AuthInitial());
 
+  /// بناء حالة المصادقة المكتملة مع فحص الاشتراك ووضع القراءة فقط لجميع الأدوار
+  Future<AuthAuthenticated> _buildAuthenticatedState(AuthUserEntity user) async {
+    SubscriptionEntity? activeSub;
+    final targetOwnerId = (user.role == StaffRoles.owner)
+        ? user.id
+        : (user.ownerId ?? user.id);
+
+    final subResult = await _checkSubscriptionStatusUseCase(targetOwnerId);
+    subResult.fold((_) => null, (sub) => activeSub = sub);
+
+    // تفعيل وضع القراءة فقط تلقائياً إذا لم يكن هناك اشتراك نشط أو انتهت صلاحيته
+    final bool isReadOnly =
+        activeSub == null || !activeSub!.isActive || activeSub!.isExpired;
+
+    return AuthAuthenticated(
+      user: user,
+      activeSubscription: activeSub,
+      isReadOnlyMode: isReadOnly,
+    );
+  }
+
   /// التحقق من حالة الجلسة الحالية
   Future<void> checkAuthStatus() async {
     emit(AuthLoading());
     final result = await _getCurrentUserUseCase();
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
+    await result.fold(
+      (failure) async => emit(AuthError(message: failure.message)),
       (user) async {
         if (user != null) {
-          SubscriptionEntity? activeSub;
-          if (user.role == StaffRoles.owner) {
-            final subResult = await _checkSubscriptionStatusUseCase(user.id);
-            subResult.fold((_) => null, (sub) => activeSub = sub);
-          }
-          emit(AuthAuthenticated(user: user, activeSubscription: activeSub));
+          final authState = await _buildAuthenticatedState(user);
+          emit(authState);
         } else {
           emit(AuthUnauthenticated());
         }
@@ -80,9 +114,12 @@ class AuthCubit extends Cubit<AuthState> {
       email: email,
       password: password,
     );
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => emit(AuthAuthenticated(user: user)),
+    await result.fold(
+      (failure) async => emit(AuthError(message: failure.message)),
+      (user) async {
+        final authState = await _buildAuthenticatedState(user);
+        emit(authState);
+      },
     );
   }
 
@@ -100,9 +137,12 @@ class AuthCubit extends Cubit<AuthState> {
       email: email,
       password: 'mock_password',
     );
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => emit(AuthAuthenticated(user: user)),
+    await result.fold(
+      (failure) async => emit(AuthError(message: failure.message)),
+      (user) async {
+        final authState = await _buildAuthenticatedState(user);
+        emit(authState);
+      },
     );
   }
 
@@ -110,9 +150,12 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> loginWithGoogle() async {
     emit(AuthLoading());
     final result = await _loginWithGoogleUseCase();
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => emit(AuthAuthenticated(user: user)),
+    await result.fold(
+      (failure) async => emit(AuthError(message: failure.message)),
+      (user) async {
+        final authState = await _buildAuthenticatedState(user);
+        emit(authState);
+      },
     );
   }
 
@@ -120,9 +163,12 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> loginWithApple() async {
     emit(AuthLoading());
     final result = await _loginWithAppleUseCase();
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => emit(AuthAuthenticated(user: user)),
+    await result.fold(
+      (failure) async => emit(AuthError(message: failure.message)),
+      (user) async {
+        final authState = await _buildAuthenticatedState(user);
+        emit(authState);
+      },
     );
   }
 

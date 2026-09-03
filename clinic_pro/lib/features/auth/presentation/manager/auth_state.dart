@@ -23,14 +23,28 @@ class AuthAuthenticated extends AuthState {
   @override
   final AuthUserEntity user;
   final SubscriptionEntity? activeSubscription;
+  final bool isReadOnlyMode;
 
   const AuthAuthenticated({
     required this.user,
     this.activeSubscription,
+    this.isReadOnlyMode = false,
   });
 
+  AuthAuthenticated copyWith({
+    AuthUserEntity? user,
+    SubscriptionEntity? activeSubscription,
+    bool? isReadOnlyMode,
+  }) {
+    return AuthAuthenticated(
+      user: user ?? this.user,
+      activeSubscription: activeSubscription ?? this.activeSubscription,
+      isReadOnlyMode: isReadOnlyMode ?? this.isReadOnlyMode,
+    );
+  }
+
   @override
-  List<Object?> get props => [user, activeSubscription];
+  List<Object?> get props => [user, activeSubscription, isReadOnlyMode];
 }
 
 class AuthRegistrationSuccess extends AuthState {
