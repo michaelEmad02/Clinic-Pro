@@ -14,6 +14,10 @@ import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:clinic_pro/core/constants/staff_roles.dart';
+import '../../features/auth/presentation/manager/auth_cubit.dart';
+
 class SubscriptionExpiredDialog extends StatelessWidget {
   final String? message;
   final bool isNoSubscription;
@@ -57,19 +61,29 @@ class SubscriptionExpiredDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isArabic = AppStrings.isArabic;
+    final isOwner =
+        context.read<AuthCubit>().state.user?.role == StaffRoles.owner;
 
     final defaultTitle = isNoSubscription
         ? (isArabic ? 'لا يوجد اشتراك مفعل' : 'No Active Subscription')
         : (isArabic ? 'انتهت فترة الاشتراك' : 'Subscription Expired');
 
     final defaultDescription = message ??
-        (isNoSubscription
-            ? (isArabic
-                ? 'لا يوجد اشتراك نشط مسجل لحسابك. للاستمرار في إضافة وتعديل البيانات، يرجى اختيار باقة وتفعيل الاشتراك.'
-                : 'There is no active subscription for this account. Please subscribe to a plan to continue managing your clinic.')
-            : (isArabic
-                ? 'انتهت صلاحية اشتراكك الحالي. لا يمكن إجراء عمليات الإضافة أو التعديل حتى يتم تجديد الاشتراك.'
-                : 'Your current subscription has expired. Adding or editing records is temporarily disabled until renewal.'));
+        (isOwner
+            ? (isNoSubscription
+                ? (isArabic
+                    ? 'لا يوجد اشتراك نشط مسجل لحسابك. للاستمرار في إضافة وتعديل البيانات، يرجى اختيار باقة وتفعيل الاشتراك.'
+                    : 'There is no active subscription for this account. Please subscribe to a plan to continue managing your clinic.')
+                : (isArabic
+                    ? 'انتهت صلاحية اشتراكك الحالي. لا يمكن إجراء عمليات الإضافة أو التعديل حتى يتم تجديد الاشتراك.'
+                    : 'Your current subscription has expired. Adding or editing records is temporarily disabled until renewal.'))
+            : (isNoSubscription
+                ? (isArabic
+                    ? 'لا يوجد اشتراك نشط مسجل للعيادة. لا يمكن إجراء عمليات الإضافة أو التعديل حتى يقوم مالك العيادة بتفعيل الاشتراك.'
+                    : 'There is no active subscription for this clinic. Adding or editing records is disabled until the owner activates a plan.')
+                : (isArabic
+                    ? 'انتهت صلاحية اشتراك العيادة. لا يمكن إجراء عمليات الإضافة أو التعديل حتى يقوم مالك العيادة بتجديد الاشتراك.'
+                    : 'The clinic subscription has expired. Adding or editing records is disabled until the owner renews it.')));
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -102,9 +116,10 @@ class SubscriptionExpiredDialog extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               // 1. أيقونة التنبيه
               Container(
                 width: 68,
@@ -151,50 +166,78 @@ class SubscriptionExpiredDialog extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // زر الانتقال للباقات والتجديد
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+                  if (isOwner) ...[
+                    // زر الانتقال للباقات والتجديد (للمالك فقط)
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: context.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppConstants.radiusButton),
+                        ),
                       ),
-                    ),
-                    icon: const Icon(Icons.stars_rounded, size: 20),
-                    label: Text(
-                      isArabic ? 'تجديد أو ترقية الاشتراك' : 'Renew / Upgrade Subscription',
-                      style: AppTextStyles.bodyLarge(context).copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      icon: const Icon(Icons.stars_rounded, size: 20),
+                      label: Text(
+                        isArabic
+                            ? 'تجديد أو ترقية الاشتراك'
+                            : 'Renew / Upgrade Subscription',
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context.push(RouteConstants.plansComparison);
+                      },
                     ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      context.push(RouteConstants.plansComparison);
-                    },
-                  ),
-                  const SizedBox(height: AppConstants.spaceSm),
+                    const SizedBox(height: AppConstants.spaceSm),
 
-                  // زر الإغلاق
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: Text(
-                      isArabic ? 'لاحقاً' : 'Later',
-                      style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: context.textSecondary,
-                        fontWeight: FontWeight.w600,
+                    // زر الإغلاق
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        isArabic ? 'لاحقاً' : 'Later',
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          color: context.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
+                  ] else ...[
+                    // زر الإغلاق/الفهم لطاقم العيادة (طبيب / سكرتير)
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: context.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppConstants.radiusButton),
+                        ),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        isArabic ? 'حسناً، فهمت' : 'OK, Understood',
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
           ),
+        ),
         ),
       ),
     );

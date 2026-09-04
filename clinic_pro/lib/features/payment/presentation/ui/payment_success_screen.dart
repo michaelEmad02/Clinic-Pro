@@ -245,16 +245,17 @@ class PaymentSuccessScreen extends StatelessWidget {
                         }
                       },
                       icon: const Icon(Icons.dashboard_rounded),
-                      label: Flexible(
-                        child: Text(
-                            (statusResult.fawryCode != null && statusResult.fawryCode!.isNotEmpty )? AppStrings.payWithAnotherMethod : AppStrings.goToDashboard,
-                          style: AppTextStyles.bodyMedium(context).copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: context.onPrimary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                      label: Text(
+                        (statusResult.fawryCode != null &&
+                                statusResult.fawryCode!.isNotEmpty)
+                            ? AppStrings.payWithAnotherMethod
+                            : AppStrings.goToDashboard,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: context.onPrimary,
                         ),
+                     
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: context.primary,

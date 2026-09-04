@@ -108,7 +108,7 @@ class CurrentPlanCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd, vertical: 3),
                 decoration: BoxDecoration(
-                  color: context.primaryLightColor,
+                  color: (planStatus == "expired")?  context.dangerBg :context.primaryLightColor,
                   borderRadius: BorderRadius.circular(AppConstants.radiusChip),
                   border: Border.all(color: context.primary.withAlpha(50)),
                 ),

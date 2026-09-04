@@ -44,3 +44,9 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# SQL Database Scripts
+*.sql
+
+# edge functions
+*.ts

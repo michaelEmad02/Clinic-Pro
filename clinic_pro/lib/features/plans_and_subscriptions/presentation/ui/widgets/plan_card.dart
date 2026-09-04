@@ -182,12 +182,13 @@ class PlanCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           buttonText,
-                          style: AppTextStyles.headlineSmall(context).copyWith(
+                          style: AppTextStyles.bodyLarge(context).copyWith(
                             color: isCurrentPlan || isFeatured
                                 ? context.onPrimary
                                 : context.primary,
                             fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),

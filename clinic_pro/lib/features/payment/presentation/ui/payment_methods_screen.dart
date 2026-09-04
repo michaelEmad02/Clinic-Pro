@@ -644,16 +644,15 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
                             size: AppLoadingSize.small,
                             color: Colors.white,
                           )
-                        : Flexible(
-                            child: Text(
-                              AppStrings.continuePaymentWithMethod(_selectedMethod.arabicName),
-                              style: AppTextStyles.bodyLarge(context).copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: context.onPrimary,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
+                        : Text(
+                            AppStrings.continuePaymentWithMethod(_selectedMethod.arabicName),
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyLarge(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: context.onPrimary,
                             ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                   ),
 

@@ -200,8 +200,7 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                 }
               }
 
-              final planNameStr =
-                  plan != null ? plan.name.toUpperCase() : '';
+              final planNameStr = plan != null ? plan.name.toUpperCase() : '';
 
               return Center(
                 child: SingleChildScrollView(
@@ -271,7 +270,8 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                             label: Flexible(
                               child: Text(
                                 AppStrings.renewOrUpgradeNow,
-                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                style:
+                                    AppTextStyles.bodyMedium(context).copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: context.onPrimary,
                                 ),
@@ -305,7 +305,8 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                                 AppStrings.isArabic
                                     ? 'المتابعة في وضع القراءة فقط'
                                     : 'Continue in Read-Only Mode',
-                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                style:
+                                    AppTextStyles.bodyMedium(context).copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: context.primary,
                                 ),
@@ -316,7 +317,8 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: context.primary,
                               minimumSize: const Size(double.infinity, 50),
-                              side: BorderSide(color: context.primary, width: 1.5),
+                              side: BorderSide(
+                                  color: context.primary, width: 1.5),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
                                     AppConstants.radiusButton),
@@ -336,7 +338,8 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                             label: Flexible(
                               child: Text(
                                 AppStrings.contactWhatsAppActivate,
-                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                style:
+                                    AppTextStyles.bodyMedium(context).copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -367,7 +370,8 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                             label: Flexible(
                               child: Text(
                                 AppStrings.makePhoneCall,
-                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                style:
+                                    AppTextStyles.bodyMedium(context).copyWith(
                                   color: context.primary,
                                 ),
                                 overflow: TextOverflow.ellipsis,
@@ -404,7 +408,8 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
                                 _isChecking
                                     ? AppStrings.checkingActivation
                                     : AppStrings.checkActivationNow,
-                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                style:
+                                    AppTextStyles.bodyMedium(context).copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: context.onPrimary,
                                 ),
@@ -436,4 +441,3 @@ class _PendingSubscriptionBodyState extends State<_PendingSubscriptionBody> {
     );
   }
 }
-

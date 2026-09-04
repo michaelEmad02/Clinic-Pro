@@ -495,7 +495,7 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                         // عرض كروت الخطط (الخطة الحالية تظهر أولاً دائماً)
                         LayoutBuilder(
                           builder: (context, constraints) {
-                            final isWide = constraints.maxWidth >= 768;
+                            final isWide = constraints.maxWidth >= 850;
 
                             final sortedPlans = List<PlanEntity>.from(plans);
                             if (activeSub != null && activeSub.isActive) {
@@ -565,7 +565,7 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                                   color: Colors.amber),
                               label: Flexible(
                                 child: Text(
-                                  AppStrings.startFreeTrial14Days,
+                                AppStrings.startFreeTrial14Days,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                 ),
@@ -574,6 +574,8 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                                 backgroundColor: context.primary,
                                 foregroundColor: context.onPrimary,
                                 minimumSize: const Size(double.infinity, 48),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
                                       AppConstants.radiusButton),
@@ -585,7 +587,7 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                         ],
 
                         // زر المتابعة في وضع القراءة فقط إذا كان الاشتراك منتهياً
-                        if (isTrialUsed && (activeSub == null || !activeSub.isActive)) ...[
+                        if (isTrialUsed && !activeSub.isActive) ...[
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 400),
                             child: OutlinedButton.icon(
@@ -595,22 +597,21 @@ class _PlansComparisonBodyState extends State<_PlansComparisonBody> {
                               },
                               icon: Icon(Icons.visibility_outlined,
                                   color: context.primary),
-                              label: Flexible(
-                                child: Text(
-                                  AppStrings.isArabic
-                                      ? 'المتابعة في وضع القراءة فقط'
-                                      : 'Continue in Read-Only Mode',
-                                  style: AppTextStyles.bodyMedium(context).copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: context.primary,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                              label: Text(
+                                AppStrings.isArabic
+                                    ? 'المتابعة في وضع القراءة فقط'
+                                    : 'Continue in Read-Only Mode',
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.bodyMedium(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.primary,
                                 ),
                               ),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: context.primary,
                                 minimumSize: const Size(double.infinity, 48),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
                                 side: BorderSide(
                                     color: context.primary, width: 1.5),
                                 shape: RoundedRectangleBorder(

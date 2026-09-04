@@ -12,6 +12,7 @@ import '../strings/app_strings.dart';
 import '../themes/app_colors.dart';
 import '../themes/app_text_styles.dart';
 import '../../features/auth/presentation/manager/auth_cubit.dart';
+import '../constants/staff_roles.dart';
 import '../../features/auth/presentation/manager/auth_state.dart';
 
 class ReadOnlyModeBanner extends StatelessWidget {
@@ -31,7 +32,16 @@ class ReadOnlyModeBanner extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
+        final isOwner = state.user.role == StaffRoles.owner;
         final isArabic = AppStrings.isArabic;
+
+        final descriptionText = isOwner
+            ? (isArabic
+                ? 'انتهت فترة الاشتراك. لتسجيل بيانات جديدة وإجراء التعديلات، يرجى تجديد الاشتراك.'
+                : 'Your subscription has expired. Adding and editing records is restricted until renewal.')
+            : (isArabic
+                ? 'انتهت فترة اشتراك العيادة. لتسجيل بيانات جديدة أو إجراء التعديلات، يرجى مراجعة مالك العيادة لتجديد الاشتراك.'
+                : 'The clinic subscription has expired. Adding and editing records is restricted until the clinic owner renews it.');
 
         return Container(
           width: double.infinity,
@@ -95,9 +105,7 @@ class ReadOnlyModeBanner extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          isArabic
-                              ? 'انتهت فترة الاشتراك. لتسجيل بيانات جديدة وإجراء التعديلات، يرجى تجديد الاشتراك.'
-                              : 'Your subscription has expired. Adding and editing records is restricted until renewal.',
+                          descriptionText,
                           style: AppTextStyles.bodyMedium(context).copyWith(
                             color: context.textSecondary,
                             height: 1.3,
@@ -108,6 +116,11 @@ class ReadOnlyModeBanner extends StatelessWidget {
                   ),
                 ],
               );
+
+              // إذا كان المستخدم ليس المالك، يظهر فقط التنبيه التوضيحي بدون زر التجديد
+              if (!isOwner) {
+                return textWidget;
+              }
 
               final actionButton = ElevatedButton.icon(
                 onPressed: () => context.push(RouteConstants.plansComparison),

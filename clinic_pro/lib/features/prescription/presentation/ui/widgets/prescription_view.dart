@@ -41,7 +41,6 @@ import '../../../../appointments/presentation/manager/appointments_event.dart';
 import 'package:clinic_pro/core/widgets/app_loading.dart';
 import 'package:clinic_pro/core/services/prescription_pdf_service_impl.dart';
 import 'package:clinic_pro/core/widgets/read_only_guard.dart';
-import 'package:clinic_pro/core/widgets/read_only_mode_banner.dart';
 
 class PrescriptionView extends StatelessWidget {
   const PrescriptionView(this.isEditing,

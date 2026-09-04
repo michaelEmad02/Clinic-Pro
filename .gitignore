@@ -1,0 +1,10 @@
+﻿# SQL Database Scripts
+*.sql
+**/*.sql
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.cursor/
+.history/
+.lh/
