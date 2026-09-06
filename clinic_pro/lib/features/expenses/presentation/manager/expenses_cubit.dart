@@ -82,6 +82,18 @@ class ExpensesCubit extends Cubit<ExpensesState> {
     }
   }
 
+  /// تغيير فلتر العيادة للمالك (عيادة محددة أو الكل)
+  void changeClinicFilter(String? clinicId) {
+    if (state is! ExpensesLoaded) return;
+    final loaded = state as ExpensesLoaded;
+
+    if (clinicId == null || clinicId.isEmpty) {
+      emit(loaded.copyWith(clearSelectedClinic: true));
+    } else {
+      emit(loaded.copyWith(selectedClinicId: clinicId));
+    }
+  }
+
   /// تغيير فلتر الجهة المتحملة للمصروف (الكل / العيادة / الأطباء / طبيب معين)
   void changeTargetFilter(String targetFilter) {
     if (state is! ExpensesLoaded) return;

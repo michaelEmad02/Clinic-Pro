@@ -31,7 +31,7 @@ class LoginScreen extends StatelessWidget {
           final role = state.user.role;
           final userId = state.user.id;
 
-          await context.read<SettingsCubit>().loadSettings(role, userId);
+          await context.read<SettingsCubit>().loadSettings(role, userId,state.user.ownerId);
 
           if (!context.mounted) return;
 

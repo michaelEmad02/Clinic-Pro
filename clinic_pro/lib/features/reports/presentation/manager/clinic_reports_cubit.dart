@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/error/failures.dart';
 import '../../domain/entities/clinic_report_entity.dart';
 import '../../domain/usecases/get_clinic_report_usecase.dart';
 
@@ -26,11 +26,12 @@ class ClinicReportsLoaded extends ClinicReportsState {
 
 class ClinicReportsError extends ClinicReportsState {
   final String message;
+  final Failure? failure;
 
-  const ClinicReportsError(this.message);
+  const ClinicReportsError(this.message, {this.failure});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, failure];
 }
 
 @injectable
@@ -45,7 +46,7 @@ class ClinicReportsCubit extends Cubit<ClinicReportsState> {
     emit(ClinicReportsLoading());
     final result = await _getClinicReportUseCase(ownerId, forceRefresh: forceRefresh);
     result.fold(
-      (failure) => emit(ClinicReportsError(AppStrings.loadReportsFailed)),
+      (failure) => emit(ClinicReportsError(failure.message, failure: failure)),
       (report) => emit(ClinicReportsLoaded(report)),
     );
   }

@@ -36,7 +36,8 @@ class DoctorSettingsScreen extends StatelessWidget {
     final user = context.watch<AuthCubit>().state.user;
     final settingsState = context.watch<SettingsCubit>().state;
     final doctorId = user?.id ?? '';
-    final clinicId = settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
+    final clinicId =
+        settingsState.clinicEntity?.id ?? AppConstants.activeClinicId;
 
     return BlocProvider(
       create: (_) => sl<QueuePatternCubit>()..init(doctorId, clinicId),
@@ -70,7 +71,7 @@ class DoctorSettingsScreen extends StatelessWidget {
                   final role = user?.role ?? StaffRoles.doctor;
                   context
                       .read<SettingsCubit>()
-                      .loadSettings(role, user?.id ?? '');
+                      .loadSettings(role, user?.id ?? '', user?.ownerId);
                 },
               );
             }
@@ -79,7 +80,7 @@ class DoctorSettingsScreen extends StatelessWidget {
                 final role = user?.role ?? StaffRoles.doctor;
                 await context
                     .read<SettingsCubit>()
-                    .loadSettings(role, user?.id ?? '');
+                    .loadSettings(role, user?.id ?? '', user?.ownerId);
               },
               child: ResponsiveHelper.responsiveCenter(
                 child: SingleChildScrollView(

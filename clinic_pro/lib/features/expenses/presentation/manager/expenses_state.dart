@@ -24,6 +24,7 @@ class ExpensesLoaded extends ExpensesState {
   final String? activeCategoryId;
   final String activeTargetFilter; // 'clinic' | 'doctor'
   final String? currentDoctorId;
+  final String? selectedClinicId; // null أو فارغ = كل العيادات (للمالك)
 
   const ExpensesLoaded({
     required this.allExpenses,
@@ -31,17 +32,23 @@ class ExpensesLoaded extends ExpensesState {
     this.activeCategoryId,
     this.activeTargetFilter = 'clinic',
     this.currentDoctorId,
+    this.selectedClinicId,
   });
 
-  /// المصروفات بعد تطبيق فلترة التصنيف والجهة المتحملة (العيادة أو الطبيب الحالي)
+  /// المصروفات بعد تطبيق فلترة العيادة، التصنيف، والجهة المتحملة
   List<ExpensesEntity> get filteredExpenses {
     final expenses = allExpenses.where((e) {
-      // 1. فلترة التصنيف
+      // 1. فلترة العيادة (للمالك عند تحديد عيادة معينة)
+      if (selectedClinicId != null && selectedClinicId!.isNotEmpty) {
+        if (e.clinicId != selectedClinicId) return false;
+      }
+
+      // 2. فلترة التصنيف
       if (activeCategoryId != null && activeCategoryId!.isNotEmpty) {
         if (e.categoryId != activeCategoryId) return false;
       }
 
-      // 2. فلترة الجهة المتحملة
+      // 3. فلترة الجهة المتحملة
       if (activeTargetFilter == 'doctor') {
         if (currentDoctorId != null && currentDoctorId!.isNotEmpty) {
           return e.doctorId == currentDoctorId;
@@ -75,7 +82,9 @@ class ExpensesLoaded extends ExpensesState {
     String? activeCategoryId,
     String? activeTargetFilter,
     String? currentDoctorId,
+    String? selectedClinicId,
     bool clearActiveCategory = false,
+    bool clearSelectedClinic = false,
   }) {
     return ExpensesLoaded(
       allExpenses: allExpenses ?? this.allExpenses,
@@ -85,12 +94,21 @@ class ExpensesLoaded extends ExpensesState {
           : (activeCategoryId ?? this.activeCategoryId),
       activeTargetFilter: activeTargetFilter ?? this.activeTargetFilter,
       currentDoctorId: currentDoctorId ?? this.currentDoctorId,
+      selectedClinicId: clearSelectedClinic
+          ? null
+          : (selectedClinicId ?? this.selectedClinicId),
     );
   }
 
   @override
-  List<Object?> get props =>
-      [allExpenses, categories, activeCategoryId, activeTargetFilter, currentDoctorId];
+  List<Object?> get props => [
+        allExpenses,
+        categories,
+        activeCategoryId,
+        activeTargetFilter,
+        currentDoctorId,
+        selectedClinicId,
+      ];
 }
 
 class ExpensesError extends ExpensesState {

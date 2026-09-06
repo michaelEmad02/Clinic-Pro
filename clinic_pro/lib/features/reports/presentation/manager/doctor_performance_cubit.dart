@@ -1,8 +1,8 @@
+import 'package:clinic_pro/core/error/failures.dart';
 import 'package:clinic_pro/features/reports/domain/entities/reports_entities.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/strings/app_strings.dart';
 import 'package:flutter/material.dart';
 import '../../presentation/manager/reports_state.dart';
 import '../../domain/usecases/get_doctor_performance_usecase.dart';
@@ -33,9 +33,10 @@ class DoctorPerformanceLoaded extends DoctorPerformanceState {
 }
 class DoctorPerformanceError extends DoctorPerformanceState {
   final String message;
-  const DoctorPerformanceError(this.message);
+  final Failure? failure;
+  const DoctorPerformanceError(this.message, {this.failure});
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, failure];
 }
 
 @injectable
@@ -60,7 +61,7 @@ class DoctorPerformanceCubit extends Cubit<DoctorPerformanceState> {
       forceRefresh: forceRefresh,
     );
     result.fold(
-      (failure) => emit(DoctorPerformanceError(AppStrings.loadReportsFailed)),
+      (failure) => emit(DoctorPerformanceError(failure.message, failure: failure)),
       (data) => emit(DoctorPerformanceLoaded(
         doctors: data,
         selectedClinicId: clinicId,
@@ -87,7 +88,7 @@ class DoctorPerformanceCubit extends Cubit<DoctorPerformanceState> {
       customDateRange: customDateRange,
     );
     result.fold(
-      (failure) => emit(DoctorPerformanceError(AppStrings.loadReportsFailed)),
+      (failure) => emit(DoctorPerformanceError(failure.message, failure: failure)),
       (data) => emit(DoctorPerformanceLoaded(
         doctors: data,
         selectedClinicId: clinicId,
@@ -112,7 +113,7 @@ class DoctorPerformanceCubit extends Cubit<DoctorPerformanceState> {
       customDateRange: customDateRange,
     );
     result.fold(
-      (failure) => emit(DoctorPerformanceError(AppStrings.loadReportsFailed)),
+      (failure) => emit(DoctorPerformanceError(failure.message, failure: failure)),
       (data) => emit(DoctorPerformanceLoaded(
         doctors: data,
         selectedClinicId: currentClinicId,

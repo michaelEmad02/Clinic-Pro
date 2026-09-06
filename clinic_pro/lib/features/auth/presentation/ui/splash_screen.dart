@@ -102,7 +102,7 @@ class _SplashScreenState extends State<SplashScreen>
 
           // تحميل الإعدادات (العيادة والطبيب النشط) في الـ SettingsCubit العام
           // قبل الانتقال لأي شاشة حتى تكون البيانات جاهزة
-          await context.read<SettingsCubit>().loadSettings(role, userId);
+          await context.read<SettingsCubit>().loadSettings(role, userId,state.user.ownerId);
 
           if (!context.mounted) return;
 

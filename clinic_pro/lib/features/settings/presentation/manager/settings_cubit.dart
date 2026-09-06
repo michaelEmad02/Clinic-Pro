@@ -64,7 +64,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// تحميل الإعدادات (العيادة، العيادات المتاحة، والاشتراك)
-  Future<void> loadSettings(StaffRoles role, String userId) async {
+  Future<void> loadSettings(
+      StaffRoles role, String userId, String? ownerId) async {
     // نحافظ على الحالة الحالية أثناء التحديث لمنع التفريغ المفاجئ للبيانات
     emit(state.copyWith(isLoading: true, error: null));
 
@@ -96,7 +97,8 @@ class SettingsCubit extends Cubit<SettingsState> {
           bool isValidLocalClinic = clinics.any((c) => c.id == activeClinicId);
 
           // إذا كانت العيادة النشطة محلياً فارغة، أو غير موجودة في العيادات المتاحة: نأخذ أول عيادة متاحة ونحفظها محلياً
-          if ((activeClinicId.isEmpty || !isValidLocalClinic) && clinics.isNotEmpty) {
+          if ((activeClinicId.isEmpty || !isValidLocalClinic) &&
+              clinics.isNotEmpty) {
             activeClinicId = clinics.first.id;
             AppConstants.activeClinicId = activeClinicId;
             await _localDataSource.saveActiveClinicId(userId, activeClinicId);
@@ -105,7 +107,8 @@ class SettingsCubit extends Cubit<SettingsState> {
           // جلب تفاصيل العيادة النشطة
           ClinicEntity? currentClinic;
           if (activeClinicId.isNotEmpty) {
-            final clinicInfoResult = await _getClinicInfoUseCase(activeClinicId);
+            final clinicInfoResult =
+                await _getClinicInfoUseCase(activeClinicId);
             clinicInfoResult.fold(
               (_) {},
               (clinic) => currentClinic = clinic,
@@ -116,10 +119,12 @@ class SettingsCubit extends Cubit<SettingsState> {
           SubscriptionEntity? sub;
           List<StaffEntity> ownerStaff = [];
           if (role == StaffRoles.owner) {
-            final subResult = await _getSubscriptionUseCase(userId);
+            final subResult = await _getSubscriptionUseCase(
+                (role != StaffRoles.owner) ? userId : ownerId ?? "");
             subResult.fold((_) {}, (s) => sub = s);
 
-            final staffResult = await _fetchAllStaffUseCase(userId);
+            final staffResult = await _fetchAllStaffUseCase(
+                (role != StaffRoles.owner) ? userId : ownerId ?? "");
             staffResult.fold((_) {}, (list) => ownerStaff = list);
           }
 
@@ -128,7 +133,8 @@ class SettingsCubit extends Cubit<SettingsState> {
             subscriptionEntity: sub,
             availableClinics: clinics,
             staffList: ownerStaff,
-            clinicEntity: currentClinic ?? (clinics.isNotEmpty ? clinics.first : null),
+            clinicEntity:
+                currentClinic ?? (clinics.isNotEmpty ? clinics.first : null),
           ));
 
           // للسكرتيرة: تحميل الأطباء والجدول النشط
@@ -153,7 +159,8 @@ class SettingsCubit extends Cubit<SettingsState> {
     await doctorsResult.fold(
       (failure) async => emit(state.copyWith(error: failure.message)),
       (doctors) async {
-        final savedDoctorId = await _localDataSource.getActiveDoctorId(secretaryId);
+        final savedDoctorId =
+            await _localDataSource.getActiveDoctorId(secretaryId);
         Map<String, dynamic> activeDoc = {};
 
         if (savedDoctorId != null && savedDoctorId.isNotEmpty) {
@@ -166,7 +173,8 @@ class SettingsCubit extends Cubit<SettingsState> {
         if (activeDoc.isEmpty) {
           activeDoc = doctors.firstWhere(
             (d) => d['is_active'] == true,
-            orElse: () => doctors.isNotEmpty ? doctors.first : <String, dynamic>{},
+            orElse: () =>
+                doctors.isNotEmpty ? doctors.first : <String, dynamic>{},
           );
         }
 
@@ -222,7 +230,8 @@ class SettingsCubit extends Cubit<SettingsState> {
             fileBytes: fileBytes,
           );
           uploadResult.fold(
-            (failure) => emit(state.copyWith(isLoading: false, error: failure.message)),
+            (failure) =>
+                emit(state.copyWith(isLoading: false, error: failure.message)),
             (url) => imageUrl = url,
           );
         }

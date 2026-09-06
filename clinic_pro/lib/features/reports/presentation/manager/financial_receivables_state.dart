@@ -2,6 +2,7 @@
 // FinancialReceivablesState — حالة تقرير المستحقات المالية
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/error/failures.dart';
 import 'package:clinic_pro/features/reports/domain/entities/financial_receivables_entity.dart';
 import 'package:clinic_pro/features/reports/presentation/manager/reports_state.dart';
 import 'package:equatable/equatable.dart';
@@ -15,6 +16,7 @@ class FinancialReceivablesState extends Equatable {
   final FinancialReceivablesStatus status;
   final FinancialReceivablesEntity? report;
   final String? errorMessage;
+  final Failure? failure;
   final ReportsDateRange activeDateRange;
   final DateTimeRange? customDateRange;
   final String? selectedOwnerId;
@@ -28,6 +30,7 @@ class FinancialReceivablesState extends Equatable {
     this.status = FinancialReceivablesStatus.initial,
     this.report,
     this.errorMessage,
+    this.failure,
     this.activeDateRange = ReportsDateRange.thisMonth,
     this.customDateRange,
     this.selectedOwnerId,
@@ -65,6 +68,7 @@ class FinancialReceivablesState extends Equatable {
     FinancialReceivablesStatus? status,
     FinancialReceivablesEntity? report,
     String? errorMessage,
+    Failure? failure,
     ReportsDateRange? activeDateRange,
     DateTimeRange? customDateRange,
     Object? selectedOwnerId = _unspecified,
@@ -78,6 +82,7 @@ class FinancialReceivablesState extends Equatable {
       status: status ?? this.status,
       report: report ?? this.report,
       errorMessage: errorMessage ?? this.errorMessage,
+      failure: failure ?? this.failure,
       activeDateRange: activeDateRange ?? this.activeDateRange,
       customDateRange: customDateRange ?? this.customDateRange,
       selectedOwnerId: selectedOwnerId == _unspecified ? this.selectedOwnerId : selectedOwnerId as String?,
@@ -94,6 +99,7 @@ class FinancialReceivablesState extends Equatable {
         status,
         report,
         errorMessage,
+        failure,
         activeDateRange,
         customDateRange,
         selectedOwnerId,

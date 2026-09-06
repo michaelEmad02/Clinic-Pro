@@ -8,6 +8,8 @@ import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/core/widgets/app_error_widget.dart';
+import 'package:clinic_pro/core/widgets/feature_locked_paywall_widget.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/core/widgets/app_loading.dart';
 import 'package:clinic_pro/core/widgets/empty_state.dart';
 import 'package:clinic_pro/features/reports/presentation/manager/financial_receivables_cubit.dart';
@@ -115,8 +117,16 @@ class _FinancialReceivablesViewState extends State<_FinancialReceivablesView> {
           }
 
           if (state.status == FinancialReceivablesStatus.error) {
-            return AppErrorWidget(
-              message: state.errorMessage ?? AppStrings.unknownPatient,
+            if (state.failure is FeatureNotAllowedFailure) {
+              final fail = state.failure as FeatureNotAllowedFailure;
+              return FeatureLockedPaywallWidget(
+                featureName: AppStrings.isArabic ? 'تقرير المستحقات المالية' : 'Receivables Report',
+                featureKey: fail.featureKey,
+              );
+            }
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.errorMessage,
               onRetry: () => context.read<FinancialReceivablesCubit>().loadReport(forceRefresh: true),
             );
           }

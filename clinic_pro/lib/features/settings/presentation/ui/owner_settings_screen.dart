@@ -55,7 +55,7 @@ class OwnerSettingsScreen extends StatelessWidget {
                 final role = user?.role ?? StaffRoles.owner;
                 context
                     .read<SettingsCubit>()
-                    .loadSettings(role, user?.id ?? '');
+                     .loadSettings(role, user?.id ?? '', user?.ownerId);
               },
             );
           }
@@ -65,7 +65,7 @@ class OwnerSettingsScreen extends StatelessWidget {
               final role = user?.role ?? StaffRoles.owner;
               await context
                   .read<SettingsCubit>()
-                  .loadSettings(role, user?.id ?? '');
+                   .loadSettings(role, user?.id ?? '', user?.ownerId);
             },
             child: ResponsiveHelper.responsiveCenter(
               child: SingleChildScrollView(

@@ -18,6 +18,7 @@ class AddEditExpenseSheet {
     BuildContext context, {
     ExpensesEntity? expense,
     required List<ExpenseCategoryEntity> categories,
+    String? defaultClinicId,
   }) {
     return AppBottomSheet.show(
       context: context,
@@ -26,6 +27,7 @@ class AddEditExpenseSheet {
         child: _AddEditExpenseForm(
           expense: expense,
           categories: categories,
+          defaultClinicId: defaultClinicId,
         ),
       ),
     );
@@ -35,10 +37,12 @@ class AddEditExpenseSheet {
 class _AddEditExpenseForm extends StatefulWidget {
   final ExpensesEntity? expense;
   final List<ExpenseCategoryEntity> categories;
+  final String? defaultClinicId;
 
   const _AddEditExpenseForm({
     this.expense,
     required this.categories,
+    this.defaultClinicId,
   });
 
   @override
@@ -53,6 +57,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
   late String _categoryName;
   late String _targetType; // 'clinic' | 'doctor'
   String? _selectedDoctorId;
+  String? _selectedClinicId;
 
   bool get isEditing => widget.expense != null;
 
@@ -78,6 +83,19 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
     } else {
       _targetType = 'clinic';
       _selectedDoctorId = null;
+    }
+
+    // تهيئة العيادة المحددة للمالك
+    final settingsState = context.read<SettingsCubit>().state;
+    final expClinicId = widget.expense?.clinicId;
+    if (expClinicId != null && expClinicId.isNotEmpty) {
+      _selectedClinicId = expClinicId;
+    } else if (widget.defaultClinicId != null && widget.defaultClinicId!.isNotEmpty) {
+      _selectedClinicId = widget.defaultClinicId;
+    } else if (settingsState.clinicEntity?.id.isNotEmpty ?? false) {
+      _selectedClinicId = settingsState.clinicEntity!.id;
+    } else if (settingsState.availableClinics.isNotEmpty) {
+      _selectedClinicId = settingsState.availableClinics.first.id;
     }
   }
 
@@ -149,11 +167,24 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
 
     final cubit = context.read<ExpensesCubit>();
     final authUser = context.read<AuthCubit>().state.user;
-    final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ??
-        AppConstants.activeClinicId;
-    final currentUserId = authUser?.id ?? '';
+    final isOwner = authUser?.role == StaffRoles.owner;
     final isDoctor = authUser?.role == StaffRoles.doctor;
     final isSecretary = authUser?.role == StaffRoles.secretary;
+
+    final clinicId = isOwner
+        ? (_selectedClinicId ?? '')
+        : (context.read<SettingsCubit>().state.clinicEntity?.id ??
+            AppConstants.activeClinicId);
+
+    if (clinicId.isEmpty) {
+      AppSnackbar.info(
+        context,
+        message: AppStrings.isArabic ? 'يرجى اختيار العيادة' : 'Please select a clinic',
+      );
+      return;
+    }
+
+    final currentUserId = authUser?.id ?? '';
 
     String? assignedDoctorId;
     if (isDoctor) {
@@ -176,6 +207,7 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
 
     if (isEditing) {
       final updated = widget.expense!.copyWith(
+        clinicId: clinicId,
         title: title,
         amount: amount,
         categoryId: _categoryId,
@@ -206,7 +238,10 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
   @override
   Widget build(BuildContext context) {
     final authUser = context.watch<AuthCubit>().state.user;
+    final isOwner = authUser?.role == StaffRoles.owner;
     final isSecretary = authUser?.role == StaffRoles.secretary;
+    final settingsState = context.watch<SettingsCubit>().state;
+    final availableClinics = settingsState.availableClinics;
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 24),
@@ -244,6 +279,58 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (isOwner && availableClinics.isNotEmpty) ...[
+                    _buildLabel(AppStrings.clinic),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: context.borderColor),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: availableClinics.any((c) => c.id == _selectedClinicId)
+                              ? _selectedClinicId
+                              : (availableClinics.isNotEmpty ? availableClinics.first.id : null),
+                          isExpanded: true,
+                          icon: Icon(Icons.expand_more,
+                              color: context.textSecondary, size: 20),
+                          hint: Text(
+                            AppStrings.selectClinic,
+                            style: AppTextStyles.bodyMedium(context),
+                          ),
+                          items: availableClinics.map((clinic) {
+                            return DropdownMenuItem(
+                              value: clinic.id,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.local_hospital_outlined,
+                                      size: 18, color: context.primary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      clinic.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.bodyMedium(context),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (v) {
+                            if (v == null) return;
+                            setState(() {
+                              _selectedClinicId = v;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   _buildLabel(AppStrings.expenseName),
                   const SizedBox(height: 6),
                   TextField(

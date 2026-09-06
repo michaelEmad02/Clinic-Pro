@@ -53,6 +53,7 @@ class FinancialReceivablesCubit extends Cubit<FinancialReceivablesState> {
       (failure) => emit(state.copyWith(
         status: FinancialReceivablesStatus.error,
         errorMessage: failure.message,
+        failure: failure,
       )),
       (report) => emit(state.copyWith(
         status: FinancialReceivablesStatus.loaded,

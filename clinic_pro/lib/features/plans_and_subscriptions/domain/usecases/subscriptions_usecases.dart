@@ -37,37 +37,10 @@ class CheckSubscriptionStatusUseCase {
   final ISubscriptionsRepository _repository;
   CheckSubscriptionStatusUseCase(this._repository);
 
-  Future<Either<Failure, SubscriptionEntity?>> call(String ownerId) async {
-    final result = await _repository.getActiveSubscription(ownerId);
-    return result.fold(
-      (failure) => Left(failure),
-      (subscription) async {
-        if (subscription == null) return const Right(null);
-
-        // التحقق مما إذا كان الاشتراك المفعل قد تخطى تاريخ الانتهاء
-        if (subscription.isActive && subscription.endAt != null) {
-          if (DateTime.now().isAfter(subscription.endAt!)) {
-            // انقضى التاريخ -> تحديث الحالة في الداتا بيز إلى expired
-            await _repository.updateSubscriptionStatus(
-              subscriptionId: subscription.id,
-              status: 'expired',
-            );
-            // إرجاع كائن محدث بحالة expired
-            return Right(SubscriptionEntity(
-              id: subscription.id,
-              ownerId: subscription.ownerId,
-              planId: subscription.planId,
-              subscriptionType: subscription.subscriptionType,
-              status: 'expired',
-              startedAt: subscription.startedAt,
-              endAt: subscription.endAt,
-              createdAt: subscription.createdAt,
-            ));
-          }
-        }
-        return Right(subscription);
-      },
-    );
+  Future<Either<Failure, SubscriptionEntity?>> call(String ownerId) {
+    // التحقق يتم مركزياً وسيرفرياً بالكامل داخل get_active_subscription_rpc
+    // السيرفر يتحقق من تاريخ الصلاحية ويحدث الحالة إلى expired تلقائياً بتوقيت السيرفر
+    return _repository.getActiveSubscription(ownerId);
   }
 }
 

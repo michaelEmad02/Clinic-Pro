@@ -29,9 +29,16 @@ class QuickActionsRow extends StatelessWidget {
         'onTap': () => context.push(RouteConstants.onboardingInvite, extra: {"isOnboarding": false}),
       },
       {
-        'label': AppStrings.isArabic ? 'تسجيل مصروف' : 'Add Expense',
-        'icon': Icons.account_balance_wallet_outlined,
-        'onTap': () => context.push(RouteConstants.expenses),
+        'label': AppStrings.invoices,
+        'icon': Icons.receipt_long_outlined,
+        'onTap': () => context.push(RouteConstants.invoices),
+      },
+      {
+        'label': AppStrings.isArabic
+            ? 'المستحقات المالية'
+            : 'Receivables Report',
+        'icon': Icons.request_quote_outlined,
+        'onTap': () => context.push(RouteConstants.reportsReceivables),
       },
       {
         'label': AppStrings.isArabic ? 'إدارة الاشتراك' : 'Subscription',
@@ -61,10 +68,10 @@ class QuickActionsRow extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: actions.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isMobile ? 2 : 4,
+              crossAxisCount: isMobile ? 2 : actions.length,
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: isMobile ? 1.9 : 2.4,
+              childAspectRatio: isMobile ? 1.9 : 2.2,
             ),
             itemBuilder: (context, index) {
               final action = actions[index];

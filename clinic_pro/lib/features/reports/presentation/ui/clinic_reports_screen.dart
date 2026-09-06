@@ -5,6 +5,9 @@ import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
+import 'package:clinic_pro/core/widgets/app_error_widget.dart';
+import 'package:clinic_pro/core/widgets/feature_locked_paywall_widget.dart';
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import '../manager/clinic_reports_cubit.dart';
 import 'widgets/clinic_summary_cards.dart';
@@ -58,21 +61,20 @@ class _ClinicReportsBody extends StatelessWidget {
             );
           }
           if (state is ClinicReportsError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      final userId = context.read<AuthCubit>().state.user?.id ?? '';
-                      context.read<ClinicReportsCubit>().loadReport(userId, forceRefresh: true);
-                    },
-                    child: Text(AppStrings.retry),
-                  ),
-                ],
-              ),
+            if (state.failure is FeatureNotAllowedFailure) {
+              final fail = state.failure as FeatureNotAllowedFailure;
+              return FeatureLockedPaywallWidget(
+                featureName: AppStrings.isArabic ? 'تقارير العيادات' : 'Clinic Reports',
+                featureKey: fail.featureKey,
+              );
+            }
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.message,
+              onRetry: () {
+                final userId = context.read<AuthCubit>().state.user?.id ?? '';
+                context.read<ClinicReportsCubit>().loadReport(userId, forceRefresh: true);
+              },
             );
           }
           if (state is ClinicReportsLoaded) {

@@ -1,3 +1,4 @@
+import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/reports/presentation/manager/doctor_performance_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/clinics_cubit.dart';
 import 'package:clinic_pro/features/clinics/presentation/manager/cubit/clinics_state.dart';
+import 'package:clinic_pro/core/widgets/feature_locked_paywall_widget.dart';
 import '../manager/reports_state.dart';
 import 'widgets/reports_date_range_chips.dart';
 import 'widgets/doctor_performance_list.dart';
@@ -69,6 +71,13 @@ class _DoctorReportsBody extends StatelessWidget {
             );
           }
           if (state is DoctorPerformanceError) {
+            if (state.failure is FeatureNotAllowedFailure) {
+              final fail = state.failure as FeatureNotAllowedFailure;
+              return FeatureLockedPaywallWidget(
+                featureName: AppStrings.isArabic ? 'تقارير الأطباء' : 'Doctor Reports',
+                featureKey: fail.featureKey,
+              );
+            }
             return AppErrorWidget.buildErrorView(
               context: context,
               error: state.message,

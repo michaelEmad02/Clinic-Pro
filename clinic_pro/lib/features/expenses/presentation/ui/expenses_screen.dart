@@ -25,6 +25,7 @@ import '../../../../core/widgets/read_only_guard.dart';
 
 import 'widgets/add_edit_expense_sheet.dart';
 import 'widgets/expenses_category_chips.dart';
+import 'widgets/expenses_clinic_chips.dart';
 import 'widgets/expenses_list.dart';
 import 'widgets/expenses_target_chips.dart';
 import 'widgets/expenses_total_card.dart';
@@ -144,6 +145,16 @@ class _ExpensesBody extends StatelessWidget {
                   child: Column(
                     children: [
                       ExpensesTotalCard(state: state),
+                      if (isOwner && settingsState.availableClinics.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        ExpensesClinicChips(
+                          clinics: settingsState.availableClinics,
+                          selectedClinicId: state.selectedClinicId,
+                          onChanged: (clinicId) => context
+                              .read<ExpensesCubit>()
+                              .changeClinicFilter(clinicId),
+                        ),
+                      ],
                       if (isSecretary) ...[
                         const SizedBox(height: 12),
                         ExpensesTargetChips(
@@ -207,6 +218,7 @@ class _ExpensesBody extends StatelessWidget {
                                 context,
                                 expense: exp,
                                 categories: state.categories,
+                                defaultClinicId: state.selectedClinicId,
                               );
                             },
                           );
@@ -238,6 +250,7 @@ class _ExpensesBody extends StatelessWidget {
                 AddEditExpenseSheet.show(
                   context,
                   categories: state.categories,
+                  defaultClinicId: state.selectedClinicId,
                 );
               }
             },

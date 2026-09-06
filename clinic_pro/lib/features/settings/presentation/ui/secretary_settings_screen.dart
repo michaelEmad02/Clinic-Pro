@@ -57,7 +57,7 @@ class SecretarySettingsScreen extends StatelessWidget {
                 final role = user?.role ?? StaffRoles.secretary;
                 context
                     .read<SettingsCubit>()
-                    .loadSettings(role, user?.id ?? '');
+                    .loadSettings(role, user?.id ?? '', user?.ownerId);
               },
             );
           }
@@ -66,7 +66,7 @@ class SecretarySettingsScreen extends StatelessWidget {
               final role = user?.role ?? StaffRoles.secretary;
               await context
                   .read<SettingsCubit>()
-                  .loadSettings(role, user?.id ?? '');
+                  .loadSettings(role, user?.id ?? '' , user?.ownerId);
             },
             child: ResponsiveHelper.responsiveCenter(
               child: SingleChildScrollView(
