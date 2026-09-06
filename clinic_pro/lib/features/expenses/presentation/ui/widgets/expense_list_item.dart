@@ -24,122 +24,142 @@ class ExpenseListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void openActionSheet() {
+      ExpenseActionSheet.show(
+        context: context,
+        expense: expense,
+        onEdit: onEdit,
+        onDelete: onDelete,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
+      child: Material(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: openActionSheet,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: context.borderColor),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x08000000),
-              blurRadius: 3,
-              offset: Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            InkWell(
-              onTap: () => ExpenseActionSheet.show(
-                context: context,
-                expense: expense,
-                onEdit: onEdit,
-                onDelete: onDelete,
-              ),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: context.backgroundColor,
-                  borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.borderColor),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x08000000),
+                  blurRadius: 3,
+                  offset: Offset(0, 1),
                 ),
-                child: Icon(
-                  _categoryIcon(expense.categoryName),
-                  color: context.primary,
-                  size: 24,
-                ),
-              ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    expense.title,
-                    style: AppTextStyles.headlineSmall(context).copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: context.backgroundColor,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(height: 2),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
+                  child: Icon(
+                    _categoryIcon(expense.categoryName),
+                    color: context.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        expense.formattedDate,
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: context.textHint,
+                        expense.title,
+                        style: AppTextStyles.headlineSmall(context).copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (expense.categoryName.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: context.primaryLightColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            expense.categoryName,
-                            style: AppTextStyles.labelChip(context).copyWith(
-                              fontSize: 10,
-                              color: context.primary,
+                      const SizedBox(height: 2),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            expense.formattedDate,
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: context.textHint,
                             ),
                           ),
-                        ),
-                      if (expense.createdByName != null &&
-                          expense.createdByName!.trim().isNotEmpty)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.person_outline,
-                                size: 12, color: context.primary),
-                            const SizedBox(width: 2),
-                            Flexible(
+                          if (expense.categoryName.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: context.primaryLightColor,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                               child: Text(
-                                expense.createdByName!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.caption(context).copyWith(
+                                expense.categoryName,
+                                style: AppTextStyles.labelChip(context).copyWith(
+                                  fontSize: 10,
                                   color: context.primary,
-                                  fontSize: 11.5,
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          if (expense.createdByName != null &&
+                              expense.createdByName!.trim().isNotEmpty)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.person_outline,
+                                    size: 12, color: context.primary),
+                                const SizedBox(width: 2),
+                                Flexible(
+                                  child: Text(
+                                    expense.createdByName!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.caption(context).copyWith(
+                                      color: context.primary,
+                                      fontSize: 11.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '- ${formatNumber(expense.amount)}',
+                      style: AppTextStyles.dataNumeric(context).copyWith(
+                        color: context.danger,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Icon(
+                      Icons.more_vert,
+                      size: 18,
+                      color: context.textSecondary,
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              '- ${formatNumber(expense.amount)}',
-              style: AppTextStyles.dataNumeric(context).copyWith(
-                color: context.danger,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
