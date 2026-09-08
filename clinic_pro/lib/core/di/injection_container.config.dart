@@ -57,6 +57,8 @@ import '../../features/auth/domain/repositories/i_auth_repository.dart'
     as _i589;
 import '../../features/auth/domain/use_cases/accept_invitation_use_case.dart'
     as _i730;
+import '../../features/auth/domain/use_cases/accept_invitation_with_password_use_case.dart'
+    as _i927;
 import '../../features/auth/domain/use_cases/get_current_user_use_case.dart'
     as _i129;
 import '../../features/auth/domain/use_cases/get_invitation_by_token_use_case.dart'
@@ -429,6 +431,8 @@ import '../../features/staff_and_invitations/domain/use_cases/fetch_staff_by_is_
     as _i36;
 import '../../features/staff_and_invitations/domain/use_cases/invite_staff_use_case.dart'
     as _i255;
+import '../../features/staff_and_invitations/domain/use_cases/validate_staff_invitation_use_case.dart'
+    as _i958;
 import '../../features/staff_and_invitations/presentation/manager/invite_staff_cubit.dart'
     as _i628;
 import '../../features/staff_and_invitations/presentation/manager/staff_cubit.dart'
@@ -647,6 +651,9 @@ extension GetItInjectableX on _i174.GetIt {
             staffRepository: gh<_i431.StaffRepository>()));
     gh.factory<_i36.FetchStaffByIsUseCase>(() => _i36.FetchStaffByIsUseCase(
         staffRepository: gh<_i431.StaffRepository>()));
+    gh.factory<_i958.ValidateStaffInvitationUseCase>(() =>
+        _i958.ValidateStaffInvitationUseCase(
+            staffRepository: gh<_i431.StaffRepository>()));
     gh.factory<_i255.InviteStaffUseCase>(() => _i255.InviteStaffUseCase(
           staffRepository: gh<_i431.StaffRepository>(),
           subscriptionsRepository: gh<_i255.ISubscriptionsRepository>(),
@@ -757,10 +764,18 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i695.SendMagicLinkUseCase(gh<_i589.IAuthRepository>()));
     gh.factory<_i421.VerifyEmailUseCase>(
         () => _i421.VerifyEmailUseCase(gh<_i589.IAuthRepository>()));
+    gh.factory<_i927.AcceptInvitationWithPasswordUseCase>(() =>
+        _i927.AcceptInvitationWithPasswordUseCase(gh<_i589.IAuthRepository>()));
     gh.lazySingleton<_i954.SendPasswordResetEmailUseCase>(
         () => _i954.SendPasswordResetEmailUseCase(gh<_i589.IAuthRepository>()));
     gh.lazySingleton<_i110.UpdatePasswordUseCase>(
         () => _i110.UpdatePasswordUseCase(gh<_i589.IAuthRepository>()));
+    gh.factory<_i628.InviteStaffCubit>(() => _i628.InviteStaffCubit(
+          fetchAllStaffUseCase: gh<_i675.FetchAllStaffUseCase>(),
+          inviteStaffUseCase: gh<_i255.InviteStaffUseCase>(),
+          validateStaffInvitationUseCase:
+              gh<_i958.ValidateStaffInvitationUseCase>(),
+        ));
     gh.factory<_i701.SubscriptionsCubit>(() => _i701.SubscriptionsCubit(
           getPlansUseCase: gh<_i944.GetPlansUseCase>(),
           checkSubscriptionStatusUseCase:
@@ -931,10 +946,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i628.UpdateDrugUseCase>(),
           gh<_i628.DeleteDrugUseCase>(),
         ));
-    gh.factory<_i628.InviteStaffCubit>(() => _i628.InviteStaffCubit(
-          fetchAllStaffUseCase: gh<_i675.FetchAllStaffUseCase>(),
-          inviteStaffUseCase: gh<_i255.InviteStaffUseCase>(),
-        ));
     gh.factory<_i395.AllPrescriptionsCubit>(() =>
         _i395.AllPrescriptionsCubit(gh<_i681.GetAllPrescriptionsUseCase>()));
     gh.factory<_i2.DeleteClinicUseCase>(() => _i2.DeleteClinicUseCase(
@@ -1041,16 +1052,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i880.GeneratePrescriptionPdfUseCase>(),
           gh<_i456.GetOwnerPrintingSettingsUseCase>(),
         ));
-    gh.factory<_i728.FetchClinicStatisticsCubit>(() =>
-        _i728.FetchClinicStatisticsCubit(
-            gh<_i143.FetchClinicStatisticsUseCase>()));
     gh.factory<_i189.AcceptInvitationCubit>(() => _i189.AcceptInvitationCubit(
           gh<_i1051.GetInvitationByTokenUseCase>(),
           gh<_i730.AcceptInvitationUseCase>(),
+          gh<_i927.AcceptInvitationWithPasswordUseCase>(),
           gh<_i490.LoginWithGoogleUseCase>(),
           gh<_i652.LoginWithAppleUseCase>(),
           gh<_i698.LogoutUseCase>(),
         ));
+    gh.factory<_i728.FetchClinicStatisticsCubit>(() =>
+        _i728.FetchClinicStatisticsCubit(
+            gh<_i143.FetchClinicStatisticsUseCase>()));
     gh.factory<_i815.PaymentCubit>(() => _i815.PaymentCubit(
           createPaymentIntentUseCase: gh<_i878.CreatePaymentIntentUseCase>(),
           checkPaymentStatusUseCase: gh<_i878.CheckPaymentStatusUseCase>(),

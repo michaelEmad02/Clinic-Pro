@@ -127,9 +127,47 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> acceptInvitation(String token) async {
+  Future<Either<Failure, Unit>> acceptInvitation(
+    String token, {
+    String? name,
+    String? phone,
+    String? address,
+    String? specialty,
+  }) async {
     try {
-      await _remoteDataSource.acceptInvitation(token);
+      await _remoteDataSource.acceptInvitation(
+        token,
+        name: name,
+        phone: phone,
+        address: address,
+        specialty: specialty,
+      );
+      return const Right(unit);
+    } catch (e) {
+      return Left(AuthFailure.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> acceptInvitationWithPassword({
+    required String token,
+    required String email,
+    required String password,
+    String? name,
+    String? phone,
+    String? address,
+    String? specialty,
+  }) async {
+    try {
+      await _remoteDataSource.acceptInvitationWithPassword(
+        token: token,
+        email: email,
+        password: password,
+        name: name,
+        phone: phone,
+        address: address,
+        specialty: specialty,
+      );
       return const Right(unit);
     } catch (e) {
       return Left(AuthFailure.fromException(e));

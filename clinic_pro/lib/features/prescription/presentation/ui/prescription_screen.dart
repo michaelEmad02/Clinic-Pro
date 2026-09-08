@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../manager/prescription_bloc.dart';
 import '../manager/prescription_event.dart';
+import '../manager/prescription_pdf_cubit.dart';
 
 import '../../../appointments/domain/entities/appointment_entity.dart';
 import '../../../appointments/presentation/manager/appointments_bloc.dart';
@@ -34,6 +35,9 @@ class PrescriptionScreen extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => sl<AppointmentsBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => sl<PrescriptionPdfCubit>(),
         ),
       ],
       child: PrescriptionView(isEditing, appointment: appointment),

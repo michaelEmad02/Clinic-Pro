@@ -2,18 +2,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/constants/staff_roles.dart';
 import '../../domain/entities/invitation_entity.dart';
+import '../../domain/entities/invitation_validation_entity.dart';
 import '../../domain/use_cases/fetch_all_staff_use_case.dart';
 import '../../domain/use_cases/invite_staff_use_case.dart';
+import '../../domain/use_cases/validate_staff_invitation_use_case.dart';
 import 'invite_staff_state.dart';
 
 @injectable
 class InviteStaffCubit extends Cubit<InviteStaffState> {
   final FetchAllStaffUseCase fetchAllStaffUseCase;
   final InviteStaffUseCase inviteStaffUseCase;
+  final ValidateStaffInvitationUseCase validateStaffInvitationUseCase;
 
   InviteStaffCubit({
     required this.fetchAllStaffUseCase,
     required this.inviteStaffUseCase,
+    required this.validateStaffInvitationUseCase,
   }) : super(InviteStaffInitial());
 
   Future<void> loadInitialData(String ownerId, String? initialClinicId) async {
@@ -30,7 +34,8 @@ class InviteStaffCubit extends Cubit<InviteStaffState> {
                   s.role == StaffRoles.doctor &&
                   s.clinicId == initialClinicId)
               .toList();
-          final selectedDoctorId = doctors.isNotEmpty ? doctors.first.id : null;
+          final selectedDoctorId =
+              doctors.isNotEmpty ? doctors.first.userId : null;
 
           emit(InviteStaffLoaded(
             doctors: doctors,
@@ -57,7 +62,8 @@ class InviteStaffCubit extends Cubit<InviteStaffState> {
             .where((s) =>
                 s.role == StaffRoles.doctor && s.clinicId == clinicId)
             .toList();
-        final selectedDoctorId = doctors.isNotEmpty ? doctors.first.id : null;
+        final selectedDoctorId =
+            doctors.isNotEmpty ? doctors.first.userId : null;
 
         emit(loaded.copyWith(
           selectedClinicId: clinicId,
@@ -78,6 +84,37 @@ class InviteStaffCubit extends Cubit<InviteStaffState> {
     if (state is! InviteStaffLoaded) return;
     final loaded = state as InviteStaffLoaded;
     emit(loaded.copyWith(selectedRole: role));
+  }
+
+  /// التحقق من صلاحية دعوة الموظف والقيود قبل الإضافة
+  Future<InvitationValidationEntity> validateInvitation({
+    required String email,
+    required String clinicId,
+    required StaffRoles role,
+    String? doctorId,
+  }) async {
+    if (state is InviteStaffLoaded) {
+      emit((state as InviteStaffLoaded).copyWith(isValidating: true));
+    }
+
+    final result = await validateStaffInvitationUseCase.call(
+      email: email,
+      clinicId: clinicId,
+      role: role,
+      doctorId: doctorId,
+    );
+
+    if (state is InviteStaffLoaded) {
+      emit((state as InviteStaffLoaded).copyWith(isValidating: false));
+    }
+
+    return result.fold(
+      (failure) => InvitationValidationEntity(
+        canInvite: false,
+        errorMessage: failure.message,
+      ),
+      (validation) => validation,
+    );
   }
 
   /// إضافة موظف إلى قائمة الدعوات المقترحة للتحقق منها قبل الإرسال

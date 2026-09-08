@@ -18,7 +18,7 @@ abstract class AuthFailure extends Failure {
     if (message.contains('UserNotFound') || message.contains('لم يتم العثور')) {
       return const UserNotFoundFailure();
     }
-    if (message.contains('NotAuthenticated') || message.contains('تسجيل الدخول')) {
+    if (message.contains('NotAuthenticated') || message.contains('تسجيل الدخول أولاً')) {
       return const NotAuthenticatedFailure();
     }
     if (message.contains('InvitationNotFound') || message.contains('الدعوة')) {

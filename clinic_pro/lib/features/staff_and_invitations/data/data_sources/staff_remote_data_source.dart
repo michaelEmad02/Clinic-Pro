@@ -4,6 +4,7 @@ import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:flutter/foundation.dart';
 import 'package:clinic_pro/core/services/i_auth_services.dart';
 import 'package:clinic_pro/core/services/i_cloud_service.dart';
+import 'package:clinic_pro/features/staff_and_invitations/data/models/invitation_validation_model.dart';
 import 'package:clinic_pro/features/staff_and_invitations/data/models/invitation_model.dart';
 import 'package:clinic_pro/features/staff_and_invitations/data/models/staff_model.dart';
 
@@ -11,6 +12,12 @@ abstract class StaffRemoteDataSource {
   Future<List<StaffModel>> fetchAllStaff(String ownerId);
   Future<StaffModel> fetchStaffById(String id);
   Future<void> inviteStaff(InvitationModel staff);
+  Future<InvitationValidationModel> validateInvitation({
+    required String email,
+    required String clinicId,
+    required StaffRoles role,
+    String? doctorId,
+  });
   Future<List<InvitationModel>> fetchPendingInvitations(String ownerId);
   Future<void> editStaff(StaffModel staff);
   Future<void> deleteStaff(String staffId);
@@ -183,5 +190,35 @@ class StaffRemoteDataSourceImplementation extends StaffRemoteDataSource {
     // // 3. حفظ بيانات الدعوة في قاعدة البيانات
     // await iCloudService.insert(
     //     table: SupabaseTables.invitations, data: invitationData);
+  }
+
+  @override
+  Future<InvitationValidationModel> validateInvitation({
+    required String email,
+    required String clinicId,
+    required StaffRoles role,
+    String? doctorId,
+  }) async {
+    try {
+      final res = await iCloudService.rpc(
+        'validate_staff_invitation',
+        params: {
+          'p_email': email.trim().toLowerCase(),
+          'p_clinic_id': clinicId,
+          'p_role': role.name,
+          'p_doctor_id': doctorId,
+        },
+      );
+
+      if (res != null && res is Map) {
+        return InvitationValidationModel.fromJson(
+          Map<String, dynamic>.from(res),
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ تعذر استدعاء دالة التحقق من الدعوة السحابية: $e');
+    }
+
+    return const InvitationValidationModel(canInvite: true);
   }
 }

@@ -45,8 +45,25 @@ abstract class IAuthRepository {
   /// جلب تفاصيل الدعوة بناءً على الرمز الفريد (Token)
   Future<Either<Failure, InvitationEntity>> getInvitationByToken(String token);
 
-  /// قبول الدعوة والانضمام رسمياً إلى طاقم العيادة
-  Future<Either<Failure, Unit>> acceptInvitation(String token);
+  /// قبول الدعوة والانضمام رسمياً إلى طاقم العيادة مع خيارات تعديل البيانات الشخصية
+  Future<Either<Failure, Unit>> acceptInvitation(
+    String token, {
+    String? name,
+    String? phone,
+    String? address,
+    String? specialty,
+  });
+
+  /// قبول الدعوة والانضمام عبر البريد وكلمة المرور مع خيارات تعديل البيانات الشخصية
+  Future<Either<Failure, Unit>> acceptInvitationWithPassword({
+    required String token,
+    required String email,
+    required String password,
+    String? name,
+    String? phone,
+    String? address,
+    String? specialty,
+  });
 
   /// التحقق من البريد الإلكتروني باستخدام رمز التحقق (OTP/Token)
   Future<Either<Failure, AuthUserEntity>> verifyEmail({

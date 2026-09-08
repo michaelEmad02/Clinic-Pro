@@ -12,6 +12,7 @@ import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit
 import 'package:clinic_pro/features/settings/presentation/manager/settings_state.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/all_prescriptions_cubit.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/all_prescriptions_state.dart';
+import 'package:clinic_pro/features/prescription/presentation/manager/prescription_pdf_cubit.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/all_prescriptions_card.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescriptions_filter_bar.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescriptions_search_bar.dart';
@@ -72,8 +73,11 @@ class _AllPrescriptionsScreenState extends State<AllPrescriptionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _cubit),
+        BlocProvider(create: (_) => sl<PrescriptionPdfCubit>()),
+      ],
       child: BlocListener<SettingsCubit, SettingsState>(
         listenWhen: (previous, current) =>
             previous.clinicEntity?.id != current.clinicEntity?.id ||

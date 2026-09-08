@@ -1,5 +1,7 @@
+import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/core/error/failures.dart';
 import 'package:clinic_pro/features/staff_and_invitations/domain/entities/invitation_entity.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/invitation_validation_entity.dart';
 import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import 'package:dartz/dartz.dart';
 
@@ -7,6 +9,12 @@ abstract class StaffRepository {
   Future<Either<Failure, List<StaffEntity>>> fetchAllStaff(String ownerId);
   Future<Either<Failure, StaffEntity>> fetchStaffById(String id);
   Future<Either<Failure, void>> inviteStaff(InvitationEntity staff);
+  Future<Either<Failure, InvitationValidationEntity>> validateInvitation({
+    required String email,
+    required String clinicId,
+    required StaffRoles role,
+    String? doctorId,
+  });
   Future<Either<Failure, List<InvitationEntity>>> fetchPendingInvitations(
       String ownerId);
   Future<Either<Failure, void>> editStaff(StaffEntity staff);

@@ -18,9 +18,12 @@ import '../manager/accept_invitation_state.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_snackbar.dart';
+import '../manager/auth_cubit.dart';
+import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
 import 'widgets/auth_branding_panel.dart';
 import 'widgets/invitation_details_card.dart';
 import 'widgets/invitation_expired_view.dart';
+import 'widgets/optional_staff_info_fields.dart';
 
 class AcceptInvitationScreen extends StatelessWidget {
   final String token;
@@ -38,14 +41,41 @@ class AcceptInvitationScreen extends StatelessWidget {
 }
 
 /// محتوى الشاشة — يستمع لتغييرات الحالة
-class _AcceptInvitationBody extends StatelessWidget {
+class _AcceptInvitationBody extends StatefulWidget {
   const _AcceptInvitationBody();
+
+  @override
+  State<_AcceptInvitationBody> createState() => _AcceptInvitationBodyState();
+}
+
+class _AcceptInvitationBodyState extends State<_AcceptInvitationBody> {
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _specialtyController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final ValueNotifier<bool> _isObscure = ValueNotifier<bool>(true);
+  bool _isNameInitialized = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _specialtyController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _isObscure.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AcceptInvitationCubit, AcceptInvitationState>(
       listener: (context, state) {
-        // عند نجاح القبول — التوجيه للـ Dashboard حسب الدور
+        // عند نجاح القبول — تحديث AuthCubit والتوجيه للـ Dashboard
         if (state is AcceptInvitationSuccess) {
           _showSuccessAndNavigate(context, state);
         }
@@ -53,6 +83,14 @@ class _AcceptInvitationBody extends StatelessWidget {
         // عرض رسالة خطأ
         if (state is AcceptInvitationError) {
           AppSnackbar.error(context, message: state.message);
+        }
+
+        // تعبئة الاسم الافتراضي عند اكتمال تحميل الدعوة لأول مرة
+        if (state is AcceptInvitationLoaded && !_isNameInitialized) {
+          if (state.invitation.name != null && state.invitation.name!.isNotEmpty) {
+            _nameController.text = state.invitation.name!;
+          }
+          _isNameInitialized = true;
         }
       },
       builder: (context, state) {
@@ -107,7 +145,7 @@ class _AcceptInvitationBody extends StatelessWidget {
     );
   }
 
-  /// عرض تفاصيل الدعوة الصالحة مع أزرار القبول
+  /// عرض تفاصيل الدعوة الصالحة مع فورم كلمة المرور وخيارات القبول
   Widget _buildLoadedView(
     BuildContext context,
     AcceptInvitationLoaded state,
@@ -123,38 +161,63 @@ class _AcceptInvitationBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // كارت تفاصيل الدعوة
-                InvitationDetailsCard(invitation: state.invitation),
-                const SizedBox(height: AppConstants.spaceXl),
-
-                // عنوان "سجّل الدخول للقبول"
-                Text(
-                  AppStrings.isArabic ? 'سجّل الدخول لقبول الدعوة' : 'Sign in to accept invitation',
-                  style: AppTextStyles.bodyMedium(context).copyWith(
-                    color: context.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
+                // كارت تفاصيل الدعوة (مع قفل الاسم إذا كان المستخدم مسجلاً مسبقاً)
+                InvitationDetailsCard(
+                  invitation: state.invitation,
+                  nameController: state.invitation.isExistingUser ? null : _nameController,
                 ),
                 const SizedBox(height: AppConstants.spaceMd),
 
-                // زر تسجيل الدخول بجوجل
-                _buildGoogleButton(context),
-                const SizedBox(height: AppConstants.spaceSm),
+                // حقول البيانات الإضافية (الهاتف، العنوان، والتخصص للأطباء)
+                // تظهر فقط للمستخدم الجديد، وتُخفى تماماً في حال كان المستخدم مسجلاً مسبقاً في النظام
+                if (!state.invitation.isExistingUser) ...[
+                  OptionalStaffInfoFields(
+                    phoneController: _phoneController,
+                    addressController: _addressController,
+                    specialtyController: _specialtyController,
+                    isDoctor: state.invitation.role == StaffRoles.doctor,
+                  ),
+                  const SizedBox(height: AppConstants.spaceLg),
+                ],
 
-                // زر تسجيل الدخول بـ Apple
-                _buildAppleButton(context),
+                // نموذج إدخال كلمة المرور مع إيميل معروض ومقفل (Disabled)
+                _buildPasswordForm(context, state),
                 const SizedBox(height: AppConstants.spaceLg),
 
-                // رابط العودة لتسجيل الدخول العادي
-                TextButton(
-                  onPressed: () => context.go(RouteConstants.login),
-                  child: Text(
-                    AppStrings.isArabic ? 'لديّ حساب بالفعل' : 'I already have an account',
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: context.primary,
+                // فاصل أو
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: context.borderColor)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        AppStrings.orText,
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: context.textSecondary,
+                        ),
+                      ),
                     ),
-                  ),
+                    Expanded(child: Divider(color: context.borderColor)),
+                  ],
                 ),
+                const SizedBox(height: AppConstants.spaceMd),
+
+                // أزرار الدخول السريع عبر Google / Apple
+                _buildGoogleButton(context, state),
+                // const SizedBox(height: AppConstants.spaceSm),
+                // _buildAppleButton(context),
+                // const SizedBox(height: AppConstants.spaceLg),
+
+                // // رابط العودة لتسجيل الدخول العادي
+                // TextButton(
+                //   onPressed: () => context.go(RouteConstants.login),
+                //   child: Text(
+                //     AppStrings.isArabic ? 'لديّ حساب بالفعل' : 'I already have an account',
+                //     style: AppTextStyles.bodyMedium(context).copyWith(
+                //       color: context.primary,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -186,10 +249,174 @@ class _AcceptInvitationBody extends StatelessWidget {
     );
   }
 
+  /// نموذج إنشاء كلمة المرور والبريد المقفل
+  Widget _buildPasswordForm(
+    BuildContext context,
+    AcceptInvitationLoaded state,
+  ) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // عنوان البريد الإلكتروني المدعو (مقفل للعرض فقط منعاً للتحايل)
+          Text(
+            AppStrings.email,
+            style: AppTextStyles.caption(context).copyWith(
+              color: context.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.spaceMd,
+              vertical: AppConstants.spaceMd,
+            ),
+            decoration: BoxDecoration(
+              color: context.borderColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+              border: Border.all(color: context.borderColor),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.lock_outline_rounded, size: 18, color: context.textSecondary),
+                const SizedBox(width: AppConstants.spaceSm),
+                Expanded(
+                  child: Text(
+                    state.invitation.email,
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      color: context.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Icon(Icons.check_circle_outline_rounded, size: 18, color: context.primary),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppConstants.spaceMd),
+
+          // حقل كلمة المرور
+          Text(
+            state.invitation.isExistingUser
+                ? (AppStrings.isArabic ? 'كلمة مرور حسابك الحالي' : 'Current Account Password')
+                : AppStrings.password,
+            style: AppTextStyles.caption(context).copyWith(
+              color: context.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          ValueListenableBuilder<bool>(
+            valueListenable: _isObscure,
+            builder: (context, isObscure, _) {
+              return TextFormField(
+                controller: _passwordController,
+                obscureText: isObscure,
+                decoration: InputDecoration(
+                  hintText: '••••••••',
+                  prefixIcon: const Icon(Icons.lock_rounded, size: 20),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      isObscure ? Icons.visibility_off : Icons.visibility,
+                      size: 20,
+                    ),
+                    onPressed: () => _isObscure.value = !isObscure,
+                  ),
+                  filled: true,
+                  fillColor: context.surfaceColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                    borderSide: BorderSide(color: context.borderColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                    borderSide: BorderSide(color: context.borderColor),
+                  ),
+                ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return AppStrings.isArabic
+                        ? 'الرجاء إدخال كلمة المرور'
+                        : 'Please enter your password';
+                  }
+                  if (val.length < 6) {
+                    return AppStrings.isArabic
+                        ? 'كلمة المرور يجب ألا تقل عن 6 أحرف'
+                        : 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
+              );
+            },
+          ),
+          const SizedBox(height: AppConstants.spaceMd),
+
+          // زر قبول الدعوة الأساسي بكلمة المرور
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState?.validate() ?? false) {
+                final password = _passwordController.text;
+                // للمستخدم المسجل مسبقاً لا نرسل أي تعديلات على بياناته الشخصية
+                final isExisting = state.invitation.isExistingUser;
+                final customName = isExisting ? null : _nameController.text.trim();
+                final phone = isExisting ? null : _phoneController.text.trim();
+                final address = isExisting ? null : _addressController.text.trim();
+                final specialty = isExisting ? null : _specialtyController.text.trim();
+                context.read<AcceptInvitationCubit>().acceptWithPassword(
+                      password: password,
+                      updatedName: (customName != null && customName.isNotEmpty) ? customName : null,
+                      updatedPhone: (phone != null && phone.isNotEmpty) ? phone : null,
+                      updatedAddress: (address != null && address.isNotEmpty) ? address : null,
+                      updatedSpecialty: (specialty != null && specialty.isNotEmpty) ? specialty : null,
+                    );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                vertical: AppConstants.spaceMd,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+              ),
+            ),
+            child: Text(
+              state.invitation.isExistingUser
+                  ? (AppStrings.isArabic ? 'قبول الدعوة والدخول للحساب' : 'Accept & Sign In')
+                  : (AppStrings.isArabic ? 'قبول الدعوة وتعيين كلمة المرور' : 'Accept & Set Password'),
+              style: AppTextStyles.bodyMedium(context).copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// زر تسجيل الدخول بجوجل
-  Widget _buildGoogleButton(BuildContext context) {
+  Widget _buildGoogleButton(
+    BuildContext context,
+    AcceptInvitationLoaded state,
+  ) {
     return ElevatedButton.icon(
-      onPressed: () => context.read<AcceptInvitationCubit>().acceptWithGoogle(),
+      onPressed: () {
+        final isExisting = state.invitation.isExistingUser;
+        final customName = isExisting ? null : _nameController.text.trim();
+        final phone = isExisting ? null : _phoneController.text.trim();
+        final address = isExisting ? null : _addressController.text.trim();
+        final specialty = isExisting ? null : _specialtyController.text.trim();
+        context.read<AcceptInvitationCubit>().acceptWithGoogle(
+              updatedName: (customName != null && customName.isNotEmpty) ? customName : null,
+              updatedPhone: (phone != null && phone.isNotEmpty) ? phone : null,
+              updatedAddress: (address != null && address.isNotEmpty) ? address : null,
+              updatedSpecialty: (specialty != null && specialty.isNotEmpty) ? specialty : null,
+            );
+      },
       icon: Image.network(
         'https://www.google.com/favicon.ico',
         width: 20,
@@ -212,24 +439,35 @@ class _AcceptInvitationBody extends StatelessWidget {
     );
   }
 
-  /// زر تسجيل الدخول بـ Apple
-  Widget _buildAppleButton(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: () => context.read<AcceptInvitationCubit>().acceptWithApple(),
-      icon: const Icon(Icons.apple, size: 24),
-      label: Text(AppStrings.continueWithApple),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(
-          vertical: AppConstants.spaceMd,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        ),
-      ),
-    );
-  }
+  // /// زر تسجيل الدخول بـ Apple
+  // Widget _buildAppleButton(BuildContext context) {
+  //   return ElevatedButton.icon(
+  //     onPressed: () {
+  //       final customName = _nameController.text.trim();
+  //       final phone = _phoneController.text.trim();
+  //       final address = _addressController.text.trim();
+  //       final specialty = _specialtyController.text.trim();
+  //       context.read<AcceptInvitationCubit>().acceptWithApple(
+  //             updatedName: customName.isNotEmpty ? customName : null,
+  //             updatedPhone: phone.isNotEmpty ? phone : null,
+  //             updatedAddress: address.isNotEmpty ? address : null,
+  //             updatedSpecialty: specialty.isNotEmpty ? specialty : null,
+  //           );
+  //     },
+  //     icon: const Icon(Icons.apple, size: 24),
+  //     label: Text(AppStrings.continueWithApple),
+  //     style: ElevatedButton.styleFrom(
+  //       backgroundColor: Colors.black,
+  //       foregroundColor: Colors.white,
+  //       padding: const EdgeInsets.symmetric(
+  //         vertical: AppConstants.spaceMd,
+  //       ),
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(AppConstants.radiusButton),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   /// عرض حالة الخطأ مع زر إعادة المحاولة
   Widget _buildErrorView(
@@ -293,11 +531,11 @@ class _AcceptInvitationBody extends StatelessWidget {
     );
   }
 
-  /// عرض رسالة نجاح والتوجيه للـ Dashboard
+  /// عرض رسالة نجاح وتحديث حالة الجلسة والتوجيه للـ Dashboard
   void _showSuccessAndNavigate(
     BuildContext context,
     AcceptInvitationSuccess state,
-  ) {
+  ) async {
     AppSnackbar.success(
       context,
       message: AppStrings.isArabic
@@ -305,17 +543,30 @@ class _AcceptInvitationBody extends StatelessWidget {
           : 'Invitation accepted successfully! Welcome to ${state.clinicName}',
     );
 
-    // التوجيه حسب الدور بعد تأخير قصير
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (!context.mounted) return;
-
-      if (state.role == StaffRoles.doctor.name) {
-        context.go(RouteConstants.doctorDashboard);
-      } else if (state.role == StaffRoles.secretary.name) {
-        context.go(RouteConstants.secretaryDashboard);
-      } else {
-        context.go(RouteConstants.login);
+    // تحديث حالة المصادقة والإعدادات لجلب العيادة والصلاحيات مباشرة
+    try {
+      await context.read<AuthCubit>().checkAuthStatus();
+      if (context.mounted) {
+        final authState = context.read<AuthCubit>().state;
+        if (authState.user != null) {
+          await context.read<SettingsCubit>().loadSettings(
+                authState.user!.role,
+                authState.user!.id,
+                authState.user!.ownerId,
+              );
+        }
       }
-    });
+    } catch (_) {}
+
+    // التوجيه حسب الدور بعد اكتمال المزامنة
+    if (!context.mounted) return;
+
+    if (state.role == StaffRoles.doctor.name) {
+      context.go(RouteConstants.doctorDashboard);
+    } else if (state.role == StaffRoles.secretary.name) {
+      context.go(RouteConstants.secretaryDashboard);
+    } else {
+      context.go(RouteConstants.login);
+    }
   }
 }

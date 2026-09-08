@@ -103,7 +103,7 @@ class InviteFormRow extends StatelessWidget {
             value: selectedDoctorId,
             items: doctors.map((doc) {
               return DropdownMenuItem<String>(
-                value: doc.id,
+                value: doc.userId,
                 child: Text(doc.name),
               );
             }).toList(),

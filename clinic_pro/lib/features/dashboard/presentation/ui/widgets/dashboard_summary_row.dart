@@ -39,7 +39,7 @@ class DashboardSummaryRow extends StatelessWidget {
           _buildBentoCard(
             context: context,
             title: AppStrings.isArabic ? 'صافي إيراد اليوم' : 'Today Net Revenue',
-            value: '\$${todayNetRevenue.toStringAsFixed(0)}',
+            value: todayNetRevenue.toStringAsFixed(0),
             icon: Icons.payments_outlined,
             iconBgColor: context.successBg,
             iconColor: context.successText,

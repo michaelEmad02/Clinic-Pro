@@ -30,6 +30,7 @@ class InviteStaffLoaded extends InviteStaffState {
   final StaffRoles selectedRole;
   final List<InvitationEntity> invitedStaff;
   final bool isSubmitting;
+  final bool isValidating;
   final bool isSuccess;
   final String? submitErrorMessage;
 
@@ -40,6 +41,7 @@ class InviteStaffLoaded extends InviteStaffState {
     this.selectedRole = StaffRoles.doctor,
     this.invitedStaff = const [],
     this.isSubmitting = false,
+    this.isValidating = false,
     this.isSuccess = false,
     this.submitErrorMessage,
   });
@@ -51,6 +53,7 @@ class InviteStaffLoaded extends InviteStaffState {
     StaffRoles? selectedRole,
     List<InvitationEntity>? invitedStaff,
     bool? isSubmitting,
+    bool? isValidating,
     bool? isSuccess,
     String? submitErrorMessage,
   }) {
@@ -61,6 +64,7 @@ class InviteStaffLoaded extends InviteStaffState {
       selectedRole: selectedRole ?? this.selectedRole,
       invitedStaff: invitedStaff ?? this.invitedStaff,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      isValidating: isValidating ?? this.isValidating,
       isSuccess: isSuccess ?? this.isSuccess,
       submitErrorMessage: submitErrorMessage, // can be cleared
     );
@@ -74,6 +78,7 @@ class InviteStaffLoaded extends InviteStaffState {
         selectedRole,
         invitedStaff,
         isSubmitting,
+        isValidating,
         isSuccess,
         submitErrorMessage,
       ];

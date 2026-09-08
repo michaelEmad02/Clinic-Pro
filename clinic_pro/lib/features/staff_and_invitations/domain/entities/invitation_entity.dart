@@ -15,6 +15,7 @@ class InvitationEntity {
   final DateTime
       expiredAt; // = now() + interval '7 days' // تاريخ انتهاء صلاحية الدعوة// تاريخ انتهاء صلاحية الدعوة
   final DateTime createdAt;
+  final bool isExistingUser; // هل المستخدم مسجل مسبقاً في النظام
 
   String get initial => name != null && name!.isNotEmpty ? name![0].toUpperCase() : '?';
 
@@ -32,5 +33,6 @@ class InvitationEntity {
     required this.status,
     required this.expiredAt,
     required this.createdAt,
+    this.isExistingUser = false,
   });
 }

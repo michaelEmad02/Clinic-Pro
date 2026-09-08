@@ -5,7 +5,6 @@ import 'package:printing/printing.dart';
 import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/core/constants/supabase_constants.dart';
 import 'package:clinic_pro/core/di/injection_container.dart';
-import 'package:clinic_pro/core/services/i_prescription_pdf_service.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
@@ -13,6 +12,7 @@ import 'package:clinic_pro/core/widgets/app_loading.dart';
 import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import 'package:clinic_pro/features/appointments/presentation/manager/appointments_bloc.dart';
 import 'package:clinic_pro/features/prescription/domain/entities/prescription_entity.dart';
+import 'package:clinic_pro/features/prescription/presentation/manager/prescription_pdf_cubit.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/prescription_screen.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_print_dialog.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
@@ -33,12 +33,12 @@ class AllPrescriptionsCard extends StatelessWidget {
           : 'Preparing prescription for WhatsApp...',
     );
     try {
-      final pdfService = sl<IPrescriptionPdfService>();
+      final pdfCubit = context.read<PrescriptionPdfCubit>();
       final settingsState = context.read<SettingsCubit>().state;
       final clinic = settingsState.clinicEntity;
       final doctor = settingsState.doctorEntity;
 
-      final pdfBytes = await pdfService.generatePrescriptionPdf(
+      final pdfBytes = await pdfCubit.generatePdf(
         prescription: prescription,
         clinic: clinic,
         doctor: doctor,

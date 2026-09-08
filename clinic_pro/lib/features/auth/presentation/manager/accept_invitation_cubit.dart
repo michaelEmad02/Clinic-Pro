@@ -8,6 +8,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/constants/supabase_constants.dart';
 import '../../domain/use_cases/get_invitation_by_token_use_case.dart';
 import '../../domain/use_cases/accept_invitation_use_case.dart';
+import '../../domain/use_cases/accept_invitation_with_password_use_case.dart';
 import '../../domain/use_cases/login_with_google_use_case.dart';
 import '../../domain/use_cases/login_with_apple_use_case.dart';
 import '../../domain/use_cases/logout_use_case.dart';
@@ -18,6 +19,7 @@ import 'accept_invitation_state.dart';
 class AcceptInvitationCubit extends Cubit<AcceptInvitationState> {
   final GetInvitationByTokenUseCase _getInvitationByTokenUseCase;
   final AcceptInvitationUseCase _acceptInvitationUseCase;
+  final AcceptInvitationWithPasswordUseCase _acceptInvitationWithPasswordUseCase;
   final LoginWithGoogleUseCase _loginWithGoogleUseCase;
   final LoginWithAppleUseCase _loginWithAppleUseCase;
   final LogoutUseCase _logoutUseCase;
@@ -29,6 +31,7 @@ class AcceptInvitationCubit extends Cubit<AcceptInvitationState> {
   AcceptInvitationCubit(
     this._getInvitationByTokenUseCase,
     this._acceptInvitationUseCase,
+    this._acceptInvitationWithPasswordUseCase,
     this._loginWithGoogleUseCase,
     this._loginWithAppleUseCase,
     this._logoutUseCase,
@@ -75,8 +78,13 @@ class AcceptInvitationCubit extends Cubit<AcceptInvitationState> {
     );
   }
 
-  /// تسجيل الدخول عبر Google ثم قبول الدعوة تلقائياً
-  Future<void> acceptWithGoogle() async {
+  /// تسجيل الدخول عبر Google ثم قبول الدعوة تلقائياً مع خيار تحديث البيانات
+  Future<void> acceptWithGoogle({
+    String? updatedName,
+    String? updatedPhone,
+    String? updatedAddress,
+    String? updatedSpecialty,
+  }) async {
     if (_currentToken == null) return;
     emit(AcceptInvitationAccepting());
 
@@ -87,9 +95,14 @@ class AcceptInvitationCubit extends Cubit<AcceptInvitationState> {
       (failure) async =>
           emit(AcceptInvitationError(message: failure.message)),
       (user) async {
-        // 2. قبول الدعوة (إنشاء user + clinic_staff + تحديث status)
-        final acceptResult =
-            await _acceptInvitationUseCase(_currentToken!);
+        // 2. قبول الدعوة (إنشاء user + clinic_staff + تحديث status عبر الـ RPC)
+        final acceptResult = await _acceptInvitationUseCase(
+          _currentToken!,
+          name: updatedName,
+          phone: updatedPhone,
+          address: updatedAddress,
+          specialty: updatedSpecialty,
+        );
 
         acceptResult.fold(
           (failure) =>
@@ -97,14 +110,20 @@ class AcceptInvitationCubit extends Cubit<AcceptInvitationState> {
           (_) => emit(AcceptInvitationSuccess(
             role: _currentInvitation?.role.name ?? 'doctor',
             clinicName: _currentInvitation?.clinicName ?? '',
+            doctorName: _currentInvitation?.doctorName,
           )),
         );
       },
     );
   }
 
-  /// تسجيل الدخول عبر Apple ثم قبول الدعوة تلقائياً
-  Future<void> acceptWithApple() async {
+  /// تسجيل الدخول عبر Apple ثم قبول الدعوة تلقائياً مع خيار تحديث البيانات
+  Future<void> acceptWithApple({
+    String? updatedName,
+    String? updatedPhone,
+    String? updatedAddress,
+    String? updatedSpecialty,
+  }) async {
     if (_currentToken == null) return;
     emit(AcceptInvitationAccepting());
 
@@ -114,8 +133,13 @@ class AcceptInvitationCubit extends Cubit<AcceptInvitationState> {
       (failure) async =>
           emit(AcceptInvitationError(message: failure.message)),
       (user) async {
-        final acceptResult =
-            await _acceptInvitationUseCase(_currentToken!);
+        final acceptResult = await _acceptInvitationUseCase(
+          _currentToken!,
+          name: updatedName,
+          phone: updatedPhone,
+          address: updatedAddress,
+          specialty: updatedSpecialty,
+        );
 
         acceptResult.fold(
           (failure) =>
@@ -123,9 +147,41 @@ class AcceptInvitationCubit extends Cubit<AcceptInvitationState> {
           (_) => emit(AcceptInvitationSuccess(
             role: _currentInvitation?.role.name ?? 'doctor',
             clinicName: _currentInvitation?.clinicName ?? '',
+            doctorName: _currentInvitation?.doctorName,
           )),
         );
       },
+    );
+  }
+
+  /// قبول الدعوة بالبريد الإلكتروني وكلمة المرور مع خيارات تحديث البيانات
+  Future<void> acceptWithPassword({
+    required String password,
+    String? updatedName,
+    String? updatedPhone,
+    String? updatedAddress,
+    String? updatedSpecialty,
+  }) async {
+    if (_currentToken == null || _currentInvitation == null) return;
+    emit(AcceptInvitationAccepting());
+
+    final acceptResult = await _acceptInvitationWithPasswordUseCase(
+      token: _currentToken!,
+      email: _currentInvitation!.email,
+      password: password,
+      name: updatedName,
+      phone: updatedPhone,
+      address: updatedAddress,
+      specialty: updatedSpecialty,
+    );
+
+    acceptResult.fold(
+      (failure) => emit(AcceptInvitationError(message: failure.message)),
+      (_) => emit(AcceptInvitationSuccess(
+        role: _currentInvitation?.role.name ?? 'doctor',
+        clinicName: _currentInvitation?.clinicName ?? '',
+        doctorName: _currentInvitation?.doctorName,
+      )),
     );
   }
 }

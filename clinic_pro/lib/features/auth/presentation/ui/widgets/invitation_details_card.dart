@@ -13,8 +13,13 @@ import '../../../../staff_and_invitations/domain/entities/invitation_entity.dart
 
 class InvitationDetailsCard extends StatelessWidget {
   final InvitationEntity invitation;
+  final TextEditingController? nameController;
 
-  const InvitationDetailsCard({super.key, required this.invitation});
+  const InvitationDetailsCard({
+    super.key,
+    required this.invitation,
+    this.nameController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +90,100 @@ class InvitationDetailsCard extends StatelessWidget {
           ),
           const SizedBox(height: AppConstants.spaceSm),
 
-          if (invitation.name != null && invitation.name!.isNotEmpty) ...[
+          // اسم الموظف: إذا كان مسجلاً مسبقاً، يظهر للقراءة فقط مع قفل يمنع التعديل
+          if (invitation.isExistingUser) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spaceMd,
+                vertical: AppConstants.spaceSm,
+              ),
+              decoration: BoxDecoration(
+                color: context.backgroundColor,
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.person_rounded, size: 20, color: context.primary),
+                  const SizedBox(width: AppConstants.spaceSm),
+                  Text(
+                    AppStrings.name,
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: context.textSecondary,
+                    ),
+                  ),
+                  const Spacer(),
+                  Flexible(
+                    child: Text(
+                      invitation.name ?? '',
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.spaceSm),
+                  Tooltip(
+                    message: AppStrings.isArabic
+                        ? 'الاسم مسجل مسبقاً في النظام ولا يمكن تعديله'
+                        : 'Name is registered in the system and cannot be edited',
+                    child: Icon(
+                      Icons.lock_outline_rounded,
+                      size: 16,
+                      color: context.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppConstants.spaceSm),
+          ] else if (nameController != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spaceMd,
+                vertical: AppConstants.spaceXs,
+              ),
+              decoration: BoxDecoration(
+                color: context.backgroundColor,
+                borderRadius: BorderRadius.circular(AppConstants.radiusInput),
+                border: Border.all(color: context.borderColor),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.person_outline_rounded, size: 20, color: context.primary),
+                  const SizedBox(width: AppConstants.spaceSm),
+                  Text(
+                    AppStrings.name,
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: context.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.spaceSm),
+                  Expanded(
+                    child: TextFormField(
+                      controller: nameController,
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.end,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        border: InputBorder.none,
+                        hintText: AppStrings.name,
+                        suffixIcon: Icon(
+                          Icons.edit_outlined,
+                          size: 16,
+                          color: context.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppConstants.spaceSm),
+          ] else if (invitation.name != null && invitation.name!.isNotEmpty) ...[
             _buildDetailRow(
               context,
               icon: Icons.person_rounded,

@@ -30,6 +30,7 @@ class InvitationModel extends InvitationEntity {
     required super.status,
     required super.expiredAt,
     required super.createdAt,
+    super.isExistingUser = false,
   });
 
   /// إنشاء نموذج من البيانات السحابية
@@ -51,6 +52,7 @@ class InvitationModel extends InvitationEntity {
       status: statusStr,
       expiredAt: _parseUtc(json['expires_at'] as String),
       createdAt: _parseUtc(json['created_at'] as String),
+      isExistingUser: json['is_existing_user'] as bool? ?? false,
     );
   }
 
@@ -84,6 +86,7 @@ class InvitationModel extends InvitationEntity {
     String? status,
     DateTime? expiredAt,
     DateTime? createdAt,
+    bool? isExistingUser,
   }) {
     return InvitationModel(
       id: id ?? this.id,
@@ -99,6 +102,7 @@ class InvitationModel extends InvitationEntity {
       status: status ?? this.status,
       expiredAt: expiredAt ?? this.expiredAt,
       createdAt: createdAt ?? this.createdAt,
+      isExistingUser: isExistingUser ?? this.isExistingUser,
     );
   }
 }

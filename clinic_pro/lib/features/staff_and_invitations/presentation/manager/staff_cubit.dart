@@ -142,7 +142,21 @@ class StaffCubit extends Cubit<StaffState> {
 
   Future<void> resendInvitation(String invitationId) async {
     if (state is! StaffLoaded) return;
-    await Future.delayed(const Duration(milliseconds: 300));
+    final loaded = state as StaffLoaded;
+
+    final invitationIndex =
+        loaded.invitations.indexWhere((inv) => inv.id == invitationId);
+    if (invitationIndex == -1) return;
+
+    final invitation = loaded.invitations[invitationIndex];
+    final result = await inviteStaffUseCase.call(invitation);
+
+    result.fold(
+      (failure) => emit(StaffError(failure.message)),
+      (_) {
+        // يمكن تحديث تاريخ الإرسال أو الإبقاء على القائمة الحالية كما هي
+      },
+    );
   }
 
   Future<void> cancelInvitation(String invitationId) async {

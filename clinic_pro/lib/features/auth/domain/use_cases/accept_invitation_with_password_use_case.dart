@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────
-// UseCase لقبول الدعوة والانضمام (AcceptInvitationUseCase)
+// UseCase لقبول الدعوة بالبريد وكلمة المرور (AcceptInvitationWithPasswordUseCase)
 // ────────────────────────────────────────────────────────
 
 import 'package:injectable/injectable.dart';
@@ -8,20 +8,24 @@ import '../../../../core/error/failures.dart';
 import '../repositories/i_auth_repository.dart';
 
 @injectable
-class AcceptInvitationUseCase {
+class AcceptInvitationWithPasswordUseCase {
   final IAuthRepository _repository;
 
-  AcceptInvitationUseCase(this._repository);
+  AcceptInvitationWithPasswordUseCase(this._repository);
 
-  Future<Either<Failure, Unit>> call(
-    String token, {
+  Future<Either<Failure, Unit>> call({
+    required String token,
+    required String email,
+    required String password,
     String? name,
     String? phone,
     String? address,
     String? specialty,
   }) {
-    return _repository.acceptInvitation(
-      token,
+    return _repository.acceptInvitationWithPassword(
+      token: token,
+      email: email,
+      password: password,
       name: name,
       phone: phone,
       address: address,

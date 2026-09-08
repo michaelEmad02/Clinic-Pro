@@ -24,6 +24,7 @@ import '../manager/invite_staff_cubit.dart';
 import '../manager/invite_staff_state.dart';
 import 'widgets/invite_form_row.dart';
 import 'widgets/invited_staff_list.dart';
+import 'widgets/existing_user_confirm_dialog.dart';
 
 class InviteStaffScreen extends StatefulWidget {
   final bool isOnboarding;
@@ -99,6 +100,12 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                         context.read<InviteStaffCubit>().clearSubmitError();
                       }
                       if (state.isSuccess) {
+                        AppSnackbar.success(
+                          context,
+                          message: AppStrings.isArabic
+                              ? 'تم إرسال الدعوات بنجاح'
+                              : 'Invitations sent successfully',
+                        );
                         if (widget.isOnboarding) {
                           // context.read<OnboardingCubit>().inviteStaff(
                           //       state.invitedStaff.map((e) => e.email).toList(),
@@ -316,7 +323,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
             onDoctorChanged: (val) {
               inviteStaffCubit.onDoctorChanged(val);
             },
-            onAdd: () {
+            onAdd: () async {
               final name = _nameController.text.trim();
               final email = _emailController.text.trim();
               if (name.isEmpty) {
@@ -327,7 +334,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
                 _showError(context, AppStrings.enterValidEmail);
                 return;
               }
-              _addCurrentInvitee(context, state, ownerId);
+              await _addCurrentInvitee(context, state, ownerId);
             },
           ),
           const SizedBox(height: AppConstants.spaceLg),
@@ -342,6 +349,8 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
 
   Widget _buildFooter(BuildContext context, InviteStaffState state,
       bool isLoading, String ownerId) {
+    final isValidating = state is InviteStaffLoaded && state.isValidating;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppConstants.spaceLg,
@@ -353,11 +362,18 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ElevatedButton(
-            onPressed: isLoading || state is! InviteStaffLoaded
+            onPressed: isLoading || isValidating || state is! InviteStaffLoaded
                 ? null
-                : () {
-                    _addCurrentInvitee(context, state, ownerId);
-                    context.read<InviteStaffCubit>().sendInvitations(ownerId);
+                : () async {
+                    if (_nameController.text.trim().isNotEmpty &&
+                        _emailController.text.trim().isNotEmpty) {
+                      final added =
+                          await _addCurrentInvitee(context, state, ownerId);
+                      if (!added) return;
+                    }
+                    if (context.mounted) {
+                      context.read<InviteStaffCubit>().sendInvitations(ownerId);
+                    }
                   },
             style: ElevatedButton.styleFrom(
               backgroundColor: context.primary,
@@ -368,7 +384,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
               ),
               elevation: 0,
             ),
-            child: isLoading
+            child: isLoading || isValidating
                 ? const AppLoadingWidget(
                     size: AppLoadingSize.small,
                     color: Colors.white,
@@ -425,28 +441,64 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
     AppSnackbar.error(context, message: msg);
   }
 
-  /// دالة مساعدة لتجميع بيانات الواجهة وإنشاء كائن الدعوة وإضافته للقائمة
-  void _addCurrentInvitee(
-      BuildContext context, InviteStaffLoaded state, String ownerId) {
+  /// دالة مساعدة للتحقق من القيود وتجميع بيانات الواجهة وإنشاء كائن الدعوة وإضافته للقائمة
+  Future<bool> _addCurrentInvitee(
+      BuildContext context, InviteStaffLoaded state, String ownerId) async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
-    if (name.isEmpty || email.isEmpty || !email.contains('@')) return;
+    if (name.isEmpty || email.isEmpty || !email.contains('@')) return false;
 
     // نقرأ حالة ClinicsCubit من الـ context التابع لـ Builder في شجرة الوجت
     final clinicsState = BlocProvider.of<ClinicsCubit>(context).state;
     final clinicsList = clinicsState is ClinicsLoaded
         ? clinicsState.clinics
         : const <ClinicEntity>[];
-    if (state.selectedClinicId == null || clinicsList.isEmpty) return;
+    if (state.selectedClinicId == null || clinicsList.isEmpty) return false;
 
     final selectedClinic =
         clinicsList.firstWhere((c) => c.id == state.selectedClinicId);
+
+    // 1. فحص القيود عبر السيرفر (نفس العيادة، نفس الطبيب للسكرتير، تعارض الأدوار)
+    final validation = await context.read<InviteStaffCubit>().validateInvitation(
+      email: email,
+      clinicId: state.selectedClinicId!,
+      role: state.selectedRole,
+      doctorId: state.selectedRole == StaffRoles.secretary
+          ? state.selectedDoctorId
+          : null,
+    );
+
+    if (!context.mounted) return false;
+
+    // 2. إذا كانت الدعوة غير مسموحة لوجود قيد مانع
+    if (!validation.canInvite) {
+      _showError(context, validation.errorMessage ?? 'لا يمكن إرسال الدعوة لهذا الموظف');
+      return false;
+    }
+
+    // 3. إذا كان المستخدم مسجلاً مسبقاً في النظام -> عرض تنبيه تأكيدي
+    if (validation.isExistingUser) {
+      final roleArabic = validation.existingRole == 'doctor'
+          ? 'طبيب'
+          : (validation.existingRole == 'secretary' ? 'سكرتير' : 'موظف');
+
+      final confirmed = await ExistingUserConfirmDialog.show(
+        context: context,
+        userName: validation.existingName ?? name,
+        userRole: roleArabic,
+        clinicName: selectedClinic.name,
+      );
+
+      if (confirmed != true) return false;
+    }
+
+    if (!context.mounted) return false;
 
     String? doctorName;
     if (state.selectedRole == StaffRoles.secretary &&
         state.selectedDoctorId != null) {
       final doc =
-          state.doctors.firstWhere((d) => d.id == state.selectedDoctorId);
+          state.doctors.firstWhere((d) => d.userId == state.selectedDoctorId);
       doctorName = doc.name;
     }
 
@@ -461,7 +513,7 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
           : null,
       doctorName: doctorName,
       email: email,
-      name: name,
+      name: validation.existingName ?? name,
       role: state.selectedRole,
       token: 'token-${now.millisecondsSinceEpoch}',
       status: InvitationStatus.pending,
@@ -472,5 +524,6 @@ class _InviteStaffScreenState extends State<InviteStaffScreen> {
     context.read<InviteStaffCubit>().addInvitee(invitation);
     _nameController.clear();
     _emailController.clear();
+    return true;
   }
 }

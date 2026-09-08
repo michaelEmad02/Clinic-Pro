@@ -5,8 +5,6 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/app_constants.dart';
-import 'package:clinic_pro/core/di/injection_container.dart';
-import 'package:clinic_pro/core/services/i_prescription_pdf_service.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
@@ -17,6 +15,7 @@ import 'package:clinic_pro/core/widgets/shimmer_list.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_bloc.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_event.dart';
+import 'package:clinic_pro/features/prescription/presentation/manager/prescription_pdf_cubit.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_state.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/add_drug_search_sheet.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/drugs_list_section.dart';
@@ -39,7 +38,6 @@ import '../../../../appointments/presentation/manager/appointments_bloc.dart';
 import '../../../../appointments/presentation/manager/appointments_event.dart';
 
 import 'package:clinic_pro/core/widgets/app_loading.dart';
-import 'package:clinic_pro/core/services/prescription_pdf_service_impl.dart';
 import 'package:clinic_pro/core/widgets/read_only_guard.dart';
 
 class PrescriptionView extends StatelessWidget {
@@ -102,8 +100,8 @@ class PrescriptionView extends StatelessWidget {
         doctor = settingsCubit.state.doctor;
       } catch (_) {}
 
-      final pdfService = sl<IPrescriptionPdfService>();
-      final pdfBytes = await pdfService.generatePrescriptionPdf(
+      final pdfCubit = context.read<PrescriptionPdfCubit>();
+      final pdfBytes = await pdfCubit.generatePdf(
         prescription: prescEntity,
         clinic: clinic,
         doctor: doctor,
@@ -135,9 +133,6 @@ class PrescriptionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // تحميل الخطوط مسبقاً في الذاكرة لتسريع توليد الـ PDF فورياً
-    PrescriptionPdfServiceImpl.preloadFonts();
-
     return BlocConsumer<PrescriptionBloc, PrescriptionState>(
       listener: (context, state) async {
         if (state.status == PrescriptionStatus.loading &&

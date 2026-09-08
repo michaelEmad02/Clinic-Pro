@@ -1,10 +1,12 @@
 import 'package:injectable/injectable.dart';
+import 'package:clinic_pro/core/constants/staff_roles.dart';
 import 'package:clinic_pro/core/error/failures.dart';
 import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/staff_and_invitations/data/data_sources/staff_remote_data_source.dart';
 import 'package:clinic_pro/features/staff_and_invitations/data/models/invitation_model.dart';
 import 'package:clinic_pro/features/staff_and_invitations/data/models/staff_model.dart';
 import 'package:clinic_pro/features/staff_and_invitations/domain/entities/invitation_entity.dart';
+import 'package:clinic_pro/features/staff_and_invitations/domain/entities/invitation_validation_entity.dart';
 import 'package:clinic_pro/features/staff_and_invitations/domain/entities/staff_entity.dart';
 import 'package:clinic_pro/features/staff_and_invitations/domain/repositories/staff_repository.dart';
 import 'package:dartz/dartz.dart';
@@ -84,6 +86,9 @@ class StaffRepoImplementation extends StaffRepository {
           id: staff.id,
           ownerId: staff.ownerId,
           clinicId: staff.clinicId,
+          clinicName: staff.clinicName,
+          doctorId: staff.doctorId,
+          doctorName: staff.doctorName,
           email: staff.email,
           name: staff.name,
           role: staff.role,
@@ -92,6 +97,26 @@ class StaffRepoImplementation extends StaffRepository {
           expiredAt: staff.expiredAt,
           createdAt: staff.createdAt));
       return right(null);
+    } catch (e) {
+      return left(QueryFailure.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, InvitationValidationEntity>> validateInvitation({
+    required String email,
+    required String clinicId,
+    required StaffRoles role,
+    String? doctorId,
+  }) async {
+    try {
+      final res = await staffRemoteDataSource.validateInvitation(
+        email: email,
+        clinicId: clinicId,
+        role: role,
+        doctorId: doctorId,
+      );
+      return right(res);
     } catch (e) {
       return left(QueryFailure.fromException(e));
     }

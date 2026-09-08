@@ -59,14 +59,16 @@ class AcceptInvitationAccepting extends AcceptInvitationState {}
 class AcceptInvitationSuccess extends AcceptInvitationState {
   final String role;
   final String clinicName;
+  final String? doctorName;
 
   const AcceptInvitationSuccess({
     required this.role,
     required this.clinicName,
+    this.doctorName,
   });
 
   @override
-  List<Object?> get props => [role, clinicName];
+  List<Object?> get props => [role, clinicName, doctorName];
 }
 
 /// خطأ عام أثناء التحميل أو القبول

@@ -55,6 +55,7 @@ class FailureStrings {
       ? 'يجب تسجيل الدخول أولاً.'
       : 'You must log in first.';
 
+
   static String get googleSignInFailed => _isAr
       ? 'فشل تسجيل الدخول بحساب Google.'
       : 'Google Sign-In failed.';
