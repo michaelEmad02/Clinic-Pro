@@ -43,4 +43,41 @@ class ImageCompressionService implements IImageCompressionService {
       return imageFile;
     }
   }
+
+  @override
+  Future<File> compressDocumentImage({
+    required File imageFile,
+    int maxWidth = 1600,
+    int maxHeight = 2000,
+    int quality = 80,
+  }) async {
+    try {
+      final bytes = await imageFile.readAsBytes();
+      final image = img.decodeImage(bytes);
+      if (image == null) return imageFile;
+
+      img.Image processedImage = image;
+
+      // تغيير الأبعاد مع الحفاظ الكامل على النسبة والتناسب فقط إذا كانت الصورة تتجاوز الحد الأقصى
+      if (image.width > maxWidth || image.height > maxHeight) {
+        if (image.width >= image.height) {
+          processedImage = img.copyResize(image, width: maxWidth);
+        } else {
+          processedImage = img.copyResize(image, height: maxHeight);
+        }
+      }
+
+      // ضغط الصورة كـ JPEG بجودة عالية تضمن قراءة نصوص وأرقام التحاليل والأشعات
+      final compressedBytes = img.encodeJpg(processedImage, quality: quality);
+
+      final tempDir = await getTemporaryDirectory();
+      final compressedFile = File(
+        '${tempDir.path}/doc_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+      await compressedFile.writeAsBytes(compressedBytes);
+      return compressedFile;
+    } catch (e) {
+      return imageFile;
+    }
+  }
 }

@@ -214,7 +214,7 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
   }
 
   @override
-  Future<Either<Failure, void>> savePrescription(
+  Future<Either<Failure, String>> savePrescription(
     PrescriptionEntity prescription,
     String doctorId,
   ) async {
@@ -271,7 +271,18 @@ class PrescriptionRepositoryImpl implements IPrescriptionRepository {
         await _remoteDataSource.insertPrescriptionItem(itemModel);
       }
 
-      return const Right(null);
+      // ربط أي تحاليل أو فحوصات تم رفعها أثناء هذه الزيارة بمعرف الروشتة الجديد
+      if (prescription.appointmentId != null &&
+          prescription.appointmentId!.isNotEmpty) {
+        try {
+          await _remoteDataSource.linkMedicalRecordsToPrescription(
+            appointmentId: prescription.appointmentId!,
+            prescriptionId: finalPrescriptionId,
+          );
+        } catch (_) {}
+      }
+
+      return Right(finalPrescriptionId);
     } catch (e) {
       return Left(QueryFailure.fromException(e));
     }

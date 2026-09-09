@@ -35,8 +35,8 @@ abstract class IPrescriptionRepository {
     String? doctorId,
   });
 
-  /// حفظ الروشتة الطبية وأدويتها في قاعدة البيانات
-  Future<Either<Failure, void>> savePrescription(
+  /// حفظ الروشتة الطبية وأدويتها في قاعدة البيانات وإرجاع معرّف الروشتة المحفوظة
+  Future<Either<Failure, String>> savePrescription(
     PrescriptionEntity prescription,
     String doctorId,
   );

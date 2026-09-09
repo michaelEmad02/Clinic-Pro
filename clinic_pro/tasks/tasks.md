@@ -69,6 +69,14 @@
 ## Invoices
   - [x] اظهار المواعيد الغير مفوترة في شاشه الفواتير
 
+## medical_records
+- [x] إنشاء مخطط قاعدة البيانات وسياسات الأمان RLS في docs/medical_records/medical_records_schema.sql
+- [x] دعم ضغط المستندات الطبية مع الحفاظ على الأبعاد الأصلية (compressDocumentImage)
+- [x] بناء موديول Clean Architecture كامل (Domain, Data, Presentation/Cubit)
+- [x] واجهات العرض: كروت الفحوصات والتحاليل، عارض الصور التفاعلي (InteractiveViewer)، نافذة الرفع مع الاقتراحات السريعة
+- [x] دمج الموديول كتاب جديد في تفاصيل المريض (PatientDetailsScreen)
+- [x] ربط الموديول بشاشة كتابة الروشتة (PrescriptionView) لإرفاق واستعراض الفحوصات أثناء الكشف
+
 
 
 ## error
@@ -92,3 +100,4 @@
 - [x] payment
 - [x] coupons
 - [x] referrals
+- [x] medical_records

@@ -17,6 +17,7 @@ import 'widgets/patient_info_tab.dart';
 import 'widgets/patient_prescriptions_tab.dart';
 import 'widgets/patient_sliver_app_bar.dart';
 import 'widgets/patient_visits_tab.dart';
+import '../../../medical_records/presentation/ui/widgets/medical_records_tab.dart';
 
 class PatientDetailsScreen extends StatelessWidget {
   final String id;
@@ -53,7 +54,7 @@ class PatientDetailsScreen extends StatelessWidget {
           if (state is PatientDetailsLoaded) {
             final patient = state.patient;
             return DefaultTabController(
-              length: 3,
+              length: 4,
               child: Scaffold(
                 backgroundColor: context.background,
                 body: ResponsiveHelper.responsiveCenter(
@@ -75,6 +76,7 @@ class PatientDetailsScreen extends StatelessWidget {
                               Tab(text: AppStrings.isArabic ? 'المعلومات' : 'Info'),
                               Tab(text: AppStrings.isArabic ? 'الزيارات' : 'Visits'),
                               Tab(text: AppStrings.isArabic ? 'الروشتات' : 'Prescriptions'),
+                              Tab(text: AppStrings.isArabic ? 'الفحوصات والأشعة' : 'Tests & Scans'),
                             ],
                           ),
                         ),
@@ -88,6 +90,10 @@ class PatientDetailsScreen extends StatelessWidget {
                           isLoading: state.visitsLoading,
                         ),
                         PatientPrescriptionsTab(patientId: id),
+                        MedicalRecordsTab(
+                          patientId: patient.id,
+                          clinicId: patient.clinicId,
+                        ),
                       ],
                     ),
                   ),

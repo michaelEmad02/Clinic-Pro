@@ -15,7 +15,7 @@ class SavePrescriptionUseCase {
 
   SavePrescriptionUseCase(this._repository);
 
-  Future<Either<Failure, void>> call(PrescriptionEntity prescription, String doctorId) {
+  Future<Either<Failure, String>> call(PrescriptionEntity prescription, String doctorId) {
     if (prescription.items.isEmpty) {
       return Future.value(const Left(AtLeastOneDrugRequiredFailure()));
     }

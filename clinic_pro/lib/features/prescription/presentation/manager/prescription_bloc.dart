@@ -249,16 +249,30 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
         status: PrescriptionStatus.error,
         errorMessage: failure.message,
       )),
-      (_) async {
+      (savedPrescriptionId) async {
         for (final templateId in state.appliedTemplateIds) {
           try {
             await _incrementTemplateUsageUseCase(templateId);
           } catch (_) {}
         }
+        final updatedPrescription = PrescriptionEntity(
+          id: savedPrescriptionId,
+          clinicId: prescription.clinicId,
+          doctorId: prescription.doctorId,
+          patientId: prescription.patientId,
+          appointmentId: prescription.appointmentId,
+          diagnosis: prescription.diagnosis,
+          diagnoses: prescription.diagnoses,
+          notes: prescription.notes,
+          nextVisitDays: prescription.nextVisitDays,
+          createdAt: prescription.createdAt,
+          items: prescription.items,
+        );
         emit(state.copyWith(
           status: PrescriptionStatus.success,
           postSaveAction: event.action,
-          savedPrescription: prescription,
+          prescriptionId: savedPrescriptionId,
+          savedPrescription: updatedPrescription,
         ));
       },
     );

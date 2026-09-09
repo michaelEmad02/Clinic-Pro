@@ -39,6 +39,24 @@ class SupabaseTables {
   static const String referralMilestoneRewards = 'referral_milestone_rewards';
   static const String referralRedemptions = 'referral_redemptions';
   static const String ownerClaimedMilestones = 'owner_claimed_milestones';
+  static const String medicalRecords = 'medical_records';
+}
+
+/// أنواع الفحوصات والسجلات الطبية
+class MedicalRecordType {
+  static const String labTest = 'lab_test';
+  static const String radiology = 'radiology';
+
+  static String toLocalized(String type) {
+    switch (type) {
+      case labTest:
+        return AppStrings.isArabic ? 'تحليل طبي' : 'Lab Test';
+      case radiology:
+        return AppStrings.isArabic ? 'أشعة وفحوصات' : 'Radiology & Scans';
+      default:
+        return type;
+    }
+  }
 }
 
 class SupabaseBucket {

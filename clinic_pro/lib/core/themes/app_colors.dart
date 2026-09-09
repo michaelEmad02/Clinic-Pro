@@ -166,6 +166,9 @@ extension ThemeColors on BuildContext {
   // لون خلفية النجاح
   Color get successBg => AppColors.successBg;
 
+  // لون سطح متغير (surfaceVariant)
+  Color get surfaceVariant => AppColors.surfaceVariant;
+
   // لون النص/الأيقونة على متغيرات الأسطح
   Color get onSurfaceVariant => AppColors.onSurfaceVariant;
 

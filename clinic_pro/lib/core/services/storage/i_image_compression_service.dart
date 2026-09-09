@@ -13,4 +13,12 @@ abstract class IImageCompressionService {
     int targetHeight = 300,
     int quality = 75,
   });
+
+  /// ضغط مستند أو فحص طبي (تحليل / أشعة) مع الحفاظ على الأبعاد الأصلية ووضوح النصوص
+  Future<File> compressDocumentImage({
+    required File imageFile,
+    int maxWidth = 1600,
+    int maxHeight = 2000,
+    int quality = 80,
+  });
 }

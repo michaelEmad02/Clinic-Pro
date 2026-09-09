@@ -14,6 +14,7 @@ enum SnackbarType {
   success,
   error,
   info,
+  warning,
 }
 
 /// فئة خدمات إشعارات التطبيق الموحدة
@@ -62,6 +63,22 @@ class AppSnackbar {
       message: message,
       title: title,
       type: SnackbarType.info,
+      duration: duration,
+    );
+  }
+
+  /// عرض إشعار تحذير
+  static void warning(
+    BuildContext context, {
+    required String message,
+    String? title,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    show(
+      context,
+      message: message,
+      title: title,
+      type: SnackbarType.warning,
       duration: duration,
     );
   }
@@ -306,6 +323,8 @@ class _AppSnackbarContentState extends State<_AppSnackbarContent>
         return Icons.error_outline_rounded;
       case SnackbarType.info:
         return Icons.info_outline_rounded;
+      case SnackbarType.warning:
+        return Icons.warning_amber_rounded;
     }
   }
 
@@ -325,6 +344,11 @@ class _AppSnackbarContentState extends State<_AppSnackbarContent>
         return _SnackbarColors(
           primaryColor: context.primary,
           backgroundColor: context.primaryLightColor,
+        );
+      case SnackbarType.warning:
+        return _SnackbarColors(
+          primaryColor: context.warning,
+          backgroundColor: context.warningBg,
         );
     }
   }

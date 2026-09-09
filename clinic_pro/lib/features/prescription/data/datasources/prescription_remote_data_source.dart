@@ -39,6 +39,10 @@ abstract class IPrescriptionRemoteDataSource {
   Future<PrescriptionModel> insertPrescription(PrescriptionModel prescription);
   Future<void> insertPrescriptionItem(PrescriptionItemModel item);
   Future<void> updateAppointmentStatus(String appointmentId, String status);
+  Future<void> linkMedicalRecordsToPrescription({
+    required String appointmentId,
+    required String prescriptionId,
+  });
   Future<List<PrescriptionTemplateModel>> getTemplates(String doctorId);
   Future<List<PrescriptionTemplateItemModel>> getTemplateItems(
       String templateId);
@@ -328,6 +332,21 @@ class PrescriptionRemoteDataSourceImpl
       matchColumn: 'id',
       matchValue: appointmentId,
     );
+  }
+
+  @override
+  Future<void> linkMedicalRecordsToPrescription({
+    required String appointmentId,
+    required String prescriptionId,
+  }) async {
+    try {
+      await _cloud.update(
+        table: SupabaseTables.medicalRecords,
+        data: {'prescription_id': prescriptionId},
+        matchColumn: 'appointment_id',
+        matchValue: appointmentId,
+      );
+    } catch (_) {}
   }
 
   @override

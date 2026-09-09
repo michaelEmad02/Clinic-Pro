@@ -13,6 +13,7 @@ import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
 import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
+import 'package:clinic_pro/features/medical_records/presentation/ui/widgets/medical_records_bottom_sheet.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_bloc.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_event.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_pdf_cubit.dart';
@@ -311,6 +312,21 @@ class PrescriptionView extends StatelessWidget {
               ),
             ),
           ),
+        const SizedBox(width: AppConstants.spaceXs),
+        IconButton(
+          tooltip: AppStrings.patientMedicalRecords,
+          icon: Icon(Icons.medical_information_outlined, color: context.primary),
+          onPressed: () {
+            MedicalRecordsBottomSheet.show(
+              context,
+              patientId: appointment.patientId,
+              clinicId: appointment.clinicId,
+              doctorId: appointment.doctorId,
+              appointmentId: appointment.id,
+              prescriptionId: state.prescriptionId.isNotEmpty ? state.prescriptionId : null,
+            );
+          },
+        ),
         const SizedBox(width: AppConstants.spaceSm),
       ],
       bottom: PreferredSize(
@@ -369,6 +385,104 @@ class PrescriptionView extends StatelessWidget {
               visitType: state.visitType,
               doctorName: state.doctorName,
               visitDate: state.visitDate,
+            ),
+            const SizedBox(height: AppConstants.spaceSm),
+
+            // بطاقة الوصول السريع لفحوصات وتحاليل المريض مصممة بأناقة وتجاوب مع padding خاص بهذه الودجت فقط
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spaceMd),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      context.surfaceColor,
+                      context.primary.withOpacity(0.07),
+                    ],
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radiusCard),
+                  border: Border.all(
+                    color: context.primary.withOpacity(0.2),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.primary.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      MedicalRecordsBottomSheet.show(
+                        context,
+                        patientId: appointment.patientId,
+                        clinicId: appointment.clinicId,
+                        doctorId: appointment.doctorId,
+                        appointmentId: appointment.id,
+                        prescriptionId: state.prescriptionId.isNotEmpty
+                            ? state.prescriptionId
+                            : null,
+                      );
+                    },
+                    borderRadius:
+                        BorderRadius.circular(AppConstants.radiusCard),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(9),
+                            decoration: BoxDecoration(
+                              color: context.primary.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.science_rounded,
+                              size: 22,
+                              color: context.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              AppStrings.patientMedicalRecordsQuickAccess,
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: context.primary.withOpacity(0.08),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 13,
+                              color: context.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: AppConstants.spaceSm),
             const TemplatesSelectorSection(),

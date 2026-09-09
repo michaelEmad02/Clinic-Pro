@@ -216,6 +216,22 @@ import '../../features/invoices/domain/usecases/update_invoice_usecase.dart'
     as _i1072;
 import '../../features/invoices/presentation/manager/invoices_cubit.dart'
     as _i795;
+import '../../features/medical_records/data/datasources/i_medical_records_remote_data_source.dart'
+    as _i219;
+import '../../features/medical_records/data/datasources/medical_records_remote_data_source_impl.dart'
+    as _i638;
+import '../../features/medical_records/data/repositories/medical_records_repository_impl.dart'
+    as _i820;
+import '../../features/medical_records/domain/repositories/i_medical_records_repository.dart'
+    as _i6;
+import '../../features/medical_records/domain/usecases/delete_medical_record_use_case.dart'
+    as _i556;
+import '../../features/medical_records/domain/usecases/get_medical_records_use_case.dart'
+    as _i187;
+import '../../features/medical_records/domain/usecases/upload_medical_record_use_case.dart'
+    as _i243;
+import '../../features/medical_records/presentation/manager/medical_records_cubit.dart'
+    as _i285;
 import '../../features/onboarding/presentation/manager/onboarding_cubit.dart'
     as _i1012;
 import '../../features/owner_referrals/data/data_sources/owner_referral_remote_data_source.dart'
@@ -609,6 +625,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i591.IOwnerSettingsRepository>(() =>
         _i375.OwnerSettingsRepositoryImpl(
             gh<_i1070.IOwnerSettingsRemoteDataSource>()));
+    gh.lazySingleton<_i219.IMedicalRecordsRemoteDataSource>(
+        () => _i638.MedicalRecordsRemoteDataSourceImpl(
+              gh<_i239.ICloudService>(),
+              gh<_i557.IStorageService>(),
+              gh<_i576.IImageCompressionService>(),
+            ));
     gh.factory<_i439.ReferralCubit>(() => _i439.ReferralCubit(
           gh<_i263.GetReferralDashboardUseCase>(),
           gh<_i263.ApplyReferralCodeOnRegistrationUseCase>(),
@@ -989,6 +1011,9 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.lazySingleton<_i1004.IPaymentRepository>(() =>
         _i265.PaymentRepositoryImpl(gh<_i673.IPaymentRemoteDataSource>()));
+    gh.lazySingleton<_i6.IMedicalRecordsRepository>(() =>
+        _i820.MedicalRecordsRepositoryImpl(
+            gh<_i219.IMedicalRecordsRemoteDataSource>()));
     gh.factory<_i864.PatientPrescriptionsCubit>(() =>
         _i864.PatientPrescriptionsCubit(
             gh<_i1061.GetPrescriptionsForPatientUseCase>()));
@@ -1060,6 +1085,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i652.LoginWithAppleUseCase>(),
           gh<_i698.LogoutUseCase>(),
         ));
+    gh.factory<_i556.DeleteMedicalRecordUseCase>(() =>
+        _i556.DeleteMedicalRecordUseCase(gh<_i6.IMedicalRecordsRepository>()));
+    gh.factory<_i187.GetMedicalRecordsUseCase>(() =>
+        _i187.GetMedicalRecordsUseCase(gh<_i6.IMedicalRecordsRepository>()));
+    gh.factory<_i243.UploadMedicalRecordUseCase>(() =>
+        _i243.UploadMedicalRecordUseCase(gh<_i6.IMedicalRecordsRepository>()));
     gh.factory<_i728.FetchClinicStatisticsCubit>(() =>
         _i728.FetchClinicStatisticsCubit(
             gh<_i143.FetchClinicStatisticsUseCase>()));
@@ -1111,6 +1142,11 @@ extension GetItInjectableX on _i174.GetIt {
           toggleIsActiveUseCase: gh<_i444.ToggleIsActiveUseCase>(),
           addStaffUseCase: gh<_i25.AddStaffUseCase>(),
           deleteStaffUseCase: gh<_i382.DeleteStaffUseCase>(),
+        ));
+    gh.factory<_i285.MedicalRecordsCubit>(() => _i285.MedicalRecordsCubit(
+          gh<_i187.GetMedicalRecordsUseCase>(),
+          gh<_i243.UploadMedicalRecordUseCase>(),
+          gh<_i556.DeleteMedicalRecordUseCase>(),
         ));
     return this;
   }

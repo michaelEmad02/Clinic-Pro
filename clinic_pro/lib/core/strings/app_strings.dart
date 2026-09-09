@@ -1565,7 +1565,136 @@ class AppStrings {
   static String prescriptionsTotalCount(int count) => isArabic
       ? 'إجمالي الروشتات ($count)'
       : 'Total Prescriptions ($count)';
+
+  // Medical Records (Lab Tests & Radiology) Strings
+  static String get medicalRecords =>
+      isArabic ? 'الفحوصات والأشعات' : 'Medical Records';
+  static String get uploadMedicalRecord =>
+      isArabic ? 'إرفاق فحص طبي جديد' : 'Upload Medical Record';
+  static String get uploadMedicalRecordSubtitle => isArabic
+      ? 'اختر نوع الفحص، التقط أو اختر الصورة وحفظها'
+      : 'Select test type, capture/choose image and save';
+  static String get labTest => isArabic ? 'تحليل مخبري 🧪' : 'Lab Test 🧪';
+  static String get radiology => isArabic ? 'أشعة وفحوصات 🩻' : 'Radiology 🩻';
+  static String get labTestShort => isArabic ? 'تحليل مخبري' : 'Lab Test';
+  static String get radiologyShort => isArabic ? 'أشعة وفحوصات' : 'Radiology';
+  static String get recordTitleLabel =>
+      isArabic ? 'اسم الفحص / التحليل' : 'Record / Test Name';
+  static String get recordTitleHint => isArabic
+      ? 'مثال: صورة دم كاملة، أشعة مقطعية...'
+      : 'e.g., Complete Blood Count, CT Scan...';
+  static String get recordTitleRequired =>
+      isArabic ? 'يرجى كتابة اسم الفحص' : 'Please enter record title';
+  static String get recordDateLabel =>
+      isArabic ? 'تاريخ إجراء الفحص' : 'Record Date';
+  static String get changeDate => isArabic ? 'تغيير' : 'Change';
+  static String get recordImageLabel =>
+      isArabic ? 'صورة الفحص' : 'Record Image';
+  static String get pickFromCamera => isArabic ? 'الكاميرا' : 'Camera';
+  static String get pickFromGallery => isArabic ? 'المعرض' : 'Gallery';
+  static String get selectImageRequired => isArabic
+      ? 'يرجى اختيار صورة الفحص أو التحليل أولاً'
+      : 'Please select an image for the record first';
+  static String get pickImageError =>
+      isArabic ? 'تعذر اختيار الصورة' : 'Failed to select image';
+  static String get doctorNotesOptional =>
+      isArabic ? 'ملاحظات الطبيب (اختياري)' : 'Doctor Notes (Optional)';
+  static String get doctorNotesHint => isArabic
+      ? 'أي ملاحظات تشخيصية أو تعليمات إضافية...'
+      : 'Any diagnostic notes or instructions...';
+  static String get uploadAndSave =>
+      isArabic ? 'رفع وحفظ الفحص' : 'Upload & Save Record';
+  static String get patientMedicalRecords =>
+      isArabic ? 'فحوصات وتحاليل المريض' : 'Patient Medical Records';
+  static String get patientMedicalRecordsQuickAccess => isArabic
+      ? 'فحوصات وتحاليل المريض (عرض السجل أو إرفاق فحص لهذه الزيارة)'
+      : 'Patient Medical Records (View history or attach test for this visit)';
+  static String get noRecordsYet =>
+      isArabic ? 'لا توجد فحوصات سابقة' : 'No previous records';
+  static String get noRecordsSubtitle => isArabic
+      ? 'يمكنك إرفاق تحاليل أو أشعات للمريض من زر إرفاق فحص أعلاه.'
+      : 'You can attach lab tests or x-rays for the patient using the button above.';
+  static String get noMatchingRecords => isArabic
+      ? 'لا توجد نتائج مطابقة للتصفية المختارة.'
+      : 'No records match the selected filter.';
+  static String get noRecordsOrRadiology =>
+      isArabic ? 'لا توجد فحوصات أو أشعات' : 'No records or radiology scans';
+  static String get noRecordsForPatientYet => isArabic
+      ? 'لم يتم إرفاق أي تحاليل أو أشعات لهذا المريض حتى الآن.'
+      : 'No lab tests or x-rays have been uploaded for this patient yet.';
+  static String get deleteRecordTitle =>
+      isArabic ? 'حذف الفحص الطبي' : 'Delete Medical Record';
+  static String deleteRecordConfirm(String title) => isArabic
+      ? 'هل أنت متأكد من رغبتك في حذف هذا الفحص ($title)؟ سيتم حذف الصورة نهائياً.'
+      : 'Are you sure you want to delete this record ($title)? The image will be deleted permanently.';
+  static String get recordDeletedSuccess =>
+      isArabic ? 'تم حذف الفحص الطبي بنجاح' : 'Medical record deleted successfully';
+  static String get recordUploadedSuccess =>
+      isArabic ? 'تم رفع الفحص الطبي بنجاح' : 'Medical record uploaded successfully';
+  static String get linkedToAppointment =>
+      isArabic ? 'مرتبط بموعد' : 'Linked to appointment';
+  static String get unlinkedRecord =>
+      isArabic ? 'فحص مستقل (بدون موعد)' : 'Independent record (No appointment)';
+  static String linkedToAppointmentWithName(String name) => isArabic
+      ? 'موعد: $name'
+      : 'Appt: $name';
+  static String get goToAppointmentDetails =>
+      isArabic ? 'الذهاب لتفاصيل الموعد' : 'Go to appointment details';
+  static String goToAppointmentDetailsWithName(String name) => isArabic
+      ? 'الذهاب لتفاصيل موعد ($name)'
+      : 'Go to appt details ($name)';
+  static String get failedToLoadImage =>
+      isArabic ? 'تعذر تحميل الصورة' : 'Failed to load image';
+  static String get testDatePrefix =>
+      isArabic ? 'تاريخ الفحص:' : 'Test Date:';
+  static String filterAllRecords(int count) =>
+      isArabic ? 'الكل ($count)' : 'All ($count)';
+  static String filterLabTests(int count) =>
+      isArabic ? 'تحاليل مخبرية ($count) 🧪' : 'Lab Tests ($count) 🧪';
+  static String filterRadiology(int count) =>
+      isArabic ? 'أشعة وفحوصات ($count) 🩻' : 'Radiology ($count) 🩻';
+  static String filterLinked(int count) =>
+      isArabic ? 'مرتبطة بموعد ($count) 📅' : 'Linked ($count) 📅';
+  static String filterUnlinked(int count) =>
+      isArabic ? 'بدون موعد ($count) 📄' : 'Unlinked ($count) 📄';
+  static String get attachRecord =>
+      isArabic ? 'إرفاق فحص' : 'Attach Record';
+
+  static List<String> get labSuggestions => isArabic
+      ? [
+          'صورة دم كاملة (CBC)',
+          'سكر تراكمي (HbA1c)',
+          'وظائف كبد (Liver Function)',
+          'وظائف كلى (Kidney Function)',
+          'تحليل بول كامل (Urine Analysis)',
+          'دهون الدم (Lipid Profile)',
+        ]
+      : [
+          'Complete Blood Count (CBC)',
+          'Glycated Hemoglobin (HbA1c)',
+          'Liver Function Test',
+          'Kidney Function Test',
+          'Urinalysis',
+          'Lipid Profile',
+        ];
+
+  static List<String> get radiologySuggestions => isArabic
+      ? [
+          'أشعة سينية (X-Ray)',
+          'أشعة مقطعية (CT Scan)',
+          'رنين مغناطيسي (MRI)',
+          'موجات فوق صوتية (Ultrasound)',
+          'رسم قلب (ECG)',
+        ]
+      : [
+          'X-Ray Scan',
+          'CT Scan',
+          'MRI Scan',
+          'Ultrasound',
+          'Electrocardiogram (ECG)',
+        ];
 }
+
 
 
 
