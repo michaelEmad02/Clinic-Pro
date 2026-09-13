@@ -7,6 +7,7 @@ import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/realtime_indicator.dart';
+import '../../../../../core/utils/responsive_helper.dart';
 import '../../../domain/entities/appointment_entity.dart';
 import 'queue_item.dart';
 
@@ -24,6 +25,9 @@ class WaitingQueueList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final horizontalPadding = isDesktop ? 0.0 : 16.0;
+
     final displayedQueue = (maxItems != null && maxItems! < queue.length)
         ? queue.take(maxItems!).toList()
         : queue;
@@ -33,7 +37,7 @@ class WaitingQueueList extends StatelessWidget {
       children: [
         // ── عنوان القسم مع مؤشر الوقت الحقيقي وزر الاستدعاء ──
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -44,6 +48,7 @@ class WaitingQueueList extends StatelessWidget {
                     style: AppTextStyles.headlineSmall(context).copyWith(
                       color: context.primary,
                       fontWeight: FontWeight.bold,
+                      fontSize: isDesktop ? 18 : null,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -53,12 +58,13 @@ class WaitingQueueList extends StatelessWidget {
               if (queue.isNotEmpty)
                 TextButton.icon(
                   onPressed: onCallNext,
-                  icon: const Icon(Icons.volume_up_outlined, size: 16),
+                  icon: Icon(Icons.volume_up_outlined, size: isDesktop ? 18 : 16),
                   label: Text(
                     AppStrings.callNext,
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: context.primaryContainer,
                       fontWeight: FontWeight.w600,
+                      fontSize: isDesktop ? 15 : null,
                     ),
                   ),
                 ),
@@ -70,7 +76,7 @@ class WaitingQueueList extends StatelessWidget {
         // ── حالة فارغة ──
         if (displayedQueue.isEmpty)
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
             padding: const EdgeInsets.all(24),
             alignment: Alignment.center,
             decoration: BoxDecoration(
@@ -82,6 +88,7 @@ class WaitingQueueList extends StatelessWidget {
               AppStrings.queueEmptyDesc,
               style: AppTextStyles.bodyMedium(context).copyWith(
                 color: context.textSecondary,
+                fontSize: isDesktop ? 15 : null,
               ),
             ),
           )
@@ -96,7 +103,7 @@ class WaitingQueueList extends StatelessWidget {
                 return ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   itemCount: displayedQueue.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
@@ -109,7 +116,7 @@ class WaitingQueueList extends StatelessWidget {
               }
 
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),

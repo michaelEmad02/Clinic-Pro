@@ -10,7 +10,6 @@ import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/features/settings/presentation/ui/widgets/edit_visit_types_sheet.dart';
-
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 
 class DoctorQuickActions extends StatelessWidget {
@@ -18,7 +17,7 @@ class DoctorQuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = ResponsiveHelper.isMobile(context);
+    final isDesktop = ResponsiveHelper.isDesktop(context);
 
     final actions = [
       {
@@ -58,6 +57,84 @@ class DoctorQuickActions extends StatelessWidget {
       },
     ];
 
+    // ── Desktop Sidebar Layout ──
+    if (isDesktop) {
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.borderColor),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: context.primaryLightColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    TablerIcons.bolt,
+                    color: context.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  AppStrings.quickActions,
+                  style: AppTextStyles.headlineSmall(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimary,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final int crossAxisCount = constraints.maxWidth > 300 ? 2 : 1;
+                final double childAspectRatio = crossAxisCount == 2 ? 2.5 : 4.6;
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: childAspectRatio,
+                  ),
+                  itemCount: actions.length,
+                  itemBuilder: (context, index) {
+                    final action = actions[index];
+                    return _buildActionCard(
+                      context: context,
+                      label: action['label'] as String,
+                      icon: action['icon'] as IconData,
+                      onTap: action['onTap'] as VoidCallback,
+                      isDesktop: true,
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ── Mobile & Tablet Layout (Horizontal Scrolling List) ──
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -72,47 +149,25 @@ class DoctorQuickActions extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        if (isMobile)
-          SizedBox(
-            height: 52,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: actions.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 10),
-              itemBuilder: (context, index) {
-                final action = actions[index];
-                return _buildActionCard(
-                  context: context,
-                  label: action['label'] as String,
-                  icon: action['icon'] as IconData,
-                  onTap: action['onTap'] as VoidCallback,
-                );
-              },
-            ),
-          )
-        else
-          Padding(
+        SizedBox(
+          height: 52,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: List.generate(actions.length, (index) {
-                final action = actions[index];
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: index < actions.length - 1 ? 10 : 0,
-                    ),
-                    child: _buildActionCard(
-                      context: context,
-                      label: action['label'] as String,
-                      icon: action['icon'] as IconData,
-                      onTap: action['onTap'] as VoidCallback,
-                    ),
-                  ),
-                );
-              }),
-            ),
+            itemCount: actions.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final action = actions[index];
+              return _buildActionCard(
+                context: context,
+                label: action['label'] as String,
+                icon: action['icon'] as IconData,
+                onTap: action['onTap'] as VoidCallback,
+                isDesktop: false,
+              );
+            },
           ),
+        ),
       ],
     );
   }
@@ -122,12 +177,16 @@ class DoctorQuickActions extends StatelessWidget {
     required String label,
     required IconData icon,
     required VoidCallback onTap,
+    required bool isDesktop,
   }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: isDesktop ? 12 : 14,
+          vertical: isDesktop ? 10 : 8,
+        ),
         decoration: BoxDecoration(
           color: context.surfaceColor,
           borderRadius: BorderRadius.circular(12),
@@ -141,10 +200,10 @@ class DoctorQuickActions extends StatelessWidget {
           ],
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: isDesktop ? MainAxisSize.max : MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: EdgeInsets.all(isDesktop ? 7 : 6),
               decoration: BoxDecoration(
                 color: context.primaryLightColor,
                 borderRadius: BorderRadius.circular(8),
@@ -152,12 +211,25 @@ class DoctorQuickActions extends StatelessWidget {
               child: Icon(
                 icon,
                 color: context.primary,
-                size: 18,
+                size: isDesktop ? 20 : 18,
               ),
             ),
             const SizedBox(width: 10),
-            Flexible(
-              child: Text(
+            if (isDesktop)
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: context.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
+              )
+            else
+              Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -167,7 +239,6 @@ class DoctorQuickActions extends StatelessWidget {
                   fontSize: 13,
                 ),
               ),
-            ),
           ],
         ),
       ),

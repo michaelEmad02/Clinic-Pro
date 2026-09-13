@@ -30,66 +30,161 @@ class DoctorStatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
 
-    return SizedBox(
-      height: isMobile ? 190 : 95,
-      child: GridView.count(
-        scrollDirection: Axis.horizontal,
-        crossAxisCount: isMobile ? 2 : 1,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: isMobile ? 0.46 : 0.42,
-        children: [
-          _buildStatItem(
-            context: context,
-            title: AppStrings.isArabic ? 'مواعيد اليوم' : 'Today Appointments',
-            value: '$todayAppointmentsCount',
-            icon: Icons.calendar_today_outlined,
-            color: context.primary,
-            bgColor: context.primaryLightColor,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        final isWide = availableWidth >= 1100;
+
+        if (isWide) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    context: context,
+                    title: AppStrings.isArabic ? 'مواعيد اليوم' : 'Today Appointments',
+                    value: '$todayAppointmentsCount',
+                    icon: Icons.calendar_today_outlined,
+                    color: context.primary,
+                    bgColor: context.primaryLightColor,
+                    isWide: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatItem(
+                    context: context,
+                    title: AppStrings.isArabic ? 'مكتمل اليوم' : 'Completed Today',
+                    value: '$completedCount',
+                    icon: Icons.check_circle_outline,
+                    color: context.successText,
+                    bgColor: context.successBg,
+                    isWide: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatItem(
+                    context: context,
+                    title: AppStrings.isArabic ? 'قيد الانتظار' : 'Waiting',
+                    value: '$waitingCount',
+                    icon: Icons.hourglass_empty_outlined,
+                    color: context.warningText,
+                    bgColor: context.warningBg,
+                    isWide: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatItem(
+                    context: context,
+                    title: AppStrings.isArabic ? 'متوسط الانتظار' : 'Avg Wait Time',
+                    value: avgWaitingTime,
+                    icon: Icons.access_time,
+                    color: context.primaryContainer,
+                    bgColor: context.primaryLightColor,
+                    isWide: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatItem(
+                    context: context,
+                    title: AppStrings.isArabic ? 'إيرادات اليوم' : "Today's Revenue",
+                    value: '${todayRevenue.toStringAsFixed(0)} ${AppStrings.sar}',
+                    icon: Icons.account_balance_wallet_outlined,
+                    color: context.primary,
+                    bgColor: context.primaryLightColor,
+                    isWide: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatItem(
+                    context: context,
+                    title: AppStrings.isArabic ? 'المحصل' : 'Collected Amount',
+                    value: '${collectedAmount.toStringAsFixed(0)} ${AppStrings.sar}',
+                    icon: Icons.price_check_outlined,
+                    color: context.successText,
+                    bgColor: context.successBg,
+                    isWide: true,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // For smaller window widths (< 1100px), use smooth horizontal scrollable GridView
+        return SizedBox(
+          height: isMobile ? 200 : 104,
+          child: GridView.count(
+            scrollDirection: Axis.horizontal,
+            crossAxisCount: isMobile ? 2 : 1,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: isMobile ? 0.44 : 0.38,
+            children: [
+              _buildStatItem(
+                context: context,
+                title: AppStrings.isArabic ? 'مواعيد اليوم' : 'Today Appointments',
+                value: '$todayAppointmentsCount',
+                icon: Icons.calendar_today_outlined,
+                color: context.primary,
+                bgColor: context.primaryLightColor,
+                isWide: false,
+              ),
+              _buildStatItem(
+                context: context,
+                title: AppStrings.isArabic ? 'مكتمل اليوم' : 'Completed Today',
+                value: '$completedCount',
+                icon: Icons.check_circle_outline,
+                color: context.successText,
+                bgColor: context.successBg,
+                isWide: false,
+              ),
+              _buildStatItem(
+                context: context,
+                title: AppStrings.isArabic ? 'قيد الانتظار' : 'Waiting',
+                value: '$waitingCount',
+                icon: Icons.hourglass_empty_outlined,
+                color: context.warningText,
+                bgColor: context.warningBg,
+                isWide: false,
+              ),
+              _buildStatItem(
+                context: context,
+                title: AppStrings.isArabic ? 'متوسط الانتظار' : 'Avg Wait Time',
+                value: avgWaitingTime,
+                icon: Icons.access_time,
+                color: context.primaryContainer,
+                bgColor: context.primaryLightColor,
+                isWide: false,
+              ),
+              _buildStatItem(
+                context: context,
+                title: AppStrings.isArabic ? 'إيرادات اليوم' : "Today's Revenue",
+                value: '${todayRevenue.toStringAsFixed(0)} ${AppStrings.sar}',
+                icon: Icons.account_balance_wallet_outlined,
+                color: context.primary,
+                bgColor: context.primaryLightColor,
+                isWide: false,
+              ),
+              _buildStatItem(
+                context: context,
+                title: AppStrings.isArabic ? 'المحصل' : 'Collected Amount',
+                value: '${collectedAmount.toStringAsFixed(0)} ${AppStrings.sar}',
+                icon: Icons.price_check_outlined,
+                color: context.successText,
+                bgColor: context.successBg,
+                isWide: false,
+              ),
+            ],
           ),
-          _buildStatItem(
-            context: context,
-            title: AppStrings.isArabic ? 'مكتمل اليوم' : 'Completed Today',
-            value: '$completedCount',
-            icon: Icons.check_circle_outline,
-            color: context.successText,
-            bgColor: context.successBg,
-          ),
-          _buildStatItem(
-            context: context,
-            title: AppStrings.isArabic ? 'قيد الانتظار' : 'Waiting',
-            value: '$waitingCount',
-            icon: Icons.hourglass_empty_outlined,
-            color: context.warningText,
-            bgColor: context.warningBg,
-          ),
-          _buildStatItem(
-            context: context,
-            title: AppStrings.isArabic ? 'متوسط الانتظار' : 'Avg Wait Time',
-            value: avgWaitingTime,
-            icon: Icons.access_time,
-            color: context.primaryContainer,
-            bgColor: context.primaryLightColor,
-          ),
-          _buildStatItem(
-            context: context,
-            title: AppStrings.isArabic ? 'إيرادات اليوم' : "Today's Revenue",
-            value: '${todayRevenue.toStringAsFixed(0)} ${AppStrings.sar}',
-            icon: Icons.account_balance_wallet_outlined,
-            color: context.primary,
-            bgColor: context.primaryLightColor,
-          ),
-          _buildStatItem(
-            context: context,
-            title: AppStrings.isArabic ? 'المحصل' : 'Collected Amount',
-            value: '${collectedAmount.toStringAsFixed(0)} ${AppStrings.sar}',
-            icon: Icons.price_check_outlined,
-            color: context.successText,
-            bgColor: context.successBg,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -100,32 +195,37 @@ class DoctorStatsRow extends StatelessWidget {
     required IconData icon,
     required Color color,
     required Color bgColor,
+    required bool isWide,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: isWide ? 14 : 12,
+        vertical: isWide ? 16 : 10,
+      ),
+      constraints: BoxConstraints(minHeight: isWide ? 88 : 0),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(isWide ? 16 : 14),
         border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.025),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: EdgeInsets.all(isWide ? 10 : 8),
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(isWide ? 12 : 8),
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: color, size: isWide ? 24 : 20),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isWide ? 12 : 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,11 +238,11 @@ class DoctorStatsRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption(context).copyWith(
                     color: context.textSecondary,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    fontSize: isWide ? 13 : 12,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: isWide ? 5 : 2),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
@@ -151,7 +251,7 @@ class DoctorStatsRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.dataNumeric(context).copyWith(
-                      fontSize: 15,
+                      fontSize: isWide ? 20 : 15,
                       fontWeight: FontWeight.bold,
                       color: context.textPrimary,
                     ),

@@ -159,8 +159,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     return AppBar(
-      toolbarHeight: 64,
+      toolbarHeight: isDesktop ? 70 : 64,
       backgroundColor: context.surfaceColor,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -175,6 +176,32 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             clinicName = state.clinicName;
             doctorName = '${AppStrings.welcomeBack}${state.doctorName}';
           }
+
+          if (isDesktop) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  clinicName,
+                  style: AppTextStyles.headlineMedium(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimary,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  doctorName,
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    color: context.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            );
+          }
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -224,6 +251,76 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           );
         }
         if (state is DoctorDashboardLoaded) {
+          final isDesktop = ResponsiveHelper.isDesktop(context);
+
+          // ── Desktop 2-Column Workspace Layout ──
+          if (isDesktop) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                _tryLoadDashboard(customContext: context);
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                children: [
+                  const ReadOnlyModeBanner(),
+                  DoctorStatsRow(
+                    todayAppointmentsCount: state.todayAppointmentsCount,
+                    completedCount: state.completedCount,
+                    waitingCount: state.waitingCount,
+                    avgWaitingTime: state.avgWaitingTime,
+                    todayRevenue: state.todayRevenue,
+                    collectedAmount: state.collectedAmount,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Main Area: Current Patient + Waiting Queue (flex: 68)
+                      Expanded(
+                        flex: 68,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CurrentPatientCard(
+                              patient: state.currentPatient,
+                              onStartExamination: () async {
+                                if (state.currentPatient != null) {
+                                  await context.push(
+                                    '/prescription/${state.currentPatient!.id}',
+                                    extra: state.currentPatient,
+                                  );
+                                  if (context.mounted) {
+                                    _tryLoadDashboard(forceRefresh: true, customContext: context);
+                                  }
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            WaitingQueueList(
+                              queue: state.waitingQueue,
+                              maxItems: 6,
+                              onCallNext: () {
+                                context.read<DoctorDashboardCubit>().callNextPatient();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      // Side Panel: Quick Actions (flex: 32)
+                      const Expanded(
+                        flex: 32,
+                        child: DoctorQuickActions(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // ── Mobile & Tablet Layout (Preserved Exactly) ──
           return RefreshIndicator(
             onRefresh: () async {
               _tryLoadDashboard(customContext: context);
