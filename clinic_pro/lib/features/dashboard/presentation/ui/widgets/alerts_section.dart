@@ -1,4 +1,5 @@
 import 'package:clinic_pro/core/strings/app_strings.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
@@ -16,16 +17,20 @@ class AlertsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (alerts.isEmpty) return const SizedBox.shrink();
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final hPadding = isDesktop ? 0.0 : 16.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
           child: Text(
             AppStrings.isArabic ? 'تنبيهات هامة' : 'Important Alerts',
             style: AppTextStyles.headlineSmall(context).copyWith(
               color: context.primary,
               fontWeight: FontWeight.bold,
+              fontSize: isDesktop ? 18 : null,
             ),
           ),
         ),
@@ -33,7 +38,7 @@ class AlertsSection extends StatelessWidget {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
           itemCount: alerts.length,
           itemBuilder: (context, index) {
             final alert = alerts[index];
@@ -46,7 +51,7 @@ class AlertsSection extends StatelessWidget {
 
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(isDesktop ? 14 : 12),
               decoration: BoxDecoration(
                 color: bg,
                 borderRadius: BorderRadius.circular(12),
@@ -58,7 +63,7 @@ class AlertsSection extends StatelessWidget {
                   Icon(
                     isWarning ? Icons.warning_amber_rounded : Icons.info_outline,
                     color: textCol,
-                    size: 20,
+                    size: isDesktop ? 22 : 20,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -68,7 +73,7 @@ class AlertsSection extends StatelessWidget {
                         Text(
                           alert.title,
                           style: AppTextStyles.headlineSmall(context).copyWith(
-                            fontSize: 13,
+                            fontSize: isDesktop ? 15 : 13,
                             fontWeight: FontWeight.bold,
                             color: textCol,
                           ),
@@ -78,6 +83,7 @@ class AlertsSection extends StatelessWidget {
                           alert.message,
                           style: AppTextStyles.caption(context).copyWith(
                             color: textCol.withOpacity(0.85),
+                            fontSize: isDesktop ? 13.5 : null,
                             height: 1.4,
                           ),
                         ),

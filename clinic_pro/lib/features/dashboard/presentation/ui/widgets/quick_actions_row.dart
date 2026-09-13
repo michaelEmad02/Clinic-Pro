@@ -15,6 +15,7 @@ class QuickActionsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final isMobile = ResponsiveHelper.isMobile(context);
 
     final actions = [
@@ -47,6 +48,46 @@ class QuickActionsRow extends StatelessWidget {
       },
     ];
 
+    // ── Desktop Horizontal Row (Compact, Sleek Toolbar) ──
+    if (isDesktop) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+            child: Text(
+              AppStrings.quickActions,
+              style: AppTextStyles.headlineSmall(context).copyWith(
+                color: context.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: List.generate(actions.length, (index) {
+              final action = actions[index];
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: index < actions.length - 1 ? 12 : 0,
+                  ),
+                  child: _buildDesktopActionCard(
+                    context: context,
+                    label: action['label'] as String,
+                    icon: action['icon'] as IconData,
+                    onTap: action['onTap'] as VoidCallback,
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
+      );
+    }
+
+    // ── Mobile & Tablet Layout (Preserved Exactly) ──
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -75,7 +116,7 @@ class QuickActionsRow extends StatelessWidget {
             ),
             itemBuilder: (context, index) {
               final action = actions[index];
-              return _buildActionButton(
+              return _buildMobileActionButton(
                 context: context,
                 label: action['label'] as String,
                 icon: action['icon'] as IconData,
@@ -88,7 +129,64 @@ class QuickActionsRow extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildDesktopActionCard({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.borderColor),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.015),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: context.primaryLightColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: context.primary,
+                size: 19,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: context.textPrimary,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileActionButton({
     required BuildContext context,
     required String label,
     required IconData icon,

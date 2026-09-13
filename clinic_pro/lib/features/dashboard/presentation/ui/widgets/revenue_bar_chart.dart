@@ -20,6 +20,7 @@ class RevenueBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weekdays = AppStrings.dayNames;
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final isMobile = ResponsiveHelper.isMobile(context);
 
     // حساب القيمة العظمى ديناميكياً لتجنب طفح الأعمدة البيانية
@@ -27,8 +28,8 @@ class RevenueBarChart extends StatelessWidget {
     final computedMaxY = maxVal > 0 ? (maxVal * 1.25) : 1000.0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
+      padding: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
@@ -36,7 +37,7 @@ class RevenueBarChart extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -49,11 +50,12 @@ class RevenueBarChart extends StatelessWidget {
             style: AppTextStyles.headlineSmall(context).copyWith(
               color: context.primary,
               fontWeight: FontWeight.bold,
+              fontSize: isDesktop ? 18 : null,
             ),
           ),
           const SizedBox(height: 24),
           AspectRatio(
-            aspectRatio: isMobile ? 1.6 : 2.5,
+            aspectRatio: isMobile ? 1.6 : (isDesktop ? 2.1 : 2.5),
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,

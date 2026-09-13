@@ -24,8 +24,62 @@ class DashboardSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final isMobile = ResponsiveHelper.isMobile(context);
 
+    // ── Desktop Layout (Full width row with rich KPI cards) ──
+    if (isDesktop) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 0),
+        child: Row(
+          children: [
+            Expanded(
+              child: _buildBentoCard(
+                context: context,
+                title: AppStrings.isArabic ? 'صافي إيراد اليوم' : 'Today Net Revenue',
+                value: '${todayNetRevenue.toStringAsFixed(0)} ${AppStrings.sar}',
+                icon: Icons.payments_outlined,
+                iconBgColor: context.successBg,
+                iconColor: context.successText,
+                hasRightAccent: true,
+                accentColor: context.accent,
+                isDesktop: true,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildBentoCard(
+                context: context,
+                title: AppStrings.todayAppointments,
+                value: '$todayCompletedAppointments / $todayAppointments',
+                icon: Icons.today_outlined,
+                iconBgColor: context.warningBg,
+                iconColor: context.warningText,
+                hasRightAccent: true,
+                accentColor: context.warning,
+                isDesktop: true,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildBentoCard(
+                context: context,
+                title: AppStrings.totalPatients,
+                value: '$totalPatients',
+                icon: Icons.people_outline,
+                iconBgColor: context.primaryLightColor,
+                iconColor: context.primaryContainer,
+                hasRightAccent: true,
+                accentColor: context.primaryContainer,
+                isDesktop: true,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ── Mobile & Tablet Layout (Preserved Exactly) ──
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.count(
@@ -45,6 +99,7 @@ class DashboardSummaryRow extends StatelessWidget {
             iconColor: context.successText,
             hasRightAccent: true,
             accentColor: context.accent,
+            isDesktop: false,
           ),
           _buildBentoCard(
             context: context,
@@ -54,6 +109,7 @@ class DashboardSummaryRow extends StatelessWidget {
             iconBgColor: context.warningBg,
             iconColor: context.warningText,
             accentColor: context.warning,
+            isDesktop: false,
           ),
           _buildBentoCard(
             context: context,
@@ -63,6 +119,7 @@ class DashboardSummaryRow extends StatelessWidget {
             iconBgColor: context.primaryLightColor,
             iconColor: context.primaryContainer,
             accentColor: context.primaryContainer,
+            isDesktop: false,
           ),
         ],
       ),
@@ -78,15 +135,17 @@ class DashboardSummaryRow extends StatelessWidget {
     required Color iconColor,
     bool hasRightAccent = true,
     Color? accentColor,
+    required bool isDesktop,
   }) {
     return Container(
+      constraints: BoxConstraints(minHeight: isDesktop ? 92 : 0),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.025),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -122,59 +181,114 @@ class DashboardSummaryRow extends StatelessWidget {
               ),
             // Content
             Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: iconBgColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          icon,
-                          color: iconColor,
-                          size: 18,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: context.textSecondary,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          value,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.dataNumeric(context).copyWith(
-                            fontSize: 18,
-                            color: context.textPrimary,
+              padding: EdgeInsets.symmetric(
+                horizontal: isDesktop ? 18 : 12,
+                vertical: isDesktop ? 16 : 12,
+              ),
+              child: isDesktop
+                  ? Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: iconBgColor,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            icon,
+                            color: iconColor,
+                            size: 26,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: context.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  value,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.dataNumeric(context).copyWith(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: context.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: iconBgColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                icon,
+                                color: iconColor,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.textSecondary,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                value,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.dataNumeric(context).copyWith(
+                                  fontSize: 18,
+                                  color: context.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),

@@ -122,8 +122,10 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context, String ownerName) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return AppBar(
-      toolbarHeight: 64,
+      toolbarHeight: isDesktop ? 70 : 64,
       backgroundColor: context.surfaceColor,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -135,12 +137,15 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             style: AppTextStyles.headlineMedium(context).copyWith(
               fontWeight: FontWeight.bold,
               color: context.textPrimary,
+              fontSize: isDesktop ? 20 : null,
             ),
           ),
+          const SizedBox(height: 2),
           Text(
             '${AppStrings.welcomeBack}$ownerName',
             style: AppTextStyles.caption(context).copyWith(
               color: context.textSecondary,
+              fontSize: isDesktop ? 13 : null,
             ),
           ),
         ],
@@ -159,6 +164,41 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   Widget _buildMainDashboardTab(String ownerId) {
     return Builder(
       builder: (context) {
+        final isDesktop = ResponsiveHelper.isDesktop(context);
+
+        // ── Desktop Layout (Sleek Executive Unified Flow, Full-screen mouse scrollable) ──
+        if (isDesktop) {
+          return RefreshIndicator(
+            onRefresh: () async {
+              _refreshAll(context, ownerId, forceRefresh: true);
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const ReadOnlyModeBanner(),
+                        _buildAlertsSection(),
+                        _buildSummaryStatsSection(),
+                        const SizedBox(height: 24),
+                        const QuickActionsRow(),
+                        const SizedBox(height: 24),
+                        _buildWeeklyRevenueSection(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // ── Mobile & Tablet Layout (Preserved Exactly) ──
         return RefreshIndicator(
           onRefresh: () async {
             _refreshAll(context, ownerId, forceRefresh: true);
