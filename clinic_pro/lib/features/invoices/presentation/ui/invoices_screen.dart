@@ -67,14 +67,16 @@ class _InvoicesBody extends StatelessWidget {
             (AppConstants.activeDoctorId.isNotEmpty
                 ? AppConstants.activeDoctorId
                 : null));
+    final isDesktop = ResponsiveHelper.isDesktop(context);
 
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: false,
         title: Text(
           AppStrings.invoices,
           style: AppTextStyles.headlineLarge(context).copyWith(
@@ -112,80 +114,98 @@ class _InvoicesBody extends StatelessWidget {
             onRefresh: () async {
               context.read<InvoicesCubit>().loadInvoices(clinicId, doctorId: activeDoctorId);
             },
-            child: ResponsiveHelper.responsiveCenter(
-              maxWidth: 1100,
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                children: [
-                  InvoicesSummaryBar(state: state),
-                  const SizedBox(height: 12),
-                  InvoicesTabSelector(
-                    activeTab: state.activeTab,
-                    invoicesCount: state.filteredInvoices.length,
-                    unbilledCount: state.filteredUnbilledAppointments.length,
-                    onTabChanged: (tab) {
-                      context.read<InvoicesCubit>().changeTab(tab);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  InvoicesDateRangeChips(
-                    activeDateRange: state.activeDateRange,
-                    activeStatusFilter: state.activeStatusFilter,
-                    showStatusFilter: state.activeTab == 'invoices',
-                    onDateRangeChanged: (range) async {
-                      if (range == InvoicesDateRange.custom) {
-                        final picked = await showDateRangePicker(
-                          context: context,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now(),
-                        );
-                        if (picked != null && context.mounted) {
-                          context.read<InvoicesCubit>().filterInvoices(
-                                dateRange: range,
-                                customStart: picked.start,
-                                customEnd: picked.end,
-                              );
-                        }
-                      } else {
-                        context.read<InvoicesCubit>().filterInvoices(dateRange: range);
-                      }
-                    },
-                    onStatusFilterChanged: (status) {
-                      context.read<InvoicesCubit>().filterInvoices(statusFilter: status);
-                    },
-                  ),
-                  if (state.activeTab == 'unbilled' &&
-                      state.availableUnbilledPatients.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    UnbilledPatientFilterChips(
-                      availablePatients: state.availableUnbilledPatients,
-                      selectedPatientId: state.selectedUnbilledPatientId,
-                      onPatientSelected: (patientId) {
-                        context
-                            .read<InvoicesCubit>()
-                            .filterUnbilledByPatient(patientId);
-                      },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                vertical: 16,
+                horizontal: isDesktop ? 24 : 0,
+              ),
+              child: ColoredBox(
+                color: Colors.transparent,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: isDesktop ? 1200 : 1100,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          InvoicesSummaryBar(state: state),
+                          const SizedBox(height: 14),
+                          InvoicesTabSelector(
+                            activeTab: state.activeTab,
+                            invoicesCount: state.filteredInvoices.length,
+                            unbilledCount: state.filteredUnbilledAppointments.length,
+                            onTabChanged: (tab) {
+                              context.read<InvoicesCubit>().changeTab(tab);
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          InvoicesDateRangeChips(
+                            activeDateRange: state.activeDateRange,
+                            activeStatusFilter: state.activeStatusFilter,
+                            showStatusFilter: state.activeTab == 'invoices',
+                            onDateRangeChanged: (range) async {
+                              if (range == InvoicesDateRange.custom) {
+                                final picked = await showDateRangePicker(
+                                  context: context,
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (picked != null && context.mounted) {
+                                  context.read<InvoicesCubit>().filterInvoices(
+                                        dateRange: range,
+                                        customStart: picked.start,
+                                        customEnd: picked.end,
+                                      );
+                                }
+                              } else {
+                                context.read<InvoicesCubit>().filterInvoices(dateRange: range);
+                              }
+                            },
+                            onStatusFilterChanged: (status) {
+                              context.read<InvoicesCubit>().filterInvoices(statusFilter: status);
+                            },
+                          ),
+                          if (state.activeTab == 'unbilled' &&
+                              state.availableUnbilledPatients.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            UnbilledPatientFilterChips(
+                              availablePatients: state.availableUnbilledPatients,
+                              selectedPatientId: state.selectedUnbilledPatientId,
+                              onPatientSelected: (patientId) {
+                                context
+                                    .read<InvoicesCubit>()
+                                    .filterUnbilledByPatient(patientId);
+                              },
+                            ),
+                          ],
+                          const SizedBox(height: 0),
+                          AnimatedCrossFade(
+                            firstChild: InvoicesList(
+                              invoices: state.filteredInvoices,
+                              onItemTap: (inv) => _showActions(context, inv),
+                              onItemMore: (inv) => _showActions(context, inv),
+                            ),
+                            secondChild: UnbilledAppointmentsList(
+                              appointments: state.filteredUnbilledAppointments,
+                            ),
+                            crossFadeState: state.activeTab == 'invoices'
+                                ? CrossFadeState.showFirst
+                                : CrossFadeState.showSecond,
+                            duration: const Duration(milliseconds: 350),
+                            sizeCurve: Curves.easeInOutCubic,
+                            firstCurve: Curves.easeOutCubic,
+                            secondCurve: Curves.easeOutCubic,
+                          ),
+                          if (isDesktop) const SizedBox(height: 40),
+                        ],
+                      ),
                     ),
-                  ],
-                  const SizedBox(height: 0),
-                  AnimatedCrossFade(
-                    firstChild: InvoicesList(
-                      invoices: state.filteredInvoices,
-                      onItemTap: (inv) => _showActions(context, inv),
-                      onItemMore: (inv) => _showActions(context, inv),
-                    ),
-                    secondChild: UnbilledAppointmentsList(
-                      appointments: state.filteredUnbilledAppointments,
-                    ),
-                    crossFadeState: state.activeTab == 'invoices'
-                        ? CrossFadeState.showFirst
-                        : CrossFadeState.showSecond,
-                    duration: const Duration(milliseconds: 350),
-                    sizeCurve: Curves.easeInOutCubic,
-                    firstCurve: Curves.easeOutCubic,
-                    secondCurve: Curves.easeOutCubic,
                   ),
-                ],
+                ),
               ),
             ),
           );

@@ -1,7 +1,4 @@
-// ────────────────────────────────────────────────────────
-// InvoicesDateRangeChips — شريط فلاتر النطاق الزمني وحالة الدفع
-// ────────────────────────────────────────────────────────
-
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
@@ -26,9 +23,18 @@ class InvoicesDateRangeChips extends StatelessWidget {
   List<(InvoicesDateRange, String)> get _dateRanges => [
         (InvoicesDateRange.all, AppStrings.isArabic ? 'الكل' : 'All'),
         (InvoicesDateRange.today, AppStrings.isArabic ? 'اليوم' : 'Today'),
-        (InvoicesDateRange.thisWeek, AppStrings.isArabic ? 'هذا الأسبوع' : 'This Week'),
-        (InvoicesDateRange.thisMonth, AppStrings.isArabic ? 'هذا الشهر' : 'This Month'),
-        (InvoicesDateRange.threeMonths, AppStrings.isArabic ? '3 أشهر' : '3 Months'),
+        (
+          InvoicesDateRange.thisWeek,
+          AppStrings.isArabic ? 'هذا الأسبوع' : 'This Week'
+        ),
+        (
+          InvoicesDateRange.thisMonth,
+          AppStrings.isArabic ? 'هذا الشهر' : 'This Month'
+        ),
+        (
+          InvoicesDateRange.threeMonths,
+          AppStrings.isArabic ? '3 أشهر' : '3 Months'
+        ),
         (InvoicesDateRange.custom, AppStrings.isArabic ? 'مخصص' : 'Custom'),
       ];
 
@@ -36,13 +42,15 @@ class InvoicesDateRangeChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // فلتر نطاق التاريخ
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
           child: Row(
             children: _dateRanges.map((r) {
               final isSelected = activeDateRange == r.$1;
@@ -53,7 +61,7 @@ class InvoicesDateRangeChips extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (r.$1 == InvoicesDateRange.custom) ...[
-                        const Icon(Icons.calendar_month, size: 14),
+                        Icon(Icons.calendar_month, size: isDesktop ? 16 : 14),
                         const SizedBox(width: 4),
                       ],
                       Text(r.$2),
@@ -65,9 +73,10 @@ class InvoicesDateRangeChips extends StatelessWidget {
                   backgroundColor: context.surface,
                   labelStyle: TextStyle(
                     fontFamily: 'Cairo',
-                    fontSize: 12,
+                    fontSize: isDesktop ? 13.5 : 12,
                     color: isSelected ? context.primary : context.textSecondary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -85,7 +94,7 @@ class InvoicesDateRangeChips extends StatelessWidget {
           // فلتر حالة الفاتورة
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
             child: Row(
               children: _statusFilters.map((f) {
                 final isSelected = activeStatusFilter == f;
@@ -99,9 +108,11 @@ class InvoicesDateRangeChips extends StatelessWidget {
                     backgroundColor: context.surface,
                     labelStyle: TextStyle(
                       fontFamily: 'Cairo',
-                      fontSize: 12,
-                      color: isSelected ? context.primary : context.textSecondary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: isDesktop ? 13.5 : 12,
+                      color:
+                          isSelected ? context.primary : context.textSecondary,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

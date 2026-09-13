@@ -35,6 +35,7 @@ class DebtorPatientCard extends StatelessWidget {
     final authUser = context.read<AuthCubit>().state.user;
     final isOwner = authUser?.role == StaffRoles.owner;
     final isMobile = ResponsiveHelper.isMobile(context);
+    final isDesktop = ResponsiveHelper.isDesktop(context);
 
     final margin = isMobile
         ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
@@ -55,19 +56,19 @@ class DebtorPatientCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(isDesktop ? 14 : 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
-              radius: 20,
+              radius: isDesktop ? 22 : 20,
               backgroundColor: context.primaryLightColor,
               child: Text(
                 debtor.patientName.isNotEmpty ? debtor.patientName.substring(0, 1) : '?',
                 style: AppTextStyles.headlineSmall(context).copyWith(
                   color: context.primary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: isDesktop ? 15 : 14,
                 ),
               ),
             ),
@@ -81,7 +82,7 @@ class DebtorPatientCard extends StatelessWidget {
                     debtor.patientName,
                     style: AppTextStyles.headlineSmall(context).copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: isDesktop ? 15.5 : 14,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -92,7 +93,7 @@ class DebtorPatientCard extends StatelessWidget {
                       debtor.patientPhone!,
                       style: AppTextStyles.caption(context).copyWith(
                         color: context.textSecondary,
-                        fontSize: 11,
+                        fontSize: isDesktop ? 12 : 11,
                       ),
                     ),
                   const SizedBox(height: 4),
@@ -125,7 +126,7 @@ class DebtorPatientCard extends StatelessWidget {
                   style: AppTextStyles.dataNumeric(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.danger,
-                    fontSize: 15,
+                    fontSize: isDesktop ? 17 : 15,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -138,7 +139,7 @@ class DebtorPatientCard extends StatelessWidget {
                         IconButton(
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          icon: const Icon(Icons.chat_outlined, size: 18, color: Colors.green),
+                          icon: Icon(Icons.chat_outlined, size: isDesktop ? 20 : 18, color: Colors.green),
                           tooltip: AppStrings.isArabic ? 'تذكير عبر WhatsApp' : 'WhatsApp Reminder',
                           onPressed: () => _launchWhatsApp(
                             context,
@@ -156,16 +157,19 @@ class DebtorPatientCard extends StatelessWidget {
                             initialPatientPhone: debtor.patientPhone,
                           );
                         },
-                        icon: const Icon(Icons.receipt_long, size: 12),
+                        icon: Icon(Icons.receipt_long, size: isDesktop ? 14 : 12),
                         label: Text(
                           AppStrings.isArabic ? 'تحصيل / تفوتر' : 'Settle',
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                          style: AppTextStyles.caption(context).copyWith(
+                            fontSize: isDesktop ? 11.5 : 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: context.primary,
                           side: BorderSide(color: context.primary.withOpacity(0.3)),
                           backgroundColor: context.primaryLightColor,
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                          padding: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 6, vertical: isDesktop ? 6 : 4),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(
@@ -179,8 +183,8 @@ class DebtorPatientCard extends StatelessWidget {
                   // بالنسبة للمالك (Owner) نوضح آخر نشاط فقط بدون أزرار تفاعلية للتحصيل
                   Text(
                     AppStrings.isArabic ? 'للعرض والتحليل' : 'View Only',
-                    style: TextStyle(
-                      fontSize: 10,
+                    style: AppTextStyles.caption(context).copyWith(
+                      fontSize: isDesktop ? 11 : 10,
                       color: context.textSecondary.withOpacity(0.7),
                       fontStyle: FontStyle.italic,
                     ),
@@ -203,16 +207,18 @@ class _BadgeTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 6, vertical: isDesktop ? 3 : 2),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 9.5,
+        style: AppTextStyles.caption(context).copyWith(
+          fontSize: isDesktop ? 11 : 9.5,
           fontWeight: FontWeight.bold,
           color: color,
         ),

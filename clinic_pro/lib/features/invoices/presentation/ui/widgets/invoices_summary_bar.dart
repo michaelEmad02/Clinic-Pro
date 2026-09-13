@@ -17,8 +17,56 @@ class InvoicesSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final width = MediaQuery.of(context).size.width;
     final isSmallScreen = width < 380;
+
+    if (isDesktop) {
+      return Row(
+        children: [
+          Expanded(
+            child: _SummaryCard(
+              icon: Icons.payments_outlined,
+              label: AppStrings.isArabic ? 'المحصل' : 'Collected',
+              subtitle: AppStrings.isArabic ? 'المسدد فعلياً' : 'Paid cash',
+              value: state.totalRevenue.toStringAsFixed(0),
+              currency: AppStrings.egp,
+              color: context.accent,
+              isSmallScreen: false,
+              isDesktop: true,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: _SummaryCard(
+              icon: Icons.pending_actions_outlined,
+              label: AppStrings.isArabic ? 'دفعات متبقية' : 'Invoices Remaining',
+              subtitle: AppStrings.isArabic ? 'متبقي الفواتير' : 'Unpaid invoices',
+              value: state.totalPending.toStringAsFixed(0),
+              currency: AppStrings.egp,
+              color: context.danger,
+              isSmallScreen: false,
+              isDesktop: true,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: _SummaryCard(
+              icon: Icons.hourglass_empty_outlined,
+              label: AppStrings.isArabic ? 'غير مفوتر' : 'Unbilled Visits',
+              subtitle: AppStrings.isArabic
+                  ? '${state.filteredUnbilledAppointments.length} زيارة بدون فاتورة'
+                  : '${state.filteredUnbilledAppointments.length} unbilled visits',
+              value: state.unbilledTotalAmount.toStringAsFixed(0),
+              currency: AppStrings.egp,
+              color: context.warning,
+              isSmallScreen: false,
+              isDesktop: true,
+            ),
+          ),
+        ],
+      );
+    }
 
     return ResponsiveHelper.responsiveCenter(
       maxWidth: 800,
@@ -78,6 +126,7 @@ class _SummaryCard extends StatelessWidget {
   final String currency;
   final Color color;
   final bool isSmallScreen;
+  final bool isDesktop;
 
   const _SummaryCard({
     required this.icon,
@@ -87,12 +136,16 @@ class _SummaryCard extends StatelessWidget {
     required this.currency,
     required this.color,
     required this.isSmallScreen,
+    this.isDesktop = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(isSmallScreen ? 8 : 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? 16 : (isSmallScreen ? 8 : 10),
+        vertical: isDesktop ? 14 : (isSmallScreen ? 8 : 10),
+      ),
       decoration: BoxDecoration(
         color: context.surface,
         borderRadius: BorderRadius.circular(12),
@@ -112,8 +165,8 @@ class _SummaryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: isSmallScreen ? 14 : 16, color: color),
-              const SizedBox(width: 4),
+              Icon(icon, size: isDesktop ? 20 : (isSmallScreen ? 14 : 16), color: color),
+              const SizedBox(width: 6),
               Flexible(
                 child: Text(
                   label,
@@ -122,13 +175,13 @@ class _SummaryCard extends StatelessWidget {
                   style: AppTextStyles.caption(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.textPrimary,
-                    fontSize: isSmallScreen ? 10 : 12,
+                    fontSize: isDesktop ? 13 : (isSmallScreen ? 10 : 12),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: isDesktop ? 6 : 4),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -155,30 +208,30 @@ class _SummaryCard extends StatelessWidget {
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.bold,
                       color: color,
-                      fontSize: isSmallScreen ? 15 : 18,
+                      fontSize: isDesktop ? 22 : (isSmallScreen ? 15 : 18),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 3),
+              const SizedBox(width: 4),
               Text(
                 currency,
                 style: AppTextStyles.caption(context).copyWith(
                   color: color,
                   fontWeight: FontWeight.bold,
-                  fontSize: isSmallScreen ? 9 : 10,
+                  fontSize: isDesktop ? 12 : (isSmallScreen ? 9 : 10),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: isDesktop ? 4 : 2),
           Text(
             subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.caption(context).copyWith(
               color: context.textSecondary,
-              fontSize: isSmallScreen ? 8 : 10,
+              fontSize: isDesktop ? 12 : (isSmallScreen ? 8 : 10),
             ),
           ),
         ],

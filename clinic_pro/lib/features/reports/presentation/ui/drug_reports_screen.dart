@@ -50,16 +50,19 @@ class _DrugReportsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
+        centerTitle: false,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
           AppStrings.isArabic ? 'تقارير الأدوية' : 'Drugs Reports',
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: context.primary,
           ),
@@ -106,12 +109,17 @@ class _DrugReportsBody extends StatelessWidget {
                     .read<DrugReportsCubit>()
                     .loadReports(doctorId: doctorId, forceRefresh: true);
               },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                child: ResponsiveHelper.responsiveCenter(
-                  maxWidth: 1100,
-                  child: Column(
+              child: ColoredBox(
+                color: Colors.transparent,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? 24 : 16,
+                    vertical: isDesktop ? 20 : 16,
+                  ),
+                  child: ResponsiveHelper.responsiveCenter(
+                    maxWidth: 1100,
+                    child: Column(
                     children: [
                       // Clinic Filter Dropdown
                       BlocBuilder<ClinicsCubit, ClinicsState>(
@@ -232,8 +240,9 @@ class _DrugReportsBody extends StatelessWidget {
                   ),
                 ),
               ),
-            );
-          }
+            ),
+          );
+        }
           return const SizedBox.shrink();
         },
       ),

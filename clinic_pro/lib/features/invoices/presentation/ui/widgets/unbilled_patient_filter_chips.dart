@@ -30,10 +30,12 @@ class UnbilledPatientFilterChips extends StatelessWidget {
 
     final isFiltered = selectedPatient != null;
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return ResponsiveHelper.responsiveCenter(
-      maxWidth: 800,
+      maxWidth: isDesktop ? 600 : 800,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
         child: Container(
           decoration: BoxDecoration(
             color: context.surfaceColor,
@@ -75,7 +77,7 @@ class UnbilledPatientFilterChips extends StatelessWidget {
                                 ? 'تصفية بحسب المريض'
                                 : 'Filter by Patient',
                             style: AppTextStyles.caption(context).copyWith(
-                              fontSize: 10,
+                              fontSize: isDesktop ? 11.5 : 10,
                               color: context.textSecondary,
                             ),
                           ),
@@ -92,7 +94,7 @@ class UnbilledPatientFilterChips extends StatelessWidget {
                               color: isFiltered
                                   ? context.primary
                                   : context.textPrimary,
-                              fontSize: 13,
+                              fontSize: isDesktop ? 14 : 13,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

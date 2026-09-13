@@ -2,6 +2,8 @@
 // فلاتر النطاق الزمني للتقارير — أسبوع، شهر، 3 أشهر، مخصص (مع DatePicker)
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
@@ -39,9 +41,11 @@ class ReportsDateRangeChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
       child: Row(
         children: _ranges.map((r) {
           final isSelected = activeRange == r.$1;
@@ -99,9 +103,8 @@ class ReportsDateRangeChips extends StatelessWidget {
               },
               selectedColor: context.primaryLightColor,
               backgroundColor: context.surface,
-              labelStyle: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 12,
+              labelStyle: AppTextStyles.labelChip(context).copyWith(
+                fontSize: isDesktop ? 13 : 11.5,
                 color: isSelected ? context.primary : context.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),

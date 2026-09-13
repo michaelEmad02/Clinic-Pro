@@ -4,6 +4,7 @@ import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
 import 'package:clinic_pro/core/widgets/app_error_widget.dart';
 import 'package:clinic_pro/core/widgets/feature_locked_paywall_widget.dart';
@@ -33,16 +34,19 @@ class _ClinicReportsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: false,
         title: Text(
           AppStrings.isArabic ? 'تقارير العيادات والفروع' : 'Clinic Reports',
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: context.primary,
           ),
@@ -93,18 +97,29 @@ class _ClinicReportsBody extends StatelessWidget {
                 final userId = context.read<AuthCubit>().state.user?.id ?? '';
                 await context.read<ClinicReportsCubit>().loadReport(userId, forceRefresh: true);
               },
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                children: [
-                  ClinicSummaryCards(report: report),
-                  const SizedBox(height: 16),
-                  ClinicComparisonBarChart(clinics: report.clinics),
-                  const SizedBox(height: 16),
-                  ClinicTrendLineChart(clinics: report.clinics),
-                  const SizedBox(height: 16),
-                  ClinicLeaderboardTable(clinics: report.clinics),
-                  const SizedBox(height: 24),
-                ],
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ColoredBox(
+                  color: Colors.transparent,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: ResponsiveHelper.responsiveCenter(
+                      maxWidth: 1100,
+                      child: Column(
+                        children: [
+                          ClinicSummaryCards(report: report),
+                          const SizedBox(height: 16),
+                          ClinicComparisonBarChart(clinics: report.clinics),
+                          const SizedBox(height: 16),
+                          ClinicTrendLineChart(clinics: report.clinics),
+                          const SizedBox(height: 16),
+                          ClinicLeaderboardTable(clinics: report.clinics),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             );
           }

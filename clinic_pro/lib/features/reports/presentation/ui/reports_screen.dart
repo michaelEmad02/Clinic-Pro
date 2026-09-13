@@ -137,16 +137,19 @@ class _ReportsCategoryBody extends StatelessWidget {
         ),
     ];
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: false,
         title: Text(
           AppStrings.reports,
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: context.primary,
           ),
@@ -156,26 +159,43 @@ class _ReportsCategoryBody extends StatelessWidget {
           child: Container(color: context.borderColor, height: 1),
         ),
       ),
-      body: ResponsiveHelper.responsiveCenter(
-        maxWidth: AppConstants.maxContentWidth,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 600;
-            return GridView.builder(
-              padding: const EdgeInsets.all(AppConstants.spaceMd),
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 350,
-                mainAxisExtent: isWide ? 90 : 95,
-                crossAxisSpacing: AppConstants.spaceMd,
-                mainAxisSpacing: AppConstants.spaceMd,
+      body: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ColoredBox(
+          color: Colors.transparent,
+          child: ResponsiveHelper.responsiveCenter(
+            maxWidth: isDesktop ? 1200 : AppConstants.maxContentWidth,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isDesktop ? 24 : AppConstants.spaceMd,
+                vertical: isDesktop ? 24 : AppConstants.spaceMd,
               ),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final cat = categories[index];
-                return _CategoryCard(item: cat);
-              },
-            );
-          },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final width = constraints.maxWidth;
+                  final crossAxisCount = width >= 1024
+                      ? 3
+                      : (width >= 600 ? 2 : 1);
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      mainAxisExtent: isDesktop ? 108 : 96,
+                      crossAxisSpacing: isDesktop ? 18 : AppConstants.spaceMd,
+                      mainAxisSpacing: isDesktop ? 18 : AppConstants.spaceMd,
+                    ),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final cat = categories[index];
+                      return _CategoryCard(item: cat);
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -198,71 +218,105 @@ class _ReportCategoryItem {
   });
 }
 
-class _CategoryCard extends StatelessWidget {
+class _CategoryCard extends StatefulWidget {
   final _ReportCategoryItem item;
 
   const _CategoryCard({required this.item});
 
   @override
+  State<_CategoryCard> createState() => _CategoryCardState();
+}
+
+class _CategoryCardState extends State<_CategoryCard> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: context.surfaceColor,
-      borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-      elevation: 0,
-      child: InkWell(
-        onTap: item.onTap,
-        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        child: Container(
-          padding: const EdgeInsets.all(AppConstants.spaceMd),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            border: Border.all(color: context.borderColor, width: 0.5),
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final item = widget.item;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+          border: Border.all(
+            color: _isHovered ? item.color.withOpacity(0.5) : context.borderColor,
+            width: _isHovered ? 1.5 : 1,
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: item.color.withOpacity(0.12),
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusButton),
-                ),
-                child: Icon(item.icon, color: item.color, size: 28),
-              ),
-              const SizedBox(width: AppConstants.spaceMd),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      style: AppTextStyles.headlineSmall(context).copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: context.textPrimary,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+          boxShadow: [
+            BoxShadow(
+              color: _isHovered
+                  ? item.color.withOpacity(0.10)
+                  : const Color(0x08000000),
+              blurRadius: _isHovered ? 10 : 4,
+              offset: Offset(0, _isHovered ? 4 : 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+          child: InkWell(
+            onTap: item.onTap,
+            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+            child: Padding(
+              padding: EdgeInsets.all(isDesktop ? 16 : AppConstants.spaceMd),
+              child: Row(
+                children: [
+                  Container(
+                    width: isDesktop ? 54 : 48,
+                    height: isDesktop ? 54 : 48,
+                    decoration: BoxDecoration(
+                      color: item.color.withOpacity(0.12),
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusButton),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.subtitle,
-                      style: AppTextStyles.caption(context).copyWith(
-                        color: context.textSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    child: Icon(item.icon,
+                        color: item.color, size: isDesktop ? 26 : 24),
+                  ),
+                  SizedBox(width: isDesktop ? 16 : AppConstants.spaceMd),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.title,
+                          style: AppTextStyles.headlineSmall(context).copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: context.textPrimary,
+                            fontSize: isDesktop ? 17 : 15.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.subtitle,
+                          style: AppTextStyles.caption(context).copyWith(
+                            color: context.textSecondary,
+                            fontSize: isDesktop ? 13 : 12,
+                            height: 1.35,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: isDesktop ? 16 : 14,
+                    color: _isHovered ? item.color : context.textSecondary,
+                  ),
+                ],
               ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: context.textSecondary,
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -16,7 +16,9 @@ class ReportsSummaryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = !ResponsiveHelper.isMobile(context);
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isWide = !isMobile;
 
     final cardExpected = _SummaryCard(
       label: AppStrings.isArabic ? 'الإيراد المتوقع' : 'Expected Rev.',
@@ -111,7 +113,7 @@ class ReportsSummaryGrid extends StatelessWidget {
                 AppStrings.isArabic ? 'الصافي (الاجمالي - المصروفات)' : 'Net Profit',
                 style: AppTextStyles.bodyMedium(context).copyWith(
                   color: context.textPrimary,
-                  fontSize: 11,
+                  fontSize: isDesktop ? 12.5 : 11,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -123,9 +125,9 @@ class ReportsSummaryGrid extends StatelessWidget {
                 children: [
                   Text(
                     summary.netProfit.toStringAsFixed(0),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 22,
+                      fontSize: isDesktop ? 26 : 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -135,6 +137,7 @@ class ReportsSummaryGrid extends StatelessWidget {
                     AppStrings.egp,
                     style: AppTextStyles.caption(context).copyWith(
                       color: context.onPrimaryContainer,
+                      fontSize: isDesktop ? 13 : 11,
                     ),
                   ),
                 ],
@@ -205,8 +208,10 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isDesktop ? 16 : 14),
       decoration: BoxDecoration(
         color: context.surface,
         borderRadius: BorderRadius.circular(16),
@@ -231,7 +236,7 @@ class _SummaryCard extends StatelessWidget {
                   color: iconBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: Icon(icon, color: iconColor, size: isDesktop ? 22 : 20),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -243,7 +248,7 @@ class _SummaryCard extends StatelessWidget {
                   change,
                   style: TextStyle(
                     fontFamily: 'Cairo',
-                    fontSize: 11,
+                    fontSize: isDesktop ? 12 : 11,
                     fontWeight: FontWeight.bold,
                     color: changeColor,
                   ),
@@ -256,6 +261,7 @@ class _SummaryCard extends StatelessWidget {
             label,
             style: AppTextStyles.bodyMedium(context).copyWith(
               color: context.textSecondary,
+              fontSize: isDesktop ? 14.5 : 13,
             ),
           ),
           const SizedBox(height: 4),
@@ -267,7 +273,7 @@ class _SummaryCard extends StatelessWidget {
                 value,
                 style: TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 28,
+                  fontSize: isDesktop ? 30 : 26,
                   fontWeight: FontWeight.bold,
                   color: context.textPrimary,
                 ),
@@ -277,6 +283,7 @@ class _SummaryCard extends StatelessWidget {
                 currency,
                 style: AppTextStyles.bodyMedium(context).copyWith(
                   color: context.textSecondary,
+                  fontSize: isDesktop ? 13 : 11.5,
                 ),
               ),
             ],

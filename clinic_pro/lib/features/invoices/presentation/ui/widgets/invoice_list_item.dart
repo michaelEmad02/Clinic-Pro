@@ -36,6 +36,8 @@ class InvoiceListItem extends StatelessWidget {
         ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
         : EdgeInsets.zero;
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Container(
       margin: margin,
       decoration: BoxDecoration(
@@ -62,6 +64,7 @@ class InvoiceListItem extends StatelessWidget {
                     invoice.patientName ?? AppStrings.unknownPatient,
                     style: AppTextStyles.headlineSmall(context).copyWith(
                       fontWeight: FontWeight.bold,
+                      fontSize: isDesktop ? 17 : null,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -71,6 +74,7 @@ class InvoiceListItem extends StatelessWidget {
                     '$dateStr • ${invoice.appointmentTypeName ?? (AppStrings.isArabic ? "كشف عام" : "General Checkup")}',
                     style: AppTextStyles.caption(context).copyWith(
                       color: context.textSecondary,
+                      fontSize: isDesktop ? 13 : null,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -81,14 +85,14 @@ class InvoiceListItem extends StatelessWidget {
                     Row(
                       children: [
                         Icon(Icons.person_outline,
-                            size: 12, color: context.primary),
+                            size: isDesktop ? 14 : 12, color: context.primary),
                         const SizedBox(width: 2),
                         Flexible(
                           child: Text(
                             '${AppStrings.isArabic ? "بواسطة" : "By"}: ${invoice.createdByName}',
                             style: AppTextStyles.caption(context).copyWith(
                               color: context.primary,
-                              fontSize: 11,
+                              fontSize: isDesktop ? 12.5 : 11,
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
@@ -110,12 +114,15 @@ class InvoiceListItem extends StatelessWidget {
                   style: AppTextStyles.dataNumeric(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.textPrimary,
+                    fontSize: isDesktop ? 16 : 14,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? 10 : 8,
+                    vertical: isDesktop ? 3 : 2,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(6),
@@ -123,7 +130,7 @@ class InvoiceListItem extends StatelessWidget {
                   child: Text(
                     _getLocalStatusText(invoice.status),
                     style: AppTextStyles.caption(context).copyWith(
-                      fontSize: 10,
+                      fontSize: isDesktop ? 11.5 : 10,
                       fontWeight: FontWeight.bold,
                       color: statusColor,
                     ),
@@ -133,12 +140,12 @@ class InvoiceListItem extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             SizedBox(
-              width: 24,
-              height: 24,
+              width: isDesktop ? 28 : 24,
+              height: isDesktop ? 28 : 24,
               child: IconButton(
                 padding: EdgeInsets.zero,
                 icon: Icon(Icons.more_vert,
-                    size: 18, color: context.textSecondary),
+                    size: isDesktop ? 20 : 18, color: context.textSecondary),
                 onPressed: () {
                   InvoiceActionSheet.show(
                     context: context,

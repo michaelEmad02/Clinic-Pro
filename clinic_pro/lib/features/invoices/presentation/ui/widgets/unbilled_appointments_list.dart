@@ -48,17 +48,20 @@ class UnbilledAppointmentsList extends StatelessWidget {
       );
     }
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 520,
-        mainAxisExtent: 110,
+        mainAxisExtent: 116,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
       itemCount: appointments.length,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding:
+          EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16, vertical: 8),
       itemBuilder: (context, index) {
         final appt = appointments[index];
         return _UnbilledAppointmentCard(appointment: appt);
@@ -75,6 +78,7 @@ class _UnbilledAppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final margin = isMobile
         ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
         : EdgeInsets.zero;
@@ -109,7 +113,7 @@ class _UnbilledAppointmentCard extends StatelessWidget {
                     appointment.patientName ?? AppStrings.unknownPatient,
                     style: AppTextStyles.headlineSmall(context).copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: isDesktop ? 16.5 : 14,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -119,7 +123,7 @@ class _UnbilledAppointmentCard extends StatelessWidget {
                     '${appointment.date} • ${appointment.appointmentTypeName ?? (AppStrings.isArabic ? "كشف عام" : "General Checkup")}',
                     style: AppTextStyles.caption(context).copyWith(
                       color: context.textSecondary,
-                      fontSize: 11,
+                      fontSize: isDesktop ? 12.5 : 11,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -131,16 +135,20 @@ class _UnbilledAppointmentCard extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isDesktop ? 8 : 6,
+                          vertical: isDesktop ? 3 : 2,
+                        ),
                         decoration: BoxDecoration(
                           color: context.warning.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          AppStrings.isArabic ? 'بانتظار التفوتر' : 'Awaiting Invoice',
+                          AppStrings.isArabic
+                              ? 'بانتظار التفوتر'
+                              : 'Awaiting Invoice',
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: isDesktop ? 11.5 : 10,
                             fontWeight: FontWeight.bold,
                             color: context.warning,
                           ),
@@ -150,7 +158,7 @@ class _UnbilledAppointmentCard extends StatelessWidget {
                         Text(
                           '(${AppStrings.isArabic ? "مسدد جزئياً" : "Partially Paid"}: ${appointment.paidSoFar.toStringAsFixed(0)} ${AppStrings.egp})',
                           style: AppTextStyles.caption(context).copyWith(
-                            fontSize: 10,
+                            fontSize: isDesktop ? 11.5 : 10,
                             color: context.textSecondary,
                           ),
                           maxLines: 1,
@@ -171,7 +179,7 @@ class _UnbilledAppointmentCard extends StatelessWidget {
                   style: AppTextStyles.dataNumeric(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.danger,
-                    fontSize: 14,
+                    fontSize: isDesktop ? 16 : 14,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -189,16 +197,22 @@ class _UnbilledAppointmentCard extends StatelessWidget {
                       }
                     }
                   },
-                  icon: const Icon(Icons.receipt_long, size: 13),
+                  icon: Icon(Icons.receipt_long, size: isDesktop ? 15 : 13),
                   label: Text(
                     AppStrings.isArabic ? 'أصدر فاتورة' : 'Create Invoice',
-                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: isDesktop ? 12 : 10.5,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: context.primary,
                     side: BorderSide(color: context.primary.withOpacity(0.3)),
                     backgroundColor: context.primaryLightColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isDesktop ? 10 : 8,
+                      vertical: isDesktop ? 6 : 4,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     shape: RoundedRectangleBorder(

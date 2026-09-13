@@ -24,10 +24,12 @@ class InvoicesTabSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return ResponsiveHelper.responsiveCenter(
-      maxWidth: 800,
+      maxWidth: isDesktop ? 600 : 800,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
         child: Container(
           padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
@@ -88,6 +90,8 @@ class _TabButton extends StatelessWidget {
     const activeFg = Colors.white;
     final inactiveFg = context.textSecondary;
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -96,7 +100,10 @@ class _TabButton extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          padding: EdgeInsets.symmetric(
+            vertical: isDesktop ? 12 : 10,
+            horizontal: isDesktop ? 12 : 8,
+          ),
           decoration: BoxDecoration(
             color: isSelected ? activeBg : context.surfaceColor.withOpacity(0.5),
             borderRadius: BorderRadius.circular(10),
@@ -118,7 +125,7 @@ class _TabButton extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 16,
+                size: isDesktop ? 18 : 16,
                 color: isSelected ? activeFg : inactiveFg,
               ),
               const SizedBox(width: 6),
@@ -130,14 +137,17 @@ class _TabButton extends StatelessWidget {
                   style: AppTextStyles.bodyMedium(context).copyWith(
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                     color: isSelected ? activeFg : inactiveFg,
-                    fontSize: 13,
+                    fontSize: isDesktop ? 14.5 : 13,
                   ),
                 ),
               ),
               if (badgeCount > 0) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? 8 : 7,
+                    vertical: isDesktop ? 3 : 2,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? Colors.white.withOpacity(0.25)
@@ -147,7 +157,7 @@ class _TabButton extends StatelessWidget {
                   child: Text(
                     '$badgeCount',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: isDesktop ? 12 : 11,
                       fontWeight: FontWeight.bold,
                       color: isSelected ? activeFg : (badgeColor ?? context.primary),
                     ),

@@ -7,6 +7,7 @@ import 'package:clinic_pro/core/constants/app_constants.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/core/constants/route_constants.dart';
 import 'package:go_router/go_router.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'financial_reports_screen.dart';
 import 'appointment_reports_screen.dart';
 import 'patient_reports_screen.dart';
@@ -21,6 +22,8 @@ class DoctorMyReportsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUserId = context.read<AuthCubit>().state.user?.id ?? '';
     final targetDoctorId = doctorId ?? currentUserId;
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
 
     final categories = [
       _ReportCategoryItem(
@@ -94,16 +97,20 @@ class DoctorMyReportsScreen extends StatelessWidget {
       ),
     ];
 
+    final int crossAxisCount = isDesktop ? 3 : (isTablet ? 2 : 1);
+    final double childAspectRatio = isDesktop ? 2.3 : (isTablet ? 2.2 : 2.6);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
+        centerTitle: false,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
           AppStrings.isArabic ? 'تقاريري والإحصائيات' : 'My Reports',
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: context.primary,
           ),
@@ -113,24 +120,33 @@ class DoctorMyReportsScreen extends StatelessWidget {
           child: Container(color: context.borderColor, height: 1),
         ),
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 600;
-          return GridView.builder(
-            padding: const EdgeInsets.all(AppConstants.spaceMd),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isWide ? 2 : 1,
-              crossAxisSpacing: AppConstants.spaceMd,
-              mainAxisSpacing: AppConstants.spaceMd,
-              childAspectRatio: isWide ? 1.5 : 2.5,
+      body: ColoredBox(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 32 : 16,
+            vertical: isDesktop ? 28 : 16,
+          ),
+          child: ResponsiveHelper.responsiveCenter(
+            maxWidth: 1200,
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: isDesktop ? 16 : AppConstants.spaceMd,
+                mainAxisSpacing: isDesktop ? 16 : AppConstants.spaceMd,
+                childAspectRatio: childAspectRatio,
+              ),
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final cat = categories[index];
+                return _CategoryCard(item: cat);
+              },
             ),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final cat = categories[index];
-              return _CategoryCard(item: cat);
-            },
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -159,6 +175,8 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Material(
       color: context.surfaceColor,
       borderRadius: BorderRadius.circular(AppConstants.radiusCard),
@@ -167,7 +185,7 @@ class _CategoryCard extends StatelessWidget {
         onTap: item.onTap,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
         child: Container(
-          padding: const EdgeInsets.all(AppConstants.spaceMd),
+          padding: EdgeInsets.all(isDesktop ? 16 : AppConstants.spaceMd),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
             border: Border.all(color: context.borderColor, width: 0.5),
@@ -175,14 +193,14 @@ class _CategoryCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
+                width: isDesktop ? 60 : 56,
+                height: isDesktop ? 60 : 56,
                 decoration: BoxDecoration(
                   color: item.color.withOpacity(0.12),
                   borderRadius:
                       BorderRadius.circular(AppConstants.radiusButton),
                 ),
-                child: Icon(item.icon, color: item.color, size: 28),
+                child: Icon(item.icon, color: item.color, size: isDesktop ? 30 : 28),
               ),
               const SizedBox(width: AppConstants.spaceMd),
               Expanded(
@@ -195,6 +213,7 @@ class _CategoryCard extends StatelessWidget {
                       style: AppTextStyles.headlineSmall(context).copyWith(
                         fontWeight: FontWeight.bold,
                         color: context.textPrimary,
+                        fontSize: isDesktop ? 16.5 : 15,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -204,6 +223,8 @@ class _CategoryCard extends StatelessWidget {
                       item.subtitle,
                       style: AppTextStyles.caption(context).copyWith(
                         color: context.textSecondary,
+                        fontSize: isDesktop ? 12.5 : 11,
+                        height: 1.35,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -213,7 +234,7 @@ class _CategoryCard extends StatelessWidget {
               ),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                size: 16,
+                size: isDesktop ? 18 : 16,
                 color: context.textSecondary,
               ),
             ],

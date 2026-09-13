@@ -92,13 +92,26 @@ class _FinancialReceivablesViewState extends State<_FinancialReceivablesView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Scaffold(
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
+        toolbarHeight: isDesktop ? 70 : 64,
+        backgroundColor: context.surfaceColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
         title: Text(
           AppStrings.isArabic ? 'تقرير المستحقات المالية' : 'Financial Receivables Report',
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
+            color: context.primary,
           ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: context.borderColor, height: 1),
         ),
         actions: [
           IconButton(
@@ -136,13 +149,15 @@ class _FinancialReceivablesViewState extends State<_FinancialReceivablesView> {
             return const Center(child: AppLoadingWidget());
           }
 
-          return ResponsiveHelper.responsiveCenter(
-            maxWidth: 1100,
-            child: RefreshIndicator(
-              onRefresh: () => context.read<FinancialReceivablesCubit>().loadReport(forceRefresh: true),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
+          return RefreshIndicator(
+            onRefresh: () => context.read<FinancialReceivablesCubit>().loadReport(forceRefresh: true),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ColoredBox(
+                color: Colors.transparent,
+                child: ResponsiveHelper.responsiveCenter(
+                  maxWidth: 1100,
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 12),
@@ -210,8 +225,9 @@ class _FinancialReceivablesViewState extends State<_FinancialReceivablesView> {
                 ),
               ),
             ),
-          );
-        },
+          ),
+        );
+      },
       ),
     );
   }

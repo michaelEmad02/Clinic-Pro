@@ -50,17 +50,19 @@ class InvoicesList extends StatelessWidget {
       );
     }
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 400,
-        mainAxisExtent: 84,
+        mainAxisExtent: 96,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
       itemCount: invoices.length,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16, vertical: 8),
       itemBuilder: (context, index) {
         final invoice = invoices[index];
         return InkWell(

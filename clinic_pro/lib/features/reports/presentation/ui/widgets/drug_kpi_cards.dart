@@ -71,8 +71,10 @@ class DrugKpiCardsWidget extends StatelessWidget {
     required Color color,
     bool isSmallText = false,
   }) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Container(
-      padding: const EdgeInsets.all(AppConstants.spaceSm),
+      padding: EdgeInsets.all(isDesktop ? 12 : AppConstants.spaceSm),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
@@ -97,6 +99,7 @@ class DrugKpiCardsWidget extends StatelessWidget {
                 style: AppTextStyles.caption(context).copyWith(
                   color: context.textSecondary,
                   fontWeight: FontWeight.w600,
+                  fontSize: isDesktop ? 13 : 11.5,
                 ),
               ),
               Container(
@@ -105,7 +108,7 @@ class DrugKpiCardsWidget extends StatelessWidget {
                   color: color.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, size: 18, color: color),
+                child: Icon(icon, size: isDesktop ? 20 : 18, color: color),
               ),
             ],
           ),
@@ -117,10 +120,12 @@ class DrugKpiCardsWidget extends StatelessWidget {
                 ? AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.textPrimary,
+                    fontSize: isDesktop ? 16 : 14,
                   )
                 : AppTextStyles.headlineMedium(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.textPrimary,
+                    fontSize: isDesktop ? 22 : 18,
                   ),
           ),
         ],

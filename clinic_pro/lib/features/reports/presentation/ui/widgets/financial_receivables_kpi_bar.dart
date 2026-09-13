@@ -109,8 +109,10 @@ class _ReceivableKpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(isDesktop ? 14 : 12),
       decoration: BoxDecoration(
         color: context.surface,
         borderRadius: BorderRadius.circular(12),
@@ -129,7 +131,7 @@ class _ReceivableKpiCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: color),
+              Icon(icon, size: isDesktop ? 18 : 16, color: color),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -137,6 +139,7 @@ class _ReceivableKpiCard extends StatelessWidget {
                   style: AppTextStyles.caption(context).copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.textSecondary,
+                    fontSize: isDesktop ? 13 : 11,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -155,15 +158,15 @@ class _ReceivableKpiCard extends StatelessWidget {
               style: AppTextStyles.headlineSmall(context).copyWith(
                 fontWeight: FontWeight.bold,
                 color: color,
-                fontSize: 16,
+                fontSize: isDesktop ? 18 : 16,
               ),
             ),
           ),
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: TextStyle(
-              fontSize: 10,
+            style: AppTextStyles.caption(context).copyWith(
+              fontSize: isDesktop ? 11.5 : 10,
               color: context.textSecondary.withOpacity(0.8),
             ),
             maxLines: 1,
@@ -281,6 +284,8 @@ class _AgingBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -292,8 +297,8 @@ class _AgingBadge extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           '$label: ${amount.toStringAsFixed(0)} ${AppStrings.egp}',
-          style: TextStyle(
-            fontSize: 10,
+          style: AppTextStyles.caption(context).copyWith(
+            fontSize: isDesktop ? 11.5 : 10,
             color: context.textSecondary,
             fontWeight: FontWeight.w500,
           ),

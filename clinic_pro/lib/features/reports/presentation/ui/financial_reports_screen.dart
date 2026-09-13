@@ -50,16 +50,19 @@ class _FinancialReportsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: false,
         title: Text(
           AppStrings.isArabic ? 'التقارير المالية' : 'Financial Reports',
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: context.primary,
           ),
@@ -158,10 +161,13 @@ class _FinancialReportsBody extends StatelessWidget {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: ResponsiveHelper.responsiveCenter(
-                  maxWidth: 1100,
-                  child: Column(
+                child: ColoredBox(
+                  color: Colors.transparent,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: ResponsiveHelper.responsiveCenter(
+                      maxWidth: 1100,
+                      child: Column(
                     children: [
                       // Clinic Filter Dropdown
                       BlocBuilder<ClinicsCubit, ClinicsState>(
@@ -284,8 +290,10 @@ class _FinancialReportsBody extends StatelessWidget {
                   ),
                 ),
               ),
-            );
-          }
+            ),
+          ),
+        );
+      }
           return const SizedBox.shrink();
         },
       ),

@@ -6,6 +6,7 @@ import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
 import 'package:clinic_pro/core/widgets/app_error_widget.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
@@ -43,16 +44,19 @@ class _DoctorReportsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: false,
         title: Text(
           AppStrings.isArabic ? 'تقارير أداء الأطباء' : 'Doctor Performance',
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: context.primary,
           ),
@@ -91,9 +95,16 @@ class _DoctorReportsBody extends StatelessWidget {
                     .read<DoctorPerformanceCubit>()
                     .loadReports(forceRefresh: true);
               },
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ColoredBox(
+                  color: Colors.transparent,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ResponsiveHelper.responsiveCenter(
+                      maxWidth: 1100,
+                      child: Column(
+                        children: [
                   // Clinic Filter Dropdown
                   BlocBuilder<ClinicsCubit, ClinicsState>(
                     builder: (context, clinicsState) {
@@ -200,7 +211,11 @@ class _DoctorReportsBody extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   DoctorPerformanceList(doctors: state.doctors),
-                ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             );
           }

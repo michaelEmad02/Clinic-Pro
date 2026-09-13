@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
+import '../../../../../core/utils/responsive_helper.dart';
 import '../../manager/reports_state.dart';
 
 class DoctorPerformanceList extends StatelessWidget {
@@ -326,8 +327,10 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(isDesktop ? 16 : 14),
       decoration: BoxDecoration(
         color: context.surface,
         borderRadius: BorderRadius.circular(14),
@@ -342,14 +345,14 @@ class _KpiCard extends StatelessWidget {
               color: bgColor,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: color, size: isDesktop ? 20 : 18),
           ),
           const SizedBox(height: 10),
           Text(
             value,
             style: AppTextStyles.headlineSmall(context).copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: isDesktop ? 18 : 16,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -359,7 +362,7 @@ class _KpiCard extends StatelessWidget {
             title,
             style: AppTextStyles.caption(context).copyWith(
               color: context.textSecondary,
-              fontSize: 11,
+              fontSize: isDesktop ? 12.5 : 11,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -385,6 +388,7 @@ class _DoctorCardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final revenuePercentage = maxRevenue > 0 ? (doctor.revenue / maxRevenue).clamp(0.0, 1.0) : 0.0;
 
     Color rankColor;
@@ -408,20 +412,21 @@ class _DoctorCardRow extends StatelessWidget {
           children: [
             // Rank Badge
             Container(
-              width: 32,
-              height: 32,
+              width: isDesktop ? 36 : 32,
+              height: isDesktop ? 36 : 32,
               decoration: BoxDecoration(
                 color: rank <= 3 ? rankColor.withOpacity(0.15) : context.borderColor.withOpacity(0.3),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: rankIcon != null
-                    ? Icon(rankIcon, color: rankColor, size: 18)
+                    ? Icon(rankIcon, color: rankColor, size: isDesktop ? 20 : 18)
                     : Text(
                         '#$rank',
                         style: AppTextStyles.caption(context).copyWith(
                           fontWeight: FontWeight.bold,
                           color: rankColor,
+                          fontSize: isDesktop ? 13 : 11,
                         ),
                       ),
               ),
@@ -430,7 +435,7 @@ class _DoctorCardRow extends StatelessWidget {
 
             // Avatar
             CircleAvatar(
-              radius: 20,
+              radius: isDesktop ? 22 : 20,
               backgroundColor: context.primaryLightColor,
               backgroundImage: doctor.avatarUrl != null && doctor.avatarUrl!.isNotEmpty
                   ? NetworkImage(doctor.avatarUrl!)
@@ -440,7 +445,7 @@ class _DoctorCardRow extends StatelessWidget {
                       doctor.doctorName.isNotEmpty ? doctor.doctorName.substring(0, 1) : 'د',
                       style: TextStyle(
                         color: context.primary,
-                        fontSize: 14,
+                        fontSize: isDesktop ? 15 : 14,
                         fontWeight: FontWeight.bold,
                       ),
                     )
@@ -457,6 +462,7 @@ class _DoctorCardRow extends StatelessWidget {
                     doctor.doctorName,
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       fontWeight: FontWeight.bold,
+                      fontSize: isDesktop ? 15 : 14,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -464,23 +470,23 @@ class _DoctorCardRow extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.people_alt_rounded, size: 13, color: context.textSecondary),
+                      Icon(Icons.people_alt_rounded, size: isDesktop ? 14 : 13, color: context.textSecondary),
                       const SizedBox(width: 4),
                       Text(
                         '${doctor.visitCount} ${AppStrings.isArabic ? 'زيارة' : 'visits'}',
                         style: AppTextStyles.caption(context).copyWith(
                           color: context.textSecondary,
-                          fontSize: 11,
+                          fontSize: isDesktop ? 12 : 11,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Icon(Icons.pie_chart_rounded, size: 13, color: context.primary),
+                      Icon(Icons.pie_chart_rounded, size: isDesktop ? 14 : 13, color: context.primary),
                       const SizedBox(width: 2),
                       Text(
                         '${doctor.rating}% ${AppStrings.isArabic ? 'من الإيراد' : 'share'}',
                         style: AppTextStyles.caption(context).copyWith(
                           color: context.textSecondary,
-                          fontSize: 11,
+                          fontSize: isDesktop ? 12 : 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -498,13 +504,13 @@ class _DoctorCardRow extends StatelessWidget {
                   currencyFormat.format(doctor.revenue),
                   style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: isDesktop ? 16 : 14,
                     color: context.primary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 10 : 8, vertical: isDesktop ? 3 : 2),
                   decoration: BoxDecoration(
                     color: doctor.trend == 'up'
                         ? context.successBg
@@ -522,7 +528,7 @@ class _DoctorCardRow extends StatelessWidget {
                             : doctor.trend == 'down'
                                 ? Icons.trending_down_rounded
                                 : Icons.trending_flat_rounded,
-                        size: 13,
+                        size: isDesktop ? 14 : 13,
                         color: doctor.trend == 'up'
                             ? context.successText
                             : doctor.trend == 'down'
@@ -537,7 +543,7 @@ class _DoctorCardRow extends StatelessWidget {
                                 ? (AppStrings.isArabic ? 'هابط' : 'Down')
                                 : (AppStrings.isArabic ? 'مستقر' : 'Stable'),
                         style: AppTextStyles.caption(context).copyWith(
-                          fontSize: 10,
+                          fontSize: isDesktop ? 11 : 10,
                           fontWeight: FontWeight.bold,
                           color: doctor.trend == 'up'
                               ? context.successText

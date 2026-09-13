@@ -46,16 +46,19 @@ class _AppointmentReportsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: false,
         title: Text(
           AppStrings.isArabic ? 'تقارير المواعيد' : 'Appointment Reports',
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: AppTextStyles.headlineLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: context.primary,
           ),
@@ -106,10 +109,16 @@ class _AppointmentReportsBody extends StatelessWidget {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: ResponsiveHelper.responsiveCenter(
-                  maxWidth: 1100,
-                  child: Column(
+                child: ColoredBox(
+                  color: Colors.transparent,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isDesktop ? 24 : 0,
+                      vertical: isDesktop ? 20 : 16,
+                    ),
+                    child: ResponsiveHelper.responsiveCenter(
+                      maxWidth: 1100,
+                      child: Column(
                     children: [
                       // Clinic Filter Dropdown (using ClinicsCubit)
                       BlocBuilder<ClinicsCubit, ClinicsState>(
@@ -118,7 +127,7 @@ class _AppointmentReportsBody extends StatelessWidget {
                               clinicsState.clinics.isNotEmpty) {
                             final List<ClinicEntity> clinics = clinicsState.clinics;
                             return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 4),
@@ -219,7 +228,7 @@ class _AppointmentReportsBody extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
                         child: AppointmentStatsSectionWidget(
                             stats: reportsState.stats),
                       ),
@@ -228,8 +237,10 @@ class _AppointmentReportsBody extends StatelessWidget {
                   ),
                 ),
               ),
-            );
-          }
+            ),
+          ),
+        );
+      }
           return const SizedBox.shrink();
         },
       ),
