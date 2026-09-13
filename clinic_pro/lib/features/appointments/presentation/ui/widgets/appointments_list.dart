@@ -8,7 +8,6 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/empty_state.dart';
-import '../../../../../core/utils/responsive_helper.dart';
 import '../../../domain/entities/appointment_entity.dart';
 import 'appointment_list_item.dart';
 
@@ -57,9 +56,10 @@ class AppointmentsList extends StatelessWidget {
                   onSelected: (_) => onFilterChanged(f.$1),
                   selectedColor: context.primary,
                   backgroundColor: context.surfaceColor,
-                  labelStyle: AppTextStyles.caption(context).copyWith(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  labelStyle: AppTextStyles.bodyMedium(context).copyWith(
                     color: isSelected ? context.onPrimary : context.textSecondary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppConstants.radiusChip),
@@ -81,39 +81,51 @@ class AppointmentsList extends StatelessWidget {
             subtitle: AppStrings.noAppointmentsMatchFilter,
             icon: Icons.event_busy_outlined,
           )
-        else if (!ResponsiveHelper.isMobile(context))
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 420,
-              mainAxisSpacing: AppConstants.spaceSm + 4,
-              crossAxisSpacing: AppConstants.spaceSm + 4,
-              childAspectRatio: 2.6,
-            ),
-            itemCount: appointments.length,
-            itemBuilder: (context, index) {
-              final item = appointments[index];
-              return AppointmentListItem(
-                appointment: item,
-                onTap: () => onItemTap(item),
-                onMore: () => onItemMore(item),
-              );
-            },
-          )
         else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
-            itemCount: appointments.length,
-            itemBuilder: (context, index) {
-              final item = appointments[index];
-              return AppointmentListItem(
-                appointment: item,
-                onTap: () => onItemTap(item),
-                onMore: () => onItemMore(item),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              // حساب عدد الأعمدة ديناميكياً ليملأ كامل عرض الشاشة مع مقاس بطاقة مريح (~340 بكسل)
+              // على الشاشات الكبيرة (1920px مثلاً): سيتم عرض 4 إلى 5 بطاقات في الصف الواحد
+              final int columns = (width / 340).floor().clamp(1, 6);
+
+              if (columns == 1) {
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+                  itemCount: appointments.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: AppConstants.spaceSm + 4),
+                  itemBuilder: (context, index) {
+                    final item = appointments[index];
+                    return AppointmentListItem(
+                      appointment: item,
+                      onTap: () => onItemTap(item),
+                      onMore: () => onItemMore(item),
+                    );
+                  },
+                );
+              }
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  mainAxisSpacing: AppConstants.spaceSm + 4,
+                  crossAxisSpacing: AppConstants.spaceSm + 4,
+                  mainAxisExtent: 178,
+                ),
+                itemCount: appointments.length,
+                itemBuilder: (context, index) {
+                  final item = appointments[index];
+                  return AppointmentListItem(
+                    appointment: item,
+                    onTap: () => onItemTap(item),
+                    onMore: () => onItemMore(item),
+                  );
+                },
               );
             },
           ),

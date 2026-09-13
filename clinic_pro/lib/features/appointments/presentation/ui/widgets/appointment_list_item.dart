@@ -25,67 +25,63 @@ class AppointmentListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppConstants.spaceSm),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-        child: Container(
-          padding: const EdgeInsets.all(AppConstants.spaceMd),
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            border: Border.all(color: context.borderColor),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                backgroundColor: appointment.isUrgent
-                    ? context.dangerBg
-                    : context.primaryLightColor,
-                child: Icon(
-                  appointment.isUrgent
-                      ? Icons.priority_high
-                      : Icons.calendar_today_outlined,
-                  color: appointment.isUrgent ? context.danger : context.primary,
-                  size: AppConstants.iconSizeLg,
-                ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12.0,
+          vertical: 12.0,
+        ),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+          border: Border.all(color: context.borderColor),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: appointment.isUrgent
+                  ? context.dangerBg
+                  : context.primaryLightColor,
+              child: Icon(
+                appointment.isUrgent
+                    ? Icons.priority_high
+                    : Icons.calendar_today_outlined,
+                color: appointment.isUrgent ? context.danger : context.primary,
+                size: 18,
               ),
-              const SizedBox(width: AppConstants.spaceMd),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                     Text(
                       appointment.patientName ?? AppStrings.patient,
                       style: AppTextStyles.headlineSmall(context).copyWith(
+                        fontSize: 18,
                         color: context.textPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    // const SizedBox(height: AppConstants.spaceXs),
-                    // Text(
-                    //   appointment.doctorName ?? AppStrings.generalPractitioner,
-                    //   style: AppTextStyles.bodyMedium(context).copyWith(
-                    //     color: context.textSecondary,
-                    //     fontWeight: FontWeight.w500,
-                    //   ),
-                    //   maxLines: 1,
-                    //   overflow: TextOverflow.ellipsis,
-                    // ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       appointment.typeName ?? AppStrings.normalCheckup,
-                      style: AppTextStyles.caption(context).copyWith(
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontSize: 14,
                         color: context.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 6,
                       runSpacing: 4,
@@ -93,8 +89,8 @@ class AppointmentListItem extends StatelessWidget {
                         if (appointment.arrivedAt != null)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
+                              horizontal: 7,
+                              vertical: 3,
                             ),
                             decoration: BoxDecoration(
                               color: context.primaryLightColor,
@@ -105,16 +101,20 @@ class AppointmentListItem extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.access_time_rounded,
-                                  size: 12,
+                                  size: 13,
                                   color: context.primary,
                                 ),
                                 const SizedBox(width: 4),
-                                Text(
-                                  _formatArrivalTime(appointment.arrivedAt, context),
-                                  style: AppTextStyles.caption(context).copyWith(
-                                    color: context.primary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 11,
+                                Flexible(
+                                  child: Text(
+                                    _formatArrivalTime(appointment.arrivedAt, context),
+                                    style: AppTextStyles.caption(context).copyWith(
+                                      color: context.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -124,8 +124,8 @@ class AppointmentListItem extends StatelessWidget {
                             appointment.displayTime!.isNotEmpty)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
+                              horizontal: 7,
+                              vertical: 3,
                             ),
                             decoration: BoxDecoration(
                               color: context.background,
@@ -137,16 +137,20 @@ class AppointmentListItem extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.event_note_rounded,
-                                  size: 12,
+                                  size: 13,
                                   color: context.textSecondary,
                                 ),
                                 const SizedBox(width: 4),
-                                Text(
-                                  '${AppStrings.isArabic ? 'الحجز:' : 'Booked:'} ${_formatDate(appointment.date)} ${appointment.displayTime}',
-                                  style: AppTextStyles.caption(context).copyWith(
-                                    color: context.textSecondary,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 11,
+                                Flexible(
+                                  child: Text(
+                                    '${AppStrings.isArabic ? 'الحجز:' : 'Booked:'} ${_formatDate(appointment.date)} ${appointment.displayTime}',
+                                    style: AppTextStyles.caption(context).copyWith(
+                                      color: context.textSecondary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -161,8 +165,8 @@ class AppointmentListItem extends StatelessWidget {
                                 4)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
+                              horizontal: 7,
+                              vertical: 3,
                             ),
                             decoration: BoxDecoration(
                               color: context.warningBg,
@@ -176,18 +180,22 @@ class AppointmentListItem extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.warning_amber_rounded,
-                                  size: 12,
+                                  size: 13,
                                   color: context.warningText,
                                 ),
                                 const SizedBox(width: 4),
-                                Text(
-                                  AppStrings.isArabic
-                                      ? 'منتظر منذ ${DateTime.now().difference(appointment.arrivedAt!.toLocal()).inHours} ساعات'
-                                      : 'Waiting for ${DateTime.now().difference(appointment.arrivedAt!.toLocal()).inHours}h',
-                                  style: AppTextStyles.caption(context).copyWith(
-                                    color: context.warningText,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 11,
+                                Flexible(
+                                  child: Text(
+                                    AppStrings.isArabic
+                                        ? 'منتظر منذ ${DateTime.now().difference(appointment.arrivedAt!.toLocal()).inHours} ساعات'
+                                        : 'Waiting for ${DateTime.now().difference(appointment.arrivedAt!.toLocal()).inHours}h',
+                                    style: AppTextStyles.caption(context).copyWith(
+                                      color: context.warningText,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -198,9 +206,10 @@ class AppointmentListItem extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: AppConstants.spaceMd),
+              const SizedBox(width: AppConstants.spaceSm),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.more_vert),
@@ -229,8 +238,7 @@ class AppointmentListItem extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildStatusBadge(String status) {

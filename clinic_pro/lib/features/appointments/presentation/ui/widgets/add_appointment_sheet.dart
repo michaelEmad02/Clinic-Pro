@@ -462,6 +462,7 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 AppStrings.timing,
@@ -471,22 +472,26 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                                 ),
                               ),
                               if (_getLastAppointmentTimeForSelectedDate() != null) ...[
-                                const Spacer(),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: context.primaryLightColor,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    AppStrings.isArabic
-                                        ? 'آخر موعد: ${_getLastAppointmentTimeForSelectedDate()}'
-                                        : 'Last: ${_getLastAppointmentTimeForSelectedDate()}',
-                                    style: AppTextStyles.caption(context).copyWith(
-                                      color: context.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: context.primaryLightColor,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      AppStrings.isArabic
+                                          ? 'آخر موعد: ${_getLastAppointmentTimeForSelectedDate()}'
+                                          : 'Last: ${_getLastAppointmentTimeForSelectedDate()}',
+                                      style: AppTextStyles.caption(context).copyWith(
+                                        color: context.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ),

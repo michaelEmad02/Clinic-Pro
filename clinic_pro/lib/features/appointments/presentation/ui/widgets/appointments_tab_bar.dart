@@ -43,7 +43,7 @@ class AppointmentsTabBar extends StatelessWidget {
               onTap: () => onTabChanged(tab.$1),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceSm + 2),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: isSelected ? context.surfaceColor : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppConstants.radiusInput),
@@ -52,9 +52,9 @@ class AppointmentsTabBar extends StatelessWidget {
                 child: Text(
                   tab.$2,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium(context).copyWith(
+                  style: AppTextStyles.bodyLarge(context).copyWith(
                     color: isSelected ? context.primary : context.textSecondary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
                 ),
               ),

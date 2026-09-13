@@ -26,10 +26,14 @@ class SocialLoginButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: type == SocialLoginType.google ? context.primaryContainer : context.surfaceColor,
+          color: type == SocialLoginType.google
+              ? context.primaryContainer
+              : context.surfaceColor,
           borderRadius: BorderRadius.circular(AppConstants.radiusButton),
           border: Border.all(
-            color: type == SocialLoginType.google ? Colors.transparent : context.borderColor,
+            color: type == SocialLoginType.google
+                ? Colors.transparent
+                : context.borderColor,
           ),
         ),
         child: Row(
@@ -41,7 +45,8 @@ class SocialLoginButton extends StatelessWidget {
             Flexible(
               child: Text(
                 text,
-                style: AppTextStyles.headlineSmall(context),
+                style: AppTextStyles.headlineSmall(context)
+                    .copyWith(color: context.onPrimary),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),

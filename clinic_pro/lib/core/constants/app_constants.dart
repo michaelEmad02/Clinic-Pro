@@ -31,6 +31,7 @@ class AppConstants {
 
   // هوامش وتحديدات العرض للشاشات المتجاوبة (Responsive Constraints)
   static const double maxContentWidth = 720.0;
+  static const double maxContentWidthDesktop = 1200.0;
   static const double maxDialogWidth = 560.0;
 
   // هوامش الشاشة الافتراضية

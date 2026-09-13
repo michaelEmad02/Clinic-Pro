@@ -178,42 +178,54 @@ class _WaitingQueueBody extends StatelessWidget {
                 await Future.delayed(const Duration(milliseconds: 200));
               },
               child: ResponsiveHelper.responsiveCenter(
-                maxWidth: AppConstants.maxContentWidth,
+                maxWidth: ResponsiveHelper.isDesktop(context)
+                    ? double.infinity
+                    : AppConstants.maxContentWidth,
                 child: ListView(
                   padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
                   children: [
-                    CallNextButton(
-                      enabled: hasNext,
-                      onPressed: () {
-                        ReadOnlyGuard.protect(
-                          context,
-                          onAllowed: () {
-                            context.read<WaitingQueueCubit>().callNext();
-                            AppSnackbar.info(context, message: AppStrings.patientCalled);
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 550),
+                        child: CallNextButton(
+                          enabled: hasNext,
+                          onPressed: () {
+                            ReadOnlyGuard.protect(
+                              context,
+                              onAllowed: () {
+                                context.read<WaitingQueueCubit>().callNext();
+                                AppSnackbar.info(context, message: AppStrings.patientCalled);
+                              },
+                            );
                           },
-                        );
-                      },
+                        ),
+                      ),
                     ),
                     if (isDoctor) ...[
-                       const SizedBox(height: AppConstants.spaceMd),
-                      CurrentPatientCard(
-                        patient: currentPatient,
-                        onStartExamination: () async {
-                          ReadOnlyGuard.protect(
-                            context,
-                            onAllowed: () async {
-                              if (currentPatient != null) {
-                                await context.push(
-                                  '/prescription/${currentPatient.id}',
-                                  extra: currentPatient,
-                                );
-                                if (context.mounted) {
-                                  onRefresh();
-                                }
-                              }
+                      const SizedBox(height: AppConstants.spaceMd),
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 550),
+                          child: CurrentPatientCard(
+                            patient: currentPatient,
+                            onStartExamination: () async {
+                              ReadOnlyGuard.protect(
+                                context,
+                                onAllowed: () async {
+                                  if (currentPatient != null) {
+                                    await context.push(
+                                      '/prescription/${currentPatient.id}',
+                                      extra: currentPatient,
+                                    );
+                                    if (context.mounted) {
+                                      onRefresh();
+                                    }
+                                  }
+                                },
+                              );
                             },
-                          );
-                        },
+                          ),
+                        ),
                       ),
                     ],
                     const SizedBox(height: AppConstants.spaceMd),

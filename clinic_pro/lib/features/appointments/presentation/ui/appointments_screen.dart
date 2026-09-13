@@ -170,7 +170,9 @@ class _AppointmentsBody extends StatelessWidget {
         builder: (context, state) {
           if (state is AppointmentsInitial || state is AppointmentsLoading) {
             return ResponsiveHelper.responsiveCenter(
-              maxWidth: AppConstants.maxContentWidth,
+              maxWidth: ResponsiveHelper.isDesktop(context)
+                  ? double.infinity
+                  : AppConstants.maxContentWidth,
               child: const Padding(
                 padding: EdgeInsets.all(AppConstants.spaceMd),
                 child: ShimmerList(itemCount: 6),
@@ -204,13 +206,25 @@ class _AppointmentsBody extends StatelessWidget {
                 await Future.delayed(const Duration(milliseconds: 200));
               },
               child: ResponsiveHelper.responsiveCenter(
-                maxWidth: AppConstants.maxContentWidth,
+                maxWidth: ResponsiveHelper.isDesktop(context)
+                    ? double.infinity
+                    : AppConstants.maxContentWidth,
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppConstants.spaceMd,
+                    horizontal: ResponsiveHelper.isDesktop(context)
+                        ? AppConstants.spaceMd
+                        : 0,
+                  ),
                   children: [
-                    AppointmentsTabBar(
-                      activeTab: state.activeTab,
-                      onTabChanged: (tab) => bloc.add(ChangeAppointmentsTabEvent(tab)),
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: AppointmentsTabBar(
+                          activeTab: state.activeTab,
+                          onTabChanged: (tab) => bloc.add(ChangeAppointmentsTabEvent(tab)),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: AppConstants.spaceMd),
                     AppointmentsList(

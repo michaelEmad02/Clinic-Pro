@@ -30,183 +30,187 @@ class QueueItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUrgent = patient.isUrgent;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.borderColor),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── رقم الترتيب في الطابور ──
-            CircleAvatar(
-              backgroundColor: context.primaryLightColor,
-              child: Text(
-                '${index + 1}',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold,
-                  color: context.primary,
-                ),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 12,
+      ),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.borderColor),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── رقم الترتيب في الطابور ──
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: context.primaryLightColor,
+            child: Text(
+              '${index + 1}',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: context.primary,
               ),
             ),
-            const SizedBox(width: 12),
+          ),
+          const SizedBox(width: 10),
 
-            // ── بيانات المريض عموديًا ──
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    patient.patientName ?? AppStrings.patient,
-                    style: AppTextStyles.headlineSmall(context).copyWith(
-                      color: context.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+          // ── بيانات المريض عموديًا ──
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  patient.patientName ?? AppStrings.patient,
+                  style: AppTextStyles.headlineSmall(context).copyWith(
+                    fontSize: 18,
+                    color: context.textPrimary,
+                    fontWeight: FontWeight.bold,
                   ),
-                  // const SizedBox(height: 4),
-                  // Text(
-                  //   patient.doctorName ?? AppStrings.generalPractitioner,
-                  //   style: AppTextStyles.bodyMedium(context).copyWith(
-                  //     color: context.textSecondary,
-                  //     fontSize: 13,
-                  //     fontWeight: FontWeight.w500,
-                  //   ),
-                  //   maxLines: 1,
-                  //   overflow: TextOverflow.ellipsis,
-                  // ),
-                  const SizedBox(height: 2),
-                  Text(
-                    patient.typeName ?? AppStrings.normalCheckup,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: context.textSecondary,
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  patient.typeName ?? AppStrings.normalCheckup,
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    fontSize: 14,
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: [
-                      if (patient.arrivedAt != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.primaryLightColor,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.access_time_rounded,
-                                size: 12,
-                                color: context.primary,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    if (patient.arrivedAt != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.primaryLightColor,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time_rounded,
+                              size: 13,
+                              color: context.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
                                 _formatArrivalTime(patient.arrivedAt, context),
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: context.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 11,
+                                  fontSize: 12,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      if (patient.displayTime != null &&
-                          patient.displayTime!.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.background,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: context.borderColor),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.event_note_rounded,
-                                size: 12,
-                                color: context.textSecondary,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
+                      ),
+                    if (patient.displayTime != null &&
+                        patient.displayTime!.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.background,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: context.borderColor),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.event_note_rounded,
+                              size: 13,
+                              color: context.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
                                 '${AppStrings.isArabic ? 'الحجز:' : 'Booked:'} ${_formatDate(patient.date)} ${patient.displayTime}',
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: context.textSecondary,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 11,
+                                  fontSize: 12,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (patient.status == AppointmentStatus.confirmed &&
+                        patient.arrivedAt != null &&
+                        DateTime.now()
+                                .difference(patient.arrivedAt!.toLocal())
+                                .inHours >=
+                            4)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.warningBg,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: context.warningText.withOpacity(0.3),
                           ),
                         ),
-                      if (patient.status == AppointmentStatus.confirmed &&
-                          patient.arrivedAt != null &&
-                          DateTime.now()
-                                  .difference(patient.arrivedAt!.toLocal())
-                                  .inHours >=
-                              4)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.warningBg,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: context.warningText.withOpacity(0.3),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              size: 13,
+                              color: context.warningText,
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                size: 12,
-                                color: context.warningText,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
                                 AppStrings.isArabic
                                     ? 'منتظر منذ ${DateTime.now().difference(patient.arrivedAt!.toLocal()).inHours} ساعات'
                                     : 'Waiting for ${DateTime.now().difference(patient.arrivedAt!.toLocal()).inHours}h',
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: context.warningText,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 11,
+                                  fontSize: 12,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                    ],
-                  ),
-                ],
-              ),
+                      ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
+          ),
+          const SizedBox(width: 8),
 
             // ── أزرار الإجراءات + شارة مستعجل ──
             Column(
@@ -339,8 +343,7 @@ class QueueItem extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   String _formatArrivalTime(DateTime? arrivedAt, BuildContext context) {

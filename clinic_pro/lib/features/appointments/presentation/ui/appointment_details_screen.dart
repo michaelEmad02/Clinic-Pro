@@ -77,7 +77,9 @@ class AppointmentDetailsScreen extends StatelessWidget {
             ),
           ),
           body: ResponsiveHelper.responsiveCenter(
-            maxWidth: AppConstants.maxContentWidth,
+            maxWidth: ResponsiveHelper.isDesktop(context)
+                ? 900.0
+                : AppConstants.maxContentWidth,
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
               children: [

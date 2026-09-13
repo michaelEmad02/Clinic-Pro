@@ -258,16 +258,41 @@ class MockData {
 // ✅ Always use ResponsiveHelper for screen classification and responsive layouts
 // ✅ Mobile (< 600px):
 //    - Centered card containers (maxWidth: 440–480px)
-//    - Single-column vertical lists with touch-friendly spacing
+//    - Single-column vertical lists with touch-friendly spacing (ListView.separated)
 //    - Standard Modal BottomSheet for dialogs/forms
 //    - BottomNavigationBar for main navigation
 
 // ✅ Tablet & Desktop (>= 600px):
-//    - ResponsiveCenter container (maxWidth: 720px for settings/forms, 1100–1200px for dashboards/lists)
-//    - Multi-column grid layouts (Grid 2/3 Columns) for lists and Bento cards
+//    - Full-Width Lists & Grids: القوائم وشبكات الكروت تمتد لتستغل كامل عرض الشاشة (maxWidth: double.infinity) مع هوامش مناسبة
+//    - Centered Controls: التبويبات وأشرطة البحث تُحصر في المنتصف بعرض مريح (BoxConstraints(maxWidth: 500–540px))
 //    - Navigation Rail (Sidebar) replacing BottomNavigationBar
 //    - Centered Dialogs (maxDialogWidth: 560px) replacing Modal BottomSheet
 //    - Auth Split-Screen: Branding panel on the right (flex: 5) + Form on the left (flex: 6)
+
+// 📐 4.5.1 Dynamic Grid Scaling Rules (قواعد شبكات الكروت المتجاوبة):
+// ❌ Never use fixed childAspectRatio for cards containing variable text/chips (causes Bottom Overflow)
+// ✅ Always use mainAxisExtent with a comfortable fixed height (e.g. 170–180px) to safely fit title, subtitle, and multi-line chips
+// ✅ Always calculate grid columns dynamically based on available width using LayoutBuilder:
+//    final int columns = (width / 340).floor().clamp(1, 6);
+//    - Width < 650px (Mobile / Narrow Window): 1 Column (ListView.separated)
+//    - Width 650–1050px (Tablet / Medium Window): 2 Columns
+//    - Width 1050–1400px (Desktop): 3 to 4 Columns
+//    - Width >= 1400px (Full HD 1080p / 4K): 4 to 5+ Columns filling the entire monitor
+
+// 🛡️ 4.5.2 Horizontal Overflow Prevention (قواعد منع الـ Overflow الأفقي):
+// ✅ Inside card Rows and chip Wraps, ALWAYS wrap Text with Flexible and specify:
+//    Flexible(child: Text(..., maxLines: 1, overflow: TextOverflow.ellipsis))
+// ✅ Separate item spacing responsibility: use ListView.separated or GridView spacing instead of hardcoding Padding(bottom) inside the card widget itself
+// ✅ Compact avatar/icon spacing: use 8–10px spacing between avatar and text to maximize middle column width
+
+// 🔤 4.5.3 Desktop Responsive Typography (منظومة الخطوط المتجاوبة لسطح المكتب):
+// ✅ AppTextStyles automatically scales up font sizes on desktop via ResponsiveHelper.isDesktop(context):
+//    - headlineLarge: Mobile 28px → Desktop 32px (Bold)
+//    - headlineMedium: Mobile 22px → Desktop 25px (Headers / AppBar titles)
+//    - headlineSmall: Mobile 16px → Desktop 18px (Card titles / Patient names)
+//    - bodyLarge / bodyMedium: Mobile 14–15px → Desktop 16–17px (Tabs / Content)
+//    - caption / labelChip: Mobile 11–12px → Desktop 13–13.5px (Chips / Badges)
+//    - dataNumeric: Mobile 13px → Desktop 15px (Inter font for prices, dates, times)
 
 // ❌ Never hardcode dimensions, padding, or fixed screen offsets
 // ❌ Never use raw pixel values without AppConstants

@@ -86,16 +86,47 @@ class WaitingQueueList extends StatelessWidget {
             ),
           )
         else
-          // ── قائمة عناصر طابور الانتظار ──
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: displayedQueue.length,
-            itemBuilder: (context, index) {
-              return QueueItem(
-                index: index,
-                patient: displayedQueue[index],
+          // ── قائمة عناصر طابور الانتظار (Responsive Grid/List) ──
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final int columns = (width / 340).floor().clamp(1, 5);
+
+              if (columns == 1) {
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: displayedQueue.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    return QueueItem(
+                      index: index,
+                      patient: displayedQueue[index],
+                    );
+                  },
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    mainAxisExtent: 176,
+                  ),
+                  itemCount: displayedQueue.length,
+                  itemBuilder: (context, index) {
+                    return QueueItem(
+                      index: index,
+                      patient: displayedQueue[index],
+                    );
+                  },
+                ),
               );
             },
           ),
