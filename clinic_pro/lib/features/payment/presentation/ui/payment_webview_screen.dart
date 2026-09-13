@@ -2,6 +2,7 @@
 // شاشة WebView لعرض بوابة دفع Paymob داخل التطبيق (PaymentWebviewScreen)
 // ────────────────────────────────────────────────────────
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -63,17 +64,26 @@ class _PaymentWebviewBody extends StatefulWidget {
 }
 
 class _PaymentWebviewBodyState extends State<_PaymentWebviewBody> {
-  late final WebViewController _controller;
+  WebViewController? _controller;
   bool _isLoading = true;
   bool _isCheckingStatus = false;
 
   @override
   void initState() {
     super.initState();
-    _initWebView();
+    if (defaultTargetPlatform != TargetPlatform.windows) {
+      _initWebView();
+    } else {
+      _isLoading = false;
+    }
   }
 
   void _initWebView() {
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
     final urlStr = widget.paymentUrl.trim();
     if (urlStr.isEmpty || !urlStr.startsWith('http')) {
       setState(() => _isLoading = false);
@@ -194,10 +204,11 @@ class _PaymentWebviewBodyState extends State<_PaymentWebviewBody> {
             maxLines: 1,
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded),
-              onPressed: () => _controller.reload(),
-            ),
+            if (defaultTargetPlatform != TargetPlatform.windows && _controller != null)
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded),
+                onPressed: () => _controller?.reload(),
+              ),
           ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
@@ -227,6 +238,91 @@ class _PaymentWebviewBodyState extends State<_PaymentWebviewBody> {
             }
           },
           builder: (context, state) {
+            if (defaultTargetPlatform == TargetPlatform.windows) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: context.primary.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.phone_android_rounded,
+                            size: 64,
+                            color: context.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          AppStrings.isArabic
+                              ? 'الدفع الإلكتروني متاح عبر تطبيق الهاتف فقط'
+                              : 'Payment Available on Mobile App Only',
+                          style: AppTextStyles.headlineSmall(context).copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          AppStrings.isArabic
+                              ? 'عذراً، بوابة الدفع الإلكتروني المباشر غير مدعومة على أجهزة الكمبيوتر.\n\nيرجى تنزيل أو فتح تطبيق Clinic Pro على هاتفك المحمول (Android أو iOS) وتسجيل الدخول بنفس الحساب لإتمام الدفع، وسيتم تفعيل الباقة فوراً على جميع أجهزتك.'
+                              : 'Online payment gateways are not supported on desktop (Windows).\n\nPlease open the app on your mobile phone to complete payment.',
+                          style: AppTextStyles.bodyMedium(context).copyWith(
+                            color: context.textSecondary,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () => context.pop(),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              ),
+                              child: Text(AppStrings.isArabic ? 'العودة' : 'Go Back'),
+                            ),
+                            const SizedBox(width: 16),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                context.pop();
+                                context.push(
+                                  RouteConstants.pendingSubscription,
+                                  extra: {
+                                    'plan': widget.plan,
+                                    'subscriptionType': widget.subscriptionType,
+                                  },
+                                );
+                              },
+                              icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                              label: Text(
+                                AppStrings.isArabic ? 'دفع يدوي عبر واتساب' : 'WhatsApp Manual Pay',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.primary,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
             if (state is PaymentVerifying || _isCheckingStatus) {
               return Center(
                 child: Column(
@@ -256,7 +352,8 @@ class _PaymentWebviewBodyState extends State<_PaymentWebviewBody> {
 
             return Stack(
               children: [
-                WebViewWidget(controller: _controller),
+                if (_controller != null)
+                  WebViewWidget(controller: _controller!),
                 if (_isLoading)
                   const Center(
                     child: AppLoadingWidget(size: AppLoadingSize.large),

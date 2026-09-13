@@ -3,6 +3,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/features/payment/domain/entities/payment_status_entity.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -152,6 +153,15 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
       return;
     }
 
+    // ────────────────────────────────────────────────────────────────────────
+    // التحقق من منصة التشغيل (Windows Desktop)
+    // بوابات الدفع الإلكتروني المباشر (Paymob WebView) غير مدعومة على Windows
+    // ────────────────────────────────────────────────────────────────────────
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      _showWindowsPaymentNotice(context);
+      return;
+    }
+
     final couponCode = couponsCubit.appliedCoupon?.code;
 
     if (_selectedMethod == PaymentMethod.wallet) {
@@ -165,6 +175,157 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
             couponCode: couponCode,
           );
     }
+  }
+
+  void _showWindowsPaymentNotice(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: context.surfaceColor,
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          actionsPadding: const EdgeInsets.all(20),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: context.primary.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.phone_android_rounded,
+                  color: context.primary,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  AppStrings.isArabic
+                      ? 'الاشتراك عبر تطبيق الهاتف'
+                      : 'Subscribe via Mobile App',
+                  style: AppTextStyles.headlineSmall(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              Text(
+                AppStrings.isArabic
+                    ? 'عذراً، بوابات الدفع الإلكتروني المباشر غير مدعومة حالياً على أجهزة الكمبيوتر (Windows).\n\nيرجى فتح التطبيق من هاتفك المحمول (Android أو iOS) وتسجيل الدخول بنفس الحساب لإتمام الدفع، وسيتم تفعيل الباقة فوراً على جميع أجهزتك بما فيها هذا الجهاز.'
+                    : 'Online payment gateways are currently not supported on desktop (Windows).\n\nPlease open the app on your mobile phone and complete the payment. Your subscription will be activated on all your devices immediately.',
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: context.textPrimary,
+                  height: 1.5,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: context.primaryLightColor.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: context.primary.withOpacity(0.2),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.sync_rounded,
+                      color: context.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        AppStrings.isArabic
+                            ? 'جميع بيانات عيادتك واشتراكك متزامنة لحظياً بين الهاتف والكمبيوتر.'
+                            : 'Your clinic data and subscription sync automatically across all devices.',
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: context.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      AppStrings.isArabic ? 'حسناً، فهمت' : 'Got it',
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                      context.push(
+                        RouteConstants.pendingSubscription,
+                        extra: {
+                          'plan': widget.targetPlan,
+                          'subscriptionType': widget.subscriptionType,
+                          'companyInfo': widget.companyInfo,
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                    label: Text(
+                      AppStrings.isArabic ? 'دفع يدوي (واتساب)' : 'Manual Pay',
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.onPrimary,
+                        fontSize: 13,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.primary,
+                      foregroundColor: context.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showWalletBottomSheet(BuildContext parentContext, String ownerId, String? couponCode) {
@@ -404,6 +565,36 @@ class _PaymentMethodsBodyState extends State<_PaymentMethodsBody> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // تنبيه أجهزة Windows
+                  if (defaultTargetPlatform == TargetPlatform.windows)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: AppConstants.spaceMd),
+                      padding: const EdgeInsets.all(AppConstants.spaceMd),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.amber.shade300),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.phone_android_rounded, color: Colors.amber.shade900, size: 22),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              AppStrings.isArabic
+                                  ? 'تنبيه: الدفع الإلكتروني متاح عبر تطبيق الهاتف (Android أو iOS). يمكنك تنزيل التطبيق والاشتراك منه لتفعيل الباقة على جميع أجهزتك.'
+                                  : 'Notice: Online payment is available via the mobile app (Android or iOS).',
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: const Color(0xFF78350F),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // بطاقة ملخص الباقة
                   Builder(
                     builder: (context) {
