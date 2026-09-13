@@ -5,6 +5,7 @@
 
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:flutter/material.dart';
 
@@ -24,11 +25,12 @@ class ExpensesClinicChips extends StatelessWidget {
   Widget build(BuildContext context) {
     if (clinics.isEmpty) return const SizedBox.shrink();
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final isAllSelected = selectedClinicId == null || selectedClinicId!.isEmpty;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
       child: Row(
         children: [
           Padding(

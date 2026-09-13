@@ -1,6 +1,7 @@
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +18,7 @@ class ExpensesTargetChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final settingsState = context.watch<SettingsCubit>().state;
     final doctorName = settingsState.currentDoctorName;
     final doctorLabel = (doctorName != null && doctorName.trim().isNotEmpty)
@@ -24,7 +26,7 @@ class ExpensesTargetChips extends StatelessWidget {
         : (AppStrings.isArabic ? 'الطبيب الحالي' : 'Current Doctor');
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
       child: Row(
         children: [
           Expanded(

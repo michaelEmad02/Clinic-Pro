@@ -5,6 +5,7 @@
 
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/expenses/domain/entities/expense_category_entity.dart';
 import 'package:flutter/material.dart';
 
@@ -22,9 +23,11 @@ class ExpensesCategoryChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 16),
       child: Row(
         children: [
           Padding(

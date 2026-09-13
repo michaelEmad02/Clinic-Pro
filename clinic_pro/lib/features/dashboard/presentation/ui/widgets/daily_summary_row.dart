@@ -24,7 +24,62 @@ class DailySummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final isMobile = ResponsiveHelper.isMobile(context);
+
+    if (isDesktop) {
+      return Row(
+        children: [
+          Expanded(
+            child: _buildSummaryItem(
+              context: context,
+              title: AppStrings.isArabic ? 'مواعيد اليوم' : 'Today Appointments',
+              value: '$todayAppointmentsCount',
+              icon: Icons.calendar_today_outlined,
+              color: context.primary,
+              bgColor: context.primaryLightColor,
+              isDesktop: true,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: _buildSummaryItem(
+              context: context,
+              title: AppStrings.isArabic ? 'مكتمل اليوم' : 'Completed Today',
+              value: '$completedCount',
+              icon: Icons.check_circle_outline,
+              color: context.successText,
+              bgColor: context.successBg,
+              isDesktop: true,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: _buildSummaryItem(
+              context: context,
+              title: AppStrings.isArabic ? 'قيد الانتظار' : 'Waiting',
+              value: '$waitingCount',
+              icon: Icons.hourglass_empty_outlined,
+              color: context.warningText,
+              bgColor: context.warningBg,
+              isDesktop: true,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: _buildSummaryItem(
+              context: context,
+              title: AppStrings.isArabic ? 'متوسط الانتظار' : 'Avg Wait Time',
+              value: avgWaitingTime,
+              icon: Icons.access_time,
+              color: context.primaryContainer,
+              bgColor: context.primaryLightColor,
+              isDesktop: true,
+            ),
+          ),
+        ],
+      );
+    }
 
     return SizedBox(
       height: isMobile ? 190 : 95,
@@ -80,9 +135,13 @@ class DailySummaryRow extends StatelessWidget {
     required IconData icon,
     required Color color,
     required Color bgColor,
+    bool isDesktop = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? 14 : 10,
+        vertical: isDesktop ? 14 : 8,
+      ),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(14),
@@ -98,14 +157,14 @@ class DailySummaryRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: EdgeInsets.all(isDesktop ? 10 : 6),
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(isDesktop ? 10 : 8),
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: color, size: isDesktop ? 22 : 18),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isDesktop ? 12 : 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,10 +178,10 @@ class DailySummaryRow extends StatelessWidget {
                   style: AppTextStyles.caption(context).copyWith(
                     color: context.textSecondary,
                     fontWeight: FontWeight.w500,
-                    fontSize: 11,
+                    fontSize: isDesktop ? 12.5 : 11,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: isDesktop ? 4 : 2),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
@@ -131,7 +190,7 @@ class DailySummaryRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.dataNumeric(context).copyWith(
-                      fontSize: 15,
+                      fontSize: isDesktop ? 20 : 15,
                       fontWeight: FontWeight.bold,
                       color: context.textPrimary,
                     ),

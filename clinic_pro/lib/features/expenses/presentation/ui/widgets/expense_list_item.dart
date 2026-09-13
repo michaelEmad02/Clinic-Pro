@@ -6,6 +6,7 @@
 import 'package:clinic_pro/core/services/numbers_format.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
 import 'package:flutter/material.dart';
 import 'expense_action_sheet.dart';
@@ -24,6 +25,8 @@ class ExpenseListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     void openActionSheet() {
       ExpenseActionSheet.show(
         context: context,
@@ -34,7 +37,9 @@ class ExpenseListItem extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: isDesktop
+          ? EdgeInsets.zero
+          : const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Material(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(12),

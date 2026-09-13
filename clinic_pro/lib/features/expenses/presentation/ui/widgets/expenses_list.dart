@@ -33,17 +33,46 @@ class ExpensesList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: expenses.length,
-      padding: EdgeInsets.zero,
-      itemBuilder: (context, index) {
-        final expense = expenses[index];
-        return ExpenseListItem(
-          expense: expense,
-          onEdit: () => onEdit(expense),
-          onDelete: () => onDelete(expense),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final int columns = (constraints.maxWidth / 360).floor().clamp(1, 3);
+
+        if (columns > 1) {
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: expenses.length,
+            padding: EdgeInsets.zero,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              mainAxisExtent: 96,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemBuilder: (context, index) {
+              final expense = expenses[index];
+              return ExpenseListItem(
+                expense: expense,
+                onEdit: () => onEdit(expense),
+                onDelete: () => onDelete(expense),
+              );
+            },
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: expenses.length,
+          padding: EdgeInsets.zero,
+          itemBuilder: (context, index) {
+            final expense = expenses[index];
+            return ExpenseListItem(
+              expense: expense,
+              onEdit: () => onEdit(expense),
+              onDelete: () => onDelete(expense),
+            );
+          },
         );
       },
     );

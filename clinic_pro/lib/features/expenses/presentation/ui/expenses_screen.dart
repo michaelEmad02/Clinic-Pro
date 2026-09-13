@@ -86,16 +86,21 @@ class _ExpensesBody extends StatelessWidget {
                     ? AppConstants.activeDoctorId
                     : null)));
 
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 64,
+        toolbarHeight: isDesktop ? 70 : 64,
         backgroundColor: context.surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
           AppStrings.expenses,
-          style: AppTextStyles.headlineMedium(context).copyWith(
+          style: (isDesktop
+                  ? AppTextStyles.headlineLarge(context)
+                  : AppTextStyles.headlineMedium(context))
+              .copyWith(
             fontWeight: FontWeight.bold,
             color: context.primary,
           ),
@@ -139,98 +144,114 @@ class _ExpensesBody extends StatelessWidget {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: ResponsiveHelper.responsiveCenter(
-                  maxWidth: 900,
-                  child: Column(
-                    children: [
-                      ExpensesTotalCard(state: state),
-                      if (isOwner && settingsState.availableClinics.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        ExpensesClinicChips(
-                          clinics: settingsState.availableClinics,
-                          selectedClinicId: state.selectedClinicId,
-                          onChanged: (clinicId) => context
-                              .read<ExpensesCubit>()
-                              .changeClinicFilter(clinicId),
+                padding: EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: isDesktop ? 24 : 0,
+                ),
+                child: ColoredBox(
+                  color: Colors.transparent,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: isDesktop ? 1200 : 900,
                         ),
-                      ],
-                      if (isSecretary) ...[
-                        const SizedBox(height: 12),
-                        ExpensesTargetChips(
-                          activeTargetFilter: state.activeTargetFilter,
-                          onChanged: (target) => context
-                              .read<ExpensesCubit>()
-                              .changeTargetFilter(target),
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      ExpensesCategoryChips(
-                        categories: state.categories,
-                        activeCategoryId: state.activeCategoryId,
-                        onChanged: (catId) =>
-                            context.read<ExpensesCubit>().changeCategory(catId),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 6),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
-                              AppStrings.expenses,
-                              style: AppTextStyles.bodyMedium(context).copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: context.textPrimary,
+                            ExpensesTotalCard(state: state),
+                            if (isOwner && settingsState.availableClinics.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              ExpensesClinicChips(
+                                clinics: settingsState.availableClinics,
+                                selectedClinicId: state.selectedClinicId,
+                                onChanged: (clinicId) => context
+                                    .read<ExpensesCubit>()
+                                    .changeClinicFilter(clinicId),
+                              ),
+                            ],
+                            if (isSecretary) ...[
+                              const SizedBox(height: 12),
+                              ExpensesTargetChips(
+                                activeTargetFilter: state.activeTargetFilter,
+                                onChanged: (target) => context
+                                    .read<ExpensesCubit>()
+                                    .changeTargetFilter(target),
+                              ),
+                            ],
+                            const SizedBox(height: 12),
+                            ExpensesCategoryChips(
+                              categories: state.categories,
+                              activeCategoryId: state.activeCategoryId,
+                              onChanged: (catId) =>
+                                  context.read<ExpensesCubit>().changeCategory(catId),
+                            ),
+                            const SizedBox(height: 12),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isDesktop ? 0 : 16, vertical: 6),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    AppStrings.expenses,
+                                    style: AppTextStyles.headlineSmall(context).copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: context.textPrimary,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: context.primaryLightColor,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: context.primary.withOpacity(0.15),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      AppStrings.isArabic
+                                          ? '${state.filteredExpenses.length} مصروف'
+                                          : '${state.filteredExpenses.length} items',
+                                      style: AppTextStyles.caption(context).copyWith(
+                                        color: context.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: context.primaryLightColor,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: context.primary.withOpacity(0.15),
-                                ),
-                              ),
-                              child: Text(
-                                AppStrings.isArabic
-                                    ? '${state.filteredExpenses.length} مصروف'
-                                    : '${state.filteredExpenses.length} items',
-                                style: AppTextStyles.caption(context).copyWith(
-                                  color: context.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                            const SizedBox(height: 4),
+                            ExpensesList(
+                              expenses: state.filteredExpenses,
+                              onEdit: (exp) {
+                                ReadOnlyGuard.protect(
+                                  context,
+                                  onAllowed: () {
+                                    AddEditExpenseSheet.show(
+                                      context,
+                                      expense: exp,
+                                      categories: state.categories,
+                                      defaultClinicId: state.selectedClinicId,
+                                    );
+                                  },
+                                );
+                              },
+                              onDelete: (exp) {
+                                ReadOnlyGuard.protect(
+                                  context,
+                                  onAllowed: () => _confirmDelete(context, exp),
+                                );
+                              },
                             ),
+                            if (isDesktop) const SizedBox(height: 40),
                           ],
                         ),
                       ),
-                      ExpensesList(
-                        expenses: state.filteredExpenses,
-                        onEdit: (exp) {
-                          ReadOnlyGuard.protect(
-                            context,
-                            onAllowed: () {
-                              AddEditExpenseSheet.show(
-                                context,
-                                expense: exp,
-                                categories: state.categories,
-                                defaultClinicId: state.selectedClinicId,
-                              );
-                            },
-                          );
-                        },
-                        onDelete: (exp) {
-                          ReadOnlyGuard.protect(
-                            context,
-                            onAllowed: () => _confirmDelete(context, exp),
-                          );
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -256,6 +277,7 @@ class _ExpensesBody extends StatelessWidget {
             },
           );
         },
+        tooltip: AppStrings.isArabic ? 'إضافة مصروف' : 'Add Expense',
         backgroundColor: context.primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(

@@ -29,7 +29,7 @@ import 'widgets/daily_summary_row.dart';
 import '../../../invoices/presentation/ui/invoices_screen.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 import 'package:clinic_pro/core/widgets/read_only_mode_banner.dart';
-
+import 'package:clinic_pro/core/utils/responsive_helper.dart';
 
 class SecretaryDashboardScreen extends StatefulWidget {
   const SecretaryDashboardScreen({super.key});
@@ -164,11 +164,14 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     return AppBar(
-      toolbarHeight: 64,
+      toolbarHeight: isDesktop ? 70 : 64,
       backgroundColor: context.surfaceColor,
       elevation: 0,
       scrolledUnderElevation: 0,
+      centerTitle: false,
       title: BlocBuilder<SecretaryDashboardCubit, SecretaryDashboardState>(
         builder: (context, state) {
           String clinicName = AppStrings.isArabic
@@ -185,15 +188,20 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
             children: [
               Text(
                 clinicName,
-                style: AppTextStyles.headlineMedium(context).copyWith(
+                style: (isDesktop
+                        ? AppTextStyles.headlineLarge(context)
+                        : AppTextStyles.headlineMedium(context))
+                    .copyWith(
                   fontWeight: FontWeight.bold,
                   color: context.textPrimary,
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
                 sub,
                 style: AppTextStyles.caption(context).copyWith(
                   color: context.textSecondary,
+                  fontSize: isDesktop ? 13.5 : 12,
                 ),
               ),
             ],
@@ -225,6 +233,60 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
           );
         }
         if (state is SecretaryDashboardLoaded) {
+          final isDesktop = ResponsiveHelper.isDesktop(context);
+
+          // ── Desktop 2-Column Workspace Layout (Like Doctor Dashboard) ──
+          if (isDesktop) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                _tryLoadDashboard(customContext: context);
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                children: [
+                  const ReadOnlyModeBanner(),
+                  DailySummaryRow(
+                    todayAppointmentsCount: state.todayAppointmentsCount,
+                    completedCount: state.completedCount,
+                    waitingCount: state.waitingCount,
+                    avgWaitingTime: state.avgWaitingTime,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Main Area: Waiting Queue (flex: 68)
+                      Expanded(
+                        flex: 68,
+                        child: WaitingQueueList(
+                          queue: state.liveQueue,
+                          maxItems: 8,
+                          onCallNext: () {
+                            context.read<SecretaryDashboardCubit>().callNextPatient();
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      // Side Panel: Quick Actions (flex: 32)
+                      Expanded(
+                        flex: 32,
+                        child: SecretaryQuickActions(
+                          onTabChanged: (index) {
+                            setState(() {
+                              _currentIndex = index;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // ── Mobile & Tablet Layout (Preserved Exactly) ──
           return RefreshIndicator(
             onRefresh: () async {
               _tryLoadDashboard(customContext: context);
