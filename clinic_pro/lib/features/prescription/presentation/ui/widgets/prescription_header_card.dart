@@ -98,7 +98,10 @@ class PrescriptionHeaderCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: AppConstants.spaceXs),
-                          Row(
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: AppConstants.spaceSm,
+                            runSpacing: 4,
                             children: [
                               Text(
                                 age,
@@ -106,7 +109,6 @@ class PrescriptionHeaderCard extends StatelessWidget {
                                   color: context.textSecondary,
                                 ),
                               ),
-                              const SizedBox(width: AppConstants.spaceSm),
                               Container(
                                 width: 4,
                                 height: 4,
@@ -115,14 +117,12 @@ class PrescriptionHeaderCard extends StatelessWidget {
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: AppConstants.spaceSm),
                               Text(
                                 gender,
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: context.textSecondary,
                                 ),
                               ),
-                              const SizedBox(width: AppConstants.spaceSm),
                               Container(
                                 width: 4,
                                 height: 4,
@@ -131,7 +131,6 @@ class PrescriptionHeaderCard extends StatelessWidget {
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: AppConstants.spaceSm),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 6,
@@ -142,6 +141,7 @@ class PrescriptionHeaderCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(AppConstants.radiusXs),
                                 ),
                                 child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
                                       Icons.water_drop,

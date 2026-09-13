@@ -5,7 +5,6 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../core/strings/app_strings.dart';
-import '../../../../../core/utils/responsive_helper.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../../domain/entities/patient_entity.dart';
 import 'patient_list_item.dart';
@@ -32,42 +31,49 @@ class PatientsList extends StatelessWidget {
       );
     }
 
-    final isMobile = ResponsiveHelper.isMobile(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        // حساب عدد الأعمدة ديناميكياً لاستغلال كامل مساحة الشاشة
+        final int columns = (availableWidth / 340).floor().clamp(1, 5);
 
-    if (!isMobile) {
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: ResponsiveHelper.gridColumns(context),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          mainAxisExtent: 110,
-        ),
-        itemCount: patients.length,
-        itemBuilder: (context, index) {
-          final patient = patients[index];
-          return PatientListItem(
-            patient: patient,
-            onTap: () => onItemTap(patient),
-            onMore: () => onItemMore(patient),
+        if (columns > 1) {
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              mainAxisExtent: 112,
+            ),
+            itemCount: patients.length,
+            itemBuilder: (context, index) {
+              final patient = patients[index];
+              return PatientListItem(
+                patient: patient,
+                onTap: () => onItemTap(patient),
+                onMore: () => onItemMore(patient),
+              );
+            },
           );
-        },
-      );
-    }
+        }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: patients.length,
-      itemBuilder: (context, index) {
-        final patient = patients[index];
-        return PatientListItem(
-          patient: patient,
-          onTap: () => onItemTap(patient),
-          onMore: () => onItemMore(patient),
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: patients.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final patient = patients[index];
+            return PatientListItem(
+              patient: patient,
+              onTap: () => onItemTap(patient),
+              onMore: () => onItemMore(patient),
+            );
+          },
         );
       },
     );

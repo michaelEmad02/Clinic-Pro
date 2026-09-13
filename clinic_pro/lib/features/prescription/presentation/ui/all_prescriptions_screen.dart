@@ -151,6 +151,9 @@ class _AllPrescriptionsBody extends StatelessWidget {
             onRefresh: () => cubit.refresh(),
             color: context.primary,
             child: ResponsiveHelper.responsiveCenter(
+              maxWidth: ResponsiveHelper.isDesktop(context)
+                  ? double.infinity
+                  : AppConstants.maxContentWidth,
               child: ListView(
                 padding: const EdgeInsets.all(AppConstants.screenEdgeH),
                 children: [
@@ -195,8 +198,42 @@ class _AllPrescriptionsBody extends StatelessWidget {
                   if (prescriptions.isEmpty)
                     _buildEmptyState(context, state)
                   else
-                    ...prescriptions.map(
-                      (p) => AllPrescriptionsCard(prescription: p),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final width = constraints.maxWidth;
+                        final int columns = (width / 440).floor().clamp(1, 3);
+
+                        if (columns == 1) {
+                          return Column(
+                            children: prescriptions
+                                .map((p) => AllPrescriptionsCard(prescription: p))
+                                .toList(),
+                          );
+                        }
+
+                        final List<List<dynamic>> columnItems =
+                            List.generate(columns, (_) => []);
+                        for (int i = 0; i < prescriptions.length; i++) {
+                          columnItems[i % columns].add(prescriptions[i]);
+                        }
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (int c = 0; c < columns; c++) ...[
+                              if (c > 0) const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    for (final p in columnItems[c])
+                                      AllPrescriptionsCard(prescription: p),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                 ],
               ),

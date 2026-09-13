@@ -10,21 +10,19 @@ import '../../../../../core/themes/app_text_styles.dart';
 // ────────────────────────────────────────────────────────
 
 class PrescriptionNotesField extends StatelessWidget {
-  final String finalDiagnosis;
   final String notes;
   final int? nextVisitDays;
-  final ValueChanged<String> onFinalDiagnosisChanged;
   final ValueChanged<String> onNotesChanged;
   final ValueChanged<int?> onNextVisitDaysChanged;
 
   const PrescriptionNotesField({
     super.key,
-    required this.finalDiagnosis,
     required this.notes,
     this.nextVisitDays,
-    required this.onFinalDiagnosisChanged,
     required this.onNotesChanged,
     required this.onNextVisitDaysChanged,
+    String? finalDiagnosis,
+    ValueChanged<String>? onFinalDiagnosisChanged,
   });
 
   String _formatComputedDate(int days) {
@@ -199,39 +197,7 @@ class PrescriptionNotesField extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 8),
-          Text(
-            AppStrings.diagnosis,
-            style: AppTextStyles.headlineSmall(context).copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          TextFormField(
-            initialValue: finalDiagnosis,
-            onChanged: onFinalDiagnosisChanged,
-            maxLines: 2,
-            style: AppTextStyles.bodyMedium(context),
-            decoration: InputDecoration(
-              hintText: AppStrings.diagnosisHint,
-              hintStyle: AppTextStyles.bodyMedium(context).copyWith(
-                color: context.textHint,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-                borderSide: BorderSide(color: context.borderColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-                borderSide: BorderSide(color: context.primary),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-                borderSide: BorderSide(color: context.borderColor),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppConstants.spaceMd),
+          const SizedBox(height: AppConstants.spaceSm),
           Text(
             AppStrings.notes,
             style: AppTextStyles.headlineSmall(context).copyWith(

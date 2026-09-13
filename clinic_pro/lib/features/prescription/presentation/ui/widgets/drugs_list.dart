@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
-import '../../../../../core/utils/responsive_helper.dart';
 import 'drug_list_item.dart';
 
 class DrugsList extends StatelessWidget {
@@ -53,38 +52,49 @@ class DrugsList extends StatelessWidget {
       );
     }
 
-    if (!ResponsiveHelper.isMobile(context)) {
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 400,
-          mainAxisSpacing: AppConstants.spaceSm,
-          crossAxisSpacing: AppConstants.spaceSm,
-          childAspectRatio: 3.2,
-        ),
-        itemCount: filtered.length,
-        itemBuilder: (context, index) {
-          final drug = filtered[index];
-          return DrugListItem(
-            drug: drug,
-            onTap: () => onDrugAction(drug),
-          );
-        },
-      );
-    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        // أعمدة متجاوبة ديناميكياً: عمود 1 على الموبايل، عمودان على الشاشات المتوسطة، 3 إلى 5 أعمدة على الديسك توب
+        final int columns = (width / 340).floor().clamp(1, 5);
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
-      itemCount: filtered.length,
-      itemBuilder: (context, index) {
-        final drug = filtered[index];
-        return DrugListItem(
-          drug: drug,
-          onTap: () => onDrugAction(drug),
+        if (columns == 1) {
+          return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+            itemCount: filtered.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final drug = filtered[index];
+              return DrugListItem(
+                drug: drug,
+                onTap: () => onDrugAction(drug),
+              );
+            },
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              mainAxisExtent: 96,
+            ),
+            itemCount: filtered.length,
+            itemBuilder: (context, index) {
+              final drug = filtered[index];
+              return DrugListItem(
+                drug: drug,
+                onTap: () => onDrugAction(drug),
+              );
+            },
+          ),
         );
       },
     );

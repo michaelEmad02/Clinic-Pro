@@ -3,7 +3,6 @@
 // تستخدم PatientDetailsCubit بدلاً من FutureBuilder المباشر
 // ────────────────────────────────────────────────────────
 
-import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/features/patients/presentation/manager/patient_details_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,45 +56,42 @@ class PatientDetailsScreen extends StatelessWidget {
               length: 4,
               child: Scaffold(
                 backgroundColor: context.background,
-                body: ResponsiveHelper.responsiveCenter(
-                  maxWidth: 1100,
-                  child: NestedScrollView(
-                    headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                      PatientSliverAppBar(patient: patient),
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: _TabBarDelegate(
-                          TabBar(
-                            labelColor: context.primary,
-                            unselectedLabelColor: context.textSecondary,
-                            indicatorColor: context.primary,
-                            labelStyle: AppTextStyles.bodyMedium(context).copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            tabs: [
-                              Tab(text: AppStrings.isArabic ? 'المعلومات' : 'Info'),
-                              Tab(text: AppStrings.isArabic ? 'الزيارات' : 'Visits'),
-                              Tab(text: AppStrings.isArabic ? 'الروشتات' : 'Prescriptions'),
-                              Tab(text: AppStrings.isArabic ? 'الفحوصات والأشعة' : 'Tests & Scans'),
-                            ],
+                body: NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    PatientSliverAppBar(patient: patient),
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _TabBarDelegate(
+                        TabBar(
+                          labelColor: context.primary,
+                          unselectedLabelColor: context.textSecondary,
+                          indicatorColor: context.primary,
+                          labelStyle: AppTextStyles.bodyMedium(context).copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
+                          tabs: [
+                            Tab(text: AppStrings.isArabic ? 'المعلومات' : 'Info'),
+                            Tab(text: AppStrings.isArabic ? 'الزيارات' : 'Visits'),
+                            Tab(text: AppStrings.isArabic ? 'الروشتات' : 'Prescriptions'),
+                            Tab(text: AppStrings.isArabic ? 'الفحوصات والأشعة' : 'Tests & Scans'),
+                          ],
                         ),
                       ),
-                    ],
-                    body: TabBarView(
-                      children: [
-                        PatientInfoTab(patient: patient),
-                        PatientVisitsTab(
-                          visits: state.visits,
-                          isLoading: state.visitsLoading,
-                        ),
-                        PatientPrescriptionsTab(patientId: id),
-                        MedicalRecordsTab(
-                          patientId: patient.id,
-                          clinicId: patient.clinicId,
-                        ),
-                      ],
                     ),
+                  ],
+                  body: TabBarView(
+                    children: [
+                      PatientInfoTab(patient: patient),
+                      PatientVisitsTab(
+                        visits: state.visits,
+                        isLoading: state.visitsLoading,
+                      ),
+                      PatientPrescriptionsTab(patientId: id),
+                      MedicalRecordsTab(
+                        patientId: patient.id,
+                        clinicId: patient.clinicId,
+                      ),
+                    ],
                   ),
                 ),
               ),

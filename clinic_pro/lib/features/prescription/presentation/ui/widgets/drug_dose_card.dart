@@ -20,12 +20,14 @@ class DrugDoseCard extends StatelessWidget {
     bool? isPrn,
   }) onUpdate;
   final VoidCallback onRemove;
+  final EdgeInsetsGeometry? margin;
 
   const DrugDoseCard({
     super.key,
     required this.drug,
     required this.onUpdate,
     required this.onRemove,
+    this.margin,
   });
 
   @override
@@ -33,10 +35,11 @@ class DrugDoseCard extends StatelessWidget {
     final isPrn = drug.isPrn;
 
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppConstants.spaceMd,
-        vertical: AppConstants.spaceSm,
-      ),
+      margin: margin ??
+          const EdgeInsets.symmetric(
+            horizontal: AppConstants.spaceMd,
+            vertical: AppConstants.spaceSm,
+          ),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),

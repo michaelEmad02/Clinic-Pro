@@ -52,21 +52,73 @@ class DrugsListSection extends StatelessWidget {
           ),
         ),
         if (selectedDrugs.isNotEmpty)
-          ...selectedDrugs.map((drug) {
-            return DrugDoseCard(
-              drug: drug,
-              onUpdate: ({doseFrequency, doseDuration, doseTiming, isPrn}) {
-                onUpdateDrug(
-                  drug.id,
-                  doseFrequency: doseFrequency,
-                  doseDuration: doseDuration,
-                  doseTiming: doseTiming,
-                  isPrn: isPrn,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final int columns = width >= 750 ? 2 : 1;
+
+              if (columns == 1) {
+                return Column(
+                  children: selectedDrugs.map((drug) {
+                    return DrugDoseCard(
+                      drug: drug,
+                      onUpdate: ({doseFrequency, doseDuration, doseTiming, isPrn}) {
+                        onUpdateDrug(
+                          drug.id,
+                          doseFrequency: doseFrequency,
+                          doseDuration: doseDuration,
+                          doseTiming: doseTiming,
+                          isPrn: isPrn,
+                        );
+                      },
+                      onRemove: () => onRemoveDrug(drug.id),
+                    );
+                  }).toList(),
                 );
-              },
-              onRemove: () => onRemoveDrug(drug.id),
-            );
-          }),
+              }
+
+              final List<List<SelectedDrugModel>> cols =
+                  List.generate(columns, (_) => []);
+              for (int i = 0; i < selectedDrugs.length; i++) {
+                cols[i % columns].add(selectedDrugs[i]);
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spaceMd),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int c = 0; c < columns; c++) ...[
+                      if (c > 0) const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            for (final drug in cols[c])
+                              DrugDoseCard(
+                                margin: const EdgeInsets.only(
+                                    bottom: AppConstants.spaceSm),
+                                drug: drug,
+                                onUpdate: ({doseFrequency, doseDuration, doseTiming, isPrn}) {
+                                  onUpdateDrug(
+                                    drug.id,
+                                    doseFrequency: doseFrequency,
+                                    doseDuration: doseDuration,
+                                    doseTiming: doseTiming,
+                                    isPrn: isPrn,
+                                  );
+                                },
+                                onRemove: () => onRemoveDrug(drug.id),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
         GestureDetector(
           onTap: onAddDrugTap,
           child: Container(

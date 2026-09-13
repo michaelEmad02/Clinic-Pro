@@ -88,32 +88,40 @@ class TemplateListItem extends StatelessWidget {
               const SizedBox(height: AppConstants.spaceSm + 4),
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppConstants.spaceSm + 2,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.primaryLightColor,
-                      borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.medication_outlined,
-                            size: AppConstants.iconSizeMd, color: context.primary),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$drugCount ${AppStrings.drugs}',
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: context.primary,
-                            fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spaceSm + 2,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.primaryLightColor,
+                        borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.medication_outlined,
+                              size: AppConstants.iconSizeMd, color: context.primary),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              '$drugCount ${AppStrings.drugs}',
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(width: AppConstants.spaceSm + 4),
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.history,
                           size: AppConstants.iconSizeMd, color: context.textSecondary),

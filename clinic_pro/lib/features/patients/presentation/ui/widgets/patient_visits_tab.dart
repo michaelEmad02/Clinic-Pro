@@ -3,10 +3,14 @@
 // بتصميم متجاوب Responsive UI بعمودين للشاشات الواسعة وقائمة رأسية للجوال
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/constants/route_constants.dart';
 import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../../../core/themes/app_colors.dart';
+import '../../../../../core/themes/app_text_styles.dart';
 import '../../../../../core/widgets/app_loading.dart';
 import '../../../../../core/widgets/empty_state.dart';
 import '../../../../appointments/domain/entities/appointment_entity.dart';
@@ -40,14 +44,46 @@ class PatientVisitsTab extends StatelessWidget {
 
     final isMobile = ResponsiveHelper.isMobile(context);
 
+    final summaryChip = Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: context.primaryLightColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.primary.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.history_rounded, size: 15, color: context.primary),
+          const SizedBox(width: 6),
+          Text(
+            '${AppStrings.isArabic ? "سجل الزيارات: " : "Visits History: "}${visits.length}',
+            style: AppTextStyles.caption(context).copyWith(
+              fontWeight: FontWeight.bold,
+              color: context.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+
     if (isMobile) {
       return ListView.builder(
         padding: const EdgeInsets.all(AppConstants.spaceMd),
-        itemCount: visits.length,
+        itemCount: visits.length + 1,
         itemBuilder: (context, index) {
+          if (index == 0) {
+            return Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: summaryChip,
+            );
+          }
+          final visit = visits[index - 1];
           return VisitTimelineItem(
-            visit: visits[index],
-            isLast: index == visits.length - 1,
+            visit: visit,
+            isLast: index == visits.length,
+            onTap: () => context.push('${RouteConstants.appointments}/${visit.id}'),
           );
         },
       );
@@ -65,35 +101,50 @@ class PatientVisitsTab extends StatelessWidget {
       }
     }
 
-    return ResponsiveHelper.responsiveCenter(
-      maxWidth: 1100,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppConstants.spaceMd),
-        child: Row(
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(AppConstants.spaceMd),
+      child: ResponsiveHelper.responsiveCenter(
+        maxWidth: 1100,
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                children: List.generate(
-                  leftColumnVisits.length,
-                  (index) => VisitTimelineItem(
-                    visit: leftColumnVisits[index],
-                    isLast: false,
+            summaryChip,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: List.generate(
+                      leftColumnVisits.length,
+                      (index) {
+                        final visit = leftColumnVisits[index];
+                        return VisitTimelineItem(
+                          visit: visit,
+                          isLast: false,
+                          onTap: () => context.push('${RouteConstants.appointments}/${visit.id}'),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                children: List.generate(
-                  rightColumnVisits.length,
-                  (index) => VisitTimelineItem(
-                    visit: rightColumnVisits[index],
-                    isLast: false,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    children: List.generate(
+                      rightColumnVisits.length,
+                      (index) {
+                        final visit = rightColumnVisits[index];
+                        return VisitTimelineItem(
+                          visit: visit,
+                          isLast: false,
+                          onTap: () => context.push('${RouteConstants.appointments}/${visit.id}'),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

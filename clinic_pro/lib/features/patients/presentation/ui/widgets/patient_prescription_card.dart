@@ -141,269 +141,322 @@ class PatientPrescriptionCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: context.surface,
-        borderRadius: BorderRadius.circular(AppConstants.radiusButton),
-        border: Border.all(color: context.outline.withOpacity(0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+        border: Border.all(color: context.borderColor),
+        boxShadow: AppConstants.cardShadow,
       ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: context.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-          ),
-          child: Icon(
-            Icons.medication_liquid_rounded,
-            color: context.primary,
-            size: 24,
-          ),
-        ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                AppStrings.prescriptionDated(dateStr),
-                style: AppTextStyles.bodyMedium(context).copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          leading: Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: context.primaryLightColor,
+              borderRadius: BorderRadius.circular(10),
             ),
-            const SizedBox(width: 8),
-            Flexible(
-              fit: FlexFit.loose,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: context.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(20),
-                ),
+            child: Icon(
+              Icons.receipt_long_rounded,
+              color: context.primary,
+              size: 22,
+            ),
+          ),
+          title: Row(
+            children: [
+              Expanded(
                 child: Text(
-                  AppStrings.drugsCount(prescription.items.length),
-                  style: AppTextStyles.caption(context).copyWith(
-                    color: context.primary,
+                  AppStrings.prescriptionDated(dateStr),
+                  style: AppTextStyles.headlineSmall(context).copyWith(
                     fontWeight: FontWeight.bold,
+                    color: context.textPrimary,
+                    fontSize: 15,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-          ],
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            diagnosesList.isNotEmpty
-                ? AppStrings.diagnosisPrefix(diagnosesList.join(', '))
-                : AppStrings.noDiagnosisRecorded,
-            style: AppTextStyles.caption(context).copyWith(
-              color: context.textSecondary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: context.primaryLightColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: context.primary.withOpacity(0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.medication_outlined, size: 13, color: context.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      AppStrings.drugsCount(prescription.items.length),
+                      style: AppTextStyles.caption(context).copyWith(
+                        color: context.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ),
-        children: [
-          const Divider(height: 1),
-          const SizedBox(height: 12),
+          subtitle: diagnosesList.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: diagnosesList.take(3).map((diag) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: context.primaryLightColor.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: context.primary.withOpacity(0.15)),
+                        ),
+                        child: Text(
+                          diag,
+                          style: AppTextStyles.caption(context).copyWith(
+                            color: context.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    AppStrings.noDiagnosisRecorded,
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: context.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+          children: [
+            const Divider(height: 1),
+            const SizedBox(height: 12),
 
-          // ─── قسم التشخيصات والتعليمات ───
-          if (diagnosesList.isNotEmpty) ...[
+            // ─── قسم التشخيصات الكاملة ───
+            if (diagnosesList.isNotEmpty) ...[
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  AppStrings.medicalDiagnoses,
+                  style: AppTextStyles.caption(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: diagnosesList.map((diag) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: context.primaryLightColor.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: context.primary.withOpacity(0.25)),
+                    ),
+                    child: Text(
+                      diag,
+                      style: AppTextStyles.caption(context).copyWith(
+                        color: context.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 14),
+            ],
+
+            // ─── قائمة الأدوية الموصوفة ───
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
-                AppStrings.medicalDiagnoses,
+                AppStrings.prescribedDrugs,
                 style: AppTextStyles.caption(context).copyWith(
                   fontWeight: FontWeight.bold,
                   color: context.primary,
                 ),
               ),
             ),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: diagnosesList.map((diag) {
+            const SizedBox(height: 8),
+
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: prescription.items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final item = prescription.items[index];
+                final drug = item.drug;
+                final String tradeName =
+                    (drug?.tradeName != null && drug!.tradeName!.isNotEmpty)
+                        ? drug.tradeName!
+                        : (drug?.genericName != null &&
+                                drug!.genericName!.isNotEmpty)
+                            ? drug.genericName!
+                            : AppStrings.prescribedDrugDefault;
+                final String genericName =
+                    (drug?.tradeName != null && drug!.tradeName!.isNotEmpty)
+                        ? (drug.genericName ?? '')
+                        : '';
+                final frequencyStr = item.frequency != null
+                    ? AppStrings.timesDaily(item.frequency!)
+                    : (item.timing != null ? DoseTiming.toLocalized(item.timing) : '');
+                final durationStr =
+                    item.duration != null ? AppStrings.daysCount(item.duration!) : '';
+
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: context.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: context.primary.withOpacity(0.3)),
+                    color: context.backgroundColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: context.borderColor),
                   ),
-                  child: Text(
-                    diag,
-                    style: AppTextStyles.caption(context).copyWith(
-                      color: context.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 12),
-          ],
-
-          // ─── جدول / قائمة الأدوية ───
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: Text(
-              AppStrings.prescribedDrugs,
-              style: AppTextStyles.caption(context).copyWith(
-                fontWeight: FontWeight.bold,
-                color: context.primary,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: prescription.items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final item = prescription.items[index];
-              final drug = item.drug;
-              final String tradeName =
-                  (drug?.tradeName != null && drug!.tradeName!.isNotEmpty)
-                      ? drug.tradeName!
-                      : (drug?.genericName != null &&
-                              drug!.genericName!.isNotEmpty)
-                          ? drug.genericName!
-                          : AppStrings.prescribedDrugDefault;
-              final String genericName =
-                  (drug?.tradeName != null && drug!.tradeName!.isNotEmpty)
-                      ? (drug.genericName ?? '')
-                      : '';
-              final frequencyStr = item.frequency != null
-                  ? AppStrings.timesDaily(item.frequency!)
-                  : (item.timing != null ? DoseTiming.toLocalized(item.timing) : '');
-              final durationStr =
-                  item.duration != null ? AppStrings.daysCount(item.duration!) : '';
-
-              return Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: context.background,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-                  border: Border.all(color: context.outline.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 12,
-                      backgroundColor: context.primary.withOpacity(0.15),
-                      child: Text(
-                        '${index + 1}',
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: context.primary,
-                          fontWeight: FontWeight.bold,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 26,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          color: context.primaryLightColor,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: context.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            tradeName,
-                            style: AppTextStyles.bodyMedium(context).copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (genericName.isNotEmpty)
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              genericName,
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: context.textSecondary,
+                              tradeName,
+                              style: AppTextStyles.bodyMedium(context).copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: context.textPrimary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
+                            ),
+                            if (genericName.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                genericName,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: context.textSecondary,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        alignment: WrapAlignment.end,
+                        children: [
+                          if (frequencyStr.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: context.primaryLightColor.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                frequencyStr,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.primary,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          if (durationStr.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: context.surfaceColor,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: context.borderColor),
+                              ),
+                              child: Text(
+                                durationStr,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: context.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                ),
+                              ),
                             ),
                         ],
                       ),
-                    ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            if (prescription.notes != null && prescription.notes!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: context.primaryLightColor.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: context.primary.withOpacity(0.15)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.edit_note_rounded, size: 20, color: context.primary),
                     const SizedBox(width: 8),
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (frequencyStr.isNotEmpty)
-                            Text(
-                              frequencyStr,
-                              style: AppTextStyles.caption(context).copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: context.primary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          if (durationStr.isNotEmpty)
-                            Text(
-                              durationStr,
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: context.textSecondary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                        ],
+                    Expanded(
+                      child: Text(
+                        AppStrings.notesPrefix(prescription.notes!),
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: context.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              );
-            },
-          ),
-
-          if (prescription.notes != null && prescription.notes!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: context.primary.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-                border: Border.all(color: context.primary.withOpacity(0.3)),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, size: 18, color: context.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      AppStrings.notesPrefix(prescription.notes!),
-                      style: AppTextStyles.caption(context).copyWith(
-                        color: context.textPrimary,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
 
           const SizedBox(height: 16),
 
@@ -468,6 +521,7 @@ class PatientPrescriptionCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

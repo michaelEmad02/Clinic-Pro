@@ -140,52 +140,57 @@ class _PatientsBody extends StatelessWidget {
           child: Container(color: context.borderColor, height: 1),
         ),
       ),
-      body: ResponsiveHelper.responsiveCenter(
-        maxWidth: 1100,
-        child: BlocBuilder<PatientsCubit, PatientsState>(
-          builder: (context, state) {
-            if (state is PatientsLoading) {
-              return const Padding(
-                padding: EdgeInsets.all(16),
-                child: ShimmerList(itemCount: 6),
-              );
-            }
-            if (state is PatientsError) {
-              return AppErrorWidget.buildErrorView(
-                context: context,
-                error: state.message,
-                onRetry: () => cubit.loadPatients(clinicId: clinicId),
-              );
-            }
-            if (state is PatientsLoaded) {
-              return RefreshIndicator(
-                onRefresh: () async {
-                  final settingsState = context.read<SettingsCubit>().state;
-                  final currentClinicId = settingsState.clinicEntity?.id ??
-                      AppConstants.activeClinicId;
-                  cubit.loadPatients(clinicId: currentClinicId);
-                  await Future.delayed(const Duration(milliseconds: 600));
-                },
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  children: [
-                    PatientsSearchBar(
+      body: BlocBuilder<PatientsCubit, PatientsState>(
+        builder: (context, state) {
+          if (state is PatientsLoading) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: ShimmerList(itemCount: 6),
+            );
+          }
+          if (state is PatientsError) {
+            return AppErrorWidget.buildErrorView(
+              context: context,
+              error: state.message,
+              onRetry: () => cubit.loadPatients(clinicId: clinicId),
+            );
+          }
+          if (state is PatientsLoaded) {
+            final isDesktop = ResponsiveHelper.isDesktop(context);
+            return RefreshIndicator(
+              onRefresh: () async {
+                final settingsState = context.read<SettingsCubit>().state;
+                final currentClinicId = settingsState.clinicEntity?.id ??
+                    AppConstants.activeClinicId;
+                cubit.loadPatients(clinicId: currentClinicId);
+                await Future.delayed(const Duration(milliseconds: 600));
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: isDesktop ? 24 : 0,
+                ),
+                children: [
+                  ResponsiveHelper.responsiveCenter(
+                    maxWidth: 600,
+                    child: PatientsSearchBar(
                       onChanged: (q) => cubit.search(q),
                     ),
-                    const SizedBox(height: 16),
-                    PatientsList(
-                      patients: state.filteredPatients,
-                      onItemTap: (patient) => context
-                          .push('${RouteConstants.patients}/${patient.id}'),
-                      onItemMore: (patient) => _showActions(context, patient),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
+                  ),
+                  const SizedBox(height: 16),
+                  PatientsList(
+                    patients: state.filteredPatients,
+                    onItemTap: (patient) => context
+                        .push('${RouteConstants.patients}/${patient.id}'),
+                    onItemMore: (patient) => _showActions(context, patient),
+                  ),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => ReadOnlyGuard.protect(

@@ -76,13 +76,15 @@ class AppointmentDetailsScreen extends StatelessWidget {
               child: Container(color: context.borderColor, height: 1),
             ),
           ),
-          body: ResponsiveHelper.responsiveCenter(
-            maxWidth: ResponsiveHelper.isDesktop(context)
-                ? 900.0
-                : AppConstants.maxContentWidth,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
-              children: [
+          body: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: AppConstants.spaceMd),
+            child: ResponsiveHelper.responsiveCenter(
+              maxWidth: ResponsiveHelper.isDesktop(context)
+                  ? 900.0
+                  : AppConstants.maxContentWidth,
+              child: Column(
+                children: [
                 AppointmentStatusTimeline(appointment: appointment),
                 if (appointment.isUrgent) ...[
                   const SizedBox(height: AppConstants.spaceSm + 4),
@@ -147,8 +149,9 @@ class AppointmentDetailsScreen extends StatelessWidget {
               ],
             ),
           ),
-        );
-      },
+        ),
+      );
+    },
     );
   }
 }

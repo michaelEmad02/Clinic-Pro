@@ -51,7 +51,9 @@ class DrugsScreen extends StatelessWidget {
           builder: (context, state) {
             if (state is DrugsLoading) {
               return ResponsiveHelper.responsiveCenter(
-                maxWidth: AppConstants.maxContentWidth,
+                maxWidth: ResponsiveHelper.isDesktop(context)
+                    ? double.infinity
+                    : AppConstants.maxContentWidth,
                 child: const Padding(
                   padding: EdgeInsets.all(AppConstants.spaceMd),
                   child: ShimmerList(itemCount: 6),
@@ -71,7 +73,9 @@ class DrugsScreen extends StatelessWidget {
               return RefreshIndicator(
                 onRefresh: () => context.read<DrugsCubit>().loadDrugs(),
                 child: ResponsiveHelper.responsiveCenter(
-                  maxWidth: AppConstants.maxContentWidth,
+                  maxWidth: ResponsiveHelper.isDesktop(context)
+                      ? double.infinity
+                      : AppConstants.maxContentWidth,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(

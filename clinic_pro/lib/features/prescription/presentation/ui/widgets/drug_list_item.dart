@@ -24,7 +24,6 @@ class DrugListItem extends StatelessWidget {
     final String category = drug['category'] ?? '';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: AppConstants.spaceSm),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
@@ -60,25 +59,34 @@ class DrugListItem extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: context.textPrimary,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.spaceSm,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: context.primaryLightColor,
-                borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-              ),
-              child: Text(
-                category,
-                style: AppTextStyles.labelChip(context).copyWith(
-                  color: context.primary,
-                  fontWeight: FontWeight.bold,
+            if (category.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spaceSm,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.primaryLightColor,
+                    borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+                  ),
+                  child: Text(
+                    category,
+                    style: AppTextStyles.labelChip(context).copyWith(
+                      color: context.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         ),
         subtitle: Column(
@@ -90,6 +98,8 @@ class DrugListItem extends StatelessWidget {
               style: AppTextStyles.bodyMedium(context).copyWith(
                 color: context.textSecondary,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

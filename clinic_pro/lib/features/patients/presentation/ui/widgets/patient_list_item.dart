@@ -25,7 +25,6 @@ class PatientListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppConstants.spaceSm),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
@@ -71,12 +70,16 @@ class PatientListItem extends StatelessWidget {
                           Icon(Icons.phone_iphone_outlined,
                               size: 14, color: context.textSecondary),
                           const SizedBox(width: 4),
-                          Text(
-                            patient.phone!,
-                            style: AppTextStyles.caption(context).copyWith(
-                              color: context.textSecondary,
+                          Flexible(
+                            child: Text(
+                              patient.phone!,
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.textSecondary,
+                              ),
+                              textDirection: TextDirection.ltr,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            textDirection: TextDirection.ltr,
                           ),
                         ],
                       ),
@@ -89,11 +92,15 @@ class PatientListItem extends StatelessWidget {
                           Icon(Icons.warning_amber_outlined,
                               size: 14, color: context.danger),
                           const SizedBox(width: 4),
-                          Text(
-                            AppStrings.isArabic ? 'حساسية' : 'Allergy',
-                            style: AppTextStyles.caption(context).copyWith(
-                              color: context.danger,
-                              fontWeight: FontWeight.w600,
+                          Flexible(
+                            child: Text(
+                              AppStrings.isArabic ? 'حساسية' : 'Allergy',
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: context.danger,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

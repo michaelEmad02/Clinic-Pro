@@ -21,6 +21,7 @@ import 'package:clinic_pro/features/prescription/presentation/manager/prescripti
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/add_drug_search_sheet.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/drugs_list_section.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_bottom_actions_bar.dart';
+import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_diagnosis_field.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_header_card.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_notes_field.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/templates_selector_section.dart';
@@ -340,7 +341,9 @@ class PrescriptionView extends StatelessWidget {
     if (state.status == PrescriptionStatus.initial ||
         state.status == PrescriptionStatus.loading) {
       return ResponsiveHelper.responsiveCenter(
-        maxWidth: AppConstants.maxContentWidth,
+        maxWidth: ResponsiveHelper.isDesktop(context)
+            ? 1000.0
+            : AppConstants.maxContentWidth,
         child: const Padding(
           padding: EdgeInsets.all(AppConstants.spaceMd),
           child: ShimmerList(itemCount: 5),
@@ -369,10 +372,13 @@ class PrescriptionView extends StatelessWidget {
       );
     }
 
-    return ResponsiveHelper.responsiveCenter(
-      maxWidth: AppConstants.maxContentWidth,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: AppConstants.spaceLg),
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: AppConstants.spaceLg),
+      child: ResponsiveHelper.responsiveCenter(
+        maxWidth: ResponsiveHelper.isDesktop(context)
+            ? 1000.0
+            : AppConstants.maxContentWidth,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -485,6 +491,18 @@ class PrescriptionView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppConstants.spaceSm),
+
+            // ─── حقل التشخيص الطبي فوق قوالب الروشتات ───
+            PrescriptionDiagnosisField(
+              finalDiagnosis: state.finalDiagnosis,
+              onFinalDiagnosisChanged: (value) {
+                context.read<PrescriptionBloc>().add(
+                      UpdatePrescriptionFieldsEvent(finalDiagnosis: value),
+                    );
+              },
+            ),
+            const SizedBox(height: AppConstants.spaceSm),
+
             const TemplatesSelectorSection(),
             const SizedBox(height: AppConstants.spaceSm),
             DrugsListSection(
@@ -510,14 +528,8 @@ class PrescriptionView extends StatelessWidget {
             ),
             const SizedBox(height: AppConstants.spaceSm),
             PrescriptionNotesField(
-              finalDiagnosis: state.finalDiagnosis,
               notes: state.notes,
               nextVisitDays: state.nextVisitDays,
-              onFinalDiagnosisChanged: (value) {
-                context.read<PrescriptionBloc>().add(
-                      UpdatePrescriptionFieldsEvent(finalDiagnosis: value),
-                    );
-              },
               onNotesChanged: (value) {
                 context.read<PrescriptionBloc>().add(
                       UpdatePrescriptionFieldsEvent(notes: value),

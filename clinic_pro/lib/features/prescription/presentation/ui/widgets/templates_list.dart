@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/widgets/empty_state.dart';
-import '../../../../../core/utils/responsive_helper.dart';
 import 'template_list_item.dart';
 
 class TemplatesList extends StatelessWidget {
@@ -43,40 +42,51 @@ class TemplatesList extends StatelessWidget {
       );
     }
 
-    if (!ResponsiveHelper.isMobile(context)) {
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 420,
-          mainAxisSpacing: AppConstants.spaceSm + 4,
-          crossAxisSpacing: AppConstants.spaceSm + 4,
-          childAspectRatio: 2.2,
-        ),
-        itemCount: filtered.length,
-        itemBuilder: (context, index) {
-          final template = filtered[index];
-          return TemplateListItem(
-            template: template,
-            onTap: () => onPreview(template),
-            onMoreTap: () => onAction(template),
-          );
-        },
-      );
-    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        // أعمدة متجاوبة ديناميكياً: عمود 1 على الموبايل، عمودان على التابلت، 3 إلى 4 أعمدة على الديسك توب
+        final int columns = (width / 340).floor().clamp(1, 4);
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
-      itemCount: filtered.length,
-      itemBuilder: (context, index) {
-        final template = filtered[index];
-        return TemplateListItem(
-          template: template,
-          onTap: () => onPreview(template),
-          onMoreTap: () => onAction(template),
+        if (columns == 1) {
+          return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+            itemCount: filtered.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final template = filtered[index];
+              return TemplateListItem(
+                template: template,
+                onTap: () => onPreview(template),
+                onMoreTap: () => onAction(template),
+              );
+            },
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMd),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              mainAxisExtent: 140,
+            ),
+            itemCount: filtered.length,
+            itemBuilder: (context, index) {
+              final template = filtered[index];
+              return TemplateListItem(
+                template: template,
+                onTap: () => onPreview(template),
+                onMoreTap: () => onAction(template),
+              );
+            },
+          ),
         );
       },
     );
