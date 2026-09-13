@@ -53,8 +53,16 @@ class DeepLinkService {
 
   /// معالجة الرابط العميق الوارد واستخراج التوكن
   void _handleDeepLink(Uri uri) {
-    // تجاهل روابط تسجيل الدخول الخاصة بـ Supabase لأن الحزمة تعالجها تلقائياً
-    if (uri.host == 'login-callback') {
+    debugPrint('🔗 Deep Link received: $uri');
+
+    // معالجة رابط عودة تسجيل الدخول من Supabase في سطح المكتب
+    if (uri.host == 'login-callback' || uri.path.contains('login-callback')) {
+      debugPrint('🔑 استلام توكن تسجيل الدخول من المتصفح، جاري تثبيت الجلسة...');
+      Supabase.instance.client.auth.getSessionFromUrl(uri).then((session) {
+        debugPrint('✅ تم تثبيت جلسة المستخدم بنجاح: ${session.session.user.email}');
+      }).catchError((e) {
+        debugPrint('⚠️ خطأ في قراءة الجلسة من الرابط: $e');
+      });
       return;
     }
     // الصيغة المتوقعة: clinicpro://join/{token}

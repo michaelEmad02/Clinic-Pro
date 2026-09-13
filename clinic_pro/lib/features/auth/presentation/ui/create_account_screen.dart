@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_text_styles.dart';
 import '../../../../core/strings/app_strings.dart';
+import '../../../../core/constants/route_constants.dart';
+import '../../../../core/constants/staff_roles.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/widgets/app_snackbar.dart';
+import '../../../settings/presentation/manager/settings_cubit.dart';
+import '../manager/auth_cubit.dart';
+import '../manager/auth_state.dart';
 import 'widgets/auth_branding_panel.dart';
 import 'widgets/account_form.dart';
 import 'widgets/social_login_row.dart';
@@ -16,25 +24,53 @@ class CreateAccountScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
 
-    return Scaffold(
-      backgroundColor: context.backgroundColor,
-      body: isMobile
-          ? _buildFormCard(context)
-          : Row(
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: AuthBrandingPanel(
-                    title: AppStrings.createAccount,
-                    subtitle: AppStrings.teamViaInvite,
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) async {
+        if (state is AuthAuthenticated) {
+          final role = state.user.role;
+          final userId = state.user.id;
+
+          await context
+              .read<SettingsCubit>()
+              .loadSettings(role, userId, state.user.ownerId);
+
+          if (!context.mounted) return;
+
+          if (role == StaffRoles.owner) {
+            if (state.user.isNewUser) {
+              context.go(RouteConstants.onboardingPlan);
+            } else {
+              context.go(RouteConstants.ownerDashboard);
+            }
+          } else if (role == StaffRoles.doctor) {
+            context.go(RouteConstants.doctorDashboard);
+          } else if (role == StaffRoles.secretary) {
+            context.go(RouteConstants.secretaryDashboard);
+          }
+        } else if (state is AuthError) {
+          AppSnackbar.error(context, message: state.message);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: context.backgroundColor,
+        body: isMobile
+            ? _buildFormCard(context)
+            : Row(
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: AuthBrandingPanel(
+                      title: AppStrings.createAccount,
+                      subtitle: AppStrings.teamViaInvite,
+                    ),
                   ),
-                ),
-                Expanded(
-                  flex: 6,
-                  child: _buildFormCard(context),
-                ),
-              ],
-            ),
+                  Expanded(
+                    flex: 6,
+                    child: _buildFormCard(context),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 
@@ -142,7 +178,7 @@ class CreateAccountScreen extends StatelessWidget {
                     // أزرار تسجيل الدخول الاجتماعي المشتركة
                     SocialLoginRow(
                       onGooglePressed: () {
-                        // منطق تسجيل الدخول بـ Google عند إنشاء الحساب
+                        context.read<AuthCubit>().loginWithGoogle();
                       },
                     ),
                   ],

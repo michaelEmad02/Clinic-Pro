@@ -20,13 +20,18 @@
 ```
 ① Header Card: patient name + age + blood type + visit type + doctor + date
 
-② Diagnosis section:
+② Quick Access Medical Records Tile (فحوصات وتحاليل المريض):
+   - Styled banner with quick access icon and localized text
+   - Tapping opens MedicalRecordsBottomSheet (BottomSheet on Mobile, Centered Dialog on Desktop/Tablet)
+   - Allows quick viewing of previous lab tests/scans or uploading a new record for the current visit
+
+③ Diagnosis section:
    - Text input for diagnosis (free text — editable always)
    - Template chips (multi-select) — selecting fills diagnosis text
      with the template's name and auto-adds its drugs
    - "+ إضافة تشخيص جديد" → opens simple text entry (saves as new template)
 
-③ Drugs section — per drug Card:
+④ Drugs section — per drug Card:
    - trade_name (bold) + generic_name (caption)
    - Frequency chips: 1× / 2× / 3× / 4× / PRN
    - Duration chips: 3d / 5d / 7d / 10d / 14d / 30d (hidden if PRN)
@@ -35,9 +40,9 @@
    - [✕] remove button
    - "+ إضافة دواء يدوياً" → search Bottom Sheet
 
-④ Notes field (multiline)
+⑤ Notes field (multiline)
 
-⑤ Bottom Actions Bar (fixed): [حفظ الكشف] [طباعة PDF] [إرسال واتساب]
+⑥ Bottom Actions Bar (fixed): [حفظ الكشف] [طباعة PDF] [إرسال واتساب]
 ```
 
 ---

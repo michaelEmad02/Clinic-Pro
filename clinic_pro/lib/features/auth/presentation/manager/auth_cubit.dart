@@ -80,8 +80,9 @@ class AuthCubit extends Cubit<AuthState> {
     subResult.fold((_) => null, (sub) => activeSub = sub);
 
     // تفعيل وضع القراءة فقط تلقائياً إذا لم يكن هناك اشتراك نشط أو انتهت صلاحيته
-    final bool isReadOnly =
-        !activeSub!.isActive || activeSub!.isExpired;
+    final bool isReadOnly = activeSub == null ||
+        !activeSub!.isActive ||
+        activeSub!.isExpired;
 
     return AuthAuthenticated(
       user: user,

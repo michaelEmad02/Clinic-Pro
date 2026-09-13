@@ -43,9 +43,10 @@ SliverAppBar: large avatar + name + age + blood type badge + edit button
 Allergy banner (if allergies present) — Danger color, prominent
 
 Tabs:
-  المعلومات    — contact info + medical info
-  الزيارات     — timeline of appointments across all owner's clinics
-  الروشتات     — list of prescriptions with diagnosis text + drug count
+  المعلومات         — contact info + medical info
+  الزيارات          — timeline of appointments across all owner's clinics
+  الروشتات          — list of prescriptions with diagnosis text + drug count
+  الفحوصات والأشعات — grid of lab tests & radiology with adaptive 2/3/4 columns, filter chips, and interactive zoom viewer
 ```
 
 ---

@@ -34,7 +34,7 @@ class DoseChipSelector extends StatelessWidget {
             color: isSelected ? context.textPrimary: context.textSecondary,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
-          selectedColor: context.primary,
+          selectedColor: context.primaryFixedDim,
           backgroundColor: context.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusChip),

@@ -61,6 +61,13 @@ disconnected tools. This leads to:
 - Shared drug database (trade name + generic name)
 - Doctor-specific prescription templates with use count tracking
 
+### 🧪🩻 Medical Records (Lab Tests & Radiology)
+- Upload and manage patient lab tests (CBC, HbA1c, Liver/Kidney functions, etc.) and radiology scans (X-Ray, CT, MRI, Ultrasound, ECG)
+- Interactive image viewer with pinch-to-zoom and pan support
+- Linking tests/scans directly to clinic visits/appointments or standalone records
+- Responsive adaptive UI (BottomSheet for Mobile, Centered Dialog for Desktop/Tablet)
+- Filter by category (Lab tests, Radiology, Linked to appointment, Unlinked)
+
 ### 💰 Financial
 - Auto-generated invoices after examination
 - Manual expense tracking with categories
@@ -91,18 +98,16 @@ disconnected tools. This leads to:
 - Authentication (Google, Apple, Magic Link)
 - Owner onboarding flow
 - Staff invitation via email
-- All 27 screens (UI-first approach)
-- Appointments, patients, prescriptions, invoices, expenses
+- All screens (UI-first approach)
+- Appointments, patients, prescriptions, invoices, expenses, medical records (lab & radiology)
 - Reports and analytics
 - Light & Dark theme
 - Arabic (RTL) + English (LTR) localization
-- Responsive: Android, iOS, Tablet
+- Responsive: Android, iOS, Tablet, Desktop
 
 ### ❌ Excluded from v1.0 (Future)
-- Lab results and radiology management
 - Telehealth / video consultations
 - Insurance claim management
-- Desktop support (planned for v2.0)
 - Patient-facing mobile app
 
 ---

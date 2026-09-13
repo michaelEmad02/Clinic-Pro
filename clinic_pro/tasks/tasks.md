@@ -93,7 +93,7 @@
 - [x] appointments
 - [x] prescriptions
 - [x] invoices
-- [ ] expenses
+- [x] expenses
 - [x] reports
 - [x] dashboard
 - [x] subscriptions

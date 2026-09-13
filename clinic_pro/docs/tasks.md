@@ -437,3 +437,30 @@
 - [ ] Extract all strings to `app_ar.arb`
 - [ ] Create `app_en.arb`
 - [ ] Test RTL/LTR switching
+
+---
+
+## Phase 13 — Medical Records (Lab Tests & Radiology)
+
+### Part 13.1 — Domain & Data Layer
+- [x] `features/medical_records/domain/entities/medical_record_entity.dart` — MedicalRecordEntity & types (lab_test / radiology)
+- [x] `features/medical_records/domain/repositories/i_medical_records_repository.dart` — IMedicalRecordsRepository interface
+- [x] `features/medical_records/domain/usecases/get_medical_records_use_case.dart` — GetMedicalRecordsUseCase
+- [x] `features/medical_records/domain/usecases/upload_medical_record_use_case.dart` — UploadMedicalRecordUseCase
+- [x] `features/medical_records/domain/usecases/delete_medical_record_use_case.dart` — DeleteMedicalRecordUseCase
+- [x] `features/medical_records/data/models/medical_record_model.dart` — MedicalRecordModel fromJson/toJson
+- [x] `features/medical_records/data/datasources/medical_records_remote_data_source_impl.dart` — Supabase Storage & Database integration
+- [x] `features/medical_records/data/repositories/medical_records_repository_impl.dart` — Either<Failure, T> repository implementation
+
+### Part 13.2 — Presentation Layer & Adaptive UI
+- [x] `features/medical_records/presentation/manager/medical_records_cubit.dart` — MedicalRecordsCubit & filter logic
+- [x] `features/medical_records/presentation/ui/widgets/medical_record_card.dart` — Card widget with smooth hover animation & dark/light theme
+- [x] `features/medical_records/presentation/ui/widgets/medical_record_image_viewer.dart` — Fullscreen interactive pinch-to-zoom viewer
+- [x] `features/medical_records/presentation/ui/widgets/medical_records_bottom_sheet.dart` — Responsive bottom sheet (Mobile) / centered dialog (Desktop/Tablet)
+- [x] `features/medical_records/presentation/ui/widgets/medical_records_tab.dart` — Patient details tab with adaptive 2/3/4 grid columns
+- [x] `features/medical_records/presentation/ui/widgets/upload_medical_record_dialog.dart` — Responsive upload modal with subwidgets & animations
+- [x] `features/medical_records/presentation/ui/widgets/upload_dialog/upload_type_selector.dart` — Type selector component
+- [x] `features/medical_records/presentation/ui/widgets/upload_dialog/upload_image_picker_area.dart` — Image picker area with camera/gallery controls
+- [x] `features/medical_records/presentation/ui/widgets/upload_dialog/upload_record_form_fields.dart` — Form fields & quick suggestion chips
+- [x] `lib/core/strings/app_strings.dart` — Added full Arabic & English localization getters for medical records
+
