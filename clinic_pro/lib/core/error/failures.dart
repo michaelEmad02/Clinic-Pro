@@ -20,3 +20,17 @@ class NetworkFailure extends Failure {
   @override
   String get defaultMessage => FailureStrings.networkError;
 }
+
+class ParsingFailure extends Failure {
+  const ParsingFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.parsingError;
+}
+
+class AiFailure extends Failure {
+  const AiFailure([super.customMessage]);
+
+  @override
+  String get defaultMessage => FailureStrings.aiServiceError;
+}

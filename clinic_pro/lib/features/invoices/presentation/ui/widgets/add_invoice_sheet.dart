@@ -8,6 +8,7 @@ import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
+import 'package:clinic_pro/core/utils/arabic_text_helper.dart';
 import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
 import 'package:clinic_pro/core/widgets/app_loading.dart';
 import 'package:clinic_pro/core/widgets/app_snackbar.dart';
@@ -17,6 +18,8 @@ import 'package:clinic_pro/features/invoices/presentation/manager/invoices_cubit
 import 'package:clinic_pro/features/invoices/presentation/manager/invoices_state.dart';
 import 'package:clinic_pro/features/patients/domain/entities/patient_entity.dart';
 import 'package:clinic_pro/features/settings/presentation/manager/settings_cubit.dart';
+import 'package:clinic_pro/core/services/i_voice_extraction_service.dart';
+import 'package:clinic_pro/core/widgets/voice_input/app_voice_input_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -215,7 +218,7 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       final name = p.name.toLowerCase();
       final phone = (p.phone ?? '').toLowerCase();
       final q = query.trim().toLowerCase();
-      return name.contains(q) || phone.contains(q);
+      return name.contains(q) || phone.contains(q) || ArabicTextHelper.isSameOrMatchingName(p.name, query);
     }).toList();
 
     setState(() {
@@ -230,6 +233,9 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
     final cubit = context.read<InvoicesCubit>();
 
     await cubit.loadPatientUnpaidAppointments(patientId);
+    if (!mounted) return;
+
+    final unpaid = cubit.state.patientUnpaidAppointments;
 
     setState(() {
       _selectedPatientId = patientId;
@@ -238,13 +244,25 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       _showPatientSearch = false;
       _patientSearchController.text = patient.name;
       _searchResults = [];
-      _expectedPrice = 0;
-      _alreadyPaidForAppointment = 0.0;
-      _selectedAppointmentId = null;
-      _totalAmountController.clear();
-      _paidAmountController.clear();
       _isLoading = false;
     });
+
+    if (unpaid.isNotEmpty) {
+      final latest = unpaid.first;
+      _selectAppointment({
+        'id': latest.id,
+        'doctor_id': latest.doctorId,
+        'price': latest.expectedPrice,
+      }, paidSoFar: latest.paidSoFar);
+    } else {
+      setState(() {
+        _expectedPrice = 0;
+        _alreadyPaidForAppointment = 0.0;
+        _selectedAppointmentId = null;
+        _totalAmountController.clear();
+        _paidAmountController.clear();
+      });
+    }
   }
 
   void _selectAppointment(Map<String, dynamic> appointment, {double paidSoFar = 0.0}) {
@@ -260,6 +278,155 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
       _paidAmountController.text = remaining.toStringAsFixed(0);
       _expectedPrice = price;
     });
+  }
+
+  Future<void> _onInvoiceVoiceExtracted(Map<String, dynamic> data) async {
+    final patientName = data['patientName'] as String?;
+    final patientPhone = data['patientPhone'] as String?;
+    final totalAmount = data['totalAmount'] as double?;
+    final paidAmount = data['paidAmount'] as double?;
+    final paymentMethod = data['paymentMethod'] as String?;
+    final appointmentTypeHint = data['appointmentTypeHint'] as String?;
+
+    // 1. تحديد طريقة الدفع
+    if (paymentMethod != null && _paymentMethods.any((m) => m.$1 == paymentMethod)) {
+      setState(() {
+        _paymentMethod = paymentMethod;
+      });
+    }
+
+    // 2. تعيين المبالغ المبدئية
+    if (totalAmount != null && totalAmount > 0) {
+      _totalAmountController.text = totalAmount.toStringAsFixed(0);
+    }
+    if (paidAmount != null && paidAmount >= 0) {
+      _paidAmountController.text = paidAmount.toStringAsFixed(0);
+    } else if (totalAmount != null && totalAmount > 0 && _paidAmountController.text.isEmpty) {
+      _paidAmountController.text = totalAmount.toStringAsFixed(0);
+    }
+
+    // 3. مطابقة واختيار المريض بالهاتف أولاً أو بالاسم
+    final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ?? '';
+    _cachedPatients ??= await context.read<InvoicesCubit>().loadPatientsForClinic(clinicId);
+    if (!mounted) return;
+
+    PatientEntity? matchedPatient;
+
+    // أ) محاولة المطابقة الدقيقة برقم الهاتف (مع مراعاة كود الدولة أو الصفر الأول)
+    if (patientPhone != null && patientPhone.isNotEmpty) {
+      final cleanVoice = patientPhone.replaceAll(RegExp(r'\D'), '');
+      final voiceCore = cleanVoice.length >= 9 ? cleanVoice.substring(cleanVoice.length - 9) : cleanVoice;
+
+      final phoneMatches = _cachedPatients!.where((p) {
+        final cleanP = (p.phone ?? '').replaceAll(RegExp(r'\D'), '');
+        if (cleanP.isEmpty) return false;
+        if (cleanP == cleanVoice) return true;
+        final pCore = cleanP.length >= 9 ? cleanP.substring(cleanP.length - 9) : cleanP;
+        return voiceCore.isNotEmpty && pCore == voiceCore;
+      }).toList();
+
+      if (phoneMatches.isNotEmpty) {
+        matchedPatient = phoneMatches.first;
+      }
+    }
+
+    // ب) محاولة المطابقة بالاسم إذا لم يُعثر على المريض بالهاتف (يدعم العربية والإنجليزية)
+    if (matchedPatient == null && patientName != null && patientName.isNotEmpty) {
+      final nameMatches = _cachedPatients!.where((p) {
+        return ArabicTextHelper.isSameOrMatchingName(p.name, patientName);
+      }).toList();
+
+      if (nameMatches.isNotEmpty) {
+        matchedPatient = nameMatches.first;
+      }
+    }
+
+    // 4. تطبيق المريض المكتشف ومطابقة المواعيد غير المدفوعة
+    if (matchedPatient != null) {
+      await _selectPatient(matchedPatient);
+      if (!mounted) return;
+
+      // فحص ومطابقة المواعيد غير المدفوعة التابعة للمريض
+      final unpaidList = context.read<InvoicesCubit>().state.patientUnpaidAppointments;
+      if (unpaidList.isNotEmpty) {
+        dynamic targetAppt;
+
+        // مطابقة بنوع الموعد (مثل: كشف / استشارة)
+        if (appointmentTypeHint != null) {
+          final byHint = unpaidList.where((a) {
+            final tName = (a.appointmentTypeName ?? '').toLowerCase();
+            return tName.contains(appointmentTypeHint.toLowerCase());
+          });
+          if (byHint.isNotEmpty) {
+            targetAppt = byHint.first;
+          }
+        }
+
+        // مطابقة بالسعر المتوقع
+        if (targetAppt == null && totalAmount != null && totalAmount > 0) {
+          final byPrice = unpaidList.where((a) => a.expectedPrice == totalAmount);
+          if (byPrice.isNotEmpty) {
+            targetAppt = byPrice.first;
+          }
+        }
+
+        // اختيار آخر موعد/فاتورة غير مدفوعة تلقائياً إذا لم يتطابق موعد محدد
+        targetAppt ??= unpaidList.first;
+
+        if (targetAppt != null) {
+          _selectAppointment({
+            'id': targetAppt.id,
+            'doctor_id': targetAppt.doctorId,
+            'price': targetAppt.expectedPrice,
+          }, paidSoFar: targetAppt.paidSoFar);
+        }
+      }
+
+      // إعادة ضبط المبالغ بعد اختيار المريض/الموعد
+      if (_selectedAppointmentId != null) {
+        // عند اختيار موعد: المبلغ الإجمالي يظل سعر الموعد المعتمد، والقيمة المنطوقة توضع في المدفوع الآن
+        final remainingAvailable = (_expectedPrice - _alreadyPaidForAppointment) > 0
+            ? (_expectedPrice - _alreadyPaidForAppointment)
+            : _expectedPrice;
+
+        double? candidatePaid = paidAmount;
+        if (candidatePaid == null && totalAmount != null && totalAmount > 0) {
+          candidatePaid = totalAmount;
+        }
+
+        if (candidatePaid != null && candidatePaid >= 0) {
+          // إذا ذكر المستخدم قيمة أكبر من المتاحة للدفع، يتم وضع القيمة المتاحة تلقائياً
+          final actualToPay = candidatePaid > remainingAvailable ? remainingAvailable : candidatePaid;
+          _paidAmountController.text = actualToPay.toStringAsFixed(0);
+        }
+      } else {
+        // إذا لم يكن هناك موعد محدد (فاتورة حرة)
+        if (paidAmount != null && paidAmount >= 0) {
+          _paidAmountController.text = paidAmount.toStringAsFixed(0);
+        }
+        if (totalAmount != null && totalAmount > 0) {
+          _totalAmountController.text = totalAmount.toStringAsFixed(0);
+          if (_paidAmountController.text.isEmpty || _paidAmountController.text == '0') {
+            _paidAmountController.text = totalAmount.toStringAsFixed(0);
+          }
+        } else if (paidAmount != null && paidAmount > 0 && _totalAmountController.text.isEmpty) {
+          _totalAmountController.text = paidAmount.toStringAsFixed(0);
+        }
+      }
+    } else {
+      // إذا لم يُعثر على مريض مطابق، لا نضع الاسم في حقل البحث حتى لا يظن المستخدم أنه تم اختياره
+      _patientSearchController.clear();
+      _searchResults = [];
+      if ((patientName != null && patientName.isNotEmpty) ||
+          (patientPhone != null && patientPhone.isNotEmpty)) {
+        AppSnackbar.warning(
+          context,
+          message: AppStrings.isArabic
+              ? 'لم يتم العثور على مريض بهذا الاسم أو الرقم، يرجى اختياره يدوياً'
+              : 'No matching patient found, please select manually',
+        );
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -370,7 +537,10 @@ class _AddInvoiceFormState extends State<_AddInvoiceForm> {
         children: [
           Row(
             children: [
-              const SizedBox(width: 40),
+              AppVoiceInputButton(
+                target: ExtractionTarget.invoice,
+                onDataExtracted: _onInvoiceVoiceExtracted,
+              ),
               Expanded(
                 child: Text(
                   AppStrings.addInvoice,

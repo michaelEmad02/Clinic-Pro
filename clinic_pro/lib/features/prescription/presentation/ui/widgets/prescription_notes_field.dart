@@ -9,7 +9,7 @@ import '../../../../../core/themes/app_text_styles.dart';
 // حقول التشخيص النهائي والملاحظات الإضافية وموعد الزيارة القادمة (أيام)
 // ────────────────────────────────────────────────────────
 
-class PrescriptionNotesField extends StatelessWidget {
+class PrescriptionNotesField extends StatefulWidget {
   final String notes;
   final int? nextVisitDays;
   final ValueChanged<String> onNotesChanged;
@@ -25,6 +25,39 @@ class PrescriptionNotesField extends StatelessWidget {
     ValueChanged<String>? onFinalDiagnosisChanged,
   });
 
+  @override
+  State<PrescriptionNotesField> createState() => _PrescriptionNotesFieldState();
+}
+
+class _PrescriptionNotesFieldState extends State<PrescriptionNotesField> {
+  late TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _notesController = TextEditingController(text: widget.notes);
+  }
+
+  @override
+  void didUpdateWidget(covariant PrescriptionNotesField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.notes != oldWidget.notes &&
+        widget.notes != _notesController.text) {
+      _notesController.text = widget.notes;
+    }
+  }
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  String get notes => widget.notes;
+  int? get nextVisitDays => widget.nextVisitDays;
+  ValueChanged<String> get onNotesChanged => widget.onNotesChanged;
+  ValueChanged<int?> get onNextVisitDaysChanged => widget.onNextVisitDaysChanged;
+
   String _formatComputedDate(int days) {
     final target = DateTime.now().add(Duration(days: days));
     return DateFormat('yyyy-MM-dd').format(target);
@@ -32,7 +65,7 @@ class PrescriptionNotesField extends StatelessWidget {
 
   Future<void> _pickCustomDate(BuildContext context) async {
     final now = DateTime.now();
-    DateTime initial = now.add(Duration(days: nextVisitDays ?? 7));
+    DateTime initial = now.add(Duration(days: widget.nextVisitDays ?? 7));
 
     final picked = await showDatePicker(
       context: context,
@@ -45,7 +78,7 @@ class PrescriptionNotesField extends StatelessWidget {
     if (picked != null) {
       final diff =
           picked.difference(DateTime(now.year, now.month, now.day)).inDays;
-      onNextVisitDaysChanged(diff > 0 ? diff : 1);
+      widget.onNextVisitDaysChanged(diff > 0 ? diff : 1);
     }
   }
 
@@ -206,7 +239,7 @@ class PrescriptionNotesField extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           TextFormField(
-            initialValue: notes,
+            controller: _notesController,
             onChanged: onNotesChanged,
             maxLines: 2,
             style: AppTextStyles.bodyMedium(context),

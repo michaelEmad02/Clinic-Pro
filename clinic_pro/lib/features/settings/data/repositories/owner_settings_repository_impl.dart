@@ -5,7 +5,9 @@
 import 'package:clinic_pro/core/error/failures.dart';
 import 'package:clinic_pro/core/error/query_failure.dart';
 import 'package:clinic_pro/features/settings/data/data_sources/owner_settings_remote_data_source.dart';
+import 'package:clinic_pro/features/settings/data/models/ai_settings_model.dart';
 import 'package:clinic_pro/features/settings/data/models/printing_settings_model.dart';
+import 'package:clinic_pro/features/settings/domain/entities/ai_settings_entity.dart';
 import 'package:clinic_pro/features/settings/domain/entities/printing_settings_entity.dart';
 import 'package:clinic_pro/features/settings/domain/repositories/i_owner_settings_repository.dart';
 import 'package:dartz/dartz.dart';
@@ -19,6 +21,9 @@ class OwnerSettingsRepositoryImpl implements IOwnerSettingsRepository {
   // ─── In-Memory Cache ───
   PrintingSettingsEntity? _cachedSettings;
   String? _cachedOwnerId;
+
+  AiSettingsEntity? _cachedAiSettings;
+  String? _cachedAiOwnerId;
 
   OwnerSettingsRepositoryImpl(this._remoteDataSource);
 
@@ -51,6 +56,41 @@ class OwnerSettingsRepositoryImpl implements IOwnerSettingsRepository {
       // تحديث الـ Cache المباشر بالقيم الجديدة المعتمدة
       _cachedSettings = settings;
       _cachedOwnerId = ownerId;
+
+      return const Right(unit);
+    } catch (e) {
+      return Left(QueryFailure.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AiSettingsEntity>> getAiSettings(
+      String ownerId, bool refreshCache) async {
+    if (_cachedAiSettings != null &&
+        _cachedAiOwnerId == ownerId &&
+        !refreshCache) {
+      return Right(_cachedAiSettings!);
+    }
+
+    try {
+      final settings = await _remoteDataSource.getAiSettings(ownerId);
+      _cachedAiSettings = settings;
+      _cachedAiOwnerId = ownerId;
+      return Right(settings);
+    } catch (e) {
+      return Left(QueryFailure.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> saveAiSettings(
+      String ownerId, AiSettingsEntity settings) async {
+    try {
+      final model = AiSettingsModel.fromEntity(settings);
+      await _remoteDataSource.saveAiSettings(ownerId, model);
+
+      _cachedAiSettings = settings;
+      _cachedAiOwnerId = ownerId;
 
       return const Right(unit);
     } catch (e) {

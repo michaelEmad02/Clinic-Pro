@@ -1693,6 +1693,79 @@ class AppStrings {
           'Ultrasound',
           'Electrocardiogram (ECG)',
         ];
+
+  // Voice Input Strings
+  static String get voiceInput => isArabic ? 'إدخال صوتي' : 'Voice Input';
+  static String get listening => isArabic ? 'جارٍ الاستماع...' : 'Listening...';
+  static String get speakNow => isArabic
+      ? 'تحدث الآن (مثال: اشتريت مستلزمات طبية 250 جنيه)'
+      : 'Speak now (e.g. Medical supplies 250 SAR)';
+  static String get processingVoice =>
+      isArabic ? 'جارٍ معالجة الصوت وتحليله...' : 'Processing voice...';
+  static String get micPermissionDenied => isArabic
+      ? 'تم رفض إذن الميكروفون، يرجى تفعيله من إعدادات الجهاز'
+      : 'Microphone permission denied, please enable it in settings';
+  static String get noSpeechDetected => isArabic
+      ? 'لم يتم التقاط أي صوت، يرجى المحاولة مرة أخرى'
+      : 'No speech detected, please try again';
+  static String get voiceInputNotAvailableOnWindows => isArabic
+      ? 'الإدخال الصوتي متاح فقط على الهواتف والأجهزة اللوحية'
+      : 'Voice input is only available on mobile and tablet devices';
+  static String get doneListening => isArabic ? 'تم، تحليل' : 'Done';
+
+  // AI Voice Analysis Strings
+  static String get aiVoiceAnalysis =>
+      isArabic ? 'تحليل الصوت بالذكاء الاصطناعي' : 'AI Voice Analysis';
+  static String get aiVoiceAnalysisDesc => isArabic
+      ? 'تخصيص مزود الذكاء الاصطناعي والموديل لاستخراج البيانات الصوتية'
+      : 'Configure AI provider and model for voice data extraction';
+  static String get extractionMode =>
+      isArabic ? 'طريقة تحليل الصوت' : 'Voice Analysis Mode';
+  static String get regexMode =>
+      isArabic ? 'قواعد نمطية (بدون AI)' : 'RegEx (No AI)';
+  static String get aiMode =>
+      isArabic ? 'ذكاء اصطناعي (AI)' : 'Artificial Intelligence (AI)';
+  static String get regexWarning => isArabic
+      ? 'تنبيه: تحليل الصوت في هذا الوضع يتم محلياً بقواعد محددة بدون ذكاء اصطناعي، ولذلك قد تحدث أخطاء في التعرف على بعض الصيغ والتعبيرات.'
+      : 'Notice: Voice analysis in this mode runs locally using pattern matching without AI, so recognition errors may occur with complex expressions.';
+  static String get selectProvider =>
+      isArabic ? 'اختر مزود الذكاء الاصطناعي' : 'Select AI Provider';
+  static String get apiKey => isArabic ? 'مفتاح الـ API' : 'API Key';
+  static String get apiKeyHint => isArabic
+      ? 'أدخل مفتاح الـ API الخاص بك هنا'
+      : 'Enter your API key here';
+  static String get apiKeySaved => isArabic
+      ? 'المفتاح محفوظ ومشفر بأمان على السيرفر 🔒'
+      : 'API key is securely encrypted on server 🔒';
+  static String get apiKeyChangeHint => isArabic
+      ? 'اتركه فارغاً للاحتفاظ بالمفتاح الحالي، أو أدخل مفتاحاً جديداً لتحديثه'
+      : 'Leave empty to keep existing key, or enter a new one to update';
+  static String get selectModel =>
+      isArabic ? 'موديل الذكاء الاصطناعي' : 'AI Model';
+  static String get refreshModels =>
+      isArabic ? 'تحديث الموديلات من الحساب' : 'Fetch models from account';
+  static String get customBaseUrl =>
+      isArabic ? 'عنوان الـ Base URL المخصص' : 'Custom Base URL';
+  static String get testConnection =>
+      isArabic ? 'اختبار الاتصال' : 'Test Connection';
+  static String get testingConnection =>
+      isArabic ? 'جارٍ اختبار الاتصال...' : 'Testing connection...';
+  static String get connectionSuccess =>
+      isArabic ? 'تم الاتصال بالمزود بنجاح!' : 'Connection test succeeded!';
+  static String get recommended => isArabic ? 'مُوصى به' : 'Recommended';
+  static String get settingsSavedSuccess => isArabic
+      ? 'تم حفظ إعدادات الذكاء الاصطناعي بنجاح'
+      : 'AI settings saved successfully';
+  static String get voiceExtractionWithAi =>
+      isArabic ? 'مدعوم بالذكاء الاصطناعي (AI)' : 'Powered by AI';
+  static String get voiceExtractionWithRegex =>
+      isArabic ? 'تحليل محلي (قواعد نمطية)' : 'Local Pattern (RegEx)';
+  static String get processingVoiceAi => isArabic
+      ? 'جارٍ تحليل الصوت واستخراج البيانات بالذكاء الاصطناعي...'
+      : 'Extracting data with AI...';
+  static String get processingVoiceRegex => isArabic
+      ? 'جارٍ تحليل الصوت بالقواعد النمطية...'
+      : 'Extracting data with local rules...';
 }
 
 

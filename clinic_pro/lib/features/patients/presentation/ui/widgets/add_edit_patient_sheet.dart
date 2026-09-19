@@ -3,6 +3,7 @@
 // يستخدم PatientEntity من طبقة الدومين
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/app_constants.dart';
@@ -14,7 +15,8 @@ import '../../../../../core/utils/responsive_helper.dart';
 import '../../../../../core/widgets/app_bottom_sheet.dart';
 import '../../../../../core/widgets/app_snackbar.dart';
 import '../../../../settings/presentation/manager/settings_cubit.dart';
-import '../../../../../core/di/injection_container.dart';
+import '../../../../../core/services/i_voice_extraction_service.dart';
+import '../../../../../core/widgets/voice_input/app_voice_input_button.dart';
 import '../../../domain/entities/patient_entity.dart';
 import '../../manager/patients_cubit.dart';
 import 'patient_form_fields.dart';
@@ -168,6 +170,50 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
     AppSnackbar.success(context, message: AppStrings.operationSuccessful);
   }
 
+  void _onPatientVoiceExtracted(Map<String, dynamic> data) {
+    setState(() {
+      final name = data['name'] as String?;
+      if (name != null && name.isNotEmpty) {
+        _nameController.text = name;
+      }
+
+      final phone = data['phone'] as String?;
+      if (phone != null && phone.isNotEmpty) {
+        _phoneController.text = phone;
+      }
+
+      final gender = data['gender'] as String?;
+      if (gender != null && gender.isNotEmpty) {
+        _gender = gender;
+      }
+
+      final bloodType = data['bloodType'] as String?;
+      if (bloodType != null && BloodType.values.contains(bloodType)) {
+        _bloodType = bloodType;
+      }
+
+      final birthDate = data['birthDate'] as DateTime?;
+      if (birthDate != null) {
+        _birthDate = birthDate;
+      }
+
+      final allergies = data['allergies'] as String?;
+      if (allergies != null && allergies.isNotEmpty) {
+        _allergiesController.text = allergies;
+      }
+
+      final chronic = data['chronicConditions'] as String?;
+      if (chronic != null && chronic.isNotEmpty) {
+        _chronicController.text = chronic;
+      }
+
+      final address = data['address'] as String?;
+      if (address != null && address.isNotEmpty) {
+        _addressController.text = address;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
@@ -181,6 +227,10 @@ class _AddEditPatientFormState extends State<_AddEditPatientForm> {
           children: [
             Row(
               children: [
+                AppVoiceInputButton(
+                  target: ExtractionTarget.patient,
+                  onDataExtracted: _onPatientVoiceExtracted,
+                ),
                 Expanded(
                   child: Text(
                     _isEdit ? AppStrings.editPatient : AppStrings.addPatient,

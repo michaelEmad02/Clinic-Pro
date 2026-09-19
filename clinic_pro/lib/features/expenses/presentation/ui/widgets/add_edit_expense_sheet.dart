@@ -5,6 +5,8 @@ import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
 import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
 import 'package:clinic_pro/core/widgets/app_snackbar.dart';
+import 'package:clinic_pro/core/services/i_voice_extraction_service.dart';
+import 'package:clinic_pro/core/widgets/voice_input/app_voice_input_button.dart';
 import 'package:clinic_pro/features/auth/presentation/manager/auth_cubit.dart';
 import 'package:clinic_pro/features/expenses/domain/entities/expense_category_entity.dart';
 import 'package:clinic_pro/features/expenses/domain/entities/expenses_entity.dart';
@@ -235,6 +237,30 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
     }
   }
 
+  void _onExpenseVoiceExtracted(Map<String, dynamic> data) {
+    setState(() {
+      final title = data['title'] as String?;
+      if (title != null && title.isNotEmpty) {
+        _titleController.text = title;
+      }
+      final amount = (data['amount'] as num?)?.toDouble() ?? 0.0;
+      if (amount > 0) {
+        _amountController.text = amount % 1 == 0
+            ? amount.toInt().toString()
+            : amount.toString();
+      }
+      final categoryId = data['categoryId'] as String?;
+      if (categoryId != null && categoryId.isNotEmpty) {
+        _categoryId = categoryId;
+        _categoryName = (data['categoryName'] as String?) ?? '';
+      }
+      final notes = data['notes'] as String?;
+      if (notes != null && notes.isNotEmpty) {
+        _notesController.text = notes;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authUser = context.watch<AuthCubit>().state.user;
@@ -251,7 +277,11 @@ class _AddEditExpenseFormState extends State<_AddEditExpenseForm> {
         children: [
           Row(
             children: [
-              const SizedBox(width: 40),
+              AppVoiceInputButton(
+                target: ExtractionTarget.expense,
+                extraContext: {'categories': widget.categories},
+                onDataExtracted: _onExpenseVoiceExtracted,
+              ),
               Expanded(
                 child: Text(
                   isEditing ? AppStrings.editExpense : AppStrings.addExpense,

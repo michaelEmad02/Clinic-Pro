@@ -4,13 +4,15 @@
 // بطاقة المريض، التشخيص، الأدوية، الملاحظات، وأزرار الحفظ
 // ────────────────────────────────────────────────────────
 
+import 'package:clinic_pro/core/di/injection_container.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection_container.dart';
+import '../manager/drugs_cubit.dart';
 import '../manager/prescription_bloc.dart';
 import '../manager/prescription_event.dart';
 import '../manager/prescription_pdf_cubit.dart';
+import '../manager/templates_cubit.dart';
 
 import '../../../appointments/domain/entities/appointment_entity.dart';
 import '../../../appointments/presentation/manager/appointments_bloc.dart';
@@ -38,6 +40,12 @@ class PrescriptionScreen extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => sl<PrescriptionPdfCubit>(),
+        ),
+        BlocProvider(
+          create: (context) => sl<DrugsCubit>()..loadDrugs(),
+        ),
+        BlocProvider(
+          create: (context) => sl<TemplatesCubit>()..loadTemplates(),
         ),
       ],
       child: PrescriptionView(isEditing, appointment: appointment),

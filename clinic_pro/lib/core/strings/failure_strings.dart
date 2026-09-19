@@ -18,6 +18,9 @@ class FailureStrings {
   static String get unknownError =>
       _isAr ? 'حدث خطأ غير متوقع' : 'An unexpected error occurred';
 
+  static String get aiServiceError =>
+      _isAr ? 'حدث خطأ في خدمة الذكاء الاصطناعي' : 'An error occurred with the AI service';
+
   // Auth Failures
   static String get invalidCredentials => _isAr
       ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'
@@ -279,4 +282,9 @@ class FailureStrings {
   static String get staffPlanLimitReached => _isAr
       ? 'لقد وصلت للحد الأقصى المسموح به من الموظفين والدعوات في خطتك الحالية'
       : 'You have reached the maximum allowed staff and invitations in your current plan';
+
+  // Voice & Parsing Failures
+  static String get parsingError => _isAr
+      ? 'تعذر استخراج البيانات من النص المدخل'
+      : 'Could not extract data from the input text';
 }

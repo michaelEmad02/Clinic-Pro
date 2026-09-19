@@ -5,6 +5,7 @@
 // ────────────────────────────────────────────────────────
 
 import 'package:clinic_pro/core/constants/app_constants.dart';
+import 'package:clinic_pro/core/services/i_voice_extraction_service.dart';
 import 'package:clinic_pro/core/strings/app_strings.dart';
 import 'package:clinic_pro/core/themes/app_colors.dart';
 import 'package:clinic_pro/core/themes/app_text_styles.dart';
@@ -12,12 +13,17 @@ import 'package:clinic_pro/core/utils/responsive_helper.dart';
 import 'package:clinic_pro/core/widgets/app_bottom_sheet.dart';
 import 'package:clinic_pro/core/widgets/app_snackbar.dart';
 import 'package:clinic_pro/core/widgets/shimmer_list.dart';
+import 'package:clinic_pro/core/widgets/voice_input/app_voice_input_button.dart';
 import 'package:clinic_pro/features/clinics/domain/entities/clinic_entity.dart';
 import 'package:clinic_pro/features/medical_records/presentation/ui/widgets/medical_records_bottom_sheet.dart';
+import 'package:clinic_pro/features/prescription/presentation/manager/drugs_cubit.dart';
+import 'package:clinic_pro/features/prescription/presentation/manager/drugs_state.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_bloc.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_event.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_pdf_cubit.dart';
 import 'package:clinic_pro/features/prescription/presentation/manager/prescription_state.dart';
+import 'package:clinic_pro/features/prescription/presentation/manager/templates_cubit.dart';
+import 'package:clinic_pro/features/prescription/presentation/manager/templates_state.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/add_drug_search_sheet.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/drugs_list_section.dart';
 import 'package:clinic_pro/features/prescription/presentation/ui/widgets/prescription_bottom_actions_bar.dart';
@@ -313,6 +319,37 @@ class PrescriptionView extends StatelessWidget {
               ),
             ),
           ),
+        // زر الإدخال الصوتي الذكي للروشتة
+        Builder(
+          builder: (voiceContext) {
+            List<Map<String, dynamic>> drugsList = [];
+            List<Map<String, dynamic>> templatesList = [];
+
+            try {
+              final drugsState = voiceContext.watch<DrugsCubit>().state;
+              if (drugsState is DrugsLoaded) {
+                drugsList = drugsState.drugs;
+              }
+            } catch (_) {}
+
+            try {
+              final tmplState = voiceContext.watch<TemplatesCubit>().state;
+              if (tmplState is TemplatesLoaded) {
+                templatesList = tmplState.templates;
+              }
+            } catch (_) {}
+
+            return AppVoiceInputButton(
+              target: ExtractionTarget.prescription,
+              extraContext: {
+                'drugs': drugsList,
+                'templates': templatesList,
+              },
+              onDataExtracted: (data) =>
+                  _onPrescriptionVoiceExtracted(voiceContext, data),
+            );
+          },
+        ),
         const SizedBox(width: AppConstants.spaceXs),
         IconButton(
           tooltip: AppStrings.patientMedicalRecords,
@@ -335,6 +372,97 @@ class PrescriptionView extends StatelessWidget {
         child: Container(color: context.borderColor, height: 1),
       ),
     );
+  }
+
+  void _onPrescriptionVoiceExtracted(
+      BuildContext context, Map<String, dynamic> data) {
+    final bloc = context.read<PrescriptionBloc>();
+    int appliedCount = 0;
+
+    // 1. تطبيق القالب إن وجد (يدعم الأسماء بالعربية والإنجليزية)
+    final appliedTemplateId = data['appliedTemplateId'] as String?;
+    final appliedTemplateName = data['appliedTemplateName'] as String?;
+    if (appliedTemplateId != null && appliedTemplateId.isNotEmpty) {
+      bloc.add(ApplyTemplateEvent(appliedTemplateId));
+      appliedCount++;
+    }
+
+    // 2. تطبيق التشخيص
+    final diagnosis = data['diagnosis'] as String?;
+    if (diagnosis != null && diagnosis.trim().isNotEmpty) {
+      bloc.add(UpdatePrescriptionFieldsEvent(finalDiagnosis: diagnosis.trim()));
+      appliedCount++;
+    }
+
+    // 3. إضافة الأدوية المكتشفة وتحديث جرعاتها (مع مطابقة صوتية عابرة للغات عربي/إنجليزي)
+    final drugs = data['drugs'] as List<dynamic>?;
+    if (drugs != null && drugs.isNotEmpty) {
+      for (final rawDrug in drugs) {
+        if (rawDrug is Map<String, dynamic>) {
+          final drugId = rawDrug['id'] as String?;
+          final tradeName = rawDrug['tradeName'] as String? ?? '';
+          if (drugId != null && drugId.isNotEmpty) {
+            // إضافة الدواء
+            bloc.add(AddDrugToPrescriptionEvent({
+              'id': drugId,
+              'trade_name': tradeName,
+              'generic_name': rawDrug['genericName'] as String? ?? '',
+              'category': rawDrug['category'] as String? ?? '',
+            }));
+
+            // تحديث الجرعة والتوقيت والمدة و PRN
+            bloc.add(UpdateDrugDoseEvent(
+              drugId: drugId,
+              doseFrequency: rawDrug['doseFrequency'] as int?,
+              doseDuration: rawDrug['doseDuration'] as int?,
+              doseTiming: rawDrug['doseTiming'] as String?,
+              isPrn: rawDrug['isPrn'] as bool?,
+            ));
+            appliedCount++;
+          }
+        }
+      }
+    }
+
+    // 4. موعد الزيارة القادمة (الاستشارة)
+    final clearNextVisit = data['clearNextVisitDays'] as bool? ?? false;
+    final nextVisitDays = data['nextVisitDays'] as int?;
+    if (clearNextVisit) {
+      bloc.add(const UpdatePrescriptionFieldsEvent(clearNextVisitDays: true));
+      appliedCount++;
+    } else if (nextVisitDays != null && nextVisitDays > 0) {
+      bloc.add(UpdatePrescriptionFieldsEvent(nextVisitDays: nextVisitDays));
+      appliedCount++;
+    }
+
+    // 5. الملاحظات الإضافية
+    final notes = data['notes'] as String?;
+    if (notes != null && notes.trim().isNotEmpty) {
+      final currentNotes = bloc.state.notes;
+      final newNotes = currentNotes.trim().isEmpty
+          ? notes.trim()
+          : '$currentNotes\n${notes.trim()}';
+      bloc.add(UpdatePrescriptionFieldsEvent(notes: newNotes));
+      appliedCount++;
+    }
+
+    if (appliedCount > 0) {
+      final msg = appliedTemplateName != null && appliedTemplateName.isNotEmpty
+          ? (AppStrings.isArabic
+              ? 'تم استدعاء قالب "$appliedTemplateName" وتحديث الروشتة بالصوت بنجاح ✓'
+              : 'Template "$appliedTemplateName" and voice prescription applied ✓')
+          : (AppStrings.isArabic
+              ? 'تم استخراج بيانات الروشتة وتطبيقها بنجاح ✓'
+              : 'Voice prescription data applied successfully ✓');
+      AppSnackbar.success(context, message: msg);
+    } else {
+      AppSnackbar.info(
+        context,
+        message: AppStrings.isArabic
+            ? 'لم يتم التعرف على تفاصيل كافية للروشتة، يمكنك إعادة المحاولة والتحدث بوضوح.'
+            : 'No prescription details detected. Please try again.',
+      );
+    }
   }
 
   Widget _buildBody(BuildContext context, PrescriptionState state) {

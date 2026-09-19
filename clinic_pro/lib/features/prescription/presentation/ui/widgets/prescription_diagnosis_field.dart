@@ -8,7 +8,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../../../../../core/themes/app_text_styles.dart';
 
-class PrescriptionDiagnosisField extends StatelessWidget {
+class PrescriptionDiagnosisField extends StatefulWidget {
   final String finalDiagnosis;
   final ValueChanged<String> onFinalDiagnosisChanged;
 
@@ -17,6 +17,36 @@ class PrescriptionDiagnosisField extends StatelessWidget {
     required this.finalDiagnosis,
     required this.onFinalDiagnosisChanged,
   });
+
+  @override
+  State<PrescriptionDiagnosisField> createState() =>
+      _PrescriptionDiagnosisFieldState();
+}
+
+class _PrescriptionDiagnosisFieldState
+    extends State<PrescriptionDiagnosisField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.finalDiagnosis);
+  }
+
+  @override
+  void didUpdateWidget(covariant PrescriptionDiagnosisField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.finalDiagnosis != oldWidget.finalDiagnosis &&
+        widget.finalDiagnosis != _controller.text) {
+      _controller.text = widget.finalDiagnosis;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +77,8 @@ class PrescriptionDiagnosisField extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           TextFormField(
-            initialValue: finalDiagnosis,
-            onChanged: onFinalDiagnosisChanged,
+            controller: _controller,
+            onChanged: widget.onFinalDiagnosisChanged,
             maxLines: 2,
             style: AppTextStyles.bodyMedium(context),
             decoration: InputDecoration(

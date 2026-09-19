@@ -12,6 +12,7 @@ import '../../../../../core/widgets/app_loading.dart';
 import '../../../../patients/domain/entities/patient_entity.dart';
 import '../../../../patients/presentation/manager/patients_cubit.dart';
 import '../../../../patients/presentation/manager/patients_state.dart';
+import '../../../../../core/utils/arabic_text_helper.dart';
 
 class PatientPickerField extends StatefulWidget {
   final String? selectedPatientId;
@@ -61,7 +62,8 @@ class _PatientPickerFieldState extends State<PatientPickerField> {
       list = list
           .where((p) =>
               p.name.toLowerCase().contains(query) ||
-              (p.phone != null && p.phone!.contains(query)))
+              (p.phone != null && p.phone!.contains(query)) ||
+              ArabicTextHelper.isSameOrMatchingName(p.name, query))
           .toList();
     }
     return list;

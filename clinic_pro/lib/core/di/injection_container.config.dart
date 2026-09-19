@@ -180,10 +180,14 @@ import '../../features/dashboard/presentation/manager/secretary_dashboard_cubit.
     as _i158;
 import '../../features/expenses/data/data_sources/expenses_remote_data_source.dart'
     as _i219;
+import '../../features/expenses/data/parsers/regex_expense_parser.dart'
+    as _i199;
 import '../../features/expenses/data/repositories/expenses_repo_implementation.dart'
     as _i936;
 import '../../features/expenses/domain/repositories/expenses_repository.dart'
     as _i321;
+import '../../features/expenses/domain/repositories/i_text_parser.dart'
+    as _i506;
 import '../../features/expenses/domain/use_cases/add_expenses_use_case.dart'
     as _i824;
 import '../../features/expenses/domain/use_cases/delete_expenses_use_case.dart'
@@ -194,6 +198,8 @@ import '../../features/expenses/domain/use_cases/fetch_categories_use_case.dart'
     as _i770;
 import '../../features/expenses/domain/use_cases/fetch_expenses_use_case.dart'
     as _i536;
+import '../../features/expenses/domain/use_cases/parse_expense_from_text_use_case.dart'
+    as _i711;
 import '../../features/expenses/presentation/manager/expenses_cubit.dart'
     as _i560;
 import '../../features/invoices/data/data_sources/invoices_remote_data_source.dart'
@@ -460,10 +466,14 @@ import '../services/i_local_data_service.dart' as _i819;
 import '../services/i_network_info.dart' as _i809;
 import '../services/i_payment_service.dart' as _i693;
 import '../services/i_prescription_pdf_service.dart' as _i581;
+import '../services/i_speech_recognition_service.dart' as _i253;
+import '../services/i_voice_extraction_service.dart' as _i724;
 import '../services/network_info_impl.dart' as _i836;
 import '../services/payment_service_impl.dart' as _i757;
 import '../services/prescription_pdf_service_impl.dart' as _i926;
+import '../services/regex_voice_extraction_service_impl.dart' as _i465;
 import '../services/shared_preferences_service.dart' as _i29;
+import '../services/speech_recognition_service_impl.dart' as _i204;
 import '../services/storage/i_image_compression_service.dart' as _i576;
 import '../services/storage/i_storage_service.dart' as _i557;
 import '../services/storage/image_compression_service.dart' as _i26;
@@ -471,6 +481,7 @@ import '../services/storage/supabase_storage_service.dart' as _i815;
 import '../services/supabase_auth_services.dart' as _i693;
 import '../services/supabase_services.dart' as _i1019;
 import '../themes/theme_cubit.dart' as _i965;
+import '../widgets/voice_input/app_voice_input_cubit.dart' as _i975;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -498,8 +509,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i170.LanguageCubit(gh<_i460.SharedPreferences>()));
     gh.lazySingleton<_i965.ThemeCubit>(
         () => _i965.ThemeCubit(gh<_i460.SharedPreferences>()));
+    gh.lazySingleton<_i724.IVoiceExtractionService>(
+        () => _i465.RegexVoiceExtractionServiceImpl());
     gh.lazySingleton<_i576.IImageCompressionService>(
         () => _i26.ImageCompressionService());
+    gh.lazySingleton<_i253.ISpeechRecognitionService>(
+        () => _i204.SpeechRecognitionServiceImpl());
     gh.lazySingleton<_i809.INetworkInfo>(() => _i836.NetworkInfoImpl());
     gh.lazySingleton<_i581.IPrescriptionPdfService>(
         () => _i926.PrescriptionPdfServiceImpl());
@@ -513,6 +528,8 @@ extension GetItInjectableX on _i174.GetIt {
         _i543.OwnerReferralRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i219.IExpensesRemoteDataSource>(
         () => _i219.ExpensesRemoteDataSourceImpl(gh<_i239.ICloudService>()));
+    gh.lazySingleton<_i506.ITextParser>(
+        () => _i199.RegexExpenseParser(gh<_i724.IVoiceExtractionService>()));
     gh.lazySingleton<_i321.IExpensesRepository>(() =>
         _i936.ExpensesRepoImplementation(
             gh<_i219.IExpensesRemoteDataSource>()));
@@ -534,6 +551,10 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i347.ISubscriptionsRemoteDataSource>()));
     gh.lazySingleton<_i257.IDoctorDashboardRemoteDataSource>(() =>
         _i920.DoctorDashboardRemoteDataSourceImpl(gh<_i239.ICloudService>()));
+    gh.factory<_i975.AppVoiceInputCubit>(() => _i975.AppVoiceInputCubit(
+          gh<_i253.ISpeechRecognitionService>(),
+          gh<_i724.IVoiceExtractionService>(),
+        ));
     gh.lazySingleton<_i246.IOwnerDashboardRemoteDataSource>(() =>
         _i386.OwnerDashboardRemoteDataSourceImpl(gh<_i239.ICloudService>()));
     gh.lazySingleton<_i557.IStorageService>(
@@ -625,6 +646,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i591.IOwnerSettingsRepository>(() =>
         _i375.OwnerSettingsRepositoryImpl(
             gh<_i1070.IOwnerSettingsRemoteDataSource>()));
+    gh.lazySingleton<_i711.ParseExpenseFromTextUseCase>(
+        () => _i711.ParseExpenseFromTextUseCase(gh<_i506.ITextParser>()));
     gh.lazySingleton<_i219.IMedicalRecordsRemoteDataSource>(
         () => _i638.MedicalRecordsRemoteDataSourceImpl(
               gh<_i239.ICloudService>(),
@@ -766,6 +789,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i685.PatientReportsCubit(gh<_i206.GetPatientStatsUseCase>()));
     gh.factory<_i730.AcceptInvitationUseCase>(
         () => _i730.AcceptInvitationUseCase(gh<_i589.IAuthRepository>()));
+    gh.factory<_i927.AcceptInvitationWithPasswordUseCase>(() =>
+        _i927.AcceptInvitationWithPasswordUseCase(gh<_i589.IAuthRepository>()));
     gh.factory<_i129.GetCurrentUserUseCase>(
         () => _i129.GetCurrentUserUseCase(gh<_i589.IAuthRepository>()));
     gh.factory<_i1051.GetInvitationByTokenUseCase>(
@@ -786,8 +811,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i695.SendMagicLinkUseCase(gh<_i589.IAuthRepository>()));
     gh.factory<_i421.VerifyEmailUseCase>(
         () => _i421.VerifyEmailUseCase(gh<_i589.IAuthRepository>()));
-    gh.factory<_i927.AcceptInvitationWithPasswordUseCase>(() =>
-        _i927.AcceptInvitationWithPasswordUseCase(gh<_i589.IAuthRepository>()));
     gh.lazySingleton<_i954.SendPasswordResetEmailUseCase>(
         () => _i954.SendPasswordResetEmailUseCase(gh<_i589.IAuthRepository>()));
     gh.lazySingleton<_i110.UpdatePasswordUseCase>(
@@ -906,6 +929,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i880.GeneratePrescriptionPdfUseCase>(() =>
         _i880.GeneratePrescriptionPdfUseCase(
             gh<_i845.IPrescriptionRepository>()));
+    gh.factory<_i681.GetAllPrescriptionsUseCase>(() =>
+        _i681.GetAllPrescriptionsUseCase(gh<_i845.IPrescriptionRepository>()));
     gh.factory<_i372.IncrementTemplateUsageUseCase>(() =>
         _i372.IncrementTemplateUsageUseCase(
             gh<_i845.IPrescriptionRepository>()));
@@ -923,8 +948,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i535.DeleteTemplateUseCase(gh<_i845.IPrescriptionRepository>()));
     gh.factory<_i535.GetTemplateDataUseCase>(() =>
         _i535.GetTemplateDataUseCase(gh<_i845.IPrescriptionRepository>()));
-    gh.factory<_i681.GetAllPrescriptionsUseCase>(() =>
-        _i681.GetAllPrescriptionsUseCase(gh<_i845.IPrescriptionRepository>()));
     gh.factory<_i405.DrugReportsCubit>(
         () => _i405.DrugReportsCubit(gh<_i965.GetDrugStatsUseCase>()));
     gh.factory<_i774.DeletePatientUseCase>(

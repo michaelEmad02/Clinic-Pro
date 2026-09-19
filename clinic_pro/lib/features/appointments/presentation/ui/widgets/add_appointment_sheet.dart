@@ -21,6 +21,11 @@ import '../../manager/appointments_bloc.dart';
 import '../../manager/appointments_event.dart';
 import '../../manager/appointments_state.dart';
 import '../../../domain/entities/appointment_entity.dart';
+import '../../../../patients/domain/entities/patient_entity.dart';
+import '../../../../patients/presentation/manager/patients_state.dart';
+import '../../../../../core/widgets/voice_input/app_voice_input_button.dart';
+import '../../../../../core/services/i_voice_extraction_service.dart';
+import '../../../../../core/utils/arabic_text_helper.dart';
 import 'patient_picker_field.dart';
 
 class AddAppointmentSheet {
@@ -244,6 +249,135 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
     if (picked != null) setState(() => _time = picked);
   }
 
+  Future<void> _onAppointmentVoiceExtracted(Map<String, dynamic> data) async {
+    final patientName = data['patientName'] as String?;
+    final patientPhone = data['patientPhone'] as String?;
+    final date = data['date'] as DateTime?;
+    final timeHour = data['timeHour'] as int?;
+    final timeMinute = data['timeMinute'] as int?;
+    final isUrgent = data['isUrgent'] as bool? ?? false;
+    final visitTypeHint = data['visitTypeHint'] as String?;
+    final notes = data['notes'] as String?;
+
+    // 1. ملاحظات وحالة الطوارئ
+    if (isUrgent) {
+      setState(() => _isUrgent = true);
+    }
+    if (notes != null && notes.isNotEmpty) {
+      setState(() {
+        if (_notesController.text.isEmpty) {
+          _notesController.text = notes;
+        } else {
+          _notesController.text += ' - $notes';
+        }
+      });
+    }
+
+    // 2. التاريخ والوقت
+    if (date != null) {
+      setState(() {
+        _date = date;
+      });
+    }
+
+    if (timeHour != null && timeMinute != null) {
+      setState(() {
+        _time = TimeOfDay(hour: timeHour, minute: timeMinute);
+      });
+    }
+
+    // 3. مطابقة نوع الزيارة (Visit Type)
+    final visitTypesState = context.read<VisitTypesCubit>().state;
+    if (visitTypeHint != null && visitTypesState.addedEntries.isNotEmpty) {
+      final normHint = ArabicTextHelper.normalizeLetters(visitTypeHint);
+      final matchedTypes = visitTypesState.addedEntries.where((t) {
+        final tName = ArabicTextHelper.normalizeLetters(t.name ?? '');
+        return tName.contains(normHint) || normHint.contains(tName);
+      }).toList();
+
+      if (matchedTypes.isNotEmpty) {
+        setState(() {
+          _typeId = matchedTypes.first.id;
+        });
+      }
+    }
+
+    // إذا لم يُذكر وقت صريح وتم تحديد تاريخ أو نوع جديد، يُعاد حساب أقرب وقت تلقائياً
+    if (timeHour == null && date != null) {
+      _recalculateTimeForSelectedType(_typeId);
+    }
+
+    // 4. مطابقة واختيار المريض (بالهاتف أولاً ثم بالاسم مع دعم اللغتين)
+    if (!_isEditing) {
+      final patientsCubit = context.read<PatientsCubit>();
+      List<PatientEntity> allPatients = [];
+      if (patientsCubit.state is PatientsLoaded) {
+        allPatients = (patientsCubit.state as PatientsLoaded).allPatients;
+      } else {
+        final clinicId = context.read<SettingsCubit>().state.clinicEntity?.id ??
+            AppConstants.activeClinicId;
+        await patientsCubit.loadPatients(clinicId: clinicId);
+        if (!mounted) return;
+        if (patientsCubit.state is PatientsLoaded) {
+          allPatients = (patientsCubit.state as PatientsLoaded).allPatients;
+        }
+      }
+
+      PatientEntity? matchedPatient;
+
+      // أ) مطابقة برقم الهاتف
+      if (patientPhone != null && patientPhone.isNotEmpty && allPatients.isNotEmpty) {
+        final cleanVoice = patientPhone.replaceAll(RegExp(r'\D'), '');
+        final voiceCore = cleanVoice.length >= 9
+            ? cleanVoice.substring(cleanVoice.length - 9)
+            : cleanVoice;
+
+        final phoneMatches = allPatients.where((p) {
+          final cleanP = (p.phone ?? '').replaceAll(RegExp(r'\D'), '');
+          if (cleanP.isEmpty) return false;
+          if (cleanP == cleanVoice) return true;
+          final pCore = cleanP.length >= 9
+              ? cleanP.substring(cleanP.length - 9)
+              : cleanP;
+          return voiceCore.isNotEmpty && pCore == voiceCore;
+        }).toList();
+
+        if (phoneMatches.isNotEmpty) {
+          matchedPatient = phoneMatches.first;
+        }
+      }
+
+      // ب) مطابقة بالاسم (عربي / إنجليزي مع التوافق الصوتي)
+      if (matchedPatient == null &&
+          patientName != null &&
+          patientName.isNotEmpty &&
+          allPatients.isNotEmpty) {
+        final nameMatches = allPatients.where((p) {
+          return ArabicTextHelper.isSameOrMatchingName(p.name, patientName);
+        }).toList();
+
+        if (nameMatches.isNotEmpty) {
+          matchedPatient = nameMatches.first;
+        }
+      }
+
+      // تطبيق المريض إذا وجد، وإلا تنبيه المستخدم وعدم تعيين أي مريض خاطئ
+      if (matchedPatient != null) {
+        setState(() {
+          _patientId = matchedPatient!.id;
+        });
+      } else if ((patientName != null && patientName.isNotEmpty) ||
+          (patientPhone != null && patientPhone.isNotEmpty)) {
+        AppSnackbar.warning(
+          context,
+          message: AppStrings.isArabic
+              ? 'لم يتم العثور على مريض بهذا الاسم أو الرقم، يرجى اختياره يدوياً'
+              : 'No matching patient found, please select manually',
+        );
+      }
+    }
+  }
+
   void _submit() {
     if (_patientId == null || _doctorId == null || _typeId == null) {
       AppSnackbar.info(context, message: AppStrings.fillRequiredFields);
@@ -357,6 +491,11 @@ class _AddAppointmentFormState extends State<_AddAppointmentForm> {
                         ),
                       ),
                     ),
+                    AppVoiceInputButton(
+                      target: ExtractionTarget.appointment,
+                      onDataExtracted: _onAppointmentVoiceExtracted,
+                    ),
+                    const SizedBox(width: 4),
                     IconButton(
                       icon: const Icon(Icons.close),
                       color: context.textSecondary,
